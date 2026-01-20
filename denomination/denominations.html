@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Denominations</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="../config.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #ec4899;
+            --accent: #8b5cf6;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-light: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #1e1b4b, #0f172a);
+            overflow: hidden;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .orb-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px; animation-delay: 0s; }
+        .orb-2 { width: 300px; height: 300px; background: var(--secondary); bottom: -50px; right: -50px; animation-delay: -5s; }
+        .orb-3 { width: 200px; height: 200px; background: var(--accent); top: 40%; left: 60%; animation-delay: -10s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, 50px); }
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+
+        .input-field:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            color: var(--text-dim);
+        }
+
+        footer b {
+            color: var(--text-light);
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-10">
+
+    <div class="bg-animation">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="max-w-6xl mx-auto glass-card p-6 rounded-2xl shadow-lg">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            <section>
+                <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+                    <h2 class="text-2xl font-bold flex items-center gap-3 text-white">
+                        <i class="fa-solid fa-money-bill-1-wave text-emerald-400"></i>Denominations
+                    </h2>
+                    <div class="flex items-center gap-4">
+                        <button onclick="toggleCalculator()" class="text-white/70 hover:text-white text-xl transition-colors" title="Calculator">
+                            <i class="fa-solid fa-calculator"></i>
+                        </button>
+                        <a href="../index.html" class="text-white/70 hover:text-white text-xl transition-colors" title="Home">
+                            <i class="fa-solid fa-house"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div id="notes-container" class="space-y-3">
+                    <template id="row-template">
+                        <div class="flex items-center justify-between p-3 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
+                            <span class="font-bold text-lg label-text text-white"></span>
+                            <div class="flex items-center gap-4">
+                                <input type="number" min="0" value="" placeholder="0" inputmode="numeric" pattern="[0-9]*" class="w-24 p-2 rounded-lg text-center outline-none count-input input-field font-mono text-lg">
+                                <span class="font-bold text-lg min-w-[80px] text-right row-total text-emerald-400 font-mono">0</span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                
+                <div id="coins-container" class="space-y-3 mt-6 mb-8"></div>
+
+                <div class="mt-auto bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-8 rounded-2xl shadow-lg relative overflow-hidden">
+                    <div class="absolute inset-0 bg-black/10"></div>
+                    <div class="relative z-10">
+                        <div class="mb-6 flex justify-center">
+                             <input type="date" id="date-input" class="p-2 px-6 rounded-lg outline-none text-white text-lg font-semibold bg-white/20 border border-white/20 backdrop-blur-sm shadow-inner text-center" />
+                        </div>
+
+                        <div class="text-xl flex justify-center items-center gap-2 mb-2 text-white/80 font-medium">
+                            Total Amount
+                        </div>
+                        <div id="grand-total" class="text-5xl font-bold mb-6 text-center w-full tracking-tight">0</div>
+
+                        <div class="pt-4 border-t border-white/20 text-center">
+                            <span class="text-xs tracking-widest opacity-70 font-bold uppercase">In Words</span>
+                            <div id="total-in-words" class="text-lg font-medium italic mt-1 capitalize leading-tight text-white/90"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- New Fields Block -->
+                <div class="glass-card p-6 rounded-xl mt-8">
+                    <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square text-emerald-400"></i> Additional Details
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Week Expenses</label>
+                            <input type="number" id="week-expenses-input" placeholder="0.00" class="w-full p-3 rounded-lg outline-none transition input-field" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Adjust Amount</label>
+                            <input type="number" id="adjust-amount-input" placeholder="0.00" class="w-full p-3 rounded-lg outline-none transition input-field" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1">ATM Withdrawal</label>
+                            <input type="number" id="atm-withdrawal-input" placeholder="0.00" inputmode="numeric" pattern="[0-9]*" class="w-full p-3 rounded-lg outline-none transition input-field" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1">A/C Paid</label>
+                            <input type="number" id="ac-paid-input" placeholder="0.00" class="w-full p-3 rounded-lg outline-none transition input-field" />
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Remarks</label>
+                            <input type="text" id="remarks-input" placeholder="Enter remarks..." class="w-full p-3 rounded-lg outline-none transition input-field" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between gap-4 mt-8">
+                    <button onclick="clearAll()" class="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 py-3 px-6 rounded-xl font-bold flex items-center justify-center gap-2 transition w-full">
+                        <i class="fa-solid fa-trash"></i> Clear
+                    </button>
+                    <button onclick="saveData()" id="save-btn" class="bg-emerald-500 hover:bg-emerald-600 text-white py-3 px-6 rounded-xl font-bold flex items-center justify-center gap-2 transition w-full shadow-lg shadow-emerald-500/20">
+                        <i class="fa-solid fa-floppy-disk"></i> Save
+                    </button>
+                </div>
+                
+                <div id="loader" class="hidden fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-50">
+                    <div class="glass-card p-8 rounded-2xl flex flex-col items-center gap-4">
+                        <div class="animate-spin">
+                            <i class="fa-solid fa-circle-notch text-4xl text-emerald-400"></i>
+                        </div>
+                        <p class="text-white font-semibold">Processing...</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Calculator Modal -->
+    <div id="calculator-modal" class="hidden fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50" tabindex="-1">
+        <div class="glass-card p-6 rounded-2xl w-80 shadow-2xl border border-white/20 bg-slate-900/90">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-calculator text-emerald-400 mr-2"></i>Calculator</h3>
+                <button onclick="toggleCalculator()" class="text-white/60 hover:text-red-400 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="bg-white/10 p-4 rounded-xl mb-4 text-right flex flex-col justify-end h-24">
+                <div id="calc-history" class="text-sm text-white/50 font-mono mb-1 h-6 overflow-hidden"></div>
+                <div id="calc-display" class="text-3xl font-mono text-white tracking-wider overflow-x-auto min-h-[2.5rem]">0</div>
+            </div>
+
+            <div class="grid grid-cols-4 gap-3">
+                <button onclick="calcClear()" class="col-span-2 p-3 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 font-bold transition">AC</button>
+                <button onclick="calcDelete()" class="p-3 rounded-lg bg-white/10 text-white hover:bg-white/20 font-bold transition"><i class="fa-solid fa-delete-left"></i></button>
+                <button onclick="calcAppend('/')" class="p-3 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 font-bold transition">÷</button>
+
+                <button onclick="calcAppend('7')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">7</button>
+                <button onclick="calcAppend('8')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">8</button>
+                <button onclick="calcAppend('9')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">9</button>
+                <button onclick="calcAppend('*')" class="p-3 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 font-bold transition">×</button>
+
+                <button onclick="calcAppend('4')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">4</button>
+                <button onclick="calcAppend('5')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">5</button>
+                <button onclick="calcAppend('6')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">6</button>
+                <button onclick="calcAppend('-')" class="p-3 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 font-bold transition">−</button>
+
+                <button onclick="calcAppend('1')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">1</button>
+                <button onclick="calcAppend('2')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">2</button>
+                <button onclick="calcAppend('3')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">3</button>
+                <button onclick="calcAppend('+')" class="p-3 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 font-bold transition">+</button>
+
+                <button onclick="calcAppend('0')" class="col-span-2 p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">0</button>
+                <button onclick="calcAppend('.')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">.</button>
+                <button onclick="calcResult()" class="p-3 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 font-bold transition">=</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const denominations = {
+            notes: [{
+                    val: 500,
+                    color: '' // Colors handled by CSS now
+                },
+                {
+                    val: 200,
+                    color: ''
+                },
+                {
+                    val: 100,
+                    color: ''
+                },
+                {
+                    val: 50,
+                    color: ''
+                },
+                {
+                    val: 20,
+                    color: ''
+                },
+                {
+                    val: 10,
+                    color: ''
+                }
+            ],
+            coins: [{
+                    val: 5,
+                    color: ''
+                },
+                {
+                    val: 2,
+                    color: ''
+                },
+                {
+                    val: 1,
+                    color: ''
+                }
+            ]
+        };
+
+        let editingRowIndex = null;
+
+        function init() {
+            // Set up date picker
+            const dateInput = document.getElementById('date-input');
+            const today = new Date().toISOString().split('T')[0];
+            
+            dateInput.value = today;
+            dateInput.max = today;
+            
+            renderSection('notes-container', denominations.notes, '');
+            renderSection('coins-container', denominations.coins, '');
+
+            document.getElementById('week-expenses-input').addEventListener('input', calculate);
+            document.getElementById('adjust-amount-input').addEventListener('input', calculate);
+            document.getElementById('atm-withdrawal-input').addEventListener('input', calculate);
+
+            // Check if there is data to edit
+            const editData = localStorage.getItem('editReportData');
+            if (editData) {
+                const data = JSON.parse(editData);
+                populateData(data);
+                if (data.rowIndex !== undefined) {
+                    editingRowIndex = data.rowIndex;
+                }
+                localStorage.removeItem('editReportData'); // Clear after use
+            }
+        }
+
+        function populateData(data) {
+            // Populate Date
+            if (data.Date) {
+                const dateInput = document.getElementById('date-input');
+                const date = new Date(data.Date);
+                if (!isNaN(date.getTime())) {
+                    // Adjust for timezone offset
+                    const offset = date.getTimezoneOffset();
+                    const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
+                    dateInput.value = adjustedDate.toISOString().split('T')[0];
+                }
+            }
+
+            // Populate Denominations
+            const denoms = [500, 200, 100, 50, 20, 10, 5, 2, 1];
+            denoms.forEach(d => {
+                const val = data[d.toString()];
+                if (val !== undefined && val !== null) {
+                    const input = document.querySelector(`.count-input[data-value="${d}"]`);
+                    if (input) {
+                        input.value = val;
+                    }
+                }
+            });
+
+            // Populate Other Fields
+            if (data['Week Expenses']) document.getElementById('week-expenses-input').value = data['Week Expenses'];
+            if (data['Adjust Amount']) document.getElementById('adjust-amount-input').value = data['Adjust Amount'];
+            if (data['ATM Withdrawal']) document.getElementById('atm-withdrawal-input').value = data['ATM Withdrawal'];
+            if (data['A/C Paid']) document.getElementById('ac-paid-input').value = data['A/C Paid'];
+            if (data['Remarks']) document.getElementById('remarks-input').value = data['Remarks'];
+
+            // Recalculate totals
+            calculate();
+        }
+
+        function renderSection(containerId, list, suffix) {
+            const container = document.getElementById(containerId);
+            const template = document.getElementById('row-template');
+
+            list.forEach(item => {
+                const clone = template.content.cloneNode(true);
+                // Removed specific color classes logic as we use a unified dark theme now
+                clone.querySelector('.label-text').textContent = suffix ? `${item.val} ${suffix}` : `${item.val}`;
+
+                const input = clone.querySelector('.count-input');
+                input.dataset.value = item.val;
+                input.addEventListener('input', calculate);
+                container.appendChild(clone);
+            });
+        }
+
+        function calculate() {
+            let grandTotal = 0;
+            const inputs = document.querySelectorAll('.count-input');
+
+            inputs.forEach(input => {
+                const count = parseInt(input.value) || 0;
+                const multiplier = parseInt(input.dataset.value);
+                const rowTotal = count * multiplier;
+                grandTotal += rowTotal;
+                input.nextElementSibling.textContent = `${rowTotal}`;
+            });
+
+            document.getElementById('grand-total').textContent = `Rs. ${grandTotal}`;
+            document.getElementById('total-in-words').textContent = numberToWords(grandTotal) + " Rupees Only";
+
+            const weekExpenses = parseFloat(document.getElementById('week-expenses-input').value) || 0;
+            const adjustAmount = parseFloat(document.getElementById('adjust-amount-input').value) || 0;
+            const acPaid = (grandTotal + adjustAmount) - weekExpenses;
+            document.getElementById('ac-paid-input').value = acPaid;
+        }
+
+        // Function to convert Number to Indian Word System
+        function numberToWords(num) {
+            if (num === 0) return "Zero";
+
+            const a = ['', 'one ', 'two ', 'three ', 'four ', 'five ', 'six ', 'seven ', 'eight ', 'nine ', 'ten ', 'eleven ', 'twelve ', 'thirteen ', 'fourteen ', 'fifteen ', 'sixteen ', 'seventeen ', 'eighteen ', 'nineteen '];
+            const b = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+
+            const format = (n, suffix) => {
+                if (n === 0) return "";
+                let str = "";
+                if (n > 19) {
+                    str += b[Math.floor(n / 10)] + " " + a[n % 10];
+                } else {
+                    str += a[n];
+                }
+                return str + suffix;
+            };
+
+            let res = "";
+            res += format(Math.floor(num / 10000000), "Crore ");
+            res += format(Math.floor((num / 100000) % 100), "Lakh ");
+            res += format(Math.floor((num / 1000) % 100), "Thousand ");
+            res += format(Math.floor((num / 100) % 10), "Hundred ");
+
+            if (num > 100 && num % 100 !== 0) res += "and ";
+            res += format(num % 100, "");
+
+            return res.trim();
+        }
+
+        function clearAll() {
+            document.querySelectorAll('.count-input').forEach(input => input.value = "");
+            document.getElementById('week-expenses-input').value = "";
+            document.getElementById('adjust-amount-input').value = "";
+            document.getElementById('atm-withdrawal-input').value = "";
+            document.getElementById('ac-paid-input').value = "";
+            document.getElementById('remarks-input').value = "";
+            editingRowIndex = null;
+            calculate();
+        }
+        function formatDateToDDMMMYYYY(isoDate) {
+            if (!isoDate) return '';
+            const d = new Date(isoDate);
+            if (isNaN(d)) return isoDate;
+            const day = String(d.getDate()).padStart(2, '0');
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return `${day}/${months[d.getMonth()]}/${d.getFullYear()}`;
+        }
+
+        function saveData() {
+            const loader = document.getElementById('loader');
+            const saveBtn = document.getElementById('save-btn');
+            loader.classList.remove('hidden');
+            saveBtn.disabled = true;
+            
+            const dateInput = document.getElementById('date-input');
+            const weekExpensesInput = document.getElementById('week-expenses-input');
+            const adjustAmountInput = document.getElementById('adjust-amount-input');
+            const atmWithdrawalInput = document.getElementById('atm-withdrawal-input');
+            const acPaidInput = document.getElementById('ac-paid-input');
+            const remarksInput = document.getElementById('remarks-input');
+
+            const grandTotalText = document.getElementById('grand-total').textContent;
+            const total = parseInt(grandTotalText.replace('Rs. ', '')) || 0;
+            
+            // Collect denomination counts
+            const data = {
+                date: formatDateToDDMMMYYYY(dateInput.value),
+                weekExpenses: parseFloat(weekExpensesInput.value) || 0,
+                adjustAmount: parseFloat(adjustAmountInput.value) || 0,
+                atmWithdrawal: parseFloat(atmWithdrawalInput.value) || 0,
+                acPaid: parseFloat(acPaidInput.value) || 0,
+                remarks: remarksInput.value,
+                d500: 0,
+                d200: 0,
+                d100: 0,
+                d50: 0,
+                d20: 0,
+                d10: 0,
+                d5: 0,
+                d2: 0,
+                d1: 0,
+                total: total
+            };
+            
+            // Map input values to denomination keys
+            const denominationMap = {
+                '500': 'd500',
+                '200': 'd200',
+                '100': 'd100',
+                '50': 'd50',
+                '20': 'd20',
+                '10': 'd10',
+                '5': 'd5',
+                '2': 'd2',
+                '1': 'd1'
+            };
+            
+            document.querySelectorAll('.count-input').forEach(input => {
+                const value = input.dataset.value;
+                const count = parseInt(input.value) || 0;
+                const key = denominationMap[value];
+                if (key) {
+                    data[key] = count;
+                }
+            });
+
+            let isUpdate = false;
+            if (editingRowIndex !== null) {
+                data.action = 'update';
+                data.rowIndex = editingRowIndex;
+                // Use YYYY-MM-DD for updates to match denominationsreport.html behavior
+                data.date = dateInput.value;
+                isUpdate = true;
+            }
+
+            console.log('Sending data to Google Sheets:', data);
+            
+            // Save to Google Sheets
+            fetch(CONFIG.GOOGLE_SHEET_URL_DENOMINATIONS, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                mode: 'no-cors'
+            })
+            .then(response => {
+                console.log('Data sent to Google Sheets (no-cors mode)');
+                loader.classList.add('hidden');
+                saveBtn.disabled = false;
+                const msg = isUpdate ? 'updated' : 'saved';
+                alert('✓ Data ' + msg + ' successfully');
+                // Also save locally
+                localStorage.setItem('cashCounterData', JSON.stringify(data));
+
+                if (isUpdate) {
+                    // Redirect back to report view if it was an update
+                    window.location.href = 'denominationsreport.html';
+                } else {
+                    // Clear form if it was a fresh entry
+                    editingRowIndex = null;
+                    clearAll();
+                }
+            })
+            .catch(error => {
+                console.error('Network error:', error);
+                loader.classList.add('hidden');
+                saveBtn.disabled = false;
+                alert('⚠ Error sending data: ' + error.message);
+            });
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('cashCounterData');
+            if (saved) {
+                const data = JSON.parse(saved);
+                document.querySelectorAll('.count-input').forEach((input, index) => {
+                    if (data[`denomination_${index}`]) {
+                        input.value = data[`denomination_${index}`];
+                    }
+                });
+                calculate();
+            }
+        }
+        function loadExample() {
+            document.querySelectorAll('.count-input').forEach(input => {
+                input.value = Math.floor(Math.random() * 5);
+            });
+            calculate();
+        }
+
+        // Calculator Logic
+        let calcExpression = "";
+
+        function toggleCalculator() {
+            const modal = document.getElementById('calculator-modal');
+            const isHidden = modal.classList.toggle('hidden');
+
+            if (!isHidden) {
+                modal.focus();
+            }
+        }
+
+        function updateCalcUI() {
+            const display = document.getElementById('calc-display');
+            const history = document.getElementById('calc-history');
+
+            const operators = ['+', '-', '*', '/'];
+            let splitIndex = -1;
+
+            // Find last operator
+            for (let i = calcExpression.length - 1; i >= 0; i--) {
+                if (operators.includes(calcExpression[i])) {
+                    splitIndex = i;
+                    break;
+                }
+            }
+
+            if (splitIndex !== -1) {
+                history.textContent = calcExpression.substring(0, splitIndex + 1);
+                display.textContent = calcExpression.substring(splitIndex + 1);
+            } else {
+                history.textContent = "";
+                display.textContent = calcExpression || "0";
+            }
+        }
+
+        function calcAppend(val) {
+            if (calcExpression === "" && ["/", "*", "+"].includes(val)) return;
+            calcExpression += val;
+            updateCalcUI();
+        }
+
+        function calcClear() {
+            calcExpression = "";
+            document.getElementById('calc-history').textContent = "";
+            document.getElementById('calc-display').textContent = "0";
+        }
+
+        function calcDelete() {
+            calcExpression = calcExpression.slice(0, -1);
+            updateCalcUI();
+        }
+
+        function calcResult() {
+            try {
+                if (!calcExpression) return;
+
+                // Handle trailing operators by removing them
+                let expressionToEval = calcExpression;
+                const operators = ['+', '-', '*', '/'];
+                while (expressionToEval.length > 0 && operators.includes(expressionToEval.slice(-1))) {
+                    expressionToEval = expressionToEval.slice(0, -1);
+                }
+
+                if (!expressionToEval) return;
+
+                const result = eval(expressionToEval);
+                document.getElementById('calc-history').textContent = expressionToEval + " =";
+                document.getElementById('calc-display').textContent = result;
+                calcExpression = String(result);
+            } catch (e) {
+                document.getElementById('calc-display').textContent = "Error";
+                calcExpression = "";
+            }
+        }
+
+        // Keyboard support for calculator
+        document.addEventListener('keydown', function(event) {
+            const modal = document.getElementById('calculator-modal');
+            if (modal.classList.contains('hidden')) return;
+
+            const key = event.key;
+
+            if (/[0-9]/.test(key)) {
+                calcAppend(key);
+            } else if (['+', '-', '*', '/', '.'].includes(key)) {
+                calcAppend(key);
+            } else if (key === 'Enter' || key === '=') {
+                event.preventDefault();
+                calcResult();
+            } else if (key === 'Backspace') {
+                calcDelete();
+            } else if (key === 'Escape') {
+                toggleCalculator();
+            } else if (key === 'c' || key === 'C') {
+                calcClear();
+            }
+        });
+
+        init();
+    </script>
+    <footer>
+        <p>&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
+    </footer>
+</body>
+</html>

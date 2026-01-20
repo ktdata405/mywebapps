@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title>KT Apps</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #ec4899;
+            --accent: #8b5cf6;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-light: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        #app-content {
+            display: none; /* Hidden by default */
+        }
+
+        #auth-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        #auth-container p {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        #pin-container {
+            display: flex; /* Visible by default for autofocus */
+            flex-direction: column;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        #pin-input {
+            padding: 0.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--text-dim);
+            background: var(--card-bg);
+            color: var(--text-light);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .auth-button {
+            background: var(--primary);
+            color: var(--text-light);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #1e1b4b, #0f172a);
+            overflow: hidden;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .orb-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px; animation-delay: 0s; }
+        .orb-2 { width: 300px; height: 300px; background: var(--secondary); bottom: -50px; right: -50px; animation-delay: -5s; }
+        .orb-3 { width: 200px; height: 200px; background: var(--accent); top: 40%; left: 60%; animation-delay: -10s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, 50px); }
+        }
+
+        /* Header */
+        header {
+            padding: 2rem 10%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideDown 0.8s ease-out;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+        }
+
+        .brand .logo-img {
+            height: 50px;
+            width: 50px;
+            margin-right: 15px;
+            background-color: transparent;
+            border-radius: 50%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        .brand h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .brand p {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            font-weight: 300;
+        }
+
+        /* Main Grid */
+        .container {
+            flex: 1;
+            padding: 3rem 10%;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            align-items: start;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 1.5rem 2rem;
+            text-decoration: none;
+            color: var(--text-light);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: row; /* Horizontal Layout */
+            align-items: center;
+            text-align: left;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            animation: fadeInUp 0.6s ease-out backwards;
+        }
+
+        /* Staggered Animation Delays */
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+        .card:nth-child(5) { animation-delay: 0.5s; }
+
+        .card:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+            transform: translateX(-100%);
+            transition: 0.6s;
+        }
+
+        .card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .icon-box {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-right: 1.5rem;
+            transition: transform 0.4s ease;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
+        }
+
+        .card:hover .icon-box {
+            transform: rotateY(180deg);
+        }
+
+        .card-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .card h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .card p {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .btn-arrow {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            margin-left: 1rem;
+            flex-shrink: 0;
+        }
+
+        .card:hover .btn-arrow {
+            background: var(--primary);
+            transform: translateX(5px);
+        }
+
+        /* Specific Card Colors */
+        .card-deno .icon-box i { color: #4ade80; }
+        .card-cashew .icon-box i { color: #f472b6; }
+        .card-msi .icon-box i { color: #60a5fa; }
+        .card-rent .icon-box i { color: #c084fc; }
+        .card-dash .icon-box i { color: #fbbf24; }
+
+        /* Badge */
+        .badge {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: rgba(236, 72, 153, 0.2);
+            color: #ec4899;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            border: 1px solid rgba(236, 72, 153, 0.3);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        footer b { color: var(--text-light); }
+
+        /* Animations */
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header { flex-direction: column; text-align: center; gap: 1rem; }
+            .container { padding: 2rem 5%; grid-template-columns: 1fr; }
+            .card { padding: 1.25rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-animation">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div id="auth-container">
+        <p>Verify Your Identity...</p>
+        <div id="pin-container">
+            <input type="password" id="pin-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="Enter PIN" autofocus>
+        </div>
+        <button id="face-id-btn" class="auth-button" style="margin-top: 15px;">
+            <i class="fa-solid fa-face-smile"></i> Face ID
+        </button>
+    </div>
+
+    <div id="app-content">
+        <header>
+            <div class="brand">
+                <img src="root/logo.png" alt="Logo" class="logo-img">
+                <div>
+                    <h1>Hola KT</h1>
+                    <p>Developed by Kalyan Thammineni</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+            <!-- Denominations -->
+            <a href="denomination/denominations.html" class="card card-deno">
+                <div class="icon-box">
+                    <i class="fa-solid fa-calculator"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Denominations</h2>
+                    <p>Calculate and track currency breakdown.</p>
+                </div>
+                <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+
+            <!-- Cashew -->
+            <a href="cashew/cashew.html" class="card card-cashew">
+                <div class="icon-box">
+                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Cashew</h2>
+                    <p>Manage cashew business transactions.</p>
+                </div>
+                <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+
+            <!-- MSI -->
+            <a href="msi/msi.html" class="card card-msi">
+                <div class="icon-box">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+                <div class="card-content">
+                    <h2>MSI</h2>
+                    <p>Monthly Savings & Investment tracker.</p>
+                </div>
+                <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+
+            <!-- Rent -->
+            <a href="rent/tenet.html" class="card card-rent">
+                <div class="icon-box">
+                    <i class="fa-solid fa-house"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Rent Details</h2>
+                    <p>Monitor tenant payments and rental history.</p>
+                </div>
+                <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+
+            <!-- Dashboard -->
+            <a href="dashboard.html" class="card card-dash">
+                <div class="icon-box">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Dashboard</h2>
+                    <p>Visual overview of all financial metrics.</p>
+                </div>
+                <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+        </div>
+
+        <footer>
+            <p>&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="auth.js"></script>
+</body>
+</html>

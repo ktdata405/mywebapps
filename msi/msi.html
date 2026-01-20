@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MSI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #ec4899;
+            --accent: #8b5cf6;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-light: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #1e1b4b, #0f172a);
+            overflow: hidden;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .orb-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px; animation-delay: 0s; }
+        .orb-2 { width: 300px; height: 300px; background: var(--secondary); bottom: -50px; right: -50px; animation-delay: -5s; }
+        .orb-3 { width: 200px; height: 200px; background: var(--accent); top: 40%; left: 60%; animation-delay: -10s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, 50px); }
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+
+        .input-field:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+        }
+
+        select.input-field option {
+            background-color: #1e293b;
+            color: var(--text-light);
+        }
+
+        /* Header */
+        header {
+            padding: 20px 5%;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .back-btn, .home-btn {
+            color: var(--text-light);
+            font-size: 20px;
+            text-decoration: none;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+        .back-btn:hover, .home-btn:hover {
+            color: var(--accent);
+            background-color: rgba(255,255,255,0.05);
+        }
+        h1 { margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Main Content */
+        .container { padding: 30px 5%; max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box; flex: 1; }
+
+        /* Top Controls */
+        .top-controls {
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+            border-left: 5px solid var(--accent);
+        }
+
+        .form-group { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+        .form-group.total-group { flex-grow: 1; min-width: 250px; }
+        label { font-weight: 600; font-size: 14px; color: var(--text-dim); }
+        select, input {
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        #month, #year { width: 150px; }
+
+        /* Investment Sections */
+        .section-title {
+            font-size: 18px;
+            color: var(--accent);
+            margin: 40px 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title i { background: rgba(139, 92, 246, 0.1); padding: 8px; border-radius: 8px; }
+        .investment-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .investment-card {
+            padding: 20px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        .investment-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            border-color: rgba(139, 92, 246, 0.2);
+        }
+        .input-wrapper { position: relative; margin-top: 5px; }
+        .currency-symbol { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-weight: bold; }
+        .input-wrapper input { padding-left: 35px; font-weight: 600; }
+
+        /* Submit Button */
+        .action-bar { margin: 50px 0 20px 0; text-align: center; }
+        .save-btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 16px 50px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .save-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4); }
+        .save-btn:active { transform: translateY(0); }
+
+        /* Footer */
+        footer { text-align: center; padding: 20px; margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); }
+        footer p { color: var(--text-dim); font-size: 14px; margin: 0; }
+        footer b { color: var(--text-light); }
+
+        /* Loader */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+        .loader-content { padding: 2rem; border-radius: 1rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+        .spinner-container { position: relative; width: 4rem; height: 4rem; }
+        .spinner { width: 100%; height: 100%; border: 4px solid rgba(139, 92, 246, 0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+        .spinner-container .icon { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 1.25rem; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #loader p { color: var(--text-light); font-weight: 600; margin: 0; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+
+        @media (max-width: 768px) {
+            .top-controls { flex-direction: column; align-items: stretch; }
+            #month, #year { width: 100%; }
+            .investment-grid { grid-template-columns: 1fr; }
+            header { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-animation">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+</div>
+
+<div id="loader" style="display: none;">
+    <div class="loader-content glass-card">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="icon"><i class="fa-solid fa-bolt"></i></div>
+        </div>
+        <p>Saving...</p>
+    </div>
+</div>
+
+<header>
+    <div class="header-left">
+        <a href="../index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+        <h1>MSI</h1>
+    </div>
+    <a href="../index.html" class="home-btn"><i class="fa-solid fa-house"></i></a>
+</header>
+
+<div class="container">
+    <form id="sipForm">
+        <div class="top-controls glass-card">
+            <div class="form-group">
+                <label for="month">Select Month</label>
+                <select id="month" name="month" required class="input-field">
+                    <option value="Jan">Jan</option>
+                    <option value="Feb">Feb</option>
+                    <option value="Mar">Mar</option>
+                    <option value="Apr">Apr</option>
+                    <option value="May">May</option>
+                    <option value="Jun">Jun</option>
+                    <option value="Jul">Jul</option>
+                    <option value="Aug">Aug</option>
+                    <option value="Sep">Sep</option>
+                    <option value="Oct">Oct</option>
+                    <option value="Nov">Nov</option>
+                    <option value="Dec">Dec</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="year">Select Year</label>
+                <select id="year" name="year" required class="input-field">
+                    <!-- Populated by JS -->
+                </select>
+            </div>
+            <div class="form-group total-group">
+                <label for="total_investment">Total Investment</label>
+                <div class="input-wrapper">
+                    <span class="currency-symbol">₹</span>
+                    <input type="text" id="total_investment" name="total_investment" class="input-field" style="font-weight: bold; background-color: rgba(0,0,0,0.2);" readonly>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title"><i class="fa-solid fa-coins"></i> Coin</h2>
+        <div class="investment-grid">
+            <div class="investment-card glass-card">
+                <label>Quantum Liquid Debt Fund Max -10%</label>
+                <div class="input-wrapper">
+                    <span class="currency-symbol">₹</span>
+                    <input type="text" class="number-format input-field" name="coin_quantum_liquid" placeholder="0.00" inputmode="decimal" value="1330">
+                </div>
+            </div>
+            <div class="investment-card glass-card">
+                <label>Navi Nifty 50 Index Funds</label>
+                <div class="input-wrapper">
+                    <span class="currency-symbol">₹</span>
+                    <input type="text" class="number-format input-field" name="coin_navi_nifty" placeholder="0.00" inputmode="decimal" value="1330">
+                </div>
+            </div>
+            <div class="investment-card glass-card">
+                <label>Invesco India Small Cap Fund</label>
+                <div class="input-wrapper">
+                    <span class="currency-symbol">₹</span>
+                    <input type="text" class="number-format input-field" name="coin_invesco_small" placeholder="0.00" inputmode="decimal" value="1330">
+                </div>
+            </div>
+            <div class="investment-card glass-card">
+                <label>Axis Nifty 100 Index Fund</label>
+                <div class="input-wrapper">
+                    <span class="currency-symbol">₹</span>
+                    <input type="text" class="number-format input-field" name="coin_axis_nifty" placeholder="0.00" inputmode="decimal" value="1330">
+                </div>
+            </div>
+            <div class="investment-card glass-card">
+                <label>Aditya Birla Sun Life Nifty 50 Index</label>
+                <div class="input-wrapper">
+                    <span class="currency-symbol">₹</span>
+                    <input type="text" class="number-format input-field" name="coin_birla_nifty" placeholder="0.00" inputmode="decimal" value="1330">
+                </div>
+            </div>
+            <div class="investment-card glass-card">
+                <label>DSP Nifty 50 Index Fund</label>
+                <div class="input-wrapper">
+                    <span class="currency-symbol">₹</span>
+                    <input type="text" class="number-format input-field" name="coin_dsp_nifty" placeholder="0.00" inputmode="decimal" value="1330">
+                </div>
+            </div>
+            <div class="investment-card glass-card">
+                <label>EdelWeiss Bharat Bond FOF - Apr 2031</label>
+                <div class="input-wrapper">
+                    <span class="currency-symbol">₹</span>
+                    <input type="text" class="number-format input-field" name="coin_edelweiss_bond" placeholder="0.00" inputmode="decimal" value="1330">
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title"><i class="fa-solid fa-seedling"></i> Groww</h2>
+        <div class="investment-grid">
+            <div class="investment-card glass-card">
+                <label>Canara Robeco Small Cap Fund Direct</label>
+                <div class="input-wrapper">
+                    <span class="currency-symbol">₹</span>
+                    <input type="text" class="number-format input-field" name="coin_canara_small" placeholder="0.00" inputmode="decimal" value="6050">
+                </div>
+            </div>
+            <div class="investment-card glass-card">
+                <label>Quant Small Cap Fund Direct Plan[Lum-sum]</label>
+                <div class="input-wrapper">
+                    <span class="currency-symbol">₹</span>
+                    <input type="text" class="number-format input-field" name="coin_quant_small" placeholder="0.00" inputmode="decimal" value="0">
+                </div>
+            </div>
+            <div class="investment-card glass-card">
+                <label>Aditya Birla Sun Life PSU Equity Direct[Lum-sum]</label>
+                <div class="input-wrapper">
+                    <span class="currency-symbol">₹</span>
+                    <input type="text" class="number-format input-field" name="coin_birla_psu" placeholder="0.00" inputmode="decimal" value="0">
+                </div>
+            </div>
+            <div class="investment-card glass-card">
+                <label>Power Grid Corp(Stock)</label>
+                <div class="input-wrapper">
+                    <span class="currency-symbol">₹</span>
+                    <input type="text" class="number-format input-field" name="coin_power_grid" placeholder="0.00" inputmode="decimal" value="0">
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title"><i class="fa-solid fa-building-columns"></i> Govt Investments</h2>
+        <div class="investment-grid">
+            <div class="investment-card glass-card">
+                <label>NPS Tier - 1</label>
+                <div class="input-wrapper">
+                    <span class="currency-symbol">₹</span>
+                    <input type="text" class="number-format input-field" name="nps_tier1" placeholder="0.00" inputmode="decimal" value="5500">
+                </div>
+            </div>
+            <div class="investment-card glass-card">
+                <label>NPS Tier - 2</label>
+                <div class="input-wrapper">
+                    <span class="currency-symbol">₹</span>
+                    <input type="text" class="number-format input-field" name="nps_tier2" placeholder="0.00" inputmode="decimal" value="0">
+                </div>
+            </div>
+            <div class="investment-card glass-card">
+                <label>Sukanya Samriddhi Account (SSA)</label>
+                <div class="input-wrapper">
+                    <span class="currency-symbol">₹</span>
+                    <input type="text" class="number-format input-field" name="ssa_account" placeholder="0.00" inputmode="decimal" value="2500">
+                </div>
+            </div>
+            <div class="investment-card glass-card">
+                <label>PPF</label>
+                <div class="input-wrapper">
+                    <span class="currency-symbol">₹</span>
+                    <input type="text" class="number-format input-field" name="ppf_account" placeholder="0.00" inputmode="decimal" value="10000">
+                </div>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button type="submit" class="save-btn">
+                <i class="fa-solid fa-save"></i> Save
+            </button>
+        </div>
+    </form>
+</div>
+
+<footer>
+    <p>&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
+</footer>
+<script src="../config.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const monthSelect = document.getElementById('month');
+        const yearSelect = document.getElementById('year');
+        const totalInvestmentField = document.getElementById('total_investment');
+        const investmentInputs = document.querySelectorAll('.number-format');
+
+        const now = new Date();
+        const currentMonthIndex = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        monthSelect.value = months[currentMonthIndex];
+
+        const startYear = 2020;
+        const endYear = 2030;
+        for (let y = startYear; y <= endYear; y++) {
+            const option = document.createElement('option');
+            option.value = y;
+            option.textContent = y;
+            if (y === currentYear) {
+                option.selected = true;
+            }
+            yearSelect.appendChild(option);
+        }
+
+        const formatter = new Intl.NumberFormat('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
+
+        function formatInput(input) {
+            let value = input.value.replace(/[^\d.]/g, '');
+            let parts = value.split('.');
+            if (parts.length > 2) {
+                value = parts[0] + '.' + parts.slice(1).join('');
+            }
+            input.value = value;
+        }
+
+        function formatOnBlur(input) {
+            let value = unformatNumber(input.value);
+            input.value = value > 0 ? formatter.format(value) : '';
+        }
+
+        function unformatNumber(value) {
+            return parseFloat(value.replace(/,/g, '')) || 0;
+        }
+
+        function calculateTotal() {
+            let total = 0;
+            investmentInputs.forEach(input => {
+                total += unformatNumber(input.value);
+            });
+            totalInvestmentField.value = formatter.format(total);
+        }
+
+        calculateTotal();
+
+        investmentInputs.forEach(input => {
+            input.addEventListener('input', () => {
+                formatInput(input);
+                calculateTotal();
+            });
+            input.addEventListener('blur', () => formatOnBlur(input));
+        });
+
+        document.getElementById('sipForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const loader = document.getElementById('loader');
+            const saveBtn = document.querySelector('.save-btn');
+            loader.style.display = 'flex';
+            saveBtn.disabled = true;
+
+            const formData = new FormData(this);
+            const data = {};
+
+            formData.forEach((value, key) => {
+                if (key === 'month' || key === 'year') {
+                    data[key] = value;
+                } else {
+                    data[key] = unformatNumber(value);
+                }
+            });
+
+            const SCRIPT_URL = CONFIG.GOOGLE_SHEET_URL_MSI;
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                loader.style.display = 'none';
+                saveBtn.disabled = false;
+                alert('Investment details saved successfully for ' + monthSelect.value + ' ' + yearSelect.value + '!');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loader.style.display = 'none';
+                saveBtn.disabled = false;
+                alert('Failed to save data. Please try again.');
+            });
+        });
+    });
+</script>
+</body>
+</html>

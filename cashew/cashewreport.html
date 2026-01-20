@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cashew Report - Expense Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="../config.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #ec4899;
+            --accent: #8b5cf6;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-light: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #1e1b4b, #0f172a);
+            overflow: hidden;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .orb-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px; animation-delay: 0s; }
+        .orb-2 { width: 300px; height: 300px; background: var(--secondary); bottom: -50px; right: -50px; animation-delay: -5s; }
+        .orb-3 { width: 200px; height: 200px; background: var(--accent); top: 40%; left: 60%; animation-delay: -10s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, 50px); }
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+
+        .input-field:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.2);
+        }
+
+        select.input-field option {
+            background-color: #1e293b;
+            color: var(--text-light);
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            color: var(--text-dim);
+        }
+
+        footer b {
+            color: var(--text-light);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+
+    <div class="bg-animation">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="flex-grow p-4 md:p-8">
+        <div class="max-w-5xl mx-auto">
+
+            <!-- Header Card -->
+            <div class="glass-card rounded-2xl p-6 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h1 class="text-xl font-bold text-white flex items-center gap-3">
+                        <span class="bg-pink-500/20 text-pink-400 p-2 rounded-lg border border-pink-500/30">
+                            <i class="fa-solid fa-chart-pie"></i>
+                        </span>
+                        Cashew Report
+                    </h1>
+                </div>
+                <a href="../index.html" class="group flex items-center gap-2 text-gray-400 hover:text-white transition-colors px-4 py-2 rounded-lg hover:bg-white/10">
+                    <i class="fa-solid fa-house group-hover:scale-110 transition-transform"></i>
+                    <span class="font-medium">Dashboard</span>
+                </a>
+            </div>
+
+            <!-- Controls & Summary Section -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+
+                <!-- Filters Card -->
+                <div class="md:col-span-3 glass-card rounded-2xl p-6">
+                    <div class="flex flex-col gap-4">
+                        <!-- Month/Year Selection -->
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fa-regular fa-calendar text-gray-400"></i>
+                                </div>
+                                <select id="month-select" class="w-40 pl-10 pr-4 py-3 rounded-xl outline-none appearance-none transition-all cursor-pointer hover:bg-white/10 font-medium input-field">
+                                    <option value="Jan">Jan</option>
+                                    <option value="Feb">Feb</option>
+                                    <option value="Mar">Mar</option>
+                                    <option value="Apr">Apr</option>
+                                    <option value="May">May</option>
+                                    <option value="Jun">June</option>
+                                    <option value="Jul">July</option>
+                                    <option value="Aug">Aug</option>
+                                    <option value="Sep">Sept</option>
+                                    <option value="Oct">Oct</option>
+                                    <option value="Nov">Nov</option>
+                                    <option value="Dec">Dec</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
+                                    <i class="fa-solid fa-chevron-down text-xs"></i>
+                                </div>
+                            </div>
+
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-clock-rotate-left text-gray-400"></i>
+                                </div>
+                                <select id="year-select" class="w-32 pl-10 pr-4 py-3 rounded-xl outline-none appearance-none transition-all cursor-pointer hover:bg-white/10 font-medium input-field">
+                                    <!-- Years populated by script -->
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
+                                    <i class="fa-solid fa-chevron-down text-xs"></i>
+                                </div>
+                            </div>
+
+                            <button onclick="fetchReport()" id="fetch-btn" class="bg-pink-500 hover:bg-pink-600 text-white py-3 px-6 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-pink-500/30 active:scale-95 whitespace-nowrap">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </button>
+                        </div>
+
+                        <!-- Search & Category Filter -->
+                        <div class="flex flex-col sm:flex-row gap-4 pt-4 border-t border-white/10">
+                            <div class="relative flex-grow">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-search text-gray-400"></i>
+                                </div>
+                                <input type="text" id="search-input" placeholder="Search description..." class="w-full pl-10 pr-4 py-3 rounded-xl outline-none transition-all font-medium input-field" onkeyup="filterData()">
+                            </div>
+
+                            <div class="relative min-w-[200px]">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-filter text-gray-400"></i>
+                                </div>
+                                <select id="category-filter" class="w-full pl-10 pr-4 py-3 rounded-xl outline-none appearance-none transition-all cursor-pointer hover:bg-white/10 font-medium input-field" onchange="filterData()">
+                                    <option value="">All Categories</option>
+                                    <!-- Categories populated dynamically -->
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
+                                    <i class="fa-solid fa-chevron-down text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Summary Section (Accordion) -->
+            <div id="category-summary-section" class="hidden mb-6 glass-card rounded-2xl overflow-hidden">
+                <div class="p-6 border-b border-white/10 flex justify-between items-center cursor-pointer hover:bg-white/5 transition-colors" onclick="toggleCategorySummary()">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group text-pink-400"></i>
+                        Category Breakdown
+                    </h3>
+                    <i id="category-summary-icon" class="fa-solid fa-chevron-right transition-transform duration-200 text-gray-400"></i>
+                </div>
+                <div id="category-summary-content" class="p-6 bg-black/20 hidden">
+                    <div id="category-summary-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <!-- Category cards will go here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Table (Accordion) -->
+            <div class="glass-card rounded-2xl overflow-hidden">
+                <div class="p-4 md:p-6 border-b border-white/10 flex justify-between items-center cursor-pointer hover:bg-white/5 transition-colors" onclick="toggleExpenseDetails()">
+                    <div class="flex items-center gap-3 md:gap-4">
+                        <i class="fa-solid fa-list-ul text-pink-400 text-lg"></i>
+                        <div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <h3 class="text-lg font-bold text-white">Expense Details</h3>
+                                <div class="flex items-center gap-1 text-xs md:text-sm text-gray-400 bg-white/5 px-2 py-0.5 rounded-md">
+                                    <i class="fa-solid fa-calendar-check text-xs"></i>
+                                    <span id="selected-period-label"></span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 text-sm text-gray-400 mt-1">
+                                <div class="whitespace-nowrap">
+                                    <span class="font-semibold">Total:</span>
+                                    <span id="total-expenses-display" class="font-bold text-pink-400">Rs. 0.00</span>
+                                </div>
+                                <div class="whitespace-nowrap">
+                                    <span class="font-semibold">Available:</span>
+                                    <span id="available-balance-display" class="font-bold text-emerald-400">Rs. 0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <i id="expense-details-icon" class="fa-solid fa-chevron-right transition-transform duration-200 text-gray-400 ml-2"></i>
+                </div>
+
+                <div id="report-body-container" class="hidden">
+                    <div id="report-body" class="p-4 space-y-2">
+                        <!-- Accordion items will be injected here -->
+                        <div class="p-12 text-center text-gray-500">
+                            <div class="flex flex-col items-center gap-3">
+                                <i class="fa-solid fa-clipboard-list text-4xl text-gray-700"></i>
+                                <p>Select a month and year to view expenses</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Loader Overlay -->
+    <div id="loader" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-all">
+        <div class="glass-card p-8 rounded-2xl flex flex-col items-center gap-4">
+            <div class="relative">
+                <div class="w-16 h-16 border-4 border-pink-500/20 border-t-pink-500 rounded-full animate-spin"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <i class="fa-solid fa-bolt text-pink-500 text-xl"></i>
+                </div>
+            </div>
+            <p class="text-white font-semibold animate-pulse">Fetching...</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
+    </footer>
+
+    <script>
+        let allData = []; // Store all fetched data
+
+        function init() {
+            const yearSelect = document.getElementById('year-select');
+            const currentYear = new Date().getFullYear();
+            for (let year = currentYear; year >= 2020; year--) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            }
+            yearSelect.value = currentYear;
+
+            const monthSelect = document.getElementById('month-select');
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const currentMonthIndex = new Date().getMonth();
+            monthSelect.value = months[currentMonthIndex];
+
+            // Set initial label
+            updatePeriodLabel();
+        }
+
+        function updatePeriodLabel() {
+            const month = document.getElementById('month-select');
+            const year = document.getElementById('year-select');
+            const monthName = month.options[month.selectedIndex].text;
+            document.getElementById('selected-period-label').textContent = `${monthName} ${year.value}`;
+        }
+
+        function formatDateToDDMMMYYYY(isoDate) {
+            if (!isoDate) return '';
+            const d = new Date(isoDate);
+            if (isNaN(d.getTime())) {
+                return isoDate;
+            }
+            const day = String(d.getDate()).padStart(2, '0');
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const month = months[d.getMonth()];
+            const year = d.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        function getCategoryColor(category) {
+            let categoryColor = "bg-gray-500/10 text-gray-300";
+            const cat = (category || '').toLowerCase();
+            if(cat.includes('home')) categoryColor = "bg-blue-500/10 text-blue-300";
+            else if(cat.includes('personal')) categoryColor = "bg-purple-500/10 text-purple-300";
+            else if(cat.includes('family')) categoryColor = "bg-green-500/10 text-green-300";
+            else if(cat.includes('baby')) categoryColor = "bg-pink-500/10 text-pink-300";
+            else if(cat.includes('credit')) categoryColor = "bg-yellow-500/10 text-yellow-300";
+            else if(cat.includes('emi')) categoryColor = "bg-red-500/10 text-red-300";
+            else if(cat.includes('food')) categoryColor = "bg-orange-500/10 text-orange-300";
+            else if(cat.includes('travel')) categoryColor = "bg-teal-500/10 text-teal-300";
+            else if(cat.includes('fuel')) categoryColor = "bg-indigo-500/10 text-indigo-300";
+            else if(cat.includes('medical')) categoryColor = "bg-rose-500/10 text-rose-300";
+            else if(cat.includes('latha')) categoryColor = "bg-cyan-500/10 text-cyan-300";
+            else if(cat.includes('mutual') || cat.includes('investment')) categoryColor = "bg-emerald-500/10 text-emerald-300";
+            return categoryColor;
+        }
+
+        function fetchReport() {
+            const loader = document.getElementById('loader');
+            const fetchBtn = document.getElementById('fetch-btn');
+            loader.classList.remove('hidden');
+            fetchBtn.disabled = true;
+
+            const month = document.getElementById('month-select').value;
+            const year = document.getElementById('year-select').value;
+
+            const sheetName = `${month} ${year}`;
+            const url = `${CONFIG.GOOGLE_SHEET_URL_CASHEW}?sheetName=${encodeURIComponent(sheetName)}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(response => {
+                    let availableBalance = 0;
+
+                    if (Array.isArray(response)) {
+                        allData = response || [];
+                    } else {
+                        allData = response.data || [];
+                        availableBalance = response.availableBalance || 0;
+                    }
+
+                    populateCategoryFilter(allData);
+                    populateCategorySummary(allData);
+                    filterData();
+                    updatePeriodLabel();
+
+                    document.getElementById('available-balance-display').textContent = `Rs. ${availableBalance.toLocaleString('en-IN')}`;
+
+                    loader.classList.add('hidden');
+                    fetchBtn.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error fetching report:', error);
+                    loader.classList.add('hidden');
+                    fetchBtn.disabled = false;
+                    alert('⚠ Error fetching report: ' + error.message);
+                });
+        }
+
+        function populateCategoryFilter(data) {
+            const categoryFilter = document.getElementById('category-filter');
+            categoryFilter.innerHTML = '<option value="">All Categories</option>';
+
+            const categories = new Set();
+            data.forEach(row => {
+                if (row.category) {
+                    categories.add(row.category);
+                }
+            });
+
+            Array.from(categories).sort().forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                categoryFilter.appendChild(option);
+            });
+        }
+
+        function populateCategorySummary(data) {
+            const container = document.getElementById('category-summary-grid');
+            const section = document.getElementById('category-summary-section');
+            container.innerHTML = '';
+
+            if (!data || data.length === 0) {
+                section.classList.add('hidden');
+                return;
+            }
+
+            section.classList.remove('hidden');
+
+            const categoryTotals = {};
+            let totalExpenses = 0;
+            data.forEach(row => {
+                const cat = row.category;
+                if (cat) {
+                    if (!categoryTotals[cat]) categoryTotals[cat] = 0;
+                    categoryTotals[cat] += row.amount;
+                    totalExpenses += row.amount;
+                }
+            });
+
+            const sortedCategories = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]);
+
+            sortedCategories.forEach(([cat, amount]) => {
+                if (!cat || cat.trim() === '' || cat.toLowerCase() === 'uncategorized') return;
+
+                const colorClass = getCategoryColor(cat);
+                const bgClass = colorClass.split(' ')[0];
+                const textClass = colorClass.split(' ')[1];
+                const barColor = textClass.replace('text-', 'bg-');
+
+                const percentage = totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0;
+
+                let iconClass = "fa-tag";
+                const c = cat.toLowerCase();
+                if(c.includes('home')) iconClass = "fa-house";
+                else if(c.includes('personal')) iconClass = "fa-user";
+                else if(c.includes('family')) iconClass = "fa-users";
+                else if(c.includes('baby')) iconClass = "fa-baby";
+                else if(c.includes('credit')) iconClass = "fa-credit-card";
+                else if(c.includes('emi')) iconClass = "fa-file-invoice-dollar";
+                else if(c.includes('food')) iconClass = "fa-utensils";
+                else if(c.includes('travel')) iconClass = "fa-plane";
+                else if(c.includes('fuel')) iconClass = "fa-gas-pump";
+                else if(c.includes('medical')) iconClass = "fa-notes-medical";
+                else if(c.includes('latha')) iconClass = "fa-gift";
+                else if(c.includes('mutual') || c.includes('investment')) iconClass = "fa-chart-line";
+
+                const card = document.createElement('div');
+                card.className = "glass-card p-5 rounded-2xl hover:bg-white/10 transition-all duration-300 flex flex-col gap-3 group";
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full ${bgClass} flex items-center justify-center ${textClass} border border-white/10">
+                                <i class="fa-solid ${iconClass}"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">Category</p>
+                                <h4 class="font-bold text-white text-base leading-tight">${cat}</h4>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold ${bgClass} ${textClass} px-2 py-1 rounded-lg border border-white/10">
+                            ${percentage.toFixed(1)}%
+                        </span>
+                    </div>
+
+                    <div class="mt-1">
+                        <h3 class="text-2xl font-bold text-white">Rs. ${amount.toLocaleString('en-IN')}</h3>
+                    </div>
+
+                    <div class="w-full bg-white/5 rounded-full h-2 mt-1 overflow-hidden">
+                        <div class="${barColor} h-2 rounded-full transition-all duration-1000 ease-out" style="width: ${percentage}%"></div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function toggleCategorySummary() {
+            const content = document.getElementById('category-summary-content');
+            const icon = document.getElementById('category-summary-icon');
+
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-90');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-90');
+            }
+        }
+
+        function toggleExpenseDetails() {
+            const content = document.getElementById('report-body-container');
+            const icon = document.getElementById('expense-details-icon');
+
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-90');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-90');
+            }
+        }
+
+        function filterData() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const selectedCategory = document.getElementById('category-filter').value;
+
+            const filteredData = allData.filter(row => {
+                const matchesSearch = (row.description || '').toLowerCase().includes(searchTerm);
+                const matchesCategory = selectedCategory === '' || row.category === selectedCategory;
+                return matchesSearch && matchesCategory;
+            });
+
+            populateTable(filteredData);
+        }
+
+        function populateTable(data) {
+            const reportBody = document.getElementById('report-body');
+            reportBody.innerHTML = '';
+            let total = 0;
+
+            if (data && data.length > 0) {
+                const groupedData = {};
+                data.forEach(row => {
+                    const dateKey = formatDateToDDMMMYYYY(row.date);
+                    if (!groupedData[dateKey]) {
+                        groupedData[dateKey] = { total: 0, items: [], rawDate: new Date(row.date) };
+                    }
+                    groupedData[dateKey].items.push(row);
+                    groupedData[dateKey].total += row.amount;
+                    total += row.amount;
+                });
+
+                const sortedDates = Object.keys(groupedData).sort((a, b) => groupedData[b].rawDate - groupedData[a].rawDate);
+
+                sortedDates.forEach((date, index) => {
+                    const group = groupedData[date];
+                    const accordionHeader = document.createElement('div');
+                    accordionHeader.className = "glass-card p-4 rounded-xl flex justify-between items-center cursor-pointer hover:bg-white/5 transition-colors";
+                    accordionHeader.onclick = () => toggleDetails(index);
+                    accordionHeader.innerHTML = `
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-pink-500/10 text-pink-400 flex flex-col items-center justify-center font-bold border border-pink-500/20">
+                                <span class="text-xs">${new Date(group.rawDate).toLocaleString('default', { month: 'short' })}</span>
+                                <span class="text-xl">${String(new Date(group.rawDate).getDate()).padStart(2, '0')}</span>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-400">${new Date(group.rawDate).toLocaleString('default', { weekday: 'long' })}</p>
+                                <h4 class="font-bold text-white">Total: Rs. ${group.total.toLocaleString('en-IN')}</h4>
+                            </div>
+                        </div>
+                        <i id="icon-${index}" class="fa-solid fa-chevron-right transition-transform duration-200 text-gray-400"></i>
+                    `;
+                    reportBody.appendChild(accordionHeader);
+
+                    const accordionContent = document.createElement('div');
+                    accordionContent.id = `details-${index}`;
+                    accordionContent.className = "hidden p-4 pl-16 space-y-3";
+                    let detailsHtml = '';
+                    group.items.forEach(item => {
+                        const categoryColor = getCategoryColor(item.category);
+                        const bgClass = categoryColor.split(' ')[0];
+                        const textClass = categoryColor.split(' ')[1];
+                        let iconClass = "fa-tag";
+                        const c = (item.category || '').toLowerCase();
+                        if(c.includes('home')) iconClass = "fa-house";
+                        else if(c.includes('personal')) iconClass = "fa-user";
+                        else if(c.includes('family')) iconClass = "fa-users";
+                        else if(c.includes('baby')) iconClass = "fa-baby";
+                        else if(c.includes('credit')) iconClass = "fa-credit-card";
+                        else if(c.includes('emi')) iconClass = "fa-file-invoice-dollar";
+                        else if(c.includes('food')) iconClass = "fa-utensils";
+                        else if(c.includes('travel')) iconClass = "fa-plane";
+                        else if(c.includes('fuel')) iconClass = "fa-gas-pump";
+                        else if(c.includes('medical')) iconClass = "fa-notes-medical";
+                        else if(c.includes('latha')) iconClass = "fa-gift";
+                        else if(c.includes('mutual') || c.includes('investment')) iconClass = "fa-chart-line";
+
+                        detailsHtml += `
+                            <div class="glass-card p-4 rounded-xl border border-white/10 flex items-center justify-between hover:bg-white/5 transition-shadow">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-full ${bgClass} flex items-center justify-center ${textClass} flex-shrink-0 border border-white/10">
+                                        <i class="fa-solid ${iconClass}"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-white text-sm">${item.category}</h4>
+                                        <p class="text-xs text-gray-400 mt-0.5 line-clamp-1">${item.description}</p>
+                                    </div>
+                                </div>
+                                <span class="font-bold text-white text-sm whitespace-nowrap">Rs. ${item.amount.toLocaleString('en-IN')}</span>
+                            </div>
+                        `;
+                    });
+                    accordionContent.innerHTML = detailsHtml;
+                    reportBody.appendChild(accordionContent);
+                });
+            } else {
+                const noData = document.createElement('div');
+                noData.className = "p-12 text-center text-gray-500";
+                noData.innerHTML = `
+                    <div class="flex flex-col items-center gap-3">
+                        <i class="fa-regular fa-folder-open text-4xl text-gray-700"></i>
+                        <p>No expenses found matching your criteria.</p>
+                    </div>
+                `;
+                reportBody.appendChild(noData);
+            }
+            document.getElementById('total-expenses-display').textContent = `Rs. ${total.toLocaleString('en-IN')}`;
+        }
+
+        function toggleDetails(index) {
+            const detailsRow = document.getElementById(`details-${index}`);
+            const icon = document.getElementById(`icon-${index}`);
+            if (detailsRow.classList.contains('hidden')) {
+                detailsRow.classList.remove('hidden');
+                icon.classList.add('rotate-90');
+            } else {
+                detailsRow.classList.add('hidden');
+                icon.classList.remove('rotate-90');
+            }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>
