@@ -95,7 +95,7 @@
         }
 
         .header-left { display: flex; align-items: center; gap: 15px; }
-        .back-btn, .home-btn {
+        .back-btn, .home-btn, .report-btn {
             color: var(--text-light);
             font-size: 20px;
             text-decoration: none;
@@ -107,10 +107,11 @@
             height: 40px;
             border-radius: 50%;
         }
-        .back-btn:hover, .home-btn:hover {
+        .back-btn:hover, .home-btn:hover, .report-btn:hover {
             color: var(--accent);
             background-color: rgba(255,255,255,0.05);
         }
+        .header-right { display: flex; align-items: center; gap: 10px; }
         h1 { margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; }
 
         /* Main Content */
@@ -246,7 +247,10 @@
         <a href="../index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
         <h1>MSI</h1>
     </div>
-    <a href="../index.html" class="home-btn"><i class="fa-solid fa-house"></i></a>
+    <div class="header-right">
+        <a href="msireport.html" class="report-btn" title="Report"><i class="fa-solid fa-chart-pie"></i></a>
+        <a href="../index.html" class="home-btn" title="Home"><i class="fa-solid fa-house"></i></a>
+    </div>
 </header>
 
 <div class="container">
