@@ -1,23 +1,25 @@
 const dateInput = document.getElementById('date');
-let formattedDateValue = '';
 const scriptURL = CONFIG.GOOGLE_SHEET_URL_RENT; // Replace with your Google Apps Script URL
 const form = document.getElementById('tenetForm');
 const submitButton = form.querySelector('button[type="submit"]');
 
+// Helper to format date as DD/MMM/YYYY
+function formatDateForSheet(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString; // Return as is if not a valid date (already formatted?)
+    
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = date.toLocaleString('default', { month: 'short' });
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+}
+
 function formatAndSetDate(el) {
-    el.type = 'text';
-    if (el.value) {
-        const date = new Date(el.value);
-        if (!isNaN(date.getTime())) {
-            const day = String(date.getUTCDate()).padStart(2, '0');
-            const month = date.toLocaleString('default', { month: 'short' });
-            const year = date.getUTCFullYear();
-            formattedDateValue = `${day}/${month}/${year}`;
-            el.value = formattedDateValue;
-        }
-    } else {
-         el.value = formattedDateValue;
-    }
+    // We'll keep the native date picker behavior for better UX on mobile/modern browsers
+    // but we can ensure the value is valid.
+    // The previous logic switching to type='text' is often problematic for UX consistency.
+    // We will handle the formatting strictly during submission.
 }
 
 function calculateTotal() {
@@ -31,11 +33,12 @@ function calculateTotal() {
 
 function initializeForm() {
     const today = new Date();
-    const day = String(today.getDate()).padStart(2, '0');
-    const month = today.toLocaleString('default', { month: 'short' });
     const year = today.getFullYear();
-    formattedDateValue = `${day}/${month}/${year}`;
-    dateInput.value = formattedDateValue;
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    
+    // Set standard YYYY-MM-DD for the input to recognize it
+    dateInput.value = `${year}-${month}-${day}`;
 
     calculateTotal();
 }
@@ -48,8 +51,12 @@ function clearForm() {
 form.addEventListener('submit', function(event) {
     event.preventDefault();
 
+    // Format the date for the backend
+    const rawDate = dateInput.value;
+    const formattedDate = formatDateForSheet(rawDate);
+
     const formData = {
-        date: dateInput.value,
+        date: formattedDate,
         rentAmount: document.getElementById('rentAmount').value || '0',
         paidAmount: document.getElementById('paidAmount').value || '0',
         balanceAmount: document.getElementById('balanceAmount').value || 0,
@@ -59,7 +66,7 @@ form.addEventListener('submit', function(event) {
         remarks: document.getElementById('remarks').value || '-'
     };
 
-    if (!formData.date) {
+    if (!rawDate) {
         alert('Please select a Date.');
         return;
     }
@@ -77,8 +84,9 @@ form.addEventListener('submit', function(event) {
         .then(res => {
             if (res.result === 'success') {
                 const recordsContainer = document.getElementById('recordsContainer');
-                if (recordsContainer.style.display === 'none') {
+                if (recordsContainer.style.display === 'none' || recordsContainer.classList.contains('hidden')) {
                     recordsContainer.style.display = 'block';
+                    recordsContainer.classList.remove('hidden');
                 }
 
                 const tableBody = document.getElementById('recordsTableBody');

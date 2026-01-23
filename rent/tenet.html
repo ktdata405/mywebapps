@@ -90,6 +90,18 @@
             font-weight: 500;
         }
 
+        /* Date Picker Icon Fix */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+        }
+
         /* Table Styles */
         .table-container {
             overflow-x: auto;
@@ -174,58 +186,44 @@
         </div>
 
         <form id="tenetForm">
-            <!-- Basic Details -->
-            <div class="mb-6">
-                <h3 class="text-pink-400 text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <i class="fa-regular fa-calendar"></i> Basic Details
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label for="date" class="input-label">Select Date</label>
-                        <input type="date" id="date" name="date" onblur="formatAndSetDate(this)" class="input-field" placeholder="Select Date">
-                    </div>
+            <!-- Date Row -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div>
+                    <label for="date" class="input-label">Select Date</label>
+                    <input type="date" id="date" name="date" onclick="this.showPicker()" class="input-field cursor-pointer" placeholder="Select Date">
+                </div>
+                <!-- Empty columns for spacing on desktop if needed, or let date take 1/3 -->
+            </div>
+
+            <!-- Financials Row -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div>
+                    <label for="rentAmount" class="input-label">Rent Amount</label>
+                    <input type="number" id="rentAmount" name="rentAmount" inputmode="numeric" placeholder="0.00" class="input-field">
+                </div>
+                <div>
+                    <label for="paidAmount" class="input-label">Paid Amount</label>
+                    <input type="number" id="paidAmount" name="paidAmount" inputmode="numeric" oninput="calculateTotal()" placeholder="0.00" class="input-field">
+                </div>
+                <div>
+                    <label for="balanceAmount" class="input-label">Balance Amount</label>
+                    <input type="number" id="balanceAmount" name="balanceAmount" inputmode="numeric" oninput="calculateTotal()" placeholder="0.00" class="input-field">
                 </div>
             </div>
 
-            <!-- Rent & Payments -->
-            <div class="mb-6">
-                <h3 class="text-pink-400 text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-indian-rupee-sign"></i> Rent & Payments
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label for="rentAmount" class="input-label">Rent Amount</label>
-                        <input type="number" id="rentAmount" name="rentAmount" inputmode="numeric" placeholder="0.00" class="input-field">
-                    </div>
-                    <div>
-                        <label for="paidAmount" class="input-label">Paid Amount</label>
-                        <input type="number" id="paidAmount" name="paidAmount" inputmode="numeric" oninput="calculateTotal()" placeholder="0.00" class="input-field">
-                    </div>
-                    <div>
-                        <label for="balanceAmount" class="input-label">Balance Amount</label>
-                        <input type="number" id="balanceAmount" name="balanceAmount" inputmode="numeric" oninput="calculateTotal()" placeholder="0.00" class="input-field">
-                    </div>
+            <!-- Utilities & Total Row -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div>
+                    <label for="powerBill" class="input-label">Power Bill</label>
+                    <input type="number" id="powerBill" name="powerBill" inputmode="numeric" placeholder="0.00" class="input-field">
                 </div>
-            </div>
-
-            <!-- Utilities & Summary -->
-            <div class="mb-6">
-                <h3 class="text-pink-400 text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-bolt"></i> Utilities & Summary
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label for="powerBill" class="input-label">Power Bill</label>
-                        <input type="number" id="powerBill" name="powerBill" inputmode="numeric" placeholder="0.00" class="input-field">
-                    </div>
-                    <div>
-                        <label for="waterBill" class="input-label">Water Bill</label>
-                        <input type="number" id="waterBill" name="waterBill" inputmode="numeric" oninput="calculateTotal()" placeholder="0.00" class="input-field">
-                    </div>
-                    <div>
-                        <label for="totalPaid" class="input-label text-emerald-400">Total Paid</label>
-                        <input type="text" id="totalPaid" name="totalPaid" placeholder="0.00" readonly class="input-field font-bold text-emerald-400 bg-emerald-500/10 border-emerald-500/30">
-                    </div>
+                <div>
+                    <label for="waterBill" class="input-label">Water Bill</label>
+                    <input type="number" id="waterBill" name="waterBill" inputmode="numeric" oninput="calculateTotal()" placeholder="0.00" class="input-field">
+                </div>
+                <div>
+                    <label for="totalPaid" class="input-label text-emerald-400">Total Paid</label>
+                    <input type="text" id="totalPaid" name="totalPaid" placeholder="0.00" readonly class="input-field font-bold text-emerald-400 bg-emerald-500/10 border-emerald-500/30">
                 </div>
             </div>
 
