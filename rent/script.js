@@ -38,7 +38,6 @@ function initializeForm() {
     dateInput.value = formattedDateValue;
 
     calculateTotal();
-    document.getElementById('side').value = "";
 }
 
 function clearForm() {
@@ -54,17 +53,11 @@ form.addEventListener('submit', function(event) {
         rentAmount: document.getElementById('rentAmount').value || '0',
         paidAmount: document.getElementById('paidAmount').value || '0',
         balanceAmount: document.getElementById('balanceAmount').value || 0,
-        side: document.getElementById('side').value,
         powerBill: document.getElementById('powerBill').value || '0',
         waterBill: document.getElementById('waterBill').value || '0',
         totalPaid: document.getElementById('totalPaid').value,
         remarks: document.getElementById('remarks').value || '-'
     };
-
-    if (!formData.side) {
-        alert('Please select a Side.');
-        return;
-    }
 
     if (!formData.date) {
         alert('Please select a Date.');
@@ -93,7 +86,6 @@ form.addEventListener('submit', function(event) {
 
                 newRow.innerHTML = `
                     <td>${formData.date}</td>
-                    <td>${formData.side}</td>
                     <td>${formData.rentAmount}</td>
                     <td>${formData.paidAmount}</td>
                     <td>${formData.balanceAmount}</td>
