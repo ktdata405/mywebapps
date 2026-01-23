@@ -82,6 +82,11 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
+        select.input-field option {
+            background-color: #1e293b;
+            color: var(--text-light);
+        }
+
         .input-label {
             display: block;
             color: var(--text-dim);
@@ -186,13 +191,20 @@
         </div>
 
         <form id="tenetForm">
-            <!-- Date Row -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <!-- Date & Side Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                     <label for="date" class="input-label">Select Date</label>
                     <input type="date" id="date" name="date" onclick="this.showPicker()" class="input-field cursor-pointer" placeholder="Select Date">
                 </div>
-                <!-- Empty columns for spacing on desktop if needed, or let date take 1/3 -->
+                <div>
+                    <label for="side" class="input-label">Side</label>
+                    <select id="side" name="side" class="input-field cursor-pointer">
+                        <option value="" disabled selected>Select Side</option>
+                        <option value="Kalyan">Kalyan</option>
+                        <option value="Srikanth">Srikanth</option>
+                    </select>
+                </div>
             </div>
 
             <!-- Financials Row -->
@@ -256,6 +268,7 @@
                 <thead>
                     <tr>
                         <th>Date</th>
+                        <th>Side</th>
                         <th>Rent</th>
                         <th>Paid</th>
                         <th>Balance</th>
@@ -268,6 +281,16 @@
                 <tbody id="recordsTableBody">
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <!-- Loader -->
+    <div id="loader" class="hidden fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-50">
+        <div class="glass-card p-8 rounded-2xl flex flex-col items-center gap-4">
+            <div class="animate-spin">
+                <i class="fa-solid fa-circle-notch text-4xl text-pink-500"></i>
+            </div>
+            <p class="text-white font-semibold">Saving Record...</p>
         </div>
     </div>
 

@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AP Land Converter</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #ec4899;
+            --accent: #8b5cf6;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-light: #f8fafc;
+            --text-dim: #94a3b8;
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --input-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #1e1b4b, #0f172a);
+            overflow: hidden;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .orb-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px; animation-delay: 0s; }
+        .orb-2 { width: 300px; height: 300px; background: var(--secondary); bottom: -50px; right: -50px; animation-delay: -5s; }
+        .orb-3 { width: 200px; height: 200px; background: var(--accent); top: 40%; left: 60%; animation-delay: -10s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, 50px); }
+        }
+
+        /* Back Button */
+        .nav-home {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            z-index: 10;
+        }
+
+        .nav-home:hover {
+            background: var(--primary);
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 450px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            animation: fadeInUp 0.6s ease-out backwards;
+        }
+
+        .header-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .ap-logo {
+            width: 80px;
+            height: auto;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+            text-align: center;
+            background: linear-gradient(to right, #fff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .inputs-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .input-group {
+            flex: 1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 12px;
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        #result {
+            margin-top: 1.5rem;
+            padding: 1.2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            display: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .res-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .res-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .res-val { font-weight: 700; }
+
+        /* Different colors for units - Adjusted for Dark Mode */
+        .val-cents { color: #f87171; } /* Red-400 */
+        .val-sqft { color: #60a5fa; } /* Blue-400 */
+        .val-gajalu { color: #fb923c; } /* Orange-400 */
+        .val-ankanam { color: #c084fc; } /* Purple-400 */
+
+        /* Accordion Styles */
+        .accordion-container {
+            margin-top: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .accordion-header {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-light);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+            transition: background 0.3s ease;
+        }
+
+        .accordion-header:hover { background: rgba(255, 255, 255, 0.08); }
+
+        .accordion-content {
+            display: none;
+            padding: 1.2rem;
+            background: transparent;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-dim);
+        }
+
+        .arrow { transition: transform 0.3s; }
+        .accordion-header.active .arrow { transform: rotate(180deg); }
+
+        .tip-list { list-style: none; padding: 0; margin: 0 0 1rem 0; font-size: 0.9em; }
+        .tip-list li { margin-bottom: 0.5rem; padding-left: 10px; border-left: 3px solid var(--accent); }
+        .tip-list strong { color: var(--text-light); }
+
+        .step-box {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 0.8rem;
+            display: block;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 0.5rem;
+        }
+
+        .step-row { margin-bottom: 0.5rem; font-size: 0.9em; color: var(--text-dim); }
+        .step-row strong { color: var(--text-light); }
+
+        @keyframes fadeInUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-animation">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <a href="calculator.html" class="nav-home" aria-label="Back">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+
+    <div class="card">
+        <div class="header-container">
+            <h2>AP Land Converter</h2>
+        </div>
+
+        <div class="inputs-row">
+            <div class="input-group">
+                <label>Length (Adugulu)</label>
+                <input type="number" id="length" placeholder="0.00"  inputmode="numeric" pattern="[0-9].*" value="">
+            </div>
+
+            <div class="input-group">
+                <label>Width (Adugulu)</label>
+                <input type="number" id="width" placeholder="0.00" inputmode="numeric" pattern="[0-9].*" value="">
+            </div>
+        </div>
+
+        <button onclick="calculate()">Calculate Area</button>
+
+        <div id="result">
+            <div class="res-item"><span class="val-cents">Cents:</span> <span id="cents" class="res-val val-cents">0</span></div>
+            <div class="res-item"><span class="val-sqft">Total Sq. Feet:</span> <span id="sqft" class="res-val val-sqft">0</span></div>
+            <div class="res-item"><span class="val-gajalu">Gajalu (Sq. Yds):</span> <span id="gajalu" class="res-val val-gajalu">0</span></div>
+            <div class="res-item"><span class="val-ankanam">Ankanams:</span> <span id="ankanam" class="res-val val-ankanam">0</span></div>
+        </div>
+
+        <div class="accordion-container">
+            <button class="accordion-header" onclick="toggleTips()">
+                <span><i class="fas fa-lightbulb"></i> Calculation Details</span>
+                <i class="fas fa-chevron-down arrow"></i>
+            </button>
+            <div class="accordion-content" id="tipsContent">
+                <ul class="tip-list">
+                    <li><strong>1 Cent</strong> = 435.6 Sq. Feet</li>
+                    <li><strong>1 Gajam</strong> = 9 Sq. Feet</li>
+                    <li><strong>1 Ankanam</strong> = 72 Sq. Feet</li>
+                    <li><strong>1 Ankanam</strong> = 8 Gajalu</li>
+                </ul>
+
+                <div id="dynamic-steps" style="display:none;">
+                    <div class="step-box">
+                        <span class="step-title">How it's calculated:</span>
+                        <div class="step-row" id="step-area"></div>
+                        <div class="step-row" id="step-cents"></div>
+                        <div class="step-row" id="step-gajalu"></div>
+                        <div class="step-row" id="step-ankanam"></div>
+                    </div>
+                </div>
+                <div id="placeholder-steps" style="color: var(--text-dim); font-style: italic; font-size: 0.9em;">
+                    Click "Calculate Area" to see detailed steps for your values.
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    function toggleTips() {
+        const content = document.getElementById('tipsContent');
+        const header = document.querySelector('.accordion-header');
+
+        if (content.style.display === "block") {
+            content.style.display = "none";
+            header.classList.remove('active');
+        } else {
+            content.style.display = "block";
+            header.classList.add('active');
+        }
+    }
+
+    function calculate() {
+        let L = parseFloat(document.getElementById('length').value);
+        let W = parseFloat(document.getElementById('width').value);
+
+        if (L > 0 && W > 0) {
+            let totalSqFt = L * W;
+            let cents = totalSqFt / 435.6;
+            let gajalu = totalSqFt / 9;
+            let ankanam = totalSqFt / 72;
+
+            document.getElementById('sqft').innerText = totalSqFt.toLocaleString();
+            document.getElementById('cents').innerText = cents.toFixed(3);
+            document.getElementById('gajalu').innerText = gajalu.toFixed(2);
+            document.getElementById('ankanam').innerText = ankanam.toFixed(2);
+
+            document.getElementById('result').style.display = 'block';
+
+            // Update Dynamic Steps
+            document.getElementById('step-area').innerHTML = `Area = ${L} × ${W} = <strong>${totalSqFt.toLocaleString()} Sq. Ft</strong>`;
+            document.getElementById('step-cents').innerHTML = `Cents = ${totalSqFt} / 435.6 = <strong>${cents.toFixed(3)}</strong>`;
+            document.getElementById('step-gajalu').innerHTML = `Gajalu = ${totalSqFt} / 9 = <strong>${gajalu.toFixed(2)}</strong>`;
+            document.getElementById('step-ankanam').innerHTML = `Ankanams = ${totalSqFt} / 72 = <strong>${ankanam.toFixed(2)}</strong>`;
+
+            document.getElementById('dynamic-steps').style.display = 'block';
+            document.getElementById('placeholder-steps').style.display = 'none';
+
+        } else {
+            alert("Please enter valid numbers");
+        }
+    }
+</script>
+
+</body>
+</html>

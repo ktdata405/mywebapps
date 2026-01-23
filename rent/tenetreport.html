@@ -1,362 +1,547 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tenet Report</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="../config.js"></script>
     <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #ec4899;
+            --accent: #8b5cf6;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-light: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
         body {
-            background-color: #111827;
-            font-family: 'Roboto', sans-serif;
-            color: #f3f4f6;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Outfit', sans-serif;
             min-height: 100vh;
-            padding: 2rem 1rem;
+            position: relative;
+            overflow-x: hidden;
         }
-        .main-container {
-            background-color: #1f2937;
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            max-width: 1200px;
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            margin: 0 auto;
-            border: 1px solid #374151;
-        }
-        h2 {
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            color: #f9fafb;
-            letter-spacing: -0.5px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .header-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-        .btn-icon {
-            background: #374151;
-            color: #fff;
-            border: 1px solid #4b5563;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            text-decoration: none;
-        }
-        .btn-icon:hover {
-            background: #4b5563;
-            color: #fff;
-            transform: translateY(-2px);
-        }
-        .table-responsive {
-            border-radius: 8px;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #1e1b4b, #0f172a);
             overflow: hidden;
-            border: 1px solid #374151;
         }
-        .table {
-            color: #e5e7eb;
-            margin-bottom: 0;
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
         }
-        .table th {
-            background-color: #111827;
-            color: #9ca3af;
-            border-bottom: 2px solid #4b5563;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            padding: 1rem;
-            white-space: nowrap;
+
+        .orb-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px; animation-delay: 0s; }
+        .orb-2 { width: 300px; height: 300px; background: var(--secondary); bottom: -50px; right: -50px; animation-delay: -5s; }
+        .orb-3 { width: 200px; height: 200px; background: var(--accent); top: 40%; left: 60%; animation-delay: -10s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, 50px); }
         }
-        .table td {
-            background-color: #1f2937;
-            border-bottom: 1px solid #374151;
-            padding: 1rem;
-            vertical-align: middle;
+
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
         }
-        .table tbody tr:hover td {
-            background-color: #374151;
-        }
-        .badge-custom {
-            padding: 0.35em 0.65em;
-            font-size: 0.75em;
-            font-weight: 700;
-            border-radius: 0.25rem;
-        }
-        .badge-kalyan {
-            background-color: rgba(59, 130, 246, 0.2);
-            color: #60a5fa;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-        }
-        .badge-srikanth {
-            background-color: rgba(16, 185, 129, 0.2);
-            color: #34d399;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-        #loader {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 3rem;
-        }
-        .spinner-border {
-            width: 3rem;
-            height: 3rem;
-            color: #60a5fa;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: #9ca3af;
-        }
-        .filter-section {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-        }
-        .form-select-dark {
-            background-color: #374151;
-            border: 1px solid #4b5563;
-            color: #f3f4f6;
-            padding: 0.5rem 2rem 0.5rem 1rem;
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            padding: 0.5rem 1rem;
             border-radius: 0.5rem;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+            outline: none;
+            transition: all 0.2s;
         }
-        .form-select-dark:focus {
-            border-color: #60a5fa;
-            outline: 0;
-            box-shadow: 0 0 0 0.25rem rgba(96, 165, 250, 0.25);
+
+        .input-field:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        select.input-field option {
+            background-color: #1e293b;
+            color: var(--text-light);
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            color: var(--text-dim);
+        }
+
+        footer b {
+            color: var(--text-light);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
     </style>
 </head>
-<body>
 
-<div class="main-container">
-    <div class="header-actions">
-        <h2><i class="fa-solid fa-file-invoice-dollar text-primary"></i> Tenet Report</h2>
-        <div class="d-flex gap-2">
-            <button onclick="fetchData()" class="btn-icon" title="Refresh">
-                <i class="fa-solid fa-rotate-right"></i>
-            </button>
-            <a href="tenet.html" class="btn-icon" title="Add New">
-                <i class="fa-solid fa-plus"></i>
-            </a>
-            <a href="../index.html" class="btn-icon" title="Home">
-                <i class="fa-solid fa-house"></i>
-            </a>
+<body class="min-h-screen flex flex-col">
+
+    <div class="bg-animation">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="flex-grow p-4 md:p-8">
+        <div class="max-w-5xl mx-auto">
+
+            <!-- Header Card -->
+            <div class="glass-card rounded-2xl p-6 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h1 class="text-xl font-bold text-white flex items-center gap-3">
+                        <span class="bg-pink-500/20 text-pink-400 p-2 rounded-lg border border-pink-500/30">
+                            <i class="fa-solid fa-file-invoice-dollar"></i>
+                        </span>
+                        Tenet Report
+                    </h1>
+                </div>
+                <div class="flex gap-3 items-center">
+                    <div class="relative w-full sm:w-auto">
+                        <select id="sideFilter" class="w-full sm:w-40 pl-4 pr-8 py-2 rounded-xl outline-none appearance-none transition-all cursor-pointer hover:bg-white/10 font-medium input-field bg-white/5 border border-white/10" onchange="filterData()">
+                            <option value="all">All Sides</option>
+                            <option value="Kalyan">Kalyan</option>
+                            <option value="Srikanth">Srikanth</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                    <button onclick="fetchData()" class="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-full transition flex items-center justify-center" title="Refresh">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                    <a href="tenet.html" class="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-full transition flex items-center justify-center" title="Add New">
+                        <i class="fa-solid fa-plus"></i>
+                    </a>
+                    <a href="../index.html" class="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-full transition flex items-center justify-center" title="Dashboard">
+                        <i class="fa-solid fa-house"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Financial Summary Section (Accordion) -->
+            <div id="summary-section" class="hidden mb-6 glass-card rounded-2xl overflow-hidden">
+                <div class="p-6 border-b border-white/10 flex justify-between items-center cursor-pointer hover:bg-white/5 transition-colors" onclick="toggleSummary()">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-pink-400"></i>
+                        Financial Summary
+                    </h3>
+                    <i id="summary-icon" class="fa-solid fa-chevron-right transition-transform duration-200 text-gray-400"></i>
+                </div>
+                <div id="summary-content" class="p-6 bg-black/20 hidden">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Total Rent -->
+                        <div class="glass-card p-5 rounded-2xl flex flex-col gap-3">
+                            <div class="flex justify-between items-start">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-blue-500/10 text-blue-300 flex items-center justify-center border border-white/10">
+                                        <i class="fa-solid fa-indian-rupee-sign"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">Total Rent</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white" id="summary-rent">Rs. 0</h3>
+                        </div>
+
+                        <!-- Total Paid -->
+                        <div class="glass-card p-5 rounded-2xl flex flex-col gap-3">
+                            <div class="flex justify-between items-start">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-300 flex items-center justify-center border border-white/10">
+                                        <i class="fa-solid fa-check"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">Total Paid</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white" id="summary-paid">Rs. 0</h3>
+                        </div>
+
+                        <!-- Total Balance -->
+                        <div class="glass-card p-5 rounded-2xl flex flex-col gap-3">
+                            <div class="flex justify-between items-start">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-yellow-500/10 text-yellow-300 flex items-center justify-center border border-white/10">
+                                        <i class="fa-solid fa-exclamation"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">Total Balance</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white" id="summary-balance">Rs. 0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data List (Accordion) -->
+            <div class="glass-card rounded-2xl overflow-hidden">
+                <div class="p-4 md:p-6 border-b border-white/10 flex justify-between items-center cursor-pointer hover:bg-white/5 transition-colors" onclick="toggleTenetRecords()">
+                    <div class="flex items-center gap-3 md:gap-4">
+                        <i class="fa-solid fa-list-ul text-pink-400 text-lg"></i>
+                        <h3 class="text-lg font-bold text-white">Tenet Records</h3>
+                    </div>
+                    <i id="records-icon" class="fa-solid fa-chevron-right transition-transform duration-200 text-gray-400 ml-2"></i>
+                </div>
+
+                <div id="report-body-container" class="hidden">
+                    <div id="report-body" class="p-4 space-y-2">
+                        <!-- Accordion items will be injected here -->
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
-    <div class="filter-section">
-        <select id="yearFilter" class="form-select-dark" onchange="filterData()">
-            <option value="all">All Years</option>
-            <!-- Years populated by JS -->
-        </select>
-        <select id="sideFilter" class="form-select-dark" onchange="filterData()">
-            <option value="all">All Sides</option>
-            <option value="Kalyan">Kalyan</option>
-            <option value="Srikanth">Srikanth</option>
-        </select>
-    </div>
-
-    <div id="loader">
-        <div class="spinner-border" role="status">
-            <span class="visually-hidden">Loading...</span>
+    <!-- Loader Overlay -->
+    <div id="loader" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-all">
+        <div class="glass-card p-8 rounded-2xl flex flex-col items-center gap-4">
+            <div class="relative">
+                <div class="w-16 h-16 border-4 border-pink-500/20 border-t-pink-500 rounded-full animate-spin"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <i class="fa-solid fa-bolt text-pink-500 text-xl"></i>
+                </div>
+            </div>
+            <p class="text-white font-semibold animate-pulse">Fetching...</p>
         </div>
     </div>
 
-    <div class="table-responsive" id="tableContainer" style="display: none;">
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Side</th>
-                    <th class="text-end">Rent</th>
-                    <th class="text-end">Paid</th>
-                    <th class="text-end">Balance</th>
-                    <th class="text-end">Power</th>
-                    <th class="text-end">Water</th>
-                    <th class="text-end">Total Paid</th>
-                    <th>Remarks</th>
-                </tr>
-            </thead>
-            <tbody id="reportTableBody">
-                <!-- Data populated by JS -->
-            </tbody>
-        </table>
-    </div>
+    <footer>
+        <p>&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
+    </footer>
 
-    <div id="emptyState" class="empty-state" style="display: none;">
-        <i class="fa-regular fa-folder-open fa-3x mb-3"></i>
-        <p>No records found matching your criteria.</p>
-    </div>
-</div>
+    <script>
+        let allData = [];
+        window.pageItems = {};
 
-<script src="../config.js"></script>
-<script>
-    let allData = [];
-
-    function formatDate(dateString) {
-        if (!dateString) return '';
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) return dateString;
-
-        const day = String(date.getDate()).padStart(2, '0');
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const month = months[date.getMonth()];
-        const year = date.getFullYear();
-
-        return `${day}-${month}-${year}`;
-    }
-
-    function formatCurrency(amount) {
-        if (amount === undefined || amount === null || amount === '') return '-';
-        return new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 0
-        }).format(amount);
-    }
-
-    function populateYearFilter(data) {
-        const yearFilter = document.getElementById('yearFilter');
-        const years = new Set();
-
-        data.forEach(item => {
-            if (item.date) {
-                const d = new Date(item.date);
-                if (!isNaN(d.getTime())) {
-                    years.add(d.getFullYear());
-                }
+        function formatDateToDDMMMYYYY(isoDate) {
+            if (!isoDate) return '';
+            const d = new Date(isoDate);
+            if (isNaN(d.getTime())) {
+                return isoDate;
             }
-        });
-
-        const sortedYears = Array.from(years).sort((a, b) => b - a);
-
-        // Clear existing options except 'All'
-        while (yearFilter.options.length > 1) {
-            yearFilter.remove(1);
+            const day = String(d.getDate()).padStart(2, '0');
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const month = months[d.getMonth()];
+            const year = d.getFullYear();
+            return `${day}/${month}/${year}`;
         }
 
-        sortedYears.forEach(year => {
-            const option = document.createElement('option');
-            option.value = year;
-            option.textContent = year;
-            yearFilter.appendChild(option);
-        });
-    }
+        function formatCurrency(amount) {
+            if (amount === undefined || amount === null || amount === '') return '-';
+            const num = parseFloat(amount);
+            if (isNaN(num)) return amount;
 
-    function filterData() {
-        const year = document.getElementById('yearFilter').value;
-        const side = document.getElementById('sideFilter').value;
-
-        const filtered = allData.filter(item => {
-            let yearMatch = true;
-            let sideMatch = true;
-
-            if (year !== 'all') {
-                const d = new Date(item.date);
-                if (!isNaN(d.getTime())) {
-                    yearMatch = d.getFullYear().toString() === year;
-                } else {
-                    yearMatch = false;
-                }
-            }
-
-            if (side !== 'all') {
-                sideMatch = item.side === side;
-            }
-
-            return yearMatch && sideMatch;
-        });
-
-        renderTable(filtered);
-    }
-
-    function renderTable(data) {
-        const tbody = document.getElementById('reportTableBody');
-        const tableContainer = document.getElementById('tableContainer');
-        const emptyState = document.getElementById('emptyState');
-
-        tbody.innerHTML = '';
-
-        if (data.length === 0) {
-            tableContainer.style.display = 'none';
-            emptyState.style.display = 'block';
-            return;
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                maximumFractionDigits: 0
+            }).format(num);
         }
 
-        tableContainer.style.display = 'block';
-        emptyState.style.display = 'none';
+        function toggleSummary() {
+            const content = document.getElementById('summary-content');
+            const icon = document.getElementById('summary-icon');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-90');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-90');
+            }
+        }
 
-        // Sort by date descending
-        data.sort((a, b) => new Date(b.date) - new Date(a.date));
+        function toggleTenetRecords() {
+            const content = document.getElementById('report-body-container');
+            const icon = document.getElementById('records-icon');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-90');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-90');
+            }
+        }
 
-        data.forEach(row => {
-            const tr = document.createElement('tr');
+        function filterData() {
+            const side = document.getElementById('sideFilter').value;
 
-            const sideBadgeClass = row.side === 'Kalyan' ? 'badge-kalyan' : 'badge-srikanth';
-
-            tr.innerHTML = `
-                <td>${formatDate(row.date)}</td>
-                <td><span class="badge-custom ${sideBadgeClass}">${row.side}</span></td>
-                <td class="text-end">${formatCurrency(row.rentAmount)}</td>
-                <td class="text-end">${formatCurrency(row.paidAmount)}</td>
-                <td class="text-end text-warning">${formatCurrency(row.balanceAmount)}</td>
-                <td class="text-end">${formatCurrency(row.powerBill)}</td>
-                <td class="text-end">${formatCurrency(row.waterBill)}</td>
-                <td class="text-end fw-bold text-success">${formatCurrency(row.totalPaid)}</td>
-                <td class="text-muted small">${row.remarks || '-'}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function fetchData() {
-        const loader = document.getElementById('loader');
-        const tableContainer = document.getElementById('tableContainer');
-        const emptyState = document.getElementById('emptyState');
-
-        loader.style.display = 'flex';
-        tableContainer.style.display = 'none';
-        emptyState.style.display = 'none';
-
-        fetch(CONFIG.GOOGLE_SHEET_URL_RENT)
-            .then(response => response.json())
-            .then(response => {
-                loader.style.display = 'none';
-                if (response.status === 'success' && Array.isArray(response.data)) {
-                    allData = response.data;
-                    populateYearFilter(allData);
-                    filterData(); // Initial render
-                } else {
-                    console.error('Invalid data format:', response);
-                    emptyState.style.display = 'block';
-                    emptyState.innerHTML = '<p class="text-danger">Error loading data. Invalid format.</p>';
+            const filtered = allData.filter(item => {
+                let sideMatch = true;
+                if (side !== 'all') {
+                    sideMatch = item.side === side;
                 }
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-                loader.style.display = 'none';
-                emptyState.style.display = 'block';
-                emptyState.innerHTML = `<p class="text-danger">Error loading data: ${error.message}</p>`;
+                return sideMatch;
             });
-    }
 
-    document.addEventListener('DOMContentLoaded', fetchData);
-</script>
+            populateTable(filtered);
+            updateSummary(filtered);
+        }
+
+        function updateSummary(data) {
+            let totalRent = 0;
+            let totalPaid = 0;
+            let totalBalance = 0;
+
+            data.forEach(item => {
+                totalRent += parseFloat(item.rentAmount) || 0;
+                totalPaid += parseFloat(item.totalPaid) || 0;
+                totalBalance += parseFloat(item.balanceAmount) || 0;
+            });
+
+            document.getElementById('summary-rent').textContent = formatCurrency(totalRent);
+            document.getElementById('summary-paid').textContent = formatCurrency(totalPaid);
+            document.getElementById('summary-balance').textContent = formatCurrency(totalBalance);
+
+            const summarySection = document.getElementById('summary-section');
+            if (data.length > 0) {
+                summarySection.classList.remove('hidden');
+                const content = document.getElementById('summary-content');
+                const icon = document.getElementById('summary-icon');
+                if(content.classList.contains('hidden')) {
+                    content.classList.remove('hidden');
+                    icon.classList.add('rotate-90');
+                }
+            } else {
+                summarySection.classList.add('hidden');
+            }
+        }
+
+        function populateTable(data) {
+            const reportBody = document.getElementById('report-body');
+            const container = document.getElementById('report-body-container');
+            const icon = document.getElementById('records-icon');
+
+            reportBody.innerHTML = '';
+            window.pageItems = {};
+
+            if (data && data.length > 0) {
+                const groupedData = {};
+                data.forEach(row => {
+                    const dateKey = formatDateToDDMMMYYYY(row.date);
+                    if (!groupedData[dateKey]) {
+                        groupedData[dateKey] = { total: 0, items: [], rawDate: new Date(row.date) };
+                    }
+                    groupedData[dateKey].items.push(row);
+                    groupedData[dateKey].total += (parseFloat(row.totalPaid) || 0);
+                });
+
+                const sortedDates = Object.keys(groupedData).sort((a, b) => groupedData[b].rawDate - groupedData[a].rawDate);
+
+                sortedDates.forEach((date, index) => {
+                    const group = groupedData[date];
+                    const accordionHeader = document.createElement('div');
+                    accordionHeader.className = "glass-card p-4 rounded-xl flex justify-between items-center cursor-pointer hover:bg-white/5 transition-colors";
+                    accordionHeader.onclick = () => toggleDetails(index);
+
+                    accordionHeader.innerHTML = `
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-pink-500/10 text-pink-400 flex flex-col items-center justify-center font-bold border border-pink-500/20">
+                                <span class="text-xs">${new Date(group.rawDate).toLocaleString('default', { month: 'short' })}</span>
+                                <span class="text-xl">${String(new Date(group.rawDate).getDate()).padStart(2, '0')}</span>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-400">${new Date(group.rawDate).toLocaleString('default', { weekday: 'long' })}</p>
+                                <h4 class="font-bold text-white">Total: ${formatCurrency(group.total)}</h4>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                             <button onclick="event.stopPropagation(); editDateEntries('${date}')" class="text-gray-400 hover:text-pink-400 transition-colors p-2 rounded-full hover:bg-white/10">
+                                <i class="fa-solid fa-edit"></i>
+                            </button>
+                            <i id="icon-${index}" class="fa-solid fa-chevron-right transition-transform duration-200 text-gray-400"></i>
+                        </div>
+                    `;
+                    reportBody.appendChild(accordionHeader);
+
+                    const accordionContent = document.createElement('div');
+                    accordionContent.id = `details-${index}`;
+                    accordionContent.className = "hidden p-4 pl-4 md:pl-16 space-y-3";
+
+                    let detailsHtml = '';
+                    group.items.forEach((item) => {
+                        const itemId = 'item_' + Math.random().toString(36).substr(2, 9);
+                        window.pageItems[itemId] = item;
+
+                        const sideBadge = item.side === 'Kalyan'
+                            ? '<span class="bg-blue-500/20 text-blue-400 px-2 py-1 rounded text-xs font-bold border border-blue-500/30">Kalyan</span>'
+                            : (item.side === 'Srikanth'
+                                ? '<span class="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded text-xs font-bold border border-emerald-500/30">Srikanth</span>'
+                                : `<span class="text-gray-400">${item.side || '-'}</span>`);
+
+                        detailsHtml += `
+                            <div class="glass-card p-4 rounded-xl border border-white/10 flex flex-col gap-3 hover:bg-white/5 transition-shadow relative">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex items-center gap-3">
+                                         ${sideBadge}
+                                         <p class="text-xs text-gray-400 italic">${item.remarks || ''}</p>
+                                    </div>
+                                    <button onclick="editRecord('${itemId}')" class="text-gray-400 hover:text-pink-400 transition-colors p-2 rounded-full hover:bg-white/10">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                </div>
+
+                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-y-2 gap-x-4 text-sm">
+                                    <div class="text-gray-400">Rent: <span class="text-white block font-medium">${formatCurrency(item.rentAmount)}</span></div>
+                                    <div class="text-gray-400">Power: <span class="text-white block font-medium">${formatCurrency(item.powerBill)}</span></div>
+                                    <div class="text-gray-400">Water: <span class="text-white block font-medium">${formatCurrency(item.waterBill)}</span></div>
+                                    <div class="text-gray-400">Paid: <span class="text-emerald-400 block font-bold">${formatCurrency(item.totalPaid)}</span></div>
+                                    <div class="text-gray-400">Balance: <span class="text-yellow-400 block font-bold">${formatCurrency(item.balanceAmount)}</span></div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    accordionContent.innerHTML = detailsHtml;
+                    reportBody.appendChild(accordionContent);
+                });
+
+                // Auto open main container
+                if (container.classList.contains('hidden')) {
+                    container.classList.remove('hidden');
+                    icon.classList.add('rotate-90');
+                }
+
+            } else {
+                const noData = document.createElement('div');
+                noData.className = "p-12 text-center text-gray-500";
+                noData.innerHTML = `
+                    <div class="flex flex-col items-center gap-3">
+                        <i class="fa-regular fa-folder-open text-4xl text-gray-700"></i>
+                        <p>No records found matching your criteria.</p>
+                    </div>
+                `;
+                reportBody.appendChild(noData);
+            }
+        }
+
+        function toggleDetails(index) {
+            const detailsRow = document.getElementById(`details-${index}`);
+            const icon = document.getElementById(`icon-${index}`);
+            if (detailsRow.classList.contains('hidden')) {
+                detailsRow.classList.remove('hidden');
+                icon.classList.add('rotate-90');
+            } else {
+                detailsRow.classList.add('hidden');
+                icon.classList.remove('rotate-90');
+            }
+        }
+
+        function editRecord(itemId) {
+            const item = window.pageItems[itemId];
+            if (item) {
+                sessionStorage.setItem('tenetEditData', JSON.stringify(item));
+                window.location.href = 'tenet.html';
+            }
+        }
+
+        function editDateEntries(dateKey) {
+            const entriesForDate = allData.filter(item => formatDateToDDMMMYYYY(item.date) === dateKey);
+            if (entriesForDate.length > 0) {
+                // For Tenet, we usually edit single records, but if the user wants to edit by date,
+                // we might need to handle multiple records or just pick the first one.
+                // However, the request was just to add the icon.
+                // If the user clicks this, let's assume they want to edit the first record of that date or handle it similarly to Cashew.
+                // In Cashew, it passes all entries for that date.
+                // Since Tenet form seems to handle one record at a time, let's just pick the first one for now or alert if multiple.
+                // Or better, just pass the first one as a safe default if multiple exist, or let the user choose from the expanded view.
+
+                // But wait, the user asked for "edit icon on top of the each accordian".
+                // In Cashew report, this calls `editDateEntries`.
+                // Let's implement `editDateEntries` to be consistent.
+
+                if (entriesForDate.length === 1) {
+                     sessionStorage.setItem('tenetEditData', JSON.stringify(entriesForDate[0]));
+                     window.location.href = 'tenet.html';
+                } else {
+                    // If multiple entries, maybe just alert them to use the individual edit buttons
+                    alert("Multiple entries found for this date. Please expand and edit the specific record.");
+                }
+            } else {
+                alert('No data found for this date to edit.');
+            }
+        }
+
+        function fetchData() {
+            const loader = document.getElementById('loader');
+            loader.classList.remove('hidden');
+
+            fetch(CONFIG.GOOGLE_SHEET_URL_RENT)
+                .then(response => response.json())
+                .then(response => {
+                    loader.classList.add('hidden');
+
+                    if (Array.isArray(response)) {
+                        allData = response;
+                    } else if (response && Array.isArray(response.data)) {
+                        allData = response.data;
+                    } else if (response && Array.isArray(response.records)) {
+                        allData = response.records;
+                    } else {
+                        const possibleArray = Object.values(response).find(val => Array.isArray(val));
+                        if (possibleArray) {
+                            allData = possibleArray;
+                        } else {
+                            alert('Error: Invalid data format received.');
+                            return;
+                        }
+                    }
+
+                    filterData();
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    loader.classList.add('hidden');
+                    alert(`Error loading data: ${error.message}`);
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchData);
+    </script>
 
 </body>
 </html>

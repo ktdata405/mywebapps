@@ -2,6 +2,11 @@ const dateInput = document.getElementById('date');
 const scriptURL = CONFIG.GOOGLE_SHEET_URL_RENT; // Replace with your Google Apps Script URL
 const form = document.getElementById('tenetForm');
 const submitButton = form.querySelector('button[type="submit"]');
+const loader = document.getElementById('loader');
+
+let isEditMode = false;
+let originalDate = null;
+let originalSide = null;
 
 // Helper to format date as DD/MMM/YYYY
 function formatDateForSheet(dateString) {
@@ -15,11 +20,16 @@ function formatDateForSheet(dateString) {
     return `${day}/${month}/${year}`;
 }
 
-function formatAndSetDate(el) {
-    // We'll keep the native date picker behavior for better UX on mobile/modern browsers
-    // but we can ensure the value is valid.
-    // The previous logic switching to type='text' is often problematic for UX consistency.
-    // We will handle the formatting strictly during submission.
+// Helper to parse DD-MMM-YYYY or DD/MMM/YYYY back to YYYY-MM-DD for input
+function parseDateToISO(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
+    
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
 function calculateTotal() {
@@ -32,20 +42,55 @@ function calculateTotal() {
 }
 
 function initializeForm() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
+    const editData = sessionStorage.getItem('tenetEditData');
     
-    // Set standard YYYY-MM-DD for the input to recognize it
-    dateInput.value = `${year}-${month}-${day}`;
+    if (editData) {
+        isEditMode = true;
+        const data = JSON.parse(editData);
+        sessionStorage.removeItem('tenetEditData'); // Clear after loading
+        
+        // Populate fields
+        dateInput.value = parseDateToISO(data.date);
+        originalDate = data.date; // Store original formatted date for lookup
+        originalSide = data.side;
 
-    calculateTotal();
+        const sideSelect = document.getElementById('side');
+        if (sideSelect) sideSelect.value = data.side;
+        
+        document.getElementById('rentAmount').value = data.rentAmount;
+        document.getElementById('paidAmount').value = data.paidAmount;
+        document.getElementById('balanceAmount').value = data.balanceAmount;
+        document.getElementById('powerBill').value = data.powerBill;
+        document.getElementById('waterBill').value = data.waterBill;
+        document.getElementById('totalPaid').value = data.totalPaid;
+        document.getElementById('remarks').value = data.remarks;
+        
+        submitButton.textContent = 'Update';
+        submitButton.innerHTML = '<i class="fa-solid fa-check"></i> Update';
+        
+    } else {
+        // Default initialization
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        
+        dateInput.value = `${year}-${month}-${day}`;
+        calculateTotal();
+        
+        const sideSelect = document.getElementById('side');
+        if (sideSelect) sideSelect.value = "";
+    }
 }
 
 function clearForm() {
     form.reset();
-    initializeForm();
+    isEditMode = false;
+    originalDate = null;
+    originalSide = null;
+    submitButton.textContent = 'Submit';
+    submitButton.innerHTML = '<i class="fa-solid fa-check"></i> Submit';
+    initializeForm(); // Re-init to set default date
 }
 
 form.addEventListener('submit', function(event) {
@@ -57,32 +102,47 @@ form.addEventListener('submit', function(event) {
 
     const formData = {
         date: formattedDate,
+        side: document.getElementById('side').value,
         rentAmount: document.getElementById('rentAmount').value || '0',
         paidAmount: document.getElementById('paidAmount').value || '0',
         balanceAmount: document.getElementById('balanceAmount').value || 0,
         powerBill: document.getElementById('powerBill').value || '0',
         waterBill: document.getElementById('waterBill').value || '0',
         totalPaid: document.getElementById('totalPaid').value,
-        remarks: document.getElementById('remarks').value || '-'
+        remarks: document.getElementById('remarks').value || '-',
+        action: isEditMode ? 'update' : 'add',
+        originalDate: originalDate,
+        originalSide: originalSide
     };
 
     if (!rawDate) {
         alert('Please select a Date.');
         return;
     }
-
-    submitButton.disabled = true;
-    submitButton.textContent = 'Saving...';
-
-    const data = new FormData();
-    for (const key in formData) {
-        data.append(key, formData[key]);
+    
+    if (!formData.side) {
+        alert('Please select a Side.');
+        return;
     }
 
-    fetch(scriptURL, { method: 'POST', body: data})
-        .then(response => response.json())
-        .then(res => {
-            if (res.result === 'success') {
+    // Show Loader
+    loader.classList.remove('hidden');
+    submitButton.disabled = true;
+    submitButton.textContent = isEditMode ? 'Updating...' : 'Saving...';
+
+    // Send as JSON string
+    fetch(scriptURL, { 
+        method: 'POST', 
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(res => {
+        if (res.result === 'success') {
+            alert(isEditMode ? 'Record updated successfully!' : 'Record saved successfully!');
+            
+            if (isEditMode) {
+                window.location.href = 'tenetreport.html';
+            } else {
                 const recordsContainer = document.getElementById('recordsContainer');
                 if (recordsContainer.style.display === 'none' || recordsContainer.classList.contains('hidden')) {
                     recordsContainer.style.display = 'block';
@@ -94,6 +154,7 @@ form.addEventListener('submit', function(event) {
 
                 newRow.innerHTML = `
                     <td>${formData.date}</td>
+                    <td>${formData.side}</td>
                     <td>${formData.rentAmount}</td>
                     <td>${formData.paidAmount}</td>
                     <td>${formData.balanceAmount}</td>
@@ -104,19 +165,21 @@ form.addEventListener('submit', function(event) {
                 `;
                 
                 clearForm();
-                alert('Record saved successfully!');
-            } else {
-                throw new Error(res.error || 'Unknown error occurred');
             }
-        })
-        .catch(error => {
-            console.error('Error!', error.message);
-            alert('An error occurred while saving the record.');
-        })
-        .finally(() => {
-            submitButton.disabled = false;
-            submitButton.textContent = 'Submit';
-        });
+        } else {
+            throw new Error(res.error || 'Unknown error occurred');
+        }
+    })
+    .catch(error => {
+        console.error('Error!', error.message);
+        alert('An error occurred: ' + error.message);
+    })
+    .finally(() => {
+        // Hide Loader
+        loader.classList.add('hidden');
+        submitButton.disabled = false;
+        submitButton.textContent = isEditMode ? 'Update' : 'Submit';
+    });
 });
 
 window.onload = initializeForm;
