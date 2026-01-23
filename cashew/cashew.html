@@ -205,19 +205,48 @@
     </template>
 
     <script>
+        let isEditMode = false;
+        let originalDate = null;
+
         function init() {
             const dateInput = document.getElementById('date-input');
             const today = new Date().toISOString().split('T')[0];
             dateInput.value = today;
 
-            // Add initial rows
-            const defaultCategories = ["Home", "My Personal", "My Family"];
-            for (let i = 0; i < 3; i++) {
-                addRow(defaultCategories[i]);
+            const editData = sessionStorage.getItem('cashewEditData');
+            if (editData) {
+                isEditMode = true;
+                const data = JSON.parse(editData);
+                sessionStorage.removeItem('cashewEditData'); // Clear after loading
+
+                if (data.length > 0) {
+                    // Set date from the first item (assuming all items are from the same date)
+                    const date = new Date(data[0].date);
+                    // Adjust for timezone offset to get correct YYYY-MM-DD
+                    const offset = date.getTimezoneOffset();
+                    const adjustedDate = new Date(date.getTime() - (offset*60*1000));
+                    dateInput.value = adjustedDate.toISOString().split('T')[0];
+
+                    originalDate = data[0].date; // Store original date
+
+                    const container = document.getElementById('expenses-container');
+                    container.innerHTML = ''; // Clear default rows
+
+                    data.forEach(item => {
+                        addRow(item.category, item.description, item.amount);
+                    });
+                    calculateTotal();
+                }
+            } else {
+                // Add initial rows
+                const defaultCategories = ["Home", "My Personal", "My Family"];
+                for (let i = 0; i < 3; i++) {
+                    addRow(defaultCategories[i]);
+                }
             }
         }
 
-        function addRow(category) {
+        function addRow(category, description = '', amount = '') {
             const container = document.getElementById('expenses-container');
             const template = document.getElementById('expense-row-template');
             const clone = template.content.cloneNode(true);
@@ -225,6 +254,12 @@
             if (category) {
                 const select = clone.querySelector('.category-select');
                 select.value = category;
+            }
+            if (description) {
+                clone.querySelector('.description-input').value = description;
+            }
+            if (amount !== '') {
+                clone.querySelector('.amount-input').value = amount;
             }
 
             container.appendChild(clone);
@@ -251,8 +286,6 @@
             const text = descInput.value;
 
             if (!text) {
-                amountInput.value = '';
-                calculateTotal();
                 return;
             }
 
@@ -279,11 +312,8 @@
 
             if (foundNumber) {
                 amountInput.value = total; // Keep it as number for input, formatting happens in total
-            } else {
-                amountInput.value = '';
+                calculateTotal();
             }
-
-            calculateTotal();
         }
 
         function calculateTotal() {
@@ -308,6 +338,8 @@
                 addRow(defaultCategories[i]);
             }
             calculateTotal();
+            isEditMode = false;
+            originalDate = null;
         }
 
         function formatDateToDDMMMYYYY(isoDate) {
@@ -354,9 +386,12 @@
             }
 
             const data = {
-                type: 'cashew', // To distinguish from cash counter data if using same sheet script
+                type: 'cashew',
                 expenses: expenses,
-                total: grandTotal
+                total: grandTotal,
+                isEdit: isEditMode,
+                action: isEditMode ? 'update' : 'add',
+                originalDate: originalDate
             };
 
             console.log('Sending data to Google Sheets:', data);
@@ -371,7 +406,11 @@
                 loader.classList.add('hidden');
                 saveBtn.disabled = false;
                 alert('✓ Expenses saved to Google Sheets successfully!');
-                clearAll();
+                if (isEditMode) {
+                     window.location.href = 'cashewreport.html';
+                } else {
+                    clearAll();
+                }
             })
             .catch(error => {
                 console.error('Network error:', error);
