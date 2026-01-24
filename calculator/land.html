@@ -131,8 +131,46 @@
             -webkit-text-fill-color: transparent;
         }
 
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: rgba(255,255,255,0.05);
+            padding: 4px;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: none;
+            margin-top: 0;
+            font-size: 0.9rem;
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
+        }
+
         .inputs-row {
             display: flex;
+            gap: 1rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .inputs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 1rem;
             margin-bottom: 1.2rem;
         }
@@ -167,7 +205,7 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
-        button {
+        button.calc-btn {
             width: 100%;
             padding: 14px;
             background: linear-gradient(135deg, var(--primary), var(--accent));
@@ -182,7 +220,7 @@
             box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
         }
 
-        button:hover {
+        button.calc-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
         }
@@ -299,22 +337,49 @@
 
     <div class="card">
         <div class="header-container">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/f/f5/Government_of_Andhra_Pradesh_Logo.png" alt="AP Govt Logo" class="ap-logo">
             <h2>AP Land Converter</h2>
         </div>
 
-        <div class="inputs-row">
+        <div class="tabs">
+            <button class="tab active" id="tab-regular" onclick="setMode('regular')">Regular Plot</button>
+            <button class="tab" id="tab-corner" onclick="setMode('corner')">Corner / Irregular</button>
+        </div>
+
+        <!-- Regular Inputs -->
+        <div class="inputs-row" id="regular-inputs">
             <div class="input-group">
-                <label>Length (Adugulu)</label>
-                <input type="number" id="length" placeholder="0.00"  inputmode="numeric" pattern="[0-9].*" value="">
+                <label>Length (Feet)</label>
+                <input type="number" step="any" id="length" placeholder="0" value="">
             </div>
 
             <div class="input-group">
-                <label>Width (Adugulu)</label>
-                <input type="number" id="width" placeholder="0.00" inputmode="numeric" pattern="[0-9].*" value="">
+                <label>Width (Feet)</label>
+                <input type="number" step="any" id="width" placeholder="0" value="">
             </div>
         </div>
 
-        <button onclick="calculate()">Calculate Area</button>
+        <!-- Corner/Irregular Inputs -->
+        <div class="inputs-grid" id="corner-inputs" style="display:none;">
+            <div class="input-group">
+                <label>Length 1 (Feet)</label>
+                <input type="number" step="any" id="length1" placeholder="0" value="">
+            </div>
+            <div class="input-group">
+                <label>Length 2 (Feet)</label>
+                <input type="number" step="any" id="length2" placeholder="0" value="">
+            </div>
+            <div class="input-group">
+                <label>Width 1 (Feet)</label>
+                <input type="number" step="any" id="width1" placeholder="0" value="">
+            </div>
+            <div class="input-group">
+                <label>Width 2 (Feet)</label>
+                <input type="number" step="any" id="width2" placeholder="0" value="">
+            </div>
+        </div>
+
+        <button class="calc-btn" onclick="calculate()">Calculate Area</button>
 
         <div id="result">
             <div class="res-item"><span class="val-cents">Cents:</span> <span id="cents" class="res-val val-cents">0</span></div>
@@ -353,6 +418,25 @@
     </div>
 
 <script>
+    let currentMode = 'regular';
+
+    function setMode(mode) {
+        currentMode = mode;
+
+        // Update Tabs
+        document.getElementById('tab-regular').classList.toggle('active', mode === 'regular');
+        document.getElementById('tab-corner').classList.toggle('active', mode === 'corner');
+
+        // Toggle Inputs
+        document.getElementById('regular-inputs').style.display = mode === 'regular' ? 'flex' : 'none';
+        document.getElementById('corner-inputs').style.display = mode === 'corner' ? 'grid' : 'none';
+
+        // Reset Results
+        document.getElementById('result').style.display = 'none';
+        document.getElementById('dynamic-steps').style.display = 'none';
+        document.getElementById('placeholder-steps').style.display = 'block';
+    }
+
     function toggleTips() {
         const content = document.getElementById('tipsContent');
         const header = document.querySelector('.accordion-header');
@@ -367,34 +451,61 @@
     }
 
     function calculate() {
-        let L = parseFloat(document.getElementById('length').value);
-        let W = parseFloat(document.getElementById('width').value);
+        let totalSqFt = 0;
+        let stepAreaText = "";
 
-        if (L > 0 && W > 0) {
-            let totalSqFt = L * W;
-            let cents = totalSqFt / 435.6;
-            let gajalu = totalSqFt / 9;
-            let ankanam = totalSqFt / 72;
+        if (currentMode === 'regular') {
+            let L = parseFloat(document.getElementById('length').value) || 0;
+            let W = parseFloat(document.getElementById('width').value) || 0;
 
-            document.getElementById('sqft').innerText = totalSqFt.toLocaleString();
-            document.getElementById('cents').innerText = cents.toFixed(3);
-            document.getElementById('gajalu').innerText = gajalu.toFixed(2);
-            document.getElementById('ankanam').innerText = ankanam.toFixed(2);
-
-            document.getElementById('result').style.display = 'block';
-
-            // Update Dynamic Steps
-            document.getElementById('step-area').innerHTML = `Area = ${L} × ${W} = <strong>${totalSqFt.toLocaleString()} Sq. Ft</strong>`;
-            document.getElementById('step-cents').innerHTML = `Cents = ${totalSqFt} / 435.6 = <strong>${cents.toFixed(3)}</strong>`;
-            document.getElementById('step-gajalu').innerHTML = `Gajalu = ${totalSqFt} / 9 = <strong>${gajalu.toFixed(2)}</strong>`;
-            document.getElementById('step-ankanam').innerHTML = `Ankanams = ${totalSqFt} / 72 = <strong>${ankanam.toFixed(2)}</strong>`;
-
-            document.getElementById('dynamic-steps').style.display = 'block';
-            document.getElementById('placeholder-steps').style.display = 'none';
-
+            if (L > 0 && W > 0) {
+                totalSqFt = L * W;
+                stepAreaText = `Area = ${L} × ${W} = <strong>${totalSqFt.toLocaleString()} Sq. Ft</strong>`;
+            } else {
+                alert("Please enter valid numbers");
+                return;
+            }
         } else {
-            alert("Please enter valid numbers");
+            let L1 = parseFloat(document.getElementById('length1').value) || 0;
+            let L2 = parseFloat(document.getElementById('length2').value) || 0;
+            let W1 = parseFloat(document.getElementById('width1').value) || 0;
+            let W2 = parseFloat(document.getElementById('width2').value) || 0;
+
+            if (L1 > 0 && L2 > 0 && W1 > 0 && W2 > 0) {
+                let avgL = (L1 + L2) / 2;
+                let avgW = (W1 + W2) / 2;
+                totalSqFt = avgL * avgW;
+
+                stepAreaText = `
+                    Avg Length = (${L1} + ${L2}) / 2 = ${avgL}<br>
+                    Avg Width = (${W1} + ${W2}) / 2 = ${avgW}<br>
+                    Area = ${avgL} × ${avgW} = <strong>${totalSqFt.toLocaleString()} Sq. Ft</strong>
+                `;
+            } else {
+                alert("Please enter valid numbers for all sides");
+                return;
+            }
         }
+
+        let cents = totalSqFt / 435.6;
+        let gajalu = totalSqFt / 9;
+        let ankanam = totalSqFt / 72;
+
+        document.getElementById('sqft').innerText = totalSqFt.toLocaleString(undefined, {maximumFractionDigits: 2});
+        document.getElementById('cents').innerText = cents.toFixed(3);
+        document.getElementById('gajalu').innerText = gajalu.toFixed(2);
+        document.getElementById('ankanam').innerText = ankanam.toFixed(2);
+
+        document.getElementById('result').style.display = 'block';
+
+        // Update Dynamic Steps
+        document.getElementById('step-area').innerHTML = stepAreaText;
+        document.getElementById('step-cents').innerHTML = `Cents = ${totalSqFt.toFixed(2)} / 435.6 = <strong>${cents.toFixed(3)}</strong>`;
+        document.getElementById('step-gajalu').innerHTML = `Gajalu = ${totalSqFt.toFixed(2)} / 9 = <strong>${gajalu.toFixed(2)}</strong>`;
+        document.getElementById('step-ankanam').innerHTML = `Ankanams = ${totalSqFt.toFixed(2)} / 72 = <strong>${ankanam.toFixed(2)}</strong>`;
+
+        document.getElementById('dynamic-steps').style.display = 'block';
+        document.getElementById('placeholder-steps').style.display = 'none';
     }
 </script>
 
