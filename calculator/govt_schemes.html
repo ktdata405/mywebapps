@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Govt Schemes Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #fbbf24;
+            --secondary: #f59e0b;
+            --accent: #d97706;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-light: #f8fafc;
+            --text-dim: #94a3b8;
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #1e1b4b, #0f172a);
+            overflow: hidden;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .orb-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px; animation-delay: 0s; }
+        .orb-2 { width: 300px; height: 300px; background: var(--secondary); bottom: -50px; right: -50px; animation-delay: -5s; }
+        .orb-3 { width: 200px; height: 200px; background: var(--accent); top: 40%; left: 60%; animation-delay: -10s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, 50px); }
+        }
+
+        /* Back Button */
+        .nav-back {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            z-index: 10;
+        }
+
+        .nav-back:hover {
+            background: var(--primary);
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+            color: #000;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin-top: 4rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 2rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            animation: fadeInUp 0.6s ease-out backwards;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+            background: linear-gradient(to right, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-dim);
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+
+        .calculator-form {
+            display: none;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .calculator-form.active {
+            display: flex;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        input, select {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 12px;
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2);
+        }
+
+        button.calculate-btn {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: #000;
+            border: none;
+            padding: 1rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        button.calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(251, 191, 36, 0.3);
+        }
+
+        .result-card {
+            margin-top: 2rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: none;
+        }
+
+        .result-card.show {
+            display: block;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .result-label {
+            color: var(--text-dim);
+        }
+
+        .result-value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        @keyframes fadeInUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 1.5rem;
+            }
+            .tabs {
+                gap: 0.5rem;
+            }
+            .tab-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-animation">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <a href="calculator.html" class="nav-back" aria-label="Back">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+
+    <div class="container">
+        <h1>Govt Schemes Calculator</h1>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('ssa')">SSA</button>
+            <button class="tab-btn" onclick="switchTab('ppf')">PPF</button>
+            <button class="tab-btn" onclick="switchTab('nps')">NPS</button>
+        </div>
+
+        <!-- SSA Calculator -->
+        <div id="ssa-form" class="calculator-form active">
+            <div class="form-group">
+                <label>Yearly Investment (₹)</label>
+                <input type="number" id="ssa-investment" placeholder="Min 250, Max 1.5L">
+            </div>
+            <div class="form-group">
+                <label>Girl's Age (Years)</label>
+                <input type="number" id="ssa-age" placeholder="Max 10 years">
+            </div>
+            <div class="form-group">
+                <label>Start Year</label>
+                <input type="number" id="ssa-start-year" value="2024">
+            </div>
+            <button class="calculate-btn" onclick="calculateSSA()">Calculate SSA</button>
+
+            <div id="ssa-result" class="result-card">
+                <div class="result-row">
+                    <span class="result-label">Total Investment</span>
+                    <span class="result-value" id="ssa-total-invest">₹0</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Total Interest</span>
+                    <span class="result-value" id="ssa-total-interest">₹0</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Maturity Amount</span>
+                    <span class="result-value" id="ssa-maturity">₹0</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Maturity Year</span>
+                    <span class="result-value" id="ssa-maturity-year">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- PPF Calculator -->
+        <div id="ppf-form" class="calculator-form">
+            <div class="form-group">
+                <label>Yearly Investment (₹)</label>
+                <input type="number" id="ppf-investment" placeholder="Min 500, Max 1.5L">
+            </div>
+            <div class="form-group">
+                <label>Duration (Years)</label>
+                <select id="ppf-duration">
+                    <option value="15">15 Years</option>
+                    <option value="20">20 Years</option>
+                    <option value="25">25 Years</option>
+                    <option value="30">30 Years</option>
+                </select>
+            </div>
+            <button class="calculate-btn" onclick="calculatePPF()">Calculate PPF</button>
+
+            <div id="ppf-result" class="result-card">
+                <div class="result-row">
+                    <span class="result-label">Total Investment</span>
+                    <span class="result-value" id="ppf-total-invest">₹0</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Total Interest</span>
+                    <span class="result-value" id="ppf-total-interest">₹0</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Maturity Amount</span>
+                    <span class="result-value" id="ppf-maturity">₹0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- NPS Calculator -->
+        <div id="nps-form" class="calculator-form">
+            <div class="form-group">
+                <label>Monthly Investment (₹)</label>
+                <input type="number" id="nps-investment" placeholder="Enter amount">
+            </div>
+            <div class="form-group">
+                <label>Current Age</label>
+                <input type="number" id="nps-age" placeholder="18-70 years">
+            </div>
+            <div class="form-group">
+                <label>Expected Return (%)</label>
+                <input type="number" id="nps-return" value="10">
+            </div>
+            <button class="calculate-btn" onclick="calculateNPS()">Calculate NPS</button>
+
+            <div id="nps-result" class="result-card">
+                <div class="result-row">
+                    <span class="result-label">Total Investment</span>
+                    <span class="result-value" id="nps-total-invest">₹0</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Total Interest</span>
+                    <span class="result-value" id="nps-total-interest">₹0</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Maturity Amount</span>
+                    <span class="result-value" id="nps-maturity">₹0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            // Hide all forms
+            document.querySelectorAll('.calculator-form').forEach(form => {
+                form.classList.remove('active');
+            });
+            // Deactivate all tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected form and activate tab
+            document.getElementById(tab + '-form').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        function calculateSSA() {
+            const investment = parseFloat(document.getElementById('ssa-investment').value);
+            const age = parseInt(document.getElementById('ssa-age').value);
+            const startYear = parseInt(document.getElementById('ssa-start-year').value);
+            const rate = 8.2; // Current SSA rate
+
+            if (!investment || !age || !startYear) return;
+
+            let totalInvest = 0;
+            let balance = 0;
+            const maturityYear = startYear + 21;
+            const investmentYears = 15;
+
+            for (let i = 0; i < 21; i++) {
+                if (i < investmentYears) {
+                    balance += investment;
+                    totalInvest += investment;
+                }
+                balance += (balance * rate) / 100;
+            }
+
+            document.getElementById('ssa-total-invest').textContent = formatCurrency(totalInvest);
+            document.getElementById('ssa-total-interest').textContent = formatCurrency(balance - totalInvest);
+            document.getElementById('ssa-maturity').textContent = formatCurrency(balance);
+            document.getElementById('ssa-maturity-year').textContent = maturityYear;
+            document.getElementById('ssa-result').classList.add('show');
+        }
+
+        function calculatePPF() {
+            const investment = parseFloat(document.getElementById('ppf-investment').value);
+            const duration = parseInt(document.getElementById('ppf-duration').value);
+            const rate = 7.1; // Current PPF rate
+
+            if (!investment) return;
+
+            let balance = 0;
+            let totalInvest = investment * duration;
+
+            for (let i = 0; i < duration; i++) {
+                balance += investment;
+                balance += (balance * rate) / 100;
+            }
+
+            document.getElementById('ppf-total-invest').textContent = formatCurrency(totalInvest);
+            document.getElementById('ppf-total-interest').textContent = formatCurrency(balance - totalInvest);
+            document.getElementById('ppf-maturity').textContent = formatCurrency(balance);
+            document.getElementById('ppf-result').classList.add('show');
+        }
+
+        function calculateNPS() {
+            const monthlyInvestment = parseFloat(document.getElementById('nps-investment').value);
+            const age = parseInt(document.getElementById('nps-age').value);
+            const rate = parseFloat(document.getElementById('nps-return').value);
+
+            if (!monthlyInvestment || !age || !rate) return;
+
+            const years = 60 - age;
+            const months = years * 12;
+            const monthlyRate = rate / 12 / 100;
+
+            const totalInvest = monthlyInvestment * months;
+            const maturity = monthlyInvestment * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) * (1 + monthlyRate);
+
+            document.getElementById('nps-total-invest').textContent = formatCurrency(totalInvest);
+            document.getElementById('nps-total-interest').textContent = formatCurrency(maturity - totalInvest);
+            document.getElementById('nps-maturity').textContent = formatCurrency(maturity);
+            document.getElementById('nps-result').classList.add('show');
+        }
+    </script>
+</body>
+</html>
