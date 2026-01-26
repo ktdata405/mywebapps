@@ -195,7 +195,11 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                     <label for="date" class="input-label">Select Date</label>
-                    <input type="date" id="date" name="date" onclick="this.showPicker()" class="input-field cursor-pointer" placeholder="Select Date">
+                    <div class="flex items-center gap-2">
+                        <button id="prev-day" type="button" class="p-2 px-4 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"><i class="fa-solid fa-chevron-left"></i></button>
+                        <input type="date" id="date" name="date" onclick="this.showPicker()" class="input-field cursor-pointer" placeholder="Select Date">
+                        <button id="next-day" type="button" class="p-2 px-4 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
                 </div>
                 <div>
                     <label for="side" class="input-label">Side</label>

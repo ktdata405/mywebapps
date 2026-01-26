@@ -41,6 +41,30 @@ function calculateTotal() {
     document.getElementById('totalPaid').value = totalPaid.toFixed(2);
 }
 
+function changeDate(days) {
+    const dateInput = document.getElementById('date');
+    const currentVal = dateInput.value;
+    if (!currentVal) return;
+
+    const parts = currentVal.split('-');
+    const year = parseInt(parts[0]);
+    const month = parseInt(parts[1]) - 1;
+    const day = parseInt(parts[2]);
+    
+    const dateObj = new Date(year, month, day);
+    dateObj.setDate(dateObj.getDate() + days);
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (dateObj <= today) {
+        const y = dateObj.getFullYear();
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const d = String(dateObj.getDate()).padStart(2, '0');
+        dateInput.value = `${y}-${m}-${d}`;
+    }
+}
+
 function initializeForm() {
     const editData = sessionStorage.getItem('tenetEditData');
     
@@ -81,6 +105,9 @@ function initializeForm() {
         const sideSelect = document.getElementById('side');
         if (sideSelect) sideSelect.value = "";
     }
+
+    document.getElementById('prev-day').addEventListener('click', () => changeDate(-1));
+    document.getElementById('next-day').addEventListener('click', () => changeDate(1));
 }
 
 function clearForm() {

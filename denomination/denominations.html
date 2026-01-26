@@ -135,8 +135,10 @@
                 <div class="mt-auto bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-8 rounded-2xl shadow-lg relative overflow-hidden">
                     <div class="absolute inset-0 bg-black/10"></div>
                     <div class="relative z-10">
-                        <div class="mb-6 flex justify-center">
-                             <input type="date" id="date-input" class="p-2 px-6 rounded-lg outline-none text-white text-lg font-semibold bg-white/20 border border-white/20 backdrop-blur-sm shadow-inner text-center" />
+                        <div class="mb-6 flex justify-center items-center gap-2">
+                            <button id="prev-day" class="p-2 px-4 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"><i class="fa-solid fa-chevron-left"></i></button>
+                            <input type="date" id="date-input" class="p-2 px-6 rounded-lg outline-none text-white text-lg font-semibold bg-white/20 border border-white/20 backdrop-blur-sm shadow-inner text-center" />
+                            <button id="next-day" class="p-2 px-4 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"><i class="fa-solid fa-chevron-right"></i></button>
                         </div>
 
                         <div class="text-xl flex justify-center items-center gap-2 mb-2 text-white/80 font-medium">
@@ -294,7 +296,10 @@
             
             dateInput.value = today;
             dateInput.max = today;
-            
+
+            document.getElementById('prev-day').addEventListener('click', () => changeDate(-1));
+            document.getElementById('next-day').addEventListener('click', () => changeDate(1));
+
             renderSection('notes-container', denominations.notes, '');
             renderSection('coins-container', denominations.coins, '');
 
@@ -311,6 +316,30 @@
                     editingRowIndex = data.rowIndex;
                 }
                 localStorage.removeItem('editReportData'); // Clear after use
+            }
+        }
+
+        function changeDate(days) {
+            const dateInput = document.getElementById('date-input');
+            const currentVal = dateInput.value;
+            if (!currentVal) return;
+
+            const parts = currentVal.split('-');
+            const year = parseInt(parts[0]);
+            const month = parseInt(parts[1]) - 1;
+            const day = parseInt(parts[2]);
+
+            const dateObj = new Date(year, month, day);
+            dateObj.setDate(dateObj.getDate() + days);
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (dateObj <= today) {
+                const y = dateObj.getFullYear();
+                const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const d = String(dateObj.getDate()).padStart(2, '0');
+                dateInput.value = `${y}-${m}-${d}`;
             }
         }
 

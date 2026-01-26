@@ -121,8 +121,10 @@
             <!-- Date Picker & Save Button -->
             <div class="mb-6 flex justify-end items-center gap-3">
                 <div class="flex items-center gap-2 bg-white/5 p-2 rounded-lg border border-white/10">
+                    <button id="prev-day" class="p-2 px-4 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"><i class="fa-solid fa-chevron-left"></i></button>
                     <i class="fa-regular fa-calendar text-pink-400"></i>
                     <input type="date" id="date-input" class="bg-transparent outline-none text-white font-semibold" />
+                    <button id="next-day" class="p-2 px-4 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"><i class="fa-solid fa-chevron-right"></i></button>
                 </div>
                 <button onclick="saveData()" id="save-btn" class="bg-emerald-500 hover:bg-emerald-600 text-white py-2 px-4 rounded-lg font-bold flex items-center gap-2 transition text-sm shadow-lg shadow-emerald-500/20">
                     <i class="fa-solid fa-floppy-disk"></i> Save
@@ -213,6 +215,9 @@
             const today = new Date().toISOString().split('T')[0];
             dateInput.value = today;
 
+            document.getElementById('prev-day').addEventListener('click', () => changeDate(-1));
+            document.getElementById('next-day').addEventListener('click', () => changeDate(1));
+
             const editData = sessionStorage.getItem('cashewEditData');
             if (editData) {
                 isEditMode = true;
@@ -243,6 +248,30 @@
                 for (let i = 0; i < 3; i++) {
                     addRow(defaultCategories[i]);
                 }
+            }
+        }
+
+        function changeDate(days) {
+            const dateInput = document.getElementById('date-input');
+            const currentVal = dateInput.value;
+            if (!currentVal) return;
+
+            const parts = currentVal.split('-');
+            const year = parseInt(parts[0]);
+            const month = parseInt(parts[1]) - 1;
+            const day = parseInt(parts[2]);
+
+            const dateObj = new Date(year, month, day);
+            dateObj.setDate(dateObj.getDate() + days);
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (dateObj <= today) {
+                const y = dateObj.getFullYear();
+                const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const d = String(dateObj.getDate()).padStart(2, '0');
+                dateInput.value = `${y}-${m}-${d}`;
             }
         }
 
