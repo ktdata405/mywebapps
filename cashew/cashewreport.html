@@ -180,6 +180,9 @@
                                     <i class="fa-solid fa-search text-gray-400"></i>
                                 </div>
                                 <input type="text" id="search-input" placeholder="Search description..." class="w-full pl-10 pr-4 py-3 rounded-xl outline-none transition-all font-medium input-field" onkeyup="filterData()">
+                                <button id="clear-search-btn" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white hidden" onclick="clearSearch()">
+                                    <i class="fa-solid fa-times"></i>
+                                </button>
                             </div>
 
                             <div class="relative min-w-[200px]">
@@ -297,6 +300,9 @@
 
             // Set initial label
             updatePeriodLabel();
+
+            // Automatically fetch report for current month/year
+            fetchReport();
         }
 
         function updatePeriodLabel() {
@@ -506,8 +512,16 @@
         }
 
         function filterData() {
-            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const searchInput = document.getElementById('search-input');
+            const clearBtn = document.getElementById('clear-search-btn');
+            const searchTerm = searchInput.value.toLowerCase();
             const selectedCategory = document.getElementById('category-filter').value;
+
+            if (searchTerm.length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
 
             const filteredData = allData.filter(row => {
                 const matchesSearch = (row.description || '').toLowerCase().includes(searchTerm);
@@ -516,6 +530,12 @@
             });
 
             populateTable(filteredData);
+        }
+
+        function clearSearch() {
+            const searchInput = document.getElementById('search-input');
+            searchInput.value = '';
+            filterData();
         }
 
         function populateTable(data) {

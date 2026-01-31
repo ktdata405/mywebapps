@@ -8,7 +8,22 @@ function doPost(e) {
 
   try {
     var doc = SpreadsheetApp.getActiveSpreadsheet();
-    var sheetName = 'Offerings'; // Ensure this matches your sheet name
+    var data = JSON.parse(e.postData.contents);
+
+    // Determine Sheet Name from the date (e.g., "08/Jan/2026" -> "Jan 2026")
+    var sheetName = 'Offerings'; // Default fallback
+    if (data.date) {
+      var parts = data.date.split('/');
+      if (parts.length === 3) {
+        sheetName = parts[1] + ' ' + parts[2];
+      } else if (data.date.includes('-')) {
+         // Handle YYYY-MM-DD format if passed directly
+         var d = new Date(data.date);
+         var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+         sheetName = months[d.getMonth()] + ' ' + d.getFullYear();
+      }
+    }
+
     var sheet = doc.getSheetByName(sheetName);
 
     if (!sheet) {
@@ -17,8 +32,6 @@ function doPost(e) {
       sheet.appendRow(['Date', '500', '200', '100', '50', '20', '10', '5', '2', '1', 'Total', 'Week Expenses', 'Adjust Amount', 'ATM Withdrawal', 'A/C Paid', 'Remarks']);
       sheet.getRange(1, 1, 1, 16).setFontWeight('bold').setBackground('#e0f2f1'); // Light teal background
     }
-
-    var data = JSON.parse(e.postData.contents);
 
     // Prepare the row data
     var row = [
@@ -71,40 +84,21 @@ function doGet(e) {
 
   try {
     var doc = SpreadsheetApp.getActiveSpreadsheet();
+    var sheetName = e.parameter.sheetName;
 
-    // 1. Prepare Sheet2 Lookup (Date -> Week Closing Balance)
-    var sheet2 = doc.getSheetByName('Dashboard');
-    var closingBalanceMap = {};
-    var sheet2Data = null;
-
-    if (sheet2) {
-      // Existing: Get Available Balance from A1
-      sheet2Data = sheet2.getRange("G1").getValue();
-
-      // New: Build lookup map from Sheet2 (Date in Col A, Balance in Col C)
-      var lastRow = sheet2.getLastRow();
-      if (lastRow > 0) {
-        // Get data from columns A, B, C (1, 2, 3)
-        var range = sheet2.getRange(1, 1, lastRow, 3);
-        var values = range.getValues();
-
-        for (var i = 0; i < values.length; i++) {
-          var row = values[i];
-          var dateVal = row[0]; // Column A
-          var balance = row[2]; // Column C
-
-          if (dateVal) {
-            var dateKey = formatDateKey(dateVal);
-            closingBalanceMap[dateKey] = balance;
-          }
-        }
-      }
+    if (!sheetName) {
+      // If no sheet name provided, try to default to current month or handle error
+      // For now, let's return error or empty
+       return ContentService.createTextOutput(JSON.stringify({ 'result': 'error', 'message': 'Sheet name is required' }))
+        .setMimeType(ContentService.MimeType.JSON);
     }
 
-    // 2. Get Data from Main Sheet (CashCounter)
-    var sheetName = 'Offerings';
     var sheet = doc.getSheetByName(sheetName);
     var result = [];
+    var sheet2Data = null;
+
+    // 1. Prepare Sheet2 Lookup (Date -> Week Closing Balance) - Optional if needed for report
+    // Keeping it simple for now, focusing on fetching data from the specific monthly sheet
 
     if (sheet) {
       var data = sheet.getDataRange().getValues();
@@ -116,29 +110,25 @@ function doGet(e) {
         result = rows.map(function(row, index) {
           var obj = {};
           headers.forEach(function(header, colIndex) {
-            obj[header] = row[colIndex];
+            var val = row[colIndex];
+            // Format Date if it's a date object
+            if (header === 'Date' && val instanceof Date) {
+               val = Utilities.formatDate(val, Session.getScriptTimeZone(), "dd/MMM/yyyy");
+            }
+            obj[header] = val;
           });
 
           obj['rowIndex'] = index + 2; // Store 1-based row index
-
-          // Inject Week Closing Balance based on Date
-          var rowDate = row[0]; // Assuming Date is first column
-          var dateKey = formatDateKey(rowDate);
-
-          // Use the looked-up value, or 0 if not found
-          obj['Week Closing Balance'] = closingBalanceMap[dateKey] || 0;
-
           return obj;
         });
-
-        // Reverse to show latest first
-        result.reverse();
+        
+        // No reverse here, let client handle sorting if needed, or keep chronological
       }
     }
 
-    // 3. Return both sets of data
+    // Return data
     var responsePayload = {
-      reports: result,
+      data: result, // Changed key to 'data' to match client expectation
       sheet2Data: sheet2Data
     };
 

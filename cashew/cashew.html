@@ -119,16 +119,21 @@
             </div>
 
             <!-- Date Picker & Save Button -->
-            <div class="mb-6 flex justify-end items-center gap-3">
-                <div class="flex items-center gap-2 bg-white/5 p-2 rounded-lg border border-white/10">
-                    <button id="prev-day" class="p-2 px-4 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"><i class="fa-solid fa-chevron-left"></i></button>
-                    <i class="fa-regular fa-calendar text-pink-400"></i>
-                    <input type="date" id="date-input" class="bg-transparent outline-none text-white font-semibold" />
-                    <button id="next-day" class="p-2 px-4 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"><i class="fa-solid fa-chevron-right"></i></button>
+            <div class="mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div id="last-entry-label" class="text-white/60 text-sm bg-white/5 px-4 py-2 rounded-lg border border-white/10">
+                    Last Entry: <span class="text-pink-400 font-bold">--</span>
                 </div>
-                <button onclick="saveData()" id="save-btn" class="bg-emerald-500 hover:bg-emerald-600 text-white py-2 px-4 rounded-lg font-bold flex items-center gap-2 transition text-sm shadow-lg shadow-emerald-500/20">
-                    <i class="fa-solid fa-floppy-disk"></i> Save
-                </button>
+                <div class="flex justify-end items-center gap-3 w-full md:w-auto">
+                    <div class="flex items-center gap-2 bg-white/5 p-2 rounded-lg border border-white/10">
+                        <button id="prev-day" class="p-2 px-4 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"><i class="fa-solid fa-chevron-left"></i></button>
+                        <i class="fa-regular fa-calendar text-pink-400"></i>
+                        <input type="date" id="date-input" class="bg-transparent outline-none text-white font-semibold" />
+                        <button id="next-day" class="p-2 px-4 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                    <button onclick="saveData()" id="save-btn" class="bg-emerald-500 hover:bg-emerald-600 text-white py-2 px-4 rounded-lg font-bold flex items-center gap-2 transition text-sm shadow-lg shadow-emerald-500/20">
+                        <i class="fa-solid fa-floppy-disk"></i> Save
+                    </button>
+                </div>
             </div>
 
             <!-- Expenses List -->
@@ -210,6 +215,57 @@
         let isEditMode = false;
         let originalDate = null;
 
+        function fetchLastEnteredDate() {
+            const dateInput = document.getElementById('date-input');
+            const dateVal = new Date(dateInput.value);
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const sheetName = `${months[dateVal.getMonth()]} ${dateVal.getFullYear()}`;
+
+            const label = document.querySelector('#last-entry-label span');
+            if(label) label.textContent = 'Loading...';
+
+            fetch(`${CONFIG.GOOGLE_SHEET_URL_CASHEW}?sheetName=${encodeURIComponent(sheetName)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.data && data.data.length > 0) {
+                        // Find the highest date in the data
+                        let maxDate = null;
+                        let maxDateStr = '';
+
+                        data.data.forEach(entry => {
+                            if (entry.date) {
+                                // Parse date string (assuming dd/MMM/yyyy or similar format from sheet)
+                                const d = new Date(entry.date);
+                                if (!isNaN(d.getTime())) {
+                                    if (!maxDate || d > maxDate) {
+                                        maxDate = d;
+                                        maxDateStr = entry.date;
+                                    }
+                                }
+                            }
+                        });
+
+                        if (maxDateStr) {
+                            // If the date string from sheet is already formatted, use it directly or reformat
+                            // Since we want dd/MMM/yyyy and the sheet might return it or ISO, let's ensure format
+                            if (maxDateStr.match(/^\d{2}\/[A-Za-z]{3}\/\d{4}$/)) {
+                                label.textContent = maxDateStr;
+                            } else {
+                                label.textContent = formatDateToDDMMMYYYY(maxDateStr);
+                            }
+                        } else {
+                            label.textContent = 'None';
+                        }
+                    } else {
+                        if(label) label.textContent = 'None';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching last date:', error);
+                    if(label) label.textContent = 'Error';
+                });
+        }
+
         function init() {
             const dateInput = document.getElementById('date-input');
             const today = new Date().toISOString().split('T')[0];
@@ -217,6 +273,8 @@
 
             document.getElementById('prev-day').addEventListener('click', () => changeDate(-1));
             document.getElementById('next-day').addEventListener('click', () => changeDate(1));
+
+            dateInput.addEventListener('change', fetchLastEnteredDate);
 
             const editData = sessionStorage.getItem('cashewEditData');
             if (editData) {
@@ -249,6 +307,8 @@
                     addRow(defaultCategories[i]);
                 }
             }
+
+            fetchLastEnteredDate();
         }
 
         function changeDate(days) {
@@ -272,6 +332,7 @@
                 const m = String(dateObj.getMonth() + 1).padStart(2, '0');
                 const d = String(dateObj.getDate()).padStart(2, '0');
                 dateInput.value = `${y}-${m}-${d}`;
+                fetchLastEnteredDate();
             }
         }
 
@@ -435,6 +496,7 @@
                 loader.classList.add('hidden');
                 saveBtn.disabled = false;
                 alert('✓ Expenses saved to Google Sheets successfully!');
+                fetchLastEnteredDate();
                 if (isEditMode) {
                      window.location.href = 'cashewreport.html';
                 } else {

@@ -119,6 +119,10 @@ function doGet(e) {
 
       var date = row[0];
       if (date) {
+        // Format date to dd/MMM/yyyy if it's a Date object
+        if (date instanceof Date) {
+            date = Utilities.formatDate(date, Session.getScriptTimeZone(), "dd/MMM/yyyy");
+        }
         lastDate = date;
       } else {
         date = lastDate; // Fill in missing date from previous row

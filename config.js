@@ -1,11 +1,11 @@
 const CONFIG = {
     //Prod Link
-    GOOGLE_SHEET_URL_DENOMINATIONS: 'https://script.google.com/macros/s/AKfycbyPA-Tg-g8MhrdMZPNIKFfNvU691amfVEd751V-PwVh7FmZm_HmPBiVhLSr8d25R1qUlg/exec',
+    GOOGLE_SHEET_URL_DENOMINATIONS: 'https://script.google.com/macros/s/AKfycbxl441oJIw5TIleqeKd-fRuJQKMOpilWMCTPeYXMPEe0xv1WIZyc-3mPNH3ovTFcrtDgQ/exec',
     //QA Link
     //GOOGLE_SHEET_URL_CASH_COUNTER: 'https://script.google.com/macros/s/AKfycbxViPXKVueaCVxBsjNk2ndAFDWlWBipghlzUC_-u5ZlI2F_zrG6xL27eyIGjRF6NuoOPA/exec',
 
     //Prod Link
-    GOOGLE_SHEET_URL_CASHEW: 'https://script.google.com/macros/s/AKfycbzoeqSVhH16JdAHDQIiFn9f73jRa3NZQNP2feac0zpn_gTclMinVsA41MzFNlsf6-Df0w/exec',
+    GOOGLE_SHEET_URL_CASHEW: 'https://script.google.com/macros/s/AKfycbwSmSrk2yHtWe1H-vTCA3aM7Gjfw92R1LIjH4NI8Ba6Xqo5cg17szSjRl4Noyu29HYX2A/exec',
     //QA Link
     //GOOGLE_SHEET_URL_CASHEW: 'https://script.google.com/macros/s/AKfycbz7-TPG6goJrAXw-2TZSebXf8Y_iAgKReHsQNKHg2ts01ZfILc82mX1-u2SqeTukBayRQ/exec'
 
