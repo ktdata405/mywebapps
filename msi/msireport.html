@@ -523,6 +523,8 @@
                     <button class="icon-btn" onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
                 </div>
 
+                <button class="icon-btn" onclick="editCurrentMonth()" title="Edit This Month"><i class="fa-solid fa-pen-to-square"></i></button>
+
                 <!-- Invested Card (Moved from Overview Header) -->
                 <div class="meta-item">
                     <i class="fa-solid fa-coins" style="color: var(--primary);"></i>
@@ -915,7 +917,14 @@
             const total = row.calculated_total !== undefined ? row.calculated_total : (Number(row.total_investment) || 0);
 
             let html = `
-                <td>${row.month} ${row.year}</td>
+                <td>
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                        <span>${row.month} ${row.year}</span>
+                        <button onclick="editRecord('${row.month}', '${row.year}')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px;">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                    </div>
+                </td>
                 <td style="color: var(--primary); font-weight: 600;">${formatNum(total)}</td>
             `;
 
@@ -940,6 +949,23 @@
             tbody.appendChild(tr);
         });
     }
+
+    // Edit Functionality
+    window.editRecord = (month, year) => {
+        const record = globalData.find(r => r.month === month && r.year == year);
+        if (record) {
+            const user = document.getElementById('user-select').value;
+            const dataToEdit = { ...record, user: user };
+            sessionStorage.setItem('msiEditData', JSON.stringify(dataToEdit));
+            window.location.href = 'msi.html';
+        }
+    };
+
+    window.editCurrentMonth = () => {
+        if (currentMonthIndex === -1 || !globalData[currentMonthIndex]) return;
+        const record = globalData[currentMonthIndex];
+        window.editRecord(record.month, record.year);
+    };
 
     // Initial fetch
     document.addEventListener('DOMContentLoaded', fetchData);

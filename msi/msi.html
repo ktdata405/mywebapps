@@ -549,6 +549,66 @@
             input.addEventListener('blur', () => formatOnBlur(input));
         });
 
+        // Check for edit data in sessionStorage
+        const editData = sessionStorage.getItem('msiEditData');
+        if (editData) {
+            const data = JSON.parse(editData);
+            sessionStorage.removeItem('msiEditData');
+
+            // Set User
+            if (data.user) {
+                userSelect.value = data.user;
+                toggleUserSections();
+            }
+
+            // Set Month and Year
+            if (data.month) monthSelect.value = data.month;
+            if (data.year) yearSelect.value = data.year;
+
+            // Populate Fields
+            // Map data keys to input names if they differ, or use direct matching
+            // The data keys from report seem to match input names mostly (e.g. coin_quantum_liquid)
+            // Note: Report keys might be slightly different (e.g. quantum_liquid vs coin_quantum_liquid)
+            // Let's try to match loosely or map them.
+
+            // Mapping based on report keys to input names
+            const fieldMapping = {
+                // Kalyan
+                'quantum_liquid': 'coin_quantum_liquid',
+                'navi_nifty': 'coin_navi_nifty',
+                'invesco_small': 'coin_invesco_small',
+                'axis_nifty': 'coin_axis_nifty',
+                'birla_nifty': 'coin_birla_nifty',
+                'dsp_nifty': 'coin_dsp_nifty',
+                'edelweiss_bond': 'coin_edelweiss_bond',
+                'canara_small': 'coin_canara_small',
+                'quant_small': 'coin_quant_small',
+                'birla_psu': 'coin_birla_psu',
+                'power_grid': 'coin_power_grid',
+                'nps_tier1': 'nps_tier1',
+                'nps_tier2': 'nps_tier2',
+                'ssa': 'ssa_account', // Report key 'ssa' -> Input name 'ssa_account'
+                'ppf': 'ppf_account', // Report key 'ppf' -> Input name 'ppf_account'
+
+                // Layan
+                'ind_jio_flexi': 'ind_jio_flexi',
+                'ind_bandhan_small': 'ind_bandhan_small',
+                'ind_ntpc_green': 'ind_ntpc_green'
+            };
+
+            Object.keys(data).forEach(key => {
+                const inputName = fieldMapping[key] || key;
+                const input = document.querySelector(`[name="${inputName}"]`);
+                if (input) {
+                    const val = parseFloat(data[key]);
+                    if (!isNaN(val)) {
+                        input.value = formatter.format(val);
+                    }
+                }
+            });
+            calculateTotal();
+        }
+
         document.getElementById('sipForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const loader = document.getElementById('loader');
@@ -579,6 +639,7 @@
                 loader.style.display = 'none';
                 saveBtn.disabled = false;
                 alert('Investment details saved successfully for ' + monthSelect.value + ' ' + yearSelect.value + ' (' + user + ')!');
+                window.location.href = 'msireport.html'; // Redirect back to report
             })
             .catch(error => {
                 console.error('Error:', error);
