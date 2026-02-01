@@ -141,7 +141,7 @@
             width: 100%;
             box-sizing: border-box;
         }
-        #month, #year { width: 150px; }
+        #month, #year, #user_select { width: 150px; }
 
         /* Investment Sections */
         .section-title {
@@ -218,10 +218,12 @@
 
         @media (max-width: 768px) {
             .top-controls { flex-direction: column; align-items: stretch; }
-            #month, #year { width: 100%; }
+            #month, #year, #user_select { width: 100%; }
             .investment-grid { grid-template-columns: 1fr; }
             header { padding: 15px; }
         }
+
+        .hidden { display: none; }
     </style>
 </head>
 <body>
@@ -257,6 +259,13 @@
     <form id="sipForm">
         <div class="top-controls glass-card">
             <div class="form-group">
+                <label for="user_select">Select User</label>
+                <select id="user_select" name="user_select" class="input-field">
+                    <option value="Kalyan">Kalyan</option>
+                    <option value="Layan">Layan</option>
+                </select>
+            </div>
+            <div class="form-group">
                 <label for="month">Select Month</label>
                 <select id="month" name="month" required class="input-field">
                     <option value="Jan">Jan</option>
@@ -288,119 +297,150 @@
             </div>
         </div>
 
-        <h2 class="section-title"><i class="fa-solid fa-coins"></i> Coin</h2>
-        <div class="investment-grid">
-            <div class="investment-card glass-card">
-                <label>Quantum Liquid Debt Fund Max -10%</label>
-                <div class="input-wrapper">
-                    <span class="currency-symbol">₹</span>
-                    <input type="text" class="number-format input-field" name="coin_quantum_liquid" placeholder="0.00" inputmode="decimal" value="1330">
+        <!-- Kalyan's Section -->
+        <div id="kalyan-section">
+            <h2 class="section-title"><i class="fa-solid fa-coins"></i> Coin</h2>
+            <div class="investment-grid">
+                <div class="investment-card glass-card">
+                    <label>Quantum Liquid Debt Fund Max -10%</label>
+                    <div class="input-wrapper">
+                        <span class="currency-symbol">₹</span>
+                        <input type="text" class="number-format input-field" name="coin_quantum_liquid" placeholder="0.00" inputmode="decimal" value="1330">
+                    </div>
+                </div>
+                <div class="investment-card glass-card">
+                    <label>Navi Nifty 50 Index Funds</label>
+                    <div class="input-wrapper">
+                        <span class="currency-symbol">₹</span>
+                        <input type="text" class="number-format input-field" name="coin_navi_nifty" placeholder="0.00" inputmode="decimal" value="1330">
+                    </div>
+                </div>
+                <div class="investment-card glass-card">
+                    <label>Invesco India Small Cap Fund</label>
+                    <div class="input-wrapper">
+                        <span class="currency-symbol">₹</span>
+                        <input type="text" class="number-format input-field" name="coin_invesco_small" placeholder="0.00" inputmode="decimal" value="1330">
+                    </div>
+                </div>
+                <div class="investment-card glass-card">
+                    <label>Axis Nifty 100 Index Fund</label>
+                    <div class="input-wrapper">
+                        <span class="currency-symbol">₹</span>
+                        <input type="text" class="number-format input-field" name="coin_axis_nifty" placeholder="0.00" inputmode="decimal" value="1330">
+                    </div>
+                </div>
+                <div class="investment-card glass-card">
+                    <label>Aditya Birla Sun Life Nifty 50 Index</label>
+                    <div class="input-wrapper">
+                        <span class="currency-symbol">₹</span>
+                        <input type="text" class="number-format input-field" name="coin_birla_nifty" placeholder="0.00" inputmode="decimal" value="1330">
+                    </div>
+                </div>
+                <div class="investment-card glass-card">
+                    <label>DSP Nifty 50 Index Fund</label>
+                    <div class="input-wrapper">
+                        <span class="currency-symbol">₹</span>
+                        <input type="text" class="number-format input-field" name="coin_dsp_nifty" placeholder="0.00" inputmode="decimal" value="1330">
+                    </div>
+                </div>
+                <div class="investment-card glass-card">
+                    <label>EdelWeiss Bharat Bond FOF - Apr 2031</label>
+                    <div class="input-wrapper">
+                        <span class="currency-symbol">₹</span>
+                        <input type="text" class="number-format input-field" name="coin_edelweiss_bond" placeholder="0.00" inputmode="decimal" value="1330">
+                    </div>
                 </div>
             </div>
-            <div class="investment-card glass-card">
-                <label>Navi Nifty 50 Index Funds</label>
-                <div class="input-wrapper">
-                    <span class="currency-symbol">₹</span>
-                    <input type="text" class="number-format input-field" name="coin_navi_nifty" placeholder="0.00" inputmode="decimal" value="1330">
+
+            <h2 class="section-title"><i class="fa-solid fa-seedling"></i> Groww</h2>
+            <div class="investment-grid">
+                <div class="investment-card glass-card">
+                    <label>Canara Robeco Small Cap Fund Direct</label>
+                    <div class="input-wrapper">
+                        <span class="currency-symbol">₹</span>
+                        <input type="text" class="number-format input-field" name="coin_canara_small" placeholder="0.00" inputmode="decimal" value="6050">
+                    </div>
+                </div>
+                <div class="investment-card glass-card">
+                    <label>Quant Small Cap Fund Direct Plan[Lum-sum]</label>
+                    <div class="input-wrapper">
+                        <span class="currency-symbol">₹</span>
+                        <input type="text" class="number-format input-field" name="coin_quant_small" placeholder="0.00" inputmode="decimal" value="0">
+                    </div>
+                </div>
+                <div class="investment-card glass-card">
+                    <label>Aditya Birla Sun Life PSU Equity Direct[Lum-sum]</label>
+                    <div class="input-wrapper">
+                        <span class="currency-symbol">₹</span>
+                        <input type="text" class="number-format input-field" name="coin_birla_psu" placeholder="0.00" inputmode="decimal" value="0">
+                    </div>
+                </div>
+                <div class="investment-card glass-card">
+                    <label>Power Grid Corp(Stock)</label>
+                    <div class="input-wrapper">
+                        <span class="currency-symbol">₹</span>
+                        <input type="text" class="number-format input-field" name="coin_power_grid" placeholder="0.00" inputmode="decimal" value="0">
+                    </div>
                 </div>
             </div>
-            <div class="investment-card glass-card">
-                <label>Invesco India Small Cap Fund</label>
-                <div class="input-wrapper">
-                    <span class="currency-symbol">₹</span>
-                    <input type="text" class="number-format input-field" name="coin_invesco_small" placeholder="0.00" inputmode="decimal" value="1330">
+
+            <h2 class="section-title"><i class="fa-solid fa-building-columns"></i> Govt Investments</h2>
+            <div class="investment-grid">
+                <div class="investment-card glass-card">
+                    <label>NPS Tier - 1</label>
+                    <div class="input-wrapper">
+                        <span class="currency-symbol">₹</span>
+                        <input type="text" class="number-format input-field" name="nps_tier1" placeholder="0.00" inputmode="decimal" value="5500">
+                    </div>
                 </div>
-            </div>
-            <div class="investment-card glass-card">
-                <label>Axis Nifty 100 Index Fund</label>
-                <div class="input-wrapper">
-                    <span class="currency-symbol">₹</span>
-                    <input type="text" class="number-format input-field" name="coin_axis_nifty" placeholder="0.00" inputmode="decimal" value="1330">
+                <div class="investment-card glass-card">
+                    <label>NPS Tier - 2</label>
+                    <div class="input-wrapper">
+                        <span class="currency-symbol">₹</span>
+                        <input type="text" class="number-format input-field" name="nps_tier2" placeholder="0.00" inputmode="decimal" value="0">
+                    </div>
                 </div>
-            </div>
-            <div class="investment-card glass-card">
-                <label>Aditya Birla Sun Life Nifty 50 Index</label>
-                <div class="input-wrapper">
-                    <span class="currency-symbol">₹</span>
-                    <input type="text" class="number-format input-field" name="coin_birla_nifty" placeholder="0.00" inputmode="decimal" value="1330">
+                <div class="investment-card glass-card">
+                    <label>Sukanya Samriddhi Account (SSA)</label>
+                    <div class="input-wrapper">
+                        <span class="currency-symbol">₹</span>
+                        <input type="text" class="number-format input-field" name="ssa_account" placeholder="0.00" inputmode="decimal" value="2500">
+                    </div>
                 </div>
-            </div>
-            <div class="investment-card glass-card">
-                <label>DSP Nifty 50 Index Fund</label>
-                <div class="input-wrapper">
-                    <span class="currency-symbol">₹</span>
-                    <input type="text" class="number-format input-field" name="coin_dsp_nifty" placeholder="0.00" inputmode="decimal" value="1330">
-                </div>
-            </div>
-            <div class="investment-card glass-card">
-                <label>EdelWeiss Bharat Bond FOF - Apr 2031</label>
-                <div class="input-wrapper">
-                    <span class="currency-symbol">₹</span>
-                    <input type="text" class="number-format input-field" name="coin_edelweiss_bond" placeholder="0.00" inputmode="decimal" value="1330">
+                <div class="investment-card glass-card">
+                    <label>PPF</label>
+                    <div class="input-wrapper">
+                        <span class="currency-symbol">₹</span>
+                        <input type="text" class="number-format input-field" name="ppf_account" placeholder="0.00" inputmode="decimal" value="10000">
+                    </div>
                 </div>
             </div>
         </div>
 
-        <h2 class="section-title"><i class="fa-solid fa-seedling"></i> Groww</h2>
-        <div class="investment-grid">
-            <div class="investment-card glass-card">
-                <label>Canara Robeco Small Cap Fund Direct</label>
-                <div class="input-wrapper">
-                    <span class="currency-symbol">₹</span>
-                    <input type="text" class="number-format input-field" name="coin_canara_small" placeholder="0.00" inputmode="decimal" value="6050">
+        <!-- Layan's Section -->
+        <div id="layan-section" class="hidden">
+            <h2 class="section-title"><i class="fa-solid fa-chart-line"></i> INDMoney</h2>
+            <div class="investment-grid">
+                <div class="investment-card glass-card">
+                    <label>JioBlackRock Flexi Cap Fund</label>
+                    <div class="input-wrapper">
+                        <span class="currency-symbol">₹</span>
+                        <input type="text" class="number-format input-field" name="ind_jio_flexi" placeholder="0.00" inputmode="decimal" value="0">
+                    </div>
                 </div>
-            </div>
-            <div class="investment-card glass-card">
-                <label>Quant Small Cap Fund Direct Plan[Lum-sum]</label>
-                <div class="input-wrapper">
-                    <span class="currency-symbol">₹</span>
-                    <input type="text" class="number-format input-field" name="coin_quant_small" placeholder="0.00" inputmode="decimal" value="0">
+                <div class="investment-card glass-card">
+                    <label>Bandhan Small Cap Fund</label>
+                    <div class="input-wrapper">
+                        <span class="currency-symbol">₹</span>
+                        <input type="text" class="number-format input-field" name="ind_bandhan_small" placeholder="0.00" inputmode="decimal" value="0">
+                    </div>
                 </div>
-            </div>
-            <div class="investment-card glass-card">
-                <label>Aditya Birla Sun Life PSU Equity Direct[Lum-sum]</label>
-                <div class="input-wrapper">
-                    <span class="currency-symbol">₹</span>
-                    <input type="text" class="number-format input-field" name="coin_birla_psu" placeholder="0.00" inputmode="decimal" value="0">
-                </div>
-            </div>
-            <div class="investment-card glass-card">
-                <label>Power Grid Corp(Stock)</label>
-                <div class="input-wrapper">
-                    <span class="currency-symbol">₹</span>
-                    <input type="text" class="number-format input-field" name="coin_power_grid" placeholder="0.00" inputmode="decimal" value="0">
-                </div>
-            </div>
-        </div>
-
-        <h2 class="section-title"><i class="fa-solid fa-building-columns"></i> Govt Investments</h2>
-        <div class="investment-grid">
-            <div class="investment-card glass-card">
-                <label>NPS Tier - 1</label>
-                <div class="input-wrapper">
-                    <span class="currency-symbol">₹</span>
-                    <input type="text" class="number-format input-field" name="nps_tier1" placeholder="0.00" inputmode="decimal" value="5500">
-                </div>
-            </div>
-            <div class="investment-card glass-card">
-                <label>NPS Tier - 2</label>
-                <div class="input-wrapper">
-                    <span class="currency-symbol">₹</span>
-                    <input type="text" class="number-format input-field" name="nps_tier2" placeholder="0.00" inputmode="decimal" value="0">
-                </div>
-            </div>
-            <div class="investment-card glass-card">
-                <label>Sukanya Samriddhi Account (SSA)</label>
-                <div class="input-wrapper">
-                    <span class="currency-symbol">₹</span>
-                    <input type="text" class="number-format input-field" name="ssa_account" placeholder="0.00" inputmode="decimal" value="2500">
-                </div>
-            </div>
-            <div class="investment-card glass-card">
-                <label>PPF</label>
-                <div class="input-wrapper">
-                    <span class="currency-symbol">₹</span>
-                    <input type="text" class="number-format input-field" name="ppf_account" placeholder="0.00" inputmode="decimal" value="10000">
+                <div class="investment-card glass-card">
+                    <label>NTPC Green Stock</label>
+                    <div class="input-wrapper">
+                        <span class="currency-symbol">₹</span>
+                        <input type="text" class="number-format input-field" name="ind_ntpc_green" placeholder="0.00" inputmode="decimal" value="0">
+                    </div>
                 </div>
             </div>
         </div>
@@ -421,8 +461,11 @@
     document.addEventListener('DOMContentLoaded', function() {
         const monthSelect = document.getElementById('month');
         const yearSelect = document.getElementById('year');
+        const userSelect = document.getElementById('user_select');
         const totalInvestmentField = document.getElementById('total_investment');
         const investmentInputs = document.querySelectorAll('.number-format');
+        const kalyanSection = document.getElementById('kalyan-section');
+        const layanSection = document.getElementById('layan-section');
 
         const now = new Date();
         const currentMonthIndex = now.getMonth();
@@ -468,11 +511,33 @@
 
         function calculateTotal() {
             let total = 0;
-            investmentInputs.forEach(input => {
-                total += unformatNumber(input.value);
+            // Only calculate total for visible inputs
+            const visibleInputs = document.querySelectorAll('div:not(.hidden) .number-format');
+            visibleInputs.forEach(input => {
+                // Check if the input is actually visible (part of the active section)
+                if (input.offsetParent !== null) {
+                    total += unformatNumber(input.value);
+                }
             });
             totalInvestmentField.value = formatter.format(total);
         }
+
+        function toggleUserSections() {
+            const user = userSelect.value;
+            if (user === 'Kalyan') {
+                kalyanSection.classList.remove('hidden');
+                layanSection.classList.add('hidden');
+            } else {
+                kalyanSection.classList.add('hidden');
+                layanSection.classList.remove('hidden');
+            }
+            calculateTotal();
+        }
+
+        userSelect.addEventListener('change', toggleUserSections);
+
+        // Initial check
+        toggleUserSections();
 
         calculateTotal();
 
@@ -495,14 +560,15 @@
             const data = {};
 
             formData.forEach((value, key) => {
-                if (key === 'month' || key === 'year') {
+                if (key === 'month' || key === 'year' || key === 'user_select') {
                     data[key] = value;
                 } else {
                     data[key] = unformatNumber(value);
                 }
             });
 
-            const SCRIPT_URL = CONFIG.GOOGLE_SHEET_URL_MSI;
+            const user = document.getElementById('user_select').value;
+            const SCRIPT_URL = CONFIG.GOOGLE_SHEET_URL_MSI + `?sheetName=${user}`;
 
             fetch(SCRIPT_URL, {
                 method: 'POST',
@@ -512,7 +578,7 @@
             .then(response => {
                 loader.style.display = 'none';
                 saveBtn.disabled = false;
-                alert('Investment details saved successfully for ' + monthSelect.value + ' ' + yearSelect.value + '!');
+                alert('Investment details saved successfully for ' + monthSelect.value + ' ' + yearSelect.value + ' (' + user + ')!');
             })
             .catch(error => {
                 console.error('Error:', error);

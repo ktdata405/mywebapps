@@ -3,17 +3,19 @@
 // Paste this code into the Code.gs file, save, and deploy.
 // Publish > Deploy as web app > Execute as: Me > Who has access: Anyone.
 
-const SHEET_NAME = 'Sheet1'; // The name of the sheet tab in your spreadsheet
-
 function doPost(e) {
   var lock = LockService.getScriptLock();
   lock.tryLock(10000);
 
   try {
     var doc = SpreadsheetApp.getActiveSpreadsheet(); // This script MUST be bound to the sheet
-    var sheet = doc.getSheetByName(SHEET_NAME);
+    
+    // Get sheet name from query parameter or default to 'Sheet1'
+    var sheetName = e.parameter.sheetName || 'Sheet1';
+    
+    var sheet = doc.getSheetByName(sheetName);
     if (!sheet) {
-      sheet = doc.insertSheet(SHEET_NAME);
+      sheet = doc.insertSheet(sheetName);
     }
 
     var data = JSON.parse(e.postData.contents);
@@ -24,7 +26,8 @@ function doPost(e) {
       'coin_quantum_liquid', 'coin_navi_nifty', 'coin_invesco_small', 'coin_axis_nifty', 
       'coin_birla_nifty', 'coin_dsp_nifty', 'coin_edelweiss_bond',
       'coin_canara_small', 'coin_quant_small', 'coin_birla_psu', 'coin_power_grid',
-      'nps_tier1', 'nps_tier2', 'ssa_account', 'ppf_account'
+      'nps_tier1', 'nps_tier2', 'ssa_account', 'ppf_account',
+      'ind_jio_flexi', 'ind_bandhan_small', 'ind_ntpc_green'
     ];
 
     if (sheet.getLastRow() === 0) {
@@ -57,7 +60,11 @@ function doGet(e) {
 
   try {
     var doc = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = doc.getSheetByName(SHEET_NAME);
+    
+    // Get sheet name from query parameter or default to 'Sheet1'
+    var sheetName = e.parameter.sheetName || 'Sheet1';
+    
+    var sheet = doc.getSheetByName(sheetName);
 
     if (!sheet) {
       return ContentService.createTextOutput(JSON.stringify([])) // Return empty array if sheet not found

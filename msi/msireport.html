@@ -437,6 +437,25 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+
+        /* User Select */
+        .user-select-container {
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-select {
+            background: var(--bg-card);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+        }
     </style>
 </head>
 <body>
@@ -480,6 +499,15 @@
 
         <!-- Controls (Tabs + Month Nav) -->
         <div class="controls-card">
+            <!-- User Selection -->
+            <div class="user-select-container">
+                <label for="user-select" style="color: var(--text-muted);">User:</label>
+                <select id="user-select" class="user-select" onchange="fetchData()">
+                    <option value="Kalyan">Kalyan</option>
+                    <option value="Layan">Layan</option>
+                </select>
+            </div>
+
             <!-- Navigation Tabs -->
             <div class="tabs">
                 <button class="tab-btn active" onclick="switchTab('overview', this)">This Month</button>
@@ -549,12 +577,18 @@
     const SCRIPT_URL = CONFIG.GOOGLE_SHEET_URL_MSI;
 
     // Platform Config
-    const PLATFORMS = {
+    const PLATFORMS_KALYAN = {
         coin: { name: 'Zerodha Coin', icon: 'fa-solid fa-coins', color: '#3b82f6', fields: ['quantum_liquid', 'navi_nifty', 'invesco_small', 'axis_nifty', 'birla_nifty', 'dsp_nifty', 'edelweiss_bond'] },
         groww: { name: 'Groww', icon: 'fa-solid fa-seedling', color: '#10b981', fields: ['canara_small', 'quant_small', 'birla_psu', 'power_grid'] },
         govt: { name: 'Govt. Schemes', icon: 'fa-solid fa-landmark', color: '#f59e0b', fields: ['ppf', 'ssa', 'nps_tier1', 'nps_tier2'] },
         nj: { name: 'NJ Wealth', icon: 'fa-solid fa-briefcase', color: '#ef4444', fields: ['axis_midcap', 'dsp_midcap', 'invesco_midcap', 'kotak_emerging', 'nippon_growth'] }
     };
+
+    const PLATFORMS_LAYAN = {
+        indmoney: { name: 'INDMoney', icon: 'fa-solid fa-chart-line', color: '#8b5cf6', fields: ['ind_jio_flexi', 'ind_bandhan_small', 'ind_ntpc_green'] }
+    };
+
+    let CURRENT_PLATFORMS = PLATFORMS_KALYAN;
 
     const PALETTE = [
         '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
@@ -566,7 +600,9 @@
     // Assign unique color to each field
     const FIELD_COLORS = {};
     let colorIdx = 0;
-    Object.values(PLATFORMS).forEach(p => {
+
+    // Initialize colors for all possible fields
+    [...Object.values(PLATFORMS_KALYAN), ...Object.values(PLATFORMS_LAYAN)].forEach(p => {
         p.fields.forEach(f => {
             FIELD_COLORS[f] = PALETTE[colorIdx % PALETTE.length];
             colorIdx++;
@@ -624,8 +660,17 @@
         const loader = document.getElementById('loader');
         loader.style.display = 'flex'; // Show loader
 
+        const user = document.getElementById('user-select').value;
+
+        // Update platforms based on user
+        if (user === 'Layan') {
+            CURRENT_PLATFORMS = PLATFORMS_LAYAN;
+        } else {
+            CURRENT_PLATFORMS = PLATFORMS_KALYAN;
+        }
+
         try {
-            const res = await fetch(`${SCRIPT_URL}?v=${Date.now()}`);
+            const res = await fetch(`${SCRIPT_URL}?sheetName=${user}&v=${Date.now()}`);
             let data = await res.json();
 
             if (data.data) data = data.data;
@@ -646,7 +691,7 @@
     }
 
     function processData(data) {
-        const allFields = [...COMMON_FIELDS, ...BANK_FIELDS, ...Object.values(PLATFORMS).flatMap(p => p.fields)];
+        const allFields = [...COMMON_FIELDS, ...BANK_FIELDS, ...Object.values(CURRENT_PLATFORMS).flatMap(p => p.fields)];
         const normalized = data.map(row => {
             const newRow = {};
             const rowKeys = Object.keys(row);
@@ -693,14 +738,24 @@
     }
 
     function renderUI() {
-        if (!globalData.length) return;
+        if (!globalData.length) {
+            // Clear UI if no data
+            document.getElementById('current-month-display').textContent = '-';
+            document.getElementById('current-month-total').textContent = 'Rs. 0';
+            document.getElementById('platform-grid').innerHTML = '';
+            document.getElementById('total-grid').innerHTML = '';
+            document.querySelector('#dataTable tbody').innerHTML = '';
+            currentTotalNetWorth = 0;
+            updateNetWorthDisplay();
+            return;
+        }
 
         // Calculate Totals Dynamically
         let totalAllTime = 0;
         globalData.forEach(row => {
             // Sum up all platform fields for this row
             let rowTotal = 0;
-            Object.values(PLATFORMS).forEach(p => {
+            Object.values(CURRENT_PLATFORMS).forEach(p => {
                 p.fields.forEach(f => rowTotal += (Number(row[f]) || 0));
             });
             // Add bank fields if they are considered part of "Investment" or "Net Worth"
@@ -715,7 +770,7 @@
 
         // Calculate Last Month Total (Investments + Banks)
         let lastMonthTotal = 0;
-        Object.values(PLATFORMS).forEach(p => {
+        Object.values(CURRENT_PLATFORMS).forEach(p => {
             p.fields.forEach(f => lastMonthTotal += (Number(lastRec[f]) || 0));
         });
         BANK_FIELDS.forEach(f => lastMonthTotal += (Number(lastRec[f]) || 0));
@@ -743,7 +798,7 @@
 
         // Calculate Total for displayed platforms
         let monthTotal = 0;
-        Object.values(PLATFORMS).forEach(p => {
+        Object.values(CURRENT_PLATFORMS).forEach(p => {
             p.fields.forEach(f => monthTotal += (Number(data[f]) || 0));
         });
         document.getElementById('current-month-total').textContent = formatCurrency(monthTotal);
@@ -761,7 +816,7 @@
         const container = document.getElementById(containerId);
         container.innerHTML = '';
 
-        Object.entries(PLATFORMS).forEach(([key, p]) => {
+        Object.entries(CURRENT_PLATFORMS).forEach(([key, p]) => {
             let platformTotal = p.fields.reduce((sum, f) => sum + (Number(dataObj[f]) || 0), 0);
 
             if (platformTotal === 0) return;
@@ -769,7 +824,7 @@
             // Prepare items with key for color lookup
             let itemsData = p.fields.map(f => ({
                 key: f,
-                name: f.replace(/_/g, ' '),
+                name: f.replace(/_/g, ' ').replace('ind_', ''),
                 val: Number(dataObj[f]) || 0
             }));
 
@@ -812,13 +867,13 @@
         const totalData = {};
 
         // Initialize fields
-        Object.values(PLATFORMS).forEach(p => {
+        Object.values(CURRENT_PLATFORMS).forEach(p => {
             p.fields.forEach(f => totalData[f] = 0);
         });
 
         // Sum up
         globalData.forEach(row => {
-            Object.values(PLATFORMS).forEach(p => {
+            Object.values(CURRENT_PLATFORMS).forEach(p => {
                 p.fields.forEach(f => {
                     totalData[f] += (Number(row[f]) || 0);
                 });
@@ -835,11 +890,11 @@
         while (thead.children.length > 2) thead.removeChild(thead.lastChild);
         tbody.innerHTML = '';
 
-        Object.entries(PLATFORMS).forEach(([key, p]) => {
+        Object.entries(CURRENT_PLATFORMS).forEach(([key, p]) => {
             p.fields.forEach((f, index) => {
                 const color = FIELD_COLORS[f];
                 const th = document.createElement('th');
-                th.textContent = f.replace(/_/g, ' ').replace('midcap', 'Mid').replace('small', 'Sml');
+                th.textContent = f.replace(/_/g, ' ').replace('midcap', 'Mid').replace('small', 'Sml').replace('ind_', '');
                 if (key === 'govt') th.textContent = th.textContent.toUpperCase();
 
                 th.style.color = color;
@@ -864,7 +919,7 @@
                 <td style="color: var(--primary); font-weight: 600;">${formatNum(total)}</td>
             `;
 
-            Object.values(PLATFORMS).forEach(p => {
+            Object.values(CURRENT_PLATFORMS).forEach(p => {
                 p.fields.forEach((f, index) => {
                     const val = Number(row[f]) || 0;
                     const color = FIELD_COLORS[f];
@@ -886,7 +941,7 @@
         });
     }
 
-    // Removed auto-fetch on DOMContentLoaded
-    // document.addEventListener('DOMContentLoaded', fetchData);
+    // Initial fetch
+    document.addEventListener('DOMContentLoaded', fetchData);
 </script>
 </body>
