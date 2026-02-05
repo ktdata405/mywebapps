@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Village Interest Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #f472b6;
+            --secondary: #6366f1;
+            --accent: #8b5cf6;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-light: #f8fafc;
+            --text-dim: #94a3b8;
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --input-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #1e1b4b, #0f172a);
+            overflow: hidden;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .orb-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px; animation-delay: 0s; }
+        .orb-2 { width: 300px; height: 300px; background: var(--secondary); bottom: -50px; right: -50px; animation-delay: -5s; }
+        .orb-3 { width: 200px; height: 200px; background: var(--accent); top: 40%; left: 60%; animation-delay: -10s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, 50px); }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 450px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            animation: fadeInUp 0.6s ease-out backwards;
+            margin-bottom: 1rem;
+        }
+
+        .header-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+            text-align: center;
+            background: linear-gradient(to right, #fff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: rgba(255,255,255,0.05);
+            padding: 4px;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: none;
+            margin-top: 0;
+            font-size: 0.9rem;
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 2px 10px rgba(244, 114, 182, 0.3);
+        }
+
+        .input-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 12px;
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(244, 114, 182, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .amount-words {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 0.3rem;
+            font-style: italic;
+            min-height: 1.2em;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        button.calc-btn {
+            flex: 2;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(244, 114, 182, 0.3);
+        }
+
+        button.calc-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(244, 114, 182, 0.4);
+        }
+
+        button.clear-btn {
+            flex: 1;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button.clear-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        #result {
+            margin-top: 1.5rem;
+            padding: 1.2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            display: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .res-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .res-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .res-val { font-weight: 700; }
+        .val-total { color: #4ade80; }
+        .val-interest { color: #f472b6; }
+        .val-emi { color: #fbbf24; }
+
+        .emi-section {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px dashed rgba(255, 255, 255, 0.2);
+        }
+
+        .emi-title {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Accordion Styles */
+        .accordion-container {
+            margin-top: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.02);
+            display: none; /* Hidden by default until calculated */
+        }
+
+        .accordion-header {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-light);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+            transition: background 0.3s ease;
+        }
+
+        .accordion-header:hover { background: rgba(255, 255, 255, 0.08); }
+
+        .accordion-content {
+            display: none;
+            padding: 1.2rem;
+            background: transparent;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-dim);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .arrow { transition: transform 0.3s; }
+        .accordion-header.active .arrow { transform: rotate(180deg); }
+
+        /* Table Styles for Schedule */
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .schedule-table th, .schedule-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .schedule-table th {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .schedule-table td {
+            color: var(--text-light);
+        }
+
+        @keyframes fadeInUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-animation">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="card">
+        <div class="header-container">
+            <h2>
+                <a href="calculator.html" style="color: var(--text-light); text-decoration: none; margin-right: 10px;" aria-label="Back"><i class="fas fa-arrow-left"></i></a>
+                Village Interest
+                <a href="../index.html" style="color: var(--text-light); text-decoration: none; margin-left: 10px;" aria-label="Home"><i class="fas fa-home"></i></a>
+            </h2>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" id="tab-months" onclick="setMode('months')">Duration (Months)</button>
+            <button class="tab" id="tab-date" onclick="setMode('date')">Date Range</button>
+        </div>
+
+        <div class="input-group">
+            <label>Principal Amount</label>
+            <input type="number" id="principal" placeholder="Enter amount" oninput="updateAmountWords(this.value)">
+            <div id="amount-words" class="amount-words"></div>
+        </div>
+
+        <div class="input-group">
+            <label>Interest Rate (Rupees per 100)</label>
+            <input type="number" id="rate" placeholder="e.g. 2 for 2 rupees interest">
+        </div>
+
+        <div id="month-inputs">
+            <div class="input-group">
+                <label>Duration in Months</label>
+                <input type="number" id="duration-months" placeholder="Enter number of months">
+            </div>
+        </div>
+
+        <div id="date-inputs" style="display:none;">
+            <div class="input-group">
+                <label>Start Date</label>
+                <input type="date" id="start-date">
+            </div>
+
+            <div class="input-group">
+                <label>End Date</label>
+                <input type="date" id="end-date">
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="calc-btn" onclick="calculate()">Calculate</button>
+            <button class="clear-btn" onclick="clearInputs()">Clear</button>
+        </div>
+
+        <div id="result">
+            <div class="res-item"><span>Duration:</span> <span id="duration-text" class="res-val">0</span></div>
+            <div class="res-item"><span>Total Interest:</span> <span id="total-interest" class="res-val val-interest">0</span></div>
+            <div class="res-item"><span>Total Amount:</span> <span id="total-amount" class="res-val val-total">0</span></div>
+
+            <div class="emi-section">
+                <div class="emi-title">Monthly Payment Options</div>
+                <div class="res-item">
+                    <span>Interest Only:</span>
+                    <span id="monthly-interest" class="res-val val-emi">0</span>
+                </div>
+                <div class="res-item">
+                    <span>Interest + Principal (EMI):</span>
+                    <span id="monthly-emi" class="res-val val-emi">0</span>
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 5px;">
+                    * EMI calculated for the selected duration
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-container" id="schedule-accordion">
+            <button class="accordion-header" onclick="toggleSchedule()">
+                <span>Repayment Schedule <i class="fas fa-list-alt" style="margin-left: 8px;"></i></span>
+                <i class="fas fa-chevron-down arrow" id="schedule-arrow"></i>
+            </button>
+            <div class="accordion-content" id="scheduleContent">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Principal</th>
+                            <th>Interest</th>
+                            <th>Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody id="schedule-body">
+                        <!-- Rows will be added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+<script>
+    let currentMode = 'months';
+    // Set default dates
+    document.getElementById('end-date').valueAsDate = new Date();
+
+    function setMode(mode) {
+        currentMode = mode;
+        document.getElementById('tab-date').classList.toggle('active', mode === 'date');
+        document.getElementById('tab-months').classList.toggle('active', mode === 'months');
+
+        document.getElementById('date-inputs').style.display = mode === 'date' ? 'block' : 'none';
+        document.getElementById('month-inputs').style.display = mode === 'months' ? 'block' : 'none';
+
+        document.getElementById('result').style.display = 'none';
+        document.getElementById('schedule-accordion').style.display = 'none';
+    }
+
+    function toggleSchedule() {
+        const content = document.getElementById('scheduleContent');
+        const arrow = document.getElementById('schedule-arrow');
+        const header = arrow.parentElement;
+
+        if (content.style.display === "block") {
+            content.style.display = "none";
+            header.classList.remove('active');
+        } else {
+            content.style.display = "block";
+            header.classList.add('active');
+        }
+    }
+
+    function calculate() {
+        const P = parseFloat(document.getElementById('principal').value);
+        const R = parseFloat(document.getElementById('rate').value);
+
+        if (!P || !R) {
+            alert("Please enter Principal and Rate");
+            return;
+        }
+
+        let totalMonths = 0;
+        let durationStr = "";
+
+        if (currentMode === 'date') {
+            const startDate = new Date(document.getElementById('start-date').value);
+            const endDate = new Date(document.getElementById('end-date').value);
+
+            if (isNaN(startDate) || isNaN(endDate)) {
+                alert("Please select valid dates");
+                return;
+            }
+
+            if (endDate < startDate) {
+                alert("End date cannot be before start date");
+                return;
+            }
+
+            // Calculate difference in months and days
+            let years = endDate.getFullYear() - startDate.getFullYear();
+            let months = endDate.getMonth() - startDate.getMonth();
+            let days = endDate.getDate() - startDate.getDate();
+
+            if (days < 0) {
+                months--;
+                // Get days in previous month
+                let prevMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 0);
+                days += prevMonth.getDate();
+            }
+
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+
+            totalMonths = (years * 12) + months + (days / 30);
+
+            if (years > 0) durationStr += `${years}y `;
+            if (months > 0) durationStr += `${months}m `;
+            if (days > 0) durationStr += `${days}d`;
+            if (durationStr === "") durationStr = "0d";
+
+        } else {
+            // Months mode
+            const monthsInput = parseFloat(document.getElementById('duration-months').value);
+            if (!monthsInput || monthsInput <= 0) {
+                alert("Please enter valid duration in months");
+                return;
+            }
+            totalMonths = monthsInput;
+            durationStr = `${totalMonths} Months`;
+        }
+
+        // Village interest calculation: (Principal * Rate * Months) / 100
+        const interest = (P * R * totalMonths) / 100;
+        const total = P + interest;
+
+        // Monthly Interest Only
+        const monthlyInterest = (P * R) / 100;
+
+        // Monthly EMI (Principal + Interest) / Total Months
+        let monthlyEMI = 0;
+        if (totalMonths > 0) {
+            monthlyEMI = total / totalMonths;
+        }
+
+        document.getElementById('duration-text').innerText = durationStr;
+        document.getElementById('total-interest').innerText = interest.toLocaleString(undefined, {maximumFractionDigits: 2});
+        document.getElementById('total-amount').innerText = total.toLocaleString(undefined, {maximumFractionDigits: 2});
+
+        document.getElementById('monthly-interest').innerText = monthlyInterest.toLocaleString(undefined, {maximumFractionDigits: 2});
+        document.getElementById('monthly-emi').innerText = monthlyEMI.toLocaleString(undefined, {maximumFractionDigits: 2});
+
+        document.getElementById('result').style.display = 'block';
+
+        // Generate Schedule
+        // For Village Interest, it's typically simple interest.
+        // We will show a schedule assuming monthly payments of EMI (Principal + Interest)
+        // to clear the debt by the end of the term.
+
+        let scheduleHtml = '';
+        let balance = P;
+        let monthlyPrincipal = P / totalMonths;
+
+        // Round totalMonths to nearest integer for loop, though village interest can be fractional days
+        // For schedule display, we'll show full months
+        let loopMonths = Math.ceil(totalMonths);
+
+        for(let i = 1; i <= loopMonths; i++) {
+            // In village interest, interest is constant on principal usually (Simple Interest)
+            // But if we are paying EMI, balance reduces?
+            // The request asked for "repayment schedule" in "village model".
+            // Usually village interest is collected monthly (interest only) and principal at end.
+            // OR if EMI is chosen, it clears debt.
+            // Let's show the EMI schedule (clearing debt).
+
+            // However, the calculation above `interest = (P * R * totalMonths) / 100` is Simple Interest on full Principal.
+            // So monthly interest is constant `monthlyInterest`.
+            // And monthly principal payment is `monthlyPrincipal`.
+
+            balance -= monthlyPrincipal;
+            if(balance < 0) balance = 0;
+
+            scheduleHtml += `
+                <tr>
+                    <td>${i}</td>
+                    <td>${monthlyPrincipal.toFixed(0)}</td>
+                    <td>${monthlyInterest.toFixed(0)}</td>
+                    <td>${balance.toFixed(0)}</td>
+                </tr>
+            `;
+        }
+
+        document.getElementById('schedule-body').innerHTML = scheduleHtml;
+        document.getElementById('schedule-accordion').style.display = 'block';
+
+        // Reset accordion state
+        document.getElementById('scheduleContent').style.display = 'none';
+        document.querySelector('.accordion-header').classList.remove('active');
+    }
+
+    function clearInputs() {
+        document.getElementById('principal').value = '';
+        document.getElementById('rate').value = '';
+        document.getElementById('start-date').value = '';
+        document.getElementById('end-date').valueAsDate = new Date();
+        document.getElementById('duration-months').value = '';
+        document.getElementById('amount-words').innerText = '';
+        document.getElementById('result').style.display = 'none';
+        document.getElementById('schedule-accordion').style.display = 'none';
+    }
+
+    function updateAmountWords(amount) {
+        const wordsDiv = document.getElementById('amount-words');
+        if (!amount || isNaN(amount)) {
+            wordsDiv.innerText = '';
+            return;
+        }
+        wordsDiv.innerText = convertNumberToWords(Math.floor(amount));
+    }
+
+    function convertNumberToWords(amount) {
+        var words = new Array();
+        words[0] = '';
+        words[1] = 'One';
+        words[2] = 'Two';
+        words[3] = 'Three';
+        words[4] = 'Four';
+        words[5] = 'Five';
+        words[6] = 'Six';
+        words[7] = 'Seven';
+        words[8] = 'Eight';
+        words[9] = 'Nine';
+        words[10] = 'Ten';
+        words[11] = 'Eleven';
+        words[12] = 'Twelve';
+        words[13] = 'Thirteen';
+        words[14] = 'Fourteen';
+        words[15] = 'Fifteen';
+        words[16] = 'Sixteen';
+        words[17] = 'Seventeen';
+        words[18] = 'Eighteen';
+        words[19] = 'Nineteen';
+        words[20] = 'Twenty';
+        words[30] = 'Thirty';
+        words[40] = 'Forty';
+        words[50] = 'Fifty';
+        words[60] = 'Sixty';
+        words[70] = 'Seventy';
+        words[80] = 'Eighty';
+        words[90] = 'Ninety';
+
+        amount = amount.toString();
+        var atemp = amount.split(".");
+        var number = atemp[0].split(",").join("");
+        var n_length = number.length;
+        var words_string = "";
+
+        if (n_length <= 9) {
+            var n_array = new Array(0, 0, 0, 0, 0, 0, 0, 0, 0);
+            var received_n_array = new Array();
+            for (var i = 0; i < n_length; i++) {
+                received_n_array[i] = number.substr(i, 1);
+            }
+            for (var i = 9 - n_length, j = 0; i < 9; i++, j++) {
+                n_array[i] = received_n_array[j];
+            }
+            for (var i = 0, j = 1; i < 9; i++, j++) {
+                if (i == 0 || i == 2 || i == 4 || i == 7) {
+                    if (n_array[i] == 1) {
+                        n_array[j] = 10 + parseInt(n_array[j]);
+                        n_array[i] = 0;
+                    }
+                }
+            }
+
+            value = "";
+            for (var i = 0; i < 9; i++) {
+                if (i == 0 || i == 2 || i == 4 || i == 7) {
+                    value = n_array[i] * 10;
+                } else {
+                    value = n_array[i];
+                }
+                if (value != 0) {
+                    words_string += words[value] + " ";
+                }
+                if ((i == 1 && value != 0) || (i == 0 && value != 0 && n_array[i + 1] == 0)) {
+                    words_string += "Crores ";
+                }
+                if ((i == 3 && value != 0) || (i == 2 && value != 0 && n_array[i + 1] == 0)) {
+                    words_string += "Lakhs ";
+                }
+                if ((i == 5 && value != 0) || (i == 4 && value != 0 && n_array[i + 1] == 0)) {
+                    words_string += "Thousand ";
+                }
+                if (i == 6 && value != 0 && (n_array[i + 1] != 0 && n_array[i + 2] != 0)) {
+                    words_string += "Hundred and ";
+                } else if (i == 6 && value != 0) {
+                    words_string += "Hundred ";
+                }
+            }
+            words_string = words_string.split("  ").join(" ");
+        }
+        return words_string;
+    }
+</script>
+
+</body>
+</html>

@@ -132,6 +132,8 @@
         /* Staggered Animation */
         .card:nth-child(1) { animation-delay: 0.1s; }
         .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
 
         .card:hover {
             transform: translateY(-5px) scale(1.02);
@@ -183,6 +185,8 @@
         /* Specific Card Colors */
         .card-cashcounter .icon-box i { color: #4ade80; }
         .card-schemes .icon-box i { color: #fbbf24; }
+        .card-interest .icon-box i { color: #60a5fa; }
+        .card-village .icon-box i { color: #f472b6; }
 
         /* Animations */
         @keyframes slideDown {
@@ -238,6 +242,20 @@
             <div class="card-title">Govt Schemes</div>
             <div class="icon-box">
                 <i class="fas fa-piggy-bank"></i>
+            </div>
+        </a>
+
+        <a href="interest_float_flat.html" class="card card-interest">
+            <div class="card-title">Calculate Interest on Float and flat</div>
+            <div class="icon-box">
+                <i class="fas fa-percent"></i>
+            </div>
+        </a>
+
+        <a href="village_interest.html" class="card card-village">
+            <div class="card-title">Village Interest Models</div>
+            <div class="icon-box">
+                <i class="fas fa-landmark"></i>
             </div>
         </a>
     </div>

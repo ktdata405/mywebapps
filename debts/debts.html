@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debts Manager - KT Apps</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #ec4899;
+            --accent: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #facc15;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --item-bg: rgba(255, 255, 255, 0.03);
+            --input-bg: rgba(15, 23, 42, 0.6);
+            --text-light: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #1e1b4b, #0f172a);
+            overflow: hidden;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .orb-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px; animation-delay: 0s; }
+        .orb-2 { width: 300px; height: 300px; background: var(--secondary); bottom: -50px; right: -50px; animation-delay: -5s; }
+        .orb-3 { width: 200px; height: 200px; background: var(--accent); top: 40%; left: 60%; animation-delay: -10s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, 50px); }
+        }
+
+        /* Header */
+        header {
+            padding: 1.5rem 5%;
+            display: flex;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .back-btn {
+            color: var(--text-light);
+            font-size: 1.2rem;
+            margin-right: 1.5rem;
+            text-decoration: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: var(--primary);
+            transform: translateX(-3px);
+        }
+
+        .brand h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* Main Container */
+        .container {
+            padding: 2rem 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+        }
+
+        /* Stats Cards */
+        .stats-row {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            backdrop-filter: blur(12px);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-info h3 {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            font-weight: 400;
+        }
+
+        .stat-info p {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 0.25rem;
+        }
+
+        .text-success { color: var(--success); }
+        .text-danger { color: var(--danger); }
+        .text-primary { color: var(--primary); }
+
+        /* Form & List Cards */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(12px);
+            height: fit-content;
+        }
+
+        .card h2 {
+            margin-bottom: 1.5rem;
+            font-size: 1.25rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 1rem;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--input-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-submit:hover {
+            background: #4f46e5;
+        }
+
+        /* Filter Chips */
+        .filters {
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .filter-chip {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.05);
+            color: var(--text-dim);
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+
+        .filter-chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Debt Cards List */
+        .debts-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .debt-item {
+            background: var(--item-bg);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .debt-item:hover {
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-2px);
+        }
+
+        .debt-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .debt-person {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text-light);
+        }
+
+        .debt-meta {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .debt-note {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-top: 0.25rem;
+            font-style: italic;
+        }
+
+        .debt-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.5rem;
+        }
+
+        .debt-amount {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .btn-action {
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-settle {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-settle:hover {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-delete {
+            background: transparent;
+            color: var(--text-dim);
+            margin-left: 0.5rem;
+        }
+
+        .btn-delete:hover {
+            color: var(--danger);
+        }
+
+        /* Settled State */
+        .debt-item.settled {
+            opacity: 0.6;
+            border-color: rgba(255,255,255,0.02);
+        }
+
+        .debt-item.settled .debt-amount {
+            text-decoration: line-through;
+            color: var(--text-dim) !important;
+        }
+
+        .badge-status {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-animation">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <header>
+        <a href="../index.html" class="back-btn">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <div class="brand">
+            <h1>Debts Manager</h1>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Stats Row -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon" style="color: var(--success);">
+                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Total Lent (You'll get)</h3>
+                    <p class="text-success" id="total-lent">₹0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color: var(--danger);">
+                    <i class="fa-solid fa-hand-holding-hand"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Total Borrowed (You owe)</h3>
+                    <p class="text-danger" id="total-borrowed">₹0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color: var(--accent);">
+                    <i class="fa-solid fa-scale-balanced"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Net Balance</h3>
+                    <p class="text-primary" id="net-balance">₹0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Transaction Form -->
+        <div class="card">
+            <h2><i class="fa-solid fa-plus-circle"></i> Add New Debt</h2>
+            <form id="debt-form">
+                <div class="form-group">
+                    <label>Type</label>
+                    <div style="display: flex; gap: 1rem;">
+                        <label style="display: flex; align-items: center; cursor: pointer; color: var(--text-light);">
+                            <input type="radio" name="type" value="lent" checked style="margin-right: 8px;"> Lent (Given)
+                        </label>
+                        <label style="display: flex; align-items: center; cursor: pointer; color: var(--text-light);">
+                            <input type="radio" name="type" value="borrowed" style="margin-right: 8px;"> Borrowed (Taken)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="person">Person Name</label>
+                    <input type="text" id="person" class="form-control" placeholder="e.g. John Doe" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="amount">Amount (₹)</label>
+                    <input type="number" id="amount" class="form-control" placeholder="0.00" required min="0" step="0.01">
+                </div>
+
+                <div class="form-group">
+                    <label for="date">Date</label>
+                    <input type="date" id="date" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">Notes (Optional)</label>
+                    <textarea id="notes" class="form-control" placeholder="Description..." rows="3"></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">Add Record</button>
+            </form>
+        </div>
+
+        <!-- Transactions List -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 style="margin: 0; border: none; padding: 0;">History</h2>
+                <button onclick="clearAllData()" style="background: transparent; border: 1px solid var(--danger); color: var(--danger); padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">
+                    Clear All
+                </button>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters">
+                <button class="filter-chip active" onclick="setFilter('all', this)">All</button>
+                <button class="filter-chip" onclick="setFilter('pending', this)">Pending</button>
+                <button class="filter-chip" onclick="setFilter('settled', this)">Settled</button>
+            </div>
+            
+            <div id="debts-list" class="debts-grid">
+                <!-- Cards will be added here -->
+            </div>
+
+            <p id="empty-msg" style="text-align: center; color: var(--text-dim); margin-top: 2rem; display: none;">No records found.</p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize state
+        let debts = JSON.parse(localStorage.getItem('kt_debts_data')) || [];
+        let currentFilter = 'all';
+
+        // Set default date to today
+        document.getElementById('date').valueAsDate = new Date();
+
+        // DOM Elements
+        const form = document.getElementById('debt-form');
+        const listContainer = document.getElementById('debts-list');
+        const emptyMsg = document.getElementById('empty-msg');
+        const totalLentEl = document.getElementById('total-lent');
+        const totalBorrowedEl = document.getElementById('total-borrowed');
+        const netBalanceEl = document.getElementById('net-balance');
+
+        // Render initial data
+        renderDebts();
+        updateStats();
+
+        // Form Submit Handler
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const type = document.querySelector('input[name="type"]:checked').value;
+            const person = document.getElementById('person').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const date = document.getElementById('date').value;
+            const notes = document.getElementById('notes').value;
+
+            const newDebt = {
+                id: Date.now(),
+                type,
+                person,
+                amount,
+                date,
+                notes,
+                status: 'pending'
+            };
+
+            debts.push(newDebt);
+            saveData();
+            renderDebts();
+            updateStats();
+            form.reset();
+            document.getElementById('date').valueAsDate = new Date(); // Reset date to today
+        });
+
+        // Filter Handler
+        function setFilter(filter, btnElement) {
+            currentFilter = filter;
+
+            // Update active state of chips
+            document.querySelectorAll('.filter-chip').forEach(t => t.classList.remove('active'));
+            btnElement.classList.add('active');
+
+            renderDebts();
+        }
+
+        // Delete Handler
+        function deleteDebt(id) {
+            if(confirm('Are you sure you want to delete this record?')) {
+                debts = debts.filter(debt => debt.id !== id);
+                saveData();
+                renderDebts();
+                updateStats();
+            }
+        }
+
+        // Toggle Status Handler
+        function toggleStatus(id) {
+            const debt = debts.find(d => d.id === id);
+            if (debt) {
+                debt.status = (debt.status === 'settled') ? 'pending' : 'settled';
+                saveData();
+                renderDebts();
+                updateStats();
+            }
+        }
+
+        // Clear All Handler
+        function clearAllData() {
+            if(confirm('This will delete all debt records. Are you sure?')) {
+                debts = [];
+                saveData();
+                renderDebts();
+                updateStats();
+            }
+        }
+
+        // Save to LocalStorage
+        function saveData() {
+            localStorage.setItem('kt_debts_data', JSON.stringify(debts));
+        }
+
+        // Render List
+        function renderDebts() {
+            listContainer.innerHTML = '';
+            
+            // Filter based on selection
+            const filteredDebts = debts.filter(d => {
+                if (currentFilter === 'all') return true;
+                const status = d.status || 'pending';
+                return status === currentFilter;
+            });
+
+            if (filteredDebts.length === 0) {
+                emptyMsg.style.display = 'block';
+                return;
+            } else {
+                emptyMsg.style.display = 'none';
+            }
+
+            // Sort by date (newest first)
+            const sortedDebts = [...filteredDebts].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            sortedDebts.forEach(debt => {
+                const isSettled = debt.status === 'settled';
+                const amountColor = debt.type === 'lent' ? 'var(--success)' : 'var(--danger)';
+                const typeLabel = debt.type === 'lent' ? 'Lent' : 'Borrowed';
+
+                const card = document.createElement('div');
+                card.className = `debt-item ${isSettled ? 'settled' : ''}`;
+
+                card.innerHTML = `
+                    <div class="debt-info">
+                        <div class="debt-person">${debt.person}</div>
+                        <div class="debt-meta">
+                            <span>${formatDate(debt.date)}</span>
+                            <span>•</span>
+                            <span class="badge-status">${typeLabel}</span>
+                        </div>
+                        ${debt.notes ? `<div class="debt-note">${debt.notes}</div>` : ''}
+                    </div>
+                    <div class="debt-actions">
+                        <div class="debt-amount" style="color: ${amountColor}">₹${debt.amount.toFixed(2)}</div>
+                        <div style="display: flex; align-items: center;">
+                            <button class="btn-action btn-settle" onclick="toggleStatus(${debt.id})">
+                                ${isSettled ? 'Undo' : 'Settle'}
+                            </button>
+                            <button class="btn-action btn-delete" onclick="deleteDebt(${debt.id})">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+
+        // Update Statistics
+        function updateStats() {
+            // Only count pending debts
+            const pendingDebts = debts.filter(d => (d.status || 'pending') !== 'settled');
+
+            const lent = pendingDebts
+                .filter(d => d.type === 'lent')
+                .reduce((sum, d) => sum + d.amount, 0);
+            
+            const borrowed = pendingDebts
+                .filter(d => d.type === 'borrowed')
+                .reduce((sum, d) => sum + d.amount, 0);
+
+            const net = lent - borrowed;
+
+            totalLentEl.textContent = `₹${lent.toFixed(2)}`;
+            totalBorrowedEl.textContent = `₹${borrowed.toFixed(2)}`;
+            
+            netBalanceEl.textContent = `₹${Math.abs(net).toFixed(2)}`;
+            if (net >= 0) {
+                netBalanceEl.style.color = 'var(--success)';
+                netBalanceEl.textContent = `+ ₹${net.toFixed(2)}`;
+            } else {
+                netBalanceEl.style.color = 'var(--danger)';
+                netBalanceEl.textContent = `- ₹${Math.abs(net).toFixed(2)}`;
+            }
+        }
+
+        // Helper: Format Date
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString('en-IN', options);
+        }
+    </script>
+</body>
+</html>
