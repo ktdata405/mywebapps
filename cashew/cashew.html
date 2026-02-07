@@ -224,7 +224,7 @@
             const label = document.querySelector('#last-entry-label span');
             if(label) label.textContent = 'Loading...';
 
-            fetch(`${CONFIG.GOOGLE_SHEET_URL_CASHEW}?sheetName=${encodeURIComponent(sheetName)}`)
+            fetch(`${CONFIG.GOOGLE_SHEET_URL_CASHEW}?sheetName=${encodeURIComponent(sheetName)}&t=${new Date().getTime()}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.data && data.data.length > 0) {
@@ -290,7 +290,10 @@
                     const adjustedDate = new Date(date.getTime() - (offset*60*1000));
                     dateInput.value = adjustedDate.toISOString().split('T')[0];
 
-                    originalDate = data[0].date; // Store original date
+                    // Store original date in the format expected by the backend (dd/MMM/yyyy)
+                    if (data[0].date) {
+                        originalDate = formatDateToDDMMMYYYY(data[0].date);
+                    }
 
                     const container = document.getElementById('expenses-container');
                     container.innerHTML = ''; // Clear default rows
@@ -434,8 +437,26 @@
 
         function formatDateToDDMMMYYYY(isoDate) {
             if (!isoDate) return '';
+
+            // If it's already in dd/MMM/yyyy format, return it
+            if (typeof isoDate === 'string' && isoDate.match(/^\d{2}\/[A-Za-z]{3}\/\d{4}$/)) {
+                return isoDate;
+            }
+
+            // Handle YYYY-MM-DD format specifically to avoid timezone issues
+            if (typeof isoDate === 'string' && isoDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                const parts = isoDate.split('-');
+                const year = parts[0];
+                const month = parseInt(parts[1], 10);
+                const day = parts[2];
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                if (!isNaN(month) && month >= 1 && month <= 12) {
+                    return `${day}/${months[month - 1]}/${year}`;
+                }
+            }
+
             const d = new Date(isoDate);
-            if (isNaN(d)) return isoDate;
+            if (isNaN(d.getTime())) return isoDate;
             const day = String(d.getDate()).padStart(2, '0');
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             return `${day}/${months[d.getMonth()]}/${d.getFullYear()}`;
@@ -470,6 +491,13 @@
 
             if (expenses.length === 0) {
                 alert("Please add at least one valid expense.");
+                loader.classList.add('hidden');
+                saveBtn.disabled = false;
+                return;
+            }
+
+            if (isEditMode && !originalDate) {
+                alert("Error: Original date missing for update. Please go back to report and try again.");
                 loader.classList.add('hidden');
                 saveBtn.disabled = false;
                 return;

@@ -1,6 +1,7 @@
 // Google Apps Script Code for Cashew
 // Create a new Google Sheet, go to Extensions > Apps Script, and paste this code.
 // Publish > Deploy as web app > Execute as: Me > Who has access: Anyone.
+// IMPORTANT: After updating this code, you must create a NEW deployment (Manage Deployments > New Version) for changes to take effect.
 
 function doPost(e) {
   var lock = LockService.getScriptLock();
@@ -8,12 +9,78 @@ function doPost(e) {
 
   try {
     var doc = SpreadsheetApp.getActiveSpreadsheet();
+    var timezone = doc.getSpreadsheetTimeZone(); // Use spreadsheet timezone
 
     var data = JSON.parse(e.postData.contents);
 
     // Check if the data is for Cashew
     if (data.type === 'cashew') {
       var expenses = data.expenses; // Array of expense objects
+      
+      // Handle Update: Delete old entries first
+      if (data.action === 'update' && data.originalDate) {
+         var originalParts = data.originalDate.split('/');
+         if (originalParts.length === 3) {
+             var originalSheetName = originalParts[1] + ' ' + originalParts[2];
+             var originalSheet = doc.getSheetByName(originalSheetName);
+             
+             if (originalSheet) {
+                 var range = originalSheet.getDataRange();
+                 var values = range.getValues();
+                 var rowsToDelete = [];
+                 var currentDate = '';
+                 
+                 // Identify rows to delete
+                 for (var r = 1; r < values.length; r++) { // Skip header
+                     var rowDate = values[r][0];
+                     
+                     // If rowDate is present (not empty), it marks the start of a new entry/block
+                     if (rowDate && String(rowDate).trim() !== "") {
+                         var dateObj = null;
+                         
+                         if (rowDate instanceof Date) {
+                             dateObj = rowDate;
+                         } else {
+                             var strVal = String(rowDate).trim();
+                             // Check for direct string match first to avoid parsing issues
+                             if (strVal === data.originalDate) {
+                                 currentDate = strVal;
+                                 dateObj = null; // Already handled
+                             } else {
+                                 // Try parsing
+                                 var parsed = new Date(strVal);
+                                 if (!isNaN(parsed.getTime())) {
+                                     dateObj = parsed;
+                                 } else {
+                                     currentDate = strVal; // Use as is
+                                 }
+                             }
+                         }
+                         
+                         if (dateObj) {
+                             currentDate = Utilities.formatDate(dateObj, timezone, "dd/MMM/yyyy");
+                         }
+                     }
+                     
+                     // Check if the current row belongs to the date we want to delete
+                     if (currentDate === data.originalDate) {
+                         rowsToDelete.push(r + 1); // Store 1-based row index
+                     }
+                 }
+                 
+                 // Delete rows from bottom up
+                 if (rowsToDelete.length > 0) {
+                     // Sort descending to avoid index shifting issues
+                     rowsToDelete.sort(function(a, b){return b-a});
+                     
+                     for (var i = 0; i < rowsToDelete.length; i++) {
+                         originalSheet.deleteRow(rowsToDelete[i]);
+                     }
+                 }
+             }
+         }
+      }
+
       var rows = [];
       var lastDate = '';
 
@@ -87,6 +154,7 @@ function doGet(e) {
 
   try {
     var doc = SpreadsheetApp.getActiveSpreadsheet();
+    var timezone = doc.getSpreadsheetTimeZone(); // Use spreadsheet timezone
     var sheetName = e.parameter.sheetName;
 
     if (!sheetName) {
@@ -121,7 +189,7 @@ function doGet(e) {
       if (date) {
         // Format date to dd/MMM/yyyy if it's a Date object
         if (date instanceof Date) {
-            date = Utilities.formatDate(date, Session.getScriptTimeZone(), "dd/MMM/yyyy");
+            date = Utilities.formatDate(date, timezone, "dd/MMM/yyyy");
         }
         lastDate = date;
       } else {
