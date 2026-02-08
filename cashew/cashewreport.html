@@ -558,7 +558,25 @@
                 data.forEach(row => {
                     const dateKey = formatDateToDDMMMYYYY(row.date);
                     if (!groupedData[dateKey]) {
-                        groupedData[dateKey] = { total: 0, items: [], rawDate: new Date(row.date) };
+                        // Create a date object for sorting purposes
+                        let rawDateObj = new Date(row.date);
+
+                        // If invalid date, try parsing the dateKey (dd/MMM/yyyy)
+                        if (isNaN(rawDateObj.getTime())) {
+                            const parts = dateKey.split('/');
+                            if (parts.length === 3) {
+                                const day = parseInt(parts[0]);
+                                const monthStr = parts[1];
+                                const year = parseInt(parts[2]);
+                                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                                const monthIndex = months.indexOf(monthStr);
+                                if (monthIndex !== -1) {
+                                    rawDateObj = new Date(year, monthIndex, day);
+                                }
+                            }
+                        }
+
+                        groupedData[dateKey] = { total: 0, items: [], rawDate: rawDateObj, displayDate: dateKey };
                     }
                     groupedData[dateKey].items.push(row);
                     groupedData[dateKey].total += row.amount;
@@ -569,17 +587,36 @@
 
                 sortedDates.forEach((date, index) => {
                     const group = groupedData[date];
+
+                    // Extract day and month from the displayDate (dd/MMM/yyyy) for display
+                    let dayDisplay = "--";
+                    let monthDisplay = "---";
+                    let weekdayDisplay = "";
+
+                    if (group.displayDate) {
+                        const parts = group.displayDate.split('/');
+                        if (parts.length === 3) {
+                            dayDisplay = parts[0];
+                            monthDisplay = parts[1];
+
+                            // Calculate weekday
+                            if (!isNaN(group.rawDate.getTime())) {
+                                weekdayDisplay = group.rawDate.toLocaleString('default', { weekday: 'long' });
+                            }
+                        }
+                    }
+
                     const accordionHeader = document.createElement('div');
                     accordionHeader.className = "glass-card p-4 rounded-xl flex justify-between items-center cursor-pointer hover:bg-white/5 transition-colors";
                     accordionHeader.onclick = () => toggleDetails(index);
                     accordionHeader.innerHTML = `
                         <div class="flex items-center gap-4">
                             <div class="w-12 h-12 rounded-lg bg-pink-500/10 text-pink-400 flex flex-col items-center justify-center font-bold border border-pink-500/20">
-                                <span class="text-xs">${new Date(group.rawDate).toLocaleString('default', { month: 'short' })}</span>
-                                <span class="text-xl">${String(new Date(group.rawDate).getDate()).padStart(2, '0')}</span>
+                                <span class="text-xs">${monthDisplay}</span>
+                                <span class="text-xl">${dayDisplay}</span>
                             </div>
                             <div>
-                                <p class="text-sm text-gray-400">${new Date(group.rawDate).toLocaleString('default', { weekday: 'long' })}</p>
+                                <p class="text-sm text-gray-400">${weekdayDisplay}</p>
                                 <h4 class="font-bold text-white">Total: Rs. ${group.total.toLocaleString('en-IN')}</h4>
                             </div>
                         </div>
