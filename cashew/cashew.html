@@ -276,11 +276,11 @@
 
             dateInput.addEventListener('change', fetchLastEnteredDate);
 
-            const editData = sessionStorage.getItem('cashewEditData');
+            const editData = localStorage.getItem('cashewEditData');
             if (editData) {
                 isEditMode = true;
                 const data = JSON.parse(editData);
-                sessionStorage.removeItem('cashewEditData'); // Clear after loading
+                localStorage.removeItem('cashewEditData'); // Clear after loading
 
                 if (data.length > 0) {
                     // Set date from the first item (assuming all items are from the same date)
@@ -346,6 +346,22 @@
 
             if (category) {
                 const select = clone.querySelector('.category-select');
+
+                // Check if option exists, if not add it
+                let optionExists = false;
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === category) {
+                        optionExists = true;
+                        break;
+                    }
+                }
+                if (!optionExists) {
+                    const option = document.createElement('option');
+                    option.value = category;
+                    option.textContent = category;
+                    select.appendChild(option);
+                }
+
                 select.value = category;
             }
             if (description) {

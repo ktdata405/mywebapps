@@ -321,6 +321,88 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
+        /* Loader Styles */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        #loader.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transition: none; /* Appear instantly */
+        }
+
+        .loader-card {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            border-radius: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .spinner-container {
+            position: relative;
+            width: 4rem;
+            height: 4rem;
+        }
+
+        .spinner {
+            width: 100%;
+            height: 100%;
+            border: 4px solid rgba(236, 72, 153, 0.2);
+            border-top-color: #ec4899;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .spinner-icon {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ec4899;
+            font-size: 1.25rem;
+        }
+
+        .loading-text {
+            color: white;
+            font-weight: 600;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             header { flex-direction: column; text-align: center; gap: 1rem; }
@@ -473,6 +555,46 @@
         </footer>
     </div>
 
+    <!-- Loader Overlay -->
+    <div id="loader">
+        <div class="loader-card">
+            <div class="spinner-container">
+                <div class="spinner"></div>
+                <div class="spinner-icon">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+            </div>
+            <p class="loading-text">Loading...</p>
+        </div>
+    </div>
+
     <script src="auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.card');
+            const loader = document.getElementById('loader');
+
+            cards.forEach(card => {
+                card.addEventListener('click', (e) => {
+                    const href = card.getAttribute('href');
+                    if (href && href !== '#' && card.target !== '_blank') {
+                        e.preventDefault();
+                        loader.classList.add('visible');
+
+                        // Delay navigation to show loader
+                        setTimeout(() => {
+                            window.location.href = href;
+                        }, 200);
+                    }
+                });
+            });
+        });
+
+        // Hide loader when returning to the page (bfcache)
+        window.addEventListener('pageshow', (event) => {
+            const loader = document.getElementById('loader');
+            if (loader) loader.classList.remove('visible');
+        });
+    </script>
 </body>
 </html>

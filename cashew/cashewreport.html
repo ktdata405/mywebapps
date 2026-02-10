@@ -699,7 +699,7 @@
         function editDateEntries(dateKey) {
             const entriesForDate = allData.filter(item => formatDateToDDMMMYYYY(item.date) === dateKey);
             if (entriesForDate.length > 0) {
-                sessionStorage.setItem('cashewEditData', JSON.stringify(entriesForDate));
+                localStorage.setItem('cashewEditData', JSON.stringify(entriesForDate));
                 window.location.href = 'cashew.html';
             } else {
                 alert('No data found for this date to edit.');
