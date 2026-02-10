@@ -3,210 +3,216 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cashew - Expense Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="../config.js"></script>
     <style>
         :root {
+            --bg-dark: #0b0f19;
+            --card-bg: #151a25;
             --primary: #6366f1;
-            --secondary: #ec4899;
-            --accent: #8b5cf6;
-            --bg-dark: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --text-light: #f8fafc;
-            --text-dim: #94a3b8;
+            --accent: #ec4899;
         }
 
         body {
             background-color: var(--bg-dark);
-            color: var(--text-light);
-            font-family: 'Outfit', sans-serif;
-            min-height: 100vh;
-            position: relative;
-            overflow-x: hidden;
+            color: #f8fafc;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* Animated Background */
-        .bg-animation {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: radial-gradient(circle at 50% 50%, #1e1b4b, #0f172a);
-            overflow: hidden;
-        }
+        /* Smooth scrolling */
+        html { scroll-behavior: smooth; }
 
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.4;
-            animation: float 20s infinite ease-in-out;
-        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
 
-        .orb-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px; animation-delay: 0s; }
-        .orb-2 { width: 300px; height: 300px; background: var(--secondary); bottom: -50px; right: -50px; animation-delay: -5s; }
-        .orb-3 { width: 200px; height: 200px; background: var(--accent); top: 40%; left: 60%; animation-delay: -10s; }
-
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(30px, 50px); }
-        }
-
-        .glass-card {
-            background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .glass-panel {
+            background: rgba(21, 26, 37, 0.7);
             backdrop-filter: blur(12px);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .input-field {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text-light);
+        .input-group {
+            transition: all 0.3s ease;
         }
 
-        .input-field:focus {
-            border-color: var(--secondary);
-            box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.2);
+        .input-group:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            background: rgba(99, 102, 241, 0.05);
         }
 
-        select.input-field option {
-            background-color: #1e293b;
-            color: var(--text-light);
-        }
+        /* Floating Action Button Animation */
+        .fab-hover { transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .fab-hover:active { transform: scale(0.9); }
 
-        footer {
-            text-align: center;
-            padding: 20px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            color: var(--text-dim);
-        }
-
-        footer b {
-            color: var(--text-light);
+        /* Date Picker Customization */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            opacity: 0.6;
+            cursor: pointer;
         }
     </style>
 </head>
 
-<body class="p-4 md:p-10">
+<body class="min-h-screen pb-32 relative overflow-x-hidden">
 
-    <div class="bg-animation">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
+    <!-- Background Gradients -->
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+        <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-pink-600/20 rounded-full blur-[100px]"></div>
     </div>
 
-    <div class="max-w-4xl mx-auto glass-card p-6 rounded-2xl shadow-lg">
-        <section>
-            <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
-                <h2 class="text-2xl font-bold flex items-center gap-3 text-white">
-                    <i class="fa-solid fa-file-invoice-dollar text-pink-500"></i>Cashew
-                </h2>
-                <div class="flex items-center gap-4">
-                    <a href="cashewreport.html" class="text-white/70 hover:text-white text-xl transition-colors" title="Report">
-                        <i class="fa-solid fa-chart-pie"></i>
-                    </a>
-                    <a href="../index.html" class="text-white/70 hover:text-white text-xl transition-colors" title="Home">
-                        <i class="fa-solid fa-house"></i>
-                    </a>
+    <!-- Header -->
+    <header class="sticky top-0 z-30 glass-panel border-b border-white/5 px-6 py-4 mb-6">
+        <div class="max-w-3xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <i class="fa-solid fa-file-invoice-dollar text-white text-lg"></i>
                 </div>
+                <h1 class="text-xl font-bold tracking-tight">Cashew</h1>
+            </div>
+            <div class="flex gap-3">
+                <a href="cashewreport.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors text-gray-400 hover:text-white">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </a>
+                <a href="../index.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors text-gray-400 hover:text-white">
+                    <i class="fa-solid fa-house"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4">
+
+        <!-- Date Navigator -->
+        <div class="glass-panel rounded-2xl p-2 flex items-center justify-between mb-6 shadow-xl shadow-black/20">
+            <button id="prev-day" class="w-12 h-12 rounded-xl hover:bg-white/5 flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+
+            <div class="flex flex-col items-center">
+                <div class="relative group">
+                    <input type="date" id="date-input" class="bg-transparent text-white font-bold text-lg outline-none text-center cursor-pointer font-mono tracking-wide" />
+                    <div class="h-0.5 w-0 group-hover:w-full bg-indigo-500 transition-all duration-300 mx-auto"></div>
+                </div>
+                <span id="last-entry-label" class="text-xs text-gray-500 font-medium mt-1">
+                    Last Entry: <span class="text-indigo-400">--</span>
+                </span>
             </div>
 
-            <!-- Date Picker & Save Button -->
-            <div class="mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div id="last-entry-label" class="text-white/60 text-sm bg-white/5 px-4 py-2 rounded-lg border border-white/10">
-                    Last Entry: <span class="text-pink-400 font-bold">--</span>
-                </div>
-                <div class="flex justify-end items-center gap-3 w-full md:w-auto">
-                    <div class="flex items-center gap-2 bg-white/5 p-2 rounded-lg border border-white/10">
-                        <button id="prev-day" class="p-2 px-4 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"><i class="fa-solid fa-chevron-left"></i></button>
-                        <i class="fa-regular fa-calendar text-pink-400"></i>
-                        <input type="date" id="date-input" class="bg-transparent outline-none text-white font-semibold" />
-                        <button id="next-day" class="p-2 px-4 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"><i class="fa-solid fa-chevron-right"></i></button>
-                    </div>
-                    <button onclick="saveData()" id="save-btn" class="bg-emerald-500 hover:bg-emerald-600 text-white py-2 px-4 rounded-lg font-bold flex items-center gap-2 transition text-sm shadow-lg shadow-emerald-500/20">
-                        <i class="fa-solid fa-floppy-disk"></i> Save
-                    </button>
-                </div>
+            <button id="next-day" class="w-12 h-12 rounded-xl hover:bg-white/5 flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+
+        <!-- Expenses List -->
+        <div id="expenses-container" class="space-y-4">
+            <!-- Rows injected via JS -->
+        </div>
+
+        <!-- Add Button -->
+        <button onclick="addRow()" class="w-full py-4 mt-6 rounded-2xl border-2 border-dashed border-white/10 text-gray-400 hover:text-white hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all duration-300 flex items-center justify-center gap-2 group">
+            <div class="w-8 h-8 rounded-full bg-white/5 group-hover:bg-indigo-500 group-hover:text-white flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-plus text-sm"></i>
+            </div>
+            <span class="font-medium">Add New Expense</span>
+        </button>
+
+    </main>
+
+    <!-- Bottom Action Bar -->
+    <div class="fixed bottom-0 left-0 w-full glass-panel border-t border-white/10 z-40 pb-safe">
+        <div class="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
+            <div class="flex flex-col">
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Total</span>
+                <span id="total-amount" class="text-2xl font-bold text-white tracking-tight">Rs. 0.00</span>
             </div>
 
-            <!-- Expenses List -->
-            <div id="expenses-container" class="space-y-4">
-                <!-- Rows will be injected here -->
-            </div>
-
-            <!-- Add Row Button -->
-            <div class="mt-6 text-center">
-                <button onclick="addRow()" class="text-pink-400 hover:text-pink-300 font-semibold flex items-center justify-center gap-2 mx-auto py-2 px-4 rounded hover:bg-pink-500/10 transition border border-pink-500/30">
-                    <i class="fa-solid fa-plus-circle"></i> Add Row
+            <div class="flex items-center gap-3">
+                <button onclick="clearAll()" class="w-12 h-12 rounded-2xl bg-white/5 hover:bg-red-500/10 text-gray-400 hover:text-red-400 flex items-center justify-center transition-all" title="Clear All">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+                <button onclick="saveData()" id="save-btn" class="h-12 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-lg shadow-indigo-600/25 flex items-center gap-2 transition-all active:scale-95">
+                    <i class="fa-solid fa-check"></i>
+                    <span>Save</span>
                 </button>
             </div>
-
-            <!-- Total -->
-            <div class="mt-8 bg-gradient-to-r from-pink-600 to-purple-600 text-white p-6 rounded-xl shadow-lg relative overflow-hidden">
-                <div class="absolute inset-0 bg-black/10"></div>
-                <div class="relative z-10 flex flex-col justify-center items-center">
-                    <span id="total-amount" class="text-4xl font-black text-center tracking-tight">Rs. 0.00</span>
-                </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="flex justify-end gap-4 mt-6">
-                <button onclick="clearAll()" class="bg-white/10 hover:bg-white/20 text-white py-2 px-6 rounded-xl font-bold flex items-center justify-center gap-2 transition border border-white/10">
-                    <i class="fa-solid fa-trash"></i> Clear All
-                </button>
-            </div>
-
-            <div id="loader" class="hidden fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-50">
-                <div class="glass-card p-8 rounded-2xl flex flex-col items-center gap-4">
-                    <div class="animate-spin">
-                        <i class="fa-solid fa-circle-notch text-4xl text-pink-500"></i>
-                    </div>
-                    <p class="text-white font-semibold">Saving data...</p>
-                </div>
-            </div>
-        </section>
+        </div>
     </div>
 
-    <!-- Template for Expense Row -->
+    <!-- Loader -->
+    <div id="loader" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-all">
+        <div class="glass-panel p-8 rounded-3xl flex flex-col items-center gap-6 shadow-2xl">
+            <div class="relative w-16 h-16">
+                <div class="absolute inset-0 border-4 border-indigo-500/20 rounded-full"></div>
+                <div class="absolute inset-0 border-4 border-indigo-500 rounded-full border-t-transparent animate-spin"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <i class="fa-solid fa-cloud-arrow-up text-indigo-500"></i>
+                </div>
+            </div>
+            <div class="text-center">
+                <h3 class="text-white font-bold text-lg">Saving Data</h3>
+                <p class="text-gray-400 text-sm mt-1">Syncing with Google Sheets...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Template -->
     <template id="expense-row-template">
-        <div class="expense-row group bg-white/5 p-3 rounded-xl border border-white/10 shadow-sm relative hover:bg-white/10 transition-colors">
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-3">
-                <div class="w-full sm:w-auto sm:flex-grow sm:max-w-[60%]">
-                    <select class="w-full p-2 rounded-lg outline-none category-select text-sm font-medium input-field">
-                        <option value="Select">Select Category</option>
-                        <option value="Home">Home</option>
-                        <option value="My Personal">My Personal</option>
-                        <option value="My Family">My Family</option>
-                        <option value="For Latha">For Latha</option>
-                        <option value="Baby">Baby</option>
-                        <option value="Credit Card">Credit Card</option>
-                        <option value="Mutual Funds/Investments">Mutual Funds/Investments</option>
-                        <option value="Lap EMI">Lap EMI</option>
-                    </select>
-                </div>
-                <div class="flex items-center justify-end gap-2 w-full sm:w-auto">
-                    <div class="w-32 sm:w-32">
+        <div class="expense-row glass-panel p-4 rounded-2xl relative group transition-all duration-300 hover:border-indigo-500/30">
+            <!-- Delete Button (Absolute) -->
+            <button onclick="removeRow(this)" class="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center hover:bg-red-600 z-10 scale-75 group-hover:scale-100">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex flex-col gap-4">
+                <!-- Top Row: Category & Amount -->
+                <div class="flex gap-3">
+                    <div class="flex-grow relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+                            <i class="fa-solid fa-tag text-xs"></i>
+                        </div>
+                        <select class="category-select w-full bg-black/20 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-sm font-medium text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all appearance-none">
+                            <option value="Select">Select Category</option>
+                            <option value="Home">Home</option>
+                            <option value="My Personal">My Personal</option>
+                            <option value="My Family">My Family</option>
+                            <option value="For Latha">For Latha</option>
+                            <option value="Baby">Baby</option>
+                            <option value="Credit Card">Credit Card</option>
+                            <option value="Mutual Funds/Investments">Mutual Funds/Investments</option>
+                            <option value="Lap EMI">Lap EMI</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-500">
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+
+                    <div class="w-1/3 min-w-[120px] relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+                            <span class="text-xs font-bold">₹</span>
+                        </div>
                         <input type="number" step="0.01" placeholder="0.00"
-                            class="w-full p-2 rounded-lg outline-none text-right amount-input font-mono font-bold text-white shadow-sm input-field"
+                            class="amount-input w-full bg-black/20 border border-white/10 rounded-xl pl-8 pr-3 py-3 text-right font-mono font-bold text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
                             oninput="calculateTotal()">
                     </div>
-                    <button onclick="removeRow(this)" class="text-gray-500 hover:text-red-400 transition w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-500/10">
-                        <i class="fa-solid fa-circle-minus text-xl"></i>
-                    </button>
                 </div>
-            </div>
-            <div class="w-full">
-                <textarea
-                    class="w-full p-3 rounded-lg outline-none description-input transition shadow-sm input-field placeholder-gray-500 h-24"
-                    placeholder="Description (e.g. Groceries 500, Milk 30)"
-                    oninput="parseAndCalculate(this)"></textarea>
+
+                <!-- Bottom Row: Description -->
+                <div class="relative">
+                    <textarea
+                        class="description-input w-full bg-black/20 border border-white/10 rounded-xl p-3 text-sm text-gray-300 placeholder-gray-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all resize-none h-20"
+                        placeholder="Description (e.g. Groceries 500, Milk 30)"
+                        oninput="parseAndCalculate(this)"></textarea>
+                </div>
             </div>
         </div>
     </template>
@@ -222,19 +228,17 @@
             const sheetName = `${months[dateVal.getMonth()]} ${dateVal.getFullYear()}`;
 
             const label = document.querySelector('#last-entry-label span');
-            if(label) label.textContent = 'Loading...';
+            if(label) label.textContent = '...';
 
             fetch(`${CONFIG.GOOGLE_SHEET_URL_CASHEW}?sheetName=${encodeURIComponent(sheetName)}&t=${new Date().getTime()}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.data && data.data.length > 0) {
-                        // Find the highest date in the data
                         let maxDate = null;
                         let maxDateStr = '';
 
                         data.data.forEach(entry => {
                             if (entry.date) {
-                                // Parse date string (assuming dd/MMM/yyyy or similar format from sheet)
                                 const d = new Date(entry.date);
                                 if (!isNaN(d.getTime())) {
                                     if (!maxDate || d > maxDate) {
@@ -246,8 +250,6 @@
                         });
 
                         if (maxDateStr) {
-                            // If the date string from sheet is already formatted, use it directly or reformat
-                            // Since we want dd/MMM/yyyy and the sheet might return it or ISO, let's ensure format
                             if (maxDateStr.match(/^\d{2}\/[A-Za-z]{3}\/\d{4}$/)) {
                                 label.textContent = maxDateStr;
                             } else {
@@ -280,23 +282,20 @@
             if (editData) {
                 isEditMode = true;
                 const data = JSON.parse(editData);
-                localStorage.removeItem('cashewEditData'); // Clear after loading
+                localStorage.removeItem('cashewEditData');
 
                 if (data.length > 0) {
-                    // Set date from the first item (assuming all items are from the same date)
                     const date = new Date(data[0].date);
-                    // Adjust for timezone offset to get correct YYYY-MM-DD
                     const offset = date.getTimezoneOffset();
                     const adjustedDate = new Date(date.getTime() - (offset*60*1000));
                     dateInput.value = adjustedDate.toISOString().split('T')[0];
 
-                    // Store original date in the format expected by the backend (dd/MMM/yyyy)
                     if (data[0].date) {
                         originalDate = formatDateToDDMMMYYYY(data[0].date);
                     }
 
                     const container = document.getElementById('expenses-container');
-                    container.innerHTML = ''; // Clear default rows
+                    container.innerHTML = '';
 
                     data.forEach(item => {
                         addRow(item.category, item.description, item.amount);
@@ -304,7 +303,6 @@
                     calculateTotal();
                 }
             } else {
-                // Add initial rows
                 const defaultCategories = ["Home", "My Personal", "My Family"];
                 for (let i = 0; i < 3; i++) {
                     addRow(defaultCategories[i]);
@@ -346,8 +344,6 @@
 
             if (category) {
                 const select = clone.querySelector('.category-select');
-
-                // Check if option exists, if not add it
                 let optionExists = false;
                 for (let i = 0; i < select.options.length; i++) {
                     if (select.options[i].value === category) {
@@ -361,7 +357,6 @@
                     option.textContent = category;
                     select.appendChild(option);
                 }
-
                 select.value = category;
             }
             if (description) {
@@ -378,10 +373,13 @@
             const row = btn.closest('.expense-row');
             const container = document.getElementById('expenses-container');
             if (container.children.length > 1) {
-                row.remove();
-                calculateTotal();
+                row.style.opacity = '0';
+                row.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    row.remove();
+                    calculateTotal();
+                }, 200);
             } else {
-                // If it's the last row, just clear it
                 row.querySelector('.description-input').value = '';
                 row.querySelector('.amount-input').value = '';
                 row.querySelector('.category-select').selectedIndex = 0;
@@ -394,22 +392,15 @@
             const amountInput = row.querySelector('.amount-input');
             const text = descInput.value;
 
-            if (!text) {
-                return;
-            }
+            if (!text) return;
 
-            // Logic: Split by comma, find last number in each part, sum them up.
             const parts = text.split(',');
             let total = 0;
             let foundNumber = false;
 
             parts.forEach(part => {
-                // Match numbers (integer or decimal)
-                // This regex matches numbers like 10, 10.50, .50
                 const matches = part.match(/(\d+(\.\d+)?|\.\d+)/g);
-
                 if (matches && matches.length > 0) {
-                    // Take the last number found in this segment
                     const lastNumStr = matches[matches.length - 1];
                     const val = parseFloat(lastNumStr);
                     if (!isNaN(val)) {
@@ -420,7 +411,7 @@
             });
 
             if (foundNumber) {
-                amountInput.value = total; // Keep it as number for input, formatting happens in total
+                amountInput.value = total;
                 calculateTotal();
             }
         }
@@ -453,13 +444,9 @@
 
         function formatDateToDDMMMYYYY(isoDate) {
             if (!isoDate) return '';
-
-            // If it's already in dd/MMM/yyyy format, return it
             if (typeof isoDate === 'string' && isoDate.match(/^\d{2}\/[A-Za-z]{3}\/\d{4}$/)) {
                 return isoDate;
             }
-
-            // Handle YYYY-MM-DD format specifically to avoid timezone issues
             if (typeof isoDate === 'string' && isoDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
                 const parts = isoDate.split('-');
                 const year = parts[0];
@@ -470,7 +457,6 @@
                     return `${day}/${months[month - 1]}/${year}`;
                 }
             }
-
             const d = new Date(isoDate);
             if (isNaN(d.getTime())) return isoDate;
             const day = String(d.getDate()).padStart(2, '0');
@@ -528,18 +514,15 @@
                 originalDate: originalDate
             };
 
-            console.log('Sending data to Google Sheets:', data);
-
             fetch(CONFIG.GOOGLE_SHEET_URL_CASHEW, {
                 method: 'POST',
                 body: JSON.stringify(data),
                 mode: 'no-cors'
             })
             .then(response => {
-                console.log('Data sent to Google Sheets (no-cors mode)');
                 loader.classList.add('hidden');
                 saveBtn.disabled = false;
-                alert('✓ Expenses saved to Google Sheets successfully!');
+                alert('✓ Expenses saved successfully!');
                 fetchLastEnteredDate();
                 if (isEditMode) {
                      window.location.href = 'cashewreport.html';
@@ -555,13 +538,8 @@
             });
         }
 
-        // Initialize
         init();
     </script>
-
-    <footer>
-        <p>&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
-    </footer>
 </body>
 
 </html>
