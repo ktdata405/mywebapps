@@ -221,11 +221,45 @@
         let isEditMode = false;
         let originalDate = null;
 
+        /**
+         * Reliably parses a date string from formats like 'YYYY-MM-DD' or 'dd/MMM/yyyy'.
+         * @param {string} dateString The date string to parse.
+         * @returns {Date|null} A Date object or null if parsing fails.
+         */
+        function parseDate(dateString) {
+            if (!dateString) return null;
+
+            // Try parsing YYYY-MM-DD
+            let match = dateString.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (match) {
+                // new Date(year, monthIndex, day) is reliable
+                return new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3]));
+            }
+
+            // Try parsing dd/MMM/yyyy
+            match = dateString.match(/^(\d{2})\/([A-Za-z]{3})\/(\d{4})$/);
+            if (match) {
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const monthIndex = months.findIndex(m => m.toLowerCase() === match[2].toLowerCase());
+                if (monthIndex !== -1) {
+                    return new Date(parseInt(match[3]), monthIndex, parseInt(match[1]));
+                }
+            }
+
+            // Fallback for other potential ISO-like formats that are safe
+            const d = new Date(dateString);
+            return !isNaN(d.getTime()) ? d : null;
+        }
+
         function fetchLastEnteredDate() {
             const dateInput = document.getElementById('date-input');
-            const dateVal = new Date(dateInput.value);
+            // Safely get year and month from YYYY-MM-DD string
+            const dateParts = dateInput.value.split('-');
+            const year = parseInt(dateParts[0]);
+            const monthIndex = parseInt(dateParts[1]) - 1;
+
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const sheetName = `${months[dateVal.getMonth()]} ${dateVal.getFullYear()}`;
+            const sheetName = `${months[monthIndex]} ${year}`;
 
             const label = document.querySelector('#last-entry-label span');
             if(label) label.textContent = '...';
@@ -239,8 +273,8 @@
 
                         data.data.forEach(entry => {
                             if (entry.date) {
-                                const d = new Date(entry.date);
-                                if (!isNaN(d.getTime())) {
+                                const d = parseDate(entry.date); // Use robust parser
+                                if (d) { // Check if parsing was successful
                                     if (!maxDate || d > maxDate) {
                                         maxDate = d;
                                         maxDateStr = entry.date;
@@ -250,11 +284,7 @@
                         });
 
                         if (maxDateStr) {
-                            if (maxDateStr.match(/^\d{2}\/[A-Za-z]{3}\/\d{4}$/)) {
-                                label.textContent = maxDateStr;
-                            } else {
-                                label.textContent = formatDateToDDMMMYYYY(maxDateStr);
-                            }
+                            label.textContent = formatDateToDDMMMYYYY(maxDateStr);
                         } else {
                             label.textContent = 'None';
                         }
@@ -285,10 +315,13 @@
                 localStorage.removeItem('cashewEditData');
 
                 if (data.length > 0) {
-                    const date = new Date(data[0].date);
-                    const offset = date.getTimezoneOffset();
-                    const adjustedDate = new Date(date.getTime() - (offset*60*1000));
-                    dateInput.value = adjustedDate.toISOString().split('T')[0];
+                    const dateObj = parseDate(data[0].date); // Use robust parser
+                    if (dateObj) {
+                        const y = dateObj.getFullYear();
+                        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+                        const d = String(dateObj.getDate()).padStart(2, '0');
+                        dateInput.value = `${y}-${m}-${d}`;
+                    }
 
                     if (data[0].date) {
                         originalDate = formatDateToDDMMMYYYY(data[0].date);
@@ -317,12 +350,9 @@
             const currentVal = dateInput.value;
             if (!currentVal) return;
 
-            const parts = currentVal.split('-');
-            const year = parseInt(parts[0]);
-            const month = parseInt(parts[1]) - 1;
-            const day = parseInt(parts[2]);
+            const dateObj = parseDate(currentVal);
+            if (!dateObj) return;
 
-            const dateObj = new Date(year, month, day);
             dateObj.setDate(dateObj.getDate() + days);
 
             const today = new Date();
@@ -447,18 +477,10 @@
             if (typeof isoDate === 'string' && isoDate.match(/^\d{2}\/[A-Za-z]{3}\/\d{4}$/)) {
                 return isoDate;
             }
-            if (typeof isoDate === 'string' && isoDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                const parts = isoDate.split('-');
-                const year = parts[0];
-                const month = parseInt(parts[1], 10);
-                const day = parts[2];
-                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                if (!isNaN(month) && month >= 1 && month <= 12) {
-                    return `${day}/${months[month - 1]}/${year}`;
-                }
-            }
-            const d = new Date(isoDate);
-            if (isNaN(d.getTime())) return isoDate;
+
+            const d = parseDate(isoDate);
+            if (!d) return isoDate; // Return original if parsing fails
+
             const day = String(d.getDate()).padStart(2, '0');
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             return `${day}/${months[d.getMonth()]}/${d.getFullYear()}`;
