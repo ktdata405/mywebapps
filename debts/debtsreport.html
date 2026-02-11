@@ -2,366 +2,172 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Debts Analytics - KT Apps</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
+            --bg-dark: #0b0f19;
+            --card-bg: #151a25;
             --primary: #6366f1;
-            --secondary: #ec4899;
-            --accent: #8b5cf6;
+            --accent: #ec4899;
             --success: #10b981;
             --danger: #ef4444;
-            --warning: #facc15;
-            --bg-dark: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --text-light: #f8fafc;
-            --text-dim: #94a3b8;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Outfit', sans-serif;
         }
 
         body {
             background-color: var(--bg-dark);
-            color: var(--text-light);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-            position: relative;
+            color: #f8fafc;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* Background */
-        .bg-animation {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: radial-gradient(circle at 50% 0%, #1e1b4b, #0f172a);
-        }
+        /* Smooth scrolling */
+        html { scroll-behavior: smooth; }
 
-        /* Header */
-        header {
-            padding: 1.5rem 5%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(15, 23, 42, 0.8);
-        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
 
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .back-btn {
-            color: var(--text-light);
-            font-size: 1.1rem;
-            text-decoration: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            background: rgba(255,255,255,0.05);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        .back-btn:hover {
-            background: var(--primary);
-            transform: translateX(-3px);
-        }
-
-        .brand h1 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-
-        /* Container */
-        .container {
-            padding: 2rem 5%;
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-
-        /* Summary Cards */
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .summary-card {
-            background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            padding: 1.5rem;
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.3s;
-        }
-
-        .summary-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .summary-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-        }
-
-        .card-green::before { background: var(--success); }
-        .card-red::before { background: var(--danger); }
-        .card-blue::before { background: var(--primary); }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1rem;
-        }
-
-        .card-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            background: rgba(255,255,255,0.05);
-        }
-
-        .card-title {
-            font-size: 0.9rem;
-            color: var(--text-dim);
-            font-weight: 500;
-        }
-
-        .card-value {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .card-sub {
-            font-size: 0.8rem;
-            color: var(--text-dim);
-        }
-
-        /* Charts Section */
-        .charts-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-        }
-
-        .chart-card {
-            background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            padding: 1.5rem;
-        }
-
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .chart-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-
-        .chart-wrapper {
-            position: relative;
-            height: 300px;
-            width: 100%;
-        }
-
-        /* Top People List */
-        .people-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .person-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.8rem 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .person-item:last-child {
-            border-bottom: none;
-        }
-
-        .person-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .person-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 1rem;
-            color: white;
-        }
-
-        .person-name {
-            font-weight: 500;
-            color: var(--text-light);
-        }
-
-        .person-amount {
-            font-weight: 600;
-            text-align: right;
-        }
-
-        .amount-sub {
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            display: block;
-        }
-
-        /* Responsive */
-        @media (max-width: 900px) {
-            .charts-grid {
-                grid-template-columns: 1fr;
-            }
+        .glass-panel {
+            background: rgba(21, 26, 37, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
     </style>
 </head>
-<body>
+<body class="min-h-screen pb-10 relative overflow-x-hidden">
 
-    <div class="bg-animation"></div>
+    <!-- Background Gradients -->
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+        <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-600/20 rounded-full blur-[100px]"></div>
+    </div>
 
-    <header>
-        <div class="header-left">
-            <a href="debts.html" class="back-btn">
-                <i class="fa-solid fa-arrow-left"></i>
-            </a>
-            <div class="brand">
-                <h1>Analytics</h1>
+    <!-- Header -->
+    <header class="sticky top-0 z-30 glass-panel border-b border-white/5 px-6 py-4 mb-8 backdrop-blur-xl bg-[#0b0f19]/80">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 ring-4 ring-white/5">
+                    <i class="fa-solid fa-chart-pie text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white leading-tight">Analytics</h1>
+                    <p class="text-xs text-gray-400 font-medium">Debts Overview</p>
+                </div>
             </div>
-        </div>
-        <div style="font-size: 0.9rem; color: var(--text-dim);">
-            <i class="fa-regular fa-calendar"></i> Today
+            <div class="flex gap-3">
+                <a href="debts.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95">
+                    <i class="fa-solid fa-plus"></i>
+                </a>
+                <a href="../index.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95">
+                    <i class="fa-solid fa-house"></i>
+                </a>
+            </div>
         </div>
     </header>
 
-    <div class="container">
+    <main class="max-w-5xl mx-auto px-4">
+
         <!-- Summary Cards -->
-        <div class="summary-grid">
-            <div class="summary-card card-green">
-                <div class="card-header">
-                    <div>
-                        <div class="card-title">Total Lent</div>
-                        <div class="card-sub">Money you will receive</div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="glass-panel p-6 rounded-3xl border border-white/5 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <i class="fa-solid fa-arrow-trend-up text-5xl text-emerald-500"></i>
+                </div>
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                        <i class="fa-solid fa-hand-holding-dollar"></i>
                     </div>
-                    <div class="card-icon" style="color: var(--success);">
-                        <i class="fa-solid fa-arrow-trend-up"></i>
+                    <div>
+                        <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Total Lent</p>
+                        <p class="text-xs text-gray-400">Money you'll receive</p>
                     </div>
                 </div>
-                <div class="card-value text-success" id="total-lent">₹0</div>
+                <h3 class="text-3xl font-bold text-emerald-400 font-mono tracking-tight" id="total-lent">₹0</h3>
             </div>
 
-            <div class="summary-card card-red">
-                <div class="card-header">
-                    <div>
-                        <div class="card-title">Total Borrowed</div>
-                        <div class="card-sub">Money you need to pay</div>
+            <div class="glass-panel p-6 rounded-3xl border border-white/5 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <i class="fa-solid fa-arrow-trend-down text-5xl text-rose-500"></i>
+                </div>
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center border border-rose-500/20">
+                        <i class="fa-solid fa-hand-holding-hand"></i>
                     </div>
-                    <div class="card-icon" style="color: var(--danger);">
-                        <i class="fa-solid fa-arrow-trend-down"></i>
+                    <div>
+                        <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Total Borrowed</p>
+                        <p class="text-xs text-gray-400">Money you owe</p>
                     </div>
                 </div>
-                <div class="card-value text-danger" id="total-borrowed">₹0</div>
+                <h3 class="text-3xl font-bold text-rose-400 font-mono tracking-tight" id="total-borrowed">₹0</h3>
             </div>
 
-            <div class="summary-card card-blue">
-                <div class="card-header">
-                    <div>
-                        <div class="card-title">Net Balance</div>
-                        <div class="card-sub">Overall financial position</div>
+            <div class="glass-panel p-6 rounded-3xl border border-white/5 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <i class="fa-solid fa-wallet text-5xl text-indigo-500"></i>
+                </div>
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20">
+                        <i class="fa-solid fa-scale-balanced"></i>
                     </div>
-                    <div class="card-icon" style="color: var(--primary);">
-                        <i class="fa-solid fa-wallet"></i>
+                    <div>
+                        <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Net Balance</p>
+                        <p class="text-xs text-gray-400">Overall position</p>
                     </div>
                 </div>
-                <div class="card-value text-primary" id="net-balance">₹0</div>
+                <h3 class="text-3xl font-bold text-indigo-400 font-mono tracking-tight" id="net-balance">₹0</h3>
             </div>
         </div>
 
         <!-- Charts Area -->
-        <div class="charts-grid">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <!-- Distribution Chart -->
-            <div class="chart-card">
-                <div class="chart-header">
-                    <div class="chart-title">Debt Distribution</div>
+            <div class="glass-panel p-6 rounded-3xl border border-white/5 flex flex-col">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-bold text-white">Debt Distribution</h3>
+                    <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+                        <i class="fa-solid fa-chart-pie text-gray-400 text-xs"></i>
+                    </div>
                 </div>
-                <div class="chart-wrapper">
+                <div class="relative h-64 w-full flex items-center justify-center">
                     <canvas id="distributionChart"></canvas>
                 </div>
             </div>
 
-            <!-- Top People List (Visual) -->
-            <div class="chart-card">
-                <div class="chart-header">
-                    <div class="chart-title">Top Active Accounts</div>
+            <!-- Top People List -->
+            <div class="glass-panel p-6 rounded-3xl border border-white/5 flex flex-col">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-bold text-white">Top Active Accounts</h3>
+                    <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+                        <i class="fa-solid fa-users text-gray-400 text-xs"></i>
+                    </div>
                 </div>
-                <div class="people-list" id="top-people-list">
+                <div class="space-y-3 overflow-y-auto max-h-64 pr-2 custom-scrollbar" id="top-people-list">
                     <!-- Populated by JS -->
                 </div>
             </div>
         </div>
 
-        <!-- Monthly Trend (Optional/Advanced) -->
-        <div class="chart-card">
-             <div class="chart-header">
-                <div class="chart-title">Monthly Activity (Last 6 Months)</div>
+        <!-- Monthly Trend -->
+        <div class="glass-panel p-6 rounded-3xl border border-white/5 mb-8">
+             <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-bold text-white">Monthly Activity <span class="text-xs font-normal text-gray-500 ml-2">(Last 6 Months)</span></h3>
+                <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+                    <i class="fa-solid fa-chart-column text-gray-400 text-xs"></i>
+                </div>
             </div>
-            <div class="chart-wrapper" style="height: 250px;">
+            <div class="relative h-64 w-full">
                 <canvas id="trendChart"></canvas>
             </div>
         </div>
-    </div>
+
+    </main>
 
     <script>
         // --- Data Loading ---
@@ -386,37 +192,77 @@
 
         const netEl = document.getElementById('net-balance');
         netEl.textContent = `₹${Math.abs(netBalance).toLocaleString('en-IN')}`;
-        netEl.style.color = netBalance >= 0 ? 'var(--success)' : 'var(--danger)';
-        netEl.textContent = (netBalance >= 0 ? '+ ' : '- ') + netEl.textContent;
+
+        if (netBalance >= 0) {
+            netEl.className = 'text-3xl font-bold text-emerald-400 font-mono tracking-tight';
+            netEl.textContent = '+ ' + netEl.textContent;
+        } else {
+            netEl.className = 'text-3xl font-bold text-rose-400 font-mono tracking-tight';
+            netEl.textContent = '- ' + netEl.textContent;
+        }
 
         // --- 2. Distribution Chart (Doughnut) ---
         const ctxDist = document.getElementById('distributionChart').getContext('2d');
-        new Chart(ctxDist, {
-            type: 'doughnut',
-            data: {
-                labels: ['Lent', 'Borrowed'],
-                datasets: [{
-                    data: [totalLent, totalBorrowed],
-                    backgroundColor: ['#10b981', '#ef4444'],
-                    borderWidth: 0,
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '70%',
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { color: '#94a3b8', padding: 20, usePointStyle: true }
+
+        // Check if there's data to display
+        if (totalLent === 0 && totalBorrowed === 0) {
+            // Show empty state or placeholder chart
+             new Chart(ctxDist, {
+                type: 'doughnut',
+                data: {
+                    labels: ['No Data'],
+                    datasets: [{
+                        data: [1],
+                        backgroundColor: ['rgba(255, 255, 255, 0.05)'],
+                        borderWidth: 0,
+                        hoverOffset: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
                     }
                 }
-            }
-        });
+            });
+        } else {
+            new Chart(ctxDist, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Lent', 'Borrowed'],
+                    datasets: [{
+                        data: [totalLent, totalBorrowed],
+                        backgroundColor: ['#10b981', '#f43f5e'],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#94a3b8',
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                font: { family: "'Plus Jakarta Sans', sans-serif", size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
 
         // --- 3. Top People List ---
         const personMap = {};
+        // Calculate net balance per person
         activeDebts.forEach(d => {
             if (!personMap[d.person]) personMap[d.person] = 0;
             if (d.type === 'lent') personMap[d.person] += d.amount;
@@ -425,28 +271,43 @@
 
         const peopleArray = Object.keys(personMap)
             .map(name => ({ name, amount: personMap[name] }))
+            .filter(p => p.amount !== 0) // Filter out settled/zero balance people
             .sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount))
             .slice(0, 5);
 
         const peopleListEl = document.getElementById('top-people-list');
         if (peopleArray.length === 0) {
-            peopleListEl.innerHTML = '<div style="text-align:center; color:var(--text-dim); padding: 2rem;">No active debts.</div>';
+            peopleListEl.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-8 text-gray-500">
+                    <i class="fa-regular fa-user text-2xl mb-2 opacity-50"></i>
+                    <p class="text-sm">No active debts found.</p>
+                </div>
+            `;
         } else {
             peopleArray.forEach(p => {
                 const isOwed = p.amount >= 0;
-                const color = isOwed ? 'var(--success)' : 'var(--danger)';
+                const colorClass = isOwed ? 'text-emerald-400' : 'text-rose-400';
                 const subText = isOwed ? 'Owes you' : 'You owe';
                 const initials = p.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
+                // Generate a consistent color for avatar based on name
+                const colors = ['bg-blue-500', 'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-teal-500', 'bg-orange-500'];
+                const colorIndex = p.name.length % colors.length;
+                const avatarColor = colors[colorIndex];
+
                 const html = `
-                    <div class="person-item">
-                        <div class="person-info">
-                            <div class="person-avatar">${initials}</div>
-                            <div class="person-name">${p.name}</div>
+                    <div class="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/5 group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full ${avatarColor} flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-black/20">
+                                ${initials}
+                            </div>
+                            <div>
+                                <div class="font-semibold text-white text-sm">${p.name}</div>
+                                <div class="text-[10px] text-gray-500 uppercase tracking-wide font-bold">${subText}</div>
+                            </div>
                         </div>
-                        <div class="person-amount" style="color: ${color}">
+                        <div class="font-bold ${colorClass} font-mono text-sm">
                             ₹${Math.abs(p.amount).toLocaleString('en-IN')}
-                            <span class="amount-sub">${subText}</span>
                         </div>
                     </div>
                 `;
@@ -490,13 +351,15 @@
                         label: 'Lent',
                         data: last6Months.map(m => m.lent),
                         backgroundColor: '#10b981',
-                        borderRadius: 4
+                        borderRadius: 6,
+                        barThickness: 12,
                     },
                     {
                         label: 'Borrowed',
                         data: last6Months.map(m => m.borrowed),
-                        backgroundColor: '#ef4444',
-                        borderRadius: 4
+                        backgroundColor: '#f43f5e',
+                        borderRadius: 6,
+                        barThickness: 12,
                     }
                 ]
             },
@@ -506,19 +369,35 @@
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: { color: '#94a3b8' }
+                        grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+                        ticks: { color: '#94a3b8', font: { family: "'Plus Jakarta Sans', sans-serif", size: 10 } },
+                        border: { display: false }
                     },
                     x: {
-                        grid: { display: false },
-                        ticks: { color: '#94a3b8' }
+                        grid: { display: false, drawBorder: false },
+                        ticks: { color: '#94a3b8', font: { family: "'Plus Jakarta Sans', sans-serif", size: 10 } },
+                        border: { display: false }
                     }
                 },
                 plugins: {
                     legend: {
                         position: 'top',
                         align: 'end',
-                        labels: { color: '#94a3b8', usePointStyle: true }
+                        labels: {
+                            color: '#94a3b8',
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            boxWidth: 6,
+                            font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleColor: '#fff',
+                        bodyColor: '#cbd5e1',
+                        padding: 10,
+                        cornerRadius: 8,
+                        displayColors: true
                     }
                 }
             }

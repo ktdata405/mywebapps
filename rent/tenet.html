@@ -3,108 +3,64 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tenet Details</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="../config.js"></script>
     <style>
         :root {
+            --bg-dark: #0b0f19;
+            --card-bg: #151a25;
             --primary: #6366f1;
-            --secondary: #ec4899;
-            --accent: #8b5cf6;
-            --bg-dark: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --text-light: #f8fafc;
-            --text-dim: #94a3b8;
+            --accent: #ec4899;
         }
 
         body {
             background-color: var(--bg-dark);
-            color: var(--text-light);
-            font-family: 'Outfit', sans-serif;
-            min-height: 100vh;
-            position: relative;
-            overflow-x: hidden;
+            color: #f8fafc;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* Animated Background */
-        .bg-animation {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: radial-gradient(circle at 50% 50%, #1e1b4b, #0f172a);
-            overflow: hidden;
+        /* Smooth scrolling */
+        html { scroll-behavior: smooth; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+        .glass-panel {
+            background: rgba(21, 26, 37, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.4;
-            animation: float 20s infinite ease-in-out;
+        .input-group {
+            transition: all 0.3s ease;
         }
 
-        .orb-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px; animation-delay: 0s; }
-        .orb-2 { width: 300px; height: 300px; background: var(--secondary); bottom: -50px; right: -50px; animation-delay: -5s; }
-        .orb-3 { width: 200px; height: 200px; background: var(--accent); top: 40%; left: 60%; animation-delay: -10s; }
-
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(30px, 50px); }
+        .input-group:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            background: rgba(99, 102, 241, 0.05);
         }
 
-        .glass-card {
-            background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(12px);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        .input-field {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text-light);
-            width: 100%;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            outline: none;
-            transition: all 0.2s;
-        }
-
-        .input-field:focus {
-            border-color: var(--secondary);
-            box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.2);
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        select.input-field option {
-            background-color: #1e293b;
-            color: var(--text-light);
-        }
-
-        .input-label {
-            display: block;
-            color: var(--text-dim);
-            font-size: 0.875rem;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-
-        /* Date Picker Icon Fix */
+        /* Date Picker Customization */
         input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(1);
-            cursor: pointer;
             opacity: 0.6;
-            transition: opacity 0.2s;
+            cursor: pointer;
         }
 
-        input[type="date"]::-webkit-calendar-picker-indicator:hover {
-            opacity: 1;
+        /* Hide number input arrows */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
         /* Table Styles */
@@ -120,187 +76,225 @@
         th {
             text-align: left;
             padding: 1rem;
-            color: var(--text-dim);
+            color: #94a3b8;
             font-weight: 600;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         td {
             padding: 1rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            color: var(--text-light);
+            color: #f8fafc;
+            font-size: 0.875rem;
         }
 
         tr:last-child td {
             border-bottom: none;
         }
-
-        footer {
-            text-align: center;
-            padding: 20px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            color: var(--text-dim);
-            margin-top: auto;
-        }
-
-        footer b {
-            color: var(--text-light);
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--bg-dark);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
     </style>
 </head>
 
-<body class="p-4 md:p-10 flex flex-col">
+<body class="min-h-screen pb-40 relative overflow-x-hidden">
 
-    <div class="bg-animation">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
+    <!-- Background Gradients -->
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+        <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-pink-600/20 rounded-full blur-[100px]"></div>
     </div>
 
-    <div class="max-w-4xl mx-auto w-full glass-card p-6 rounded-2xl shadow-lg mb-8">
-        <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
-            <h2 class="text-2xl font-bold flex items-center gap-3 text-white">
-                <i class="fa-solid fa-house text-pink-500"></i>Tenet Details
-            </h2>
+    <!-- Header -->
+    <header class="sticky top-0 z-30 glass-panel border-b border-white/5 px-6 py-4 mb-8 backdrop-blur-xl bg-[#0b0f19]/80">
+        <div class="max-w-3xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-4">
-                <a href="tenetreport.html" class="text-white/70 hover:text-white text-xl transition-colors" title="Report">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 ring-4 ring-white/5">
+                    <i class="fa-solid fa-house-user text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white leading-tight">Tenet Details</h1>
+                    <p class="text-xs text-gray-400 font-medium">Rent Management</p>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <a href="tenetreport.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95">
                     <i class="fa-solid fa-chart-pie"></i>
                 </a>
-                <a href="../index.html" class="text-white/70 hover:text-white text-xl transition-colors" title="Home">
+                <a href="../index.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95">
                     <i class="fa-solid fa-house"></i>
                 </a>
             </div>
         </div>
+    </header>
 
-        <form id="tenetForm">
-            <!-- Date & Side Row -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div>
-                    <label for="date" class="input-label">Select Date</label>
-                    <div class="flex items-center gap-2">
-                        <button id="prev-day" type="button" class="p-2 px-4 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"><i class="fa-solid fa-chevron-left"></i></button>
-                        <input type="date" id="date" name="date" onclick="this.showPicker()" class="input-field cursor-pointer" placeholder="Select Date">
-                        <button id="next-day" type="button" class="p-2 px-4 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"><i class="fa-solid fa-chevron-right"></i></button>
+    <main class="max-w-3xl mx-auto px-4">
+
+        <div class="glass-panel rounded-3xl p-6 mb-8 border border-white/10 shadow-2xl shadow-black/20">
+            <form id="tenetForm" class="space-y-6">
+
+                <!-- Date & Side Row -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1">Select Date</label>
+                        <div class="flex items-center gap-2">
+                            <button id="prev-day" type="button" class="w-12 h-[50px] rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center text-gray-400 hover:text-white transition-all active:scale-95">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <div class="relative flex-grow">
+                                <input type="date" id="date" name="date" onclick="this.showPicker()" class="w-full h-[50px] bg-black/40 border border-white/10 rounded-2xl px-4 text-sm font-semibold text-white outline-none focus:border-indigo-500 focus:bg-black/60 focus:ring-1 focus:ring-indigo-500 transition-all cursor-pointer text-center">
+                            </div>
+                            <button id="next-day" type="button" class="w-12 h-[50px] rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center text-gray-400 hover:text-white transition-all active:scale-95">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1">Side</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
+                                <i class="fa-solid fa-building text-sm"></i>
+                            </div>
+                            <select id="side" name="side" class="w-full h-[50px] bg-black/40 border border-white/10 rounded-2xl pl-10 pr-4 text-sm font-semibold text-white outline-none focus:border-indigo-500 focus:bg-black/60 focus:ring-1 focus:ring-indigo-500 transition-all appearance-none cursor-pointer">
+                                <option value="" disabled selected>Select Side</option>
+                                <option value="Kalyan">Kalyan</option>
+                                <option value="Srikanth">Srikanth</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-500">
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div>
-                    <label for="side" class="input-label">Side</label>
-                    <select id="side" name="side" class="input-field cursor-pointer">
-                        <option value="" disabled selected>Select Side</option>
-                        <option value="Kalyan">Kalyan</option>
-                        <option value="Srikanth">Srikanth</option>
-                    </select>
-                </div>
-            </div>
 
-            <!-- Financials Row -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div>
-                    <label for="rentAmount" class="input-label">Rent Amount</label>
-                    <input type="number" id="rentAmount" name="rentAmount" inputmode="numeric" placeholder="0.00" class="input-field">
+                <!-- Financials Row -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1">Rent Amount</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
+                                <i class="fa-solid fa-indian-rupee-sign text-sm"></i>
+                            </div>
+                            <input type="number" id="rentAmount" name="rentAmount" inputmode="numeric" placeholder="0.00" class="w-full bg-black/40 border border-white/10 rounded-2xl pl-10 pr-4 py-3.5 text-sm font-mono font-bold text-white outline-none focus:border-indigo-500 focus:bg-black/60 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-gray-700">
+                        </div>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1">Paid Amount</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
+                                <i class="fa-solid fa-indian-rupee-sign text-sm"></i>
+                            </div>
+                            <input type="number" id="paidAmount" name="paidAmount" inputmode="numeric" oninput="calculateTotal()" placeholder="0.00" class="w-full bg-black/40 border border-white/10 rounded-2xl pl-10 pr-4 py-3.5 text-sm font-mono font-bold text-white outline-none focus:border-indigo-500 focus:bg-black/60 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-gray-700">
+                        </div>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1">Balance Amount</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
+                                <i class="fa-solid fa-indian-rupee-sign text-sm"></i>
+                            </div>
+                            <input type="number" id="balanceAmount" name="balanceAmount" inputmode="numeric" oninput="calculateTotal()" placeholder="0.00" class="w-full bg-black/40 border border-white/10 rounded-2xl pl-10 pr-4 py-3.5 text-sm font-mono font-bold text-white outline-none focus:border-indigo-500 focus:bg-black/60 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-gray-700">
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label for="paidAmount" class="input-label">Paid Amount</label>
-                    <input type="number" id="paidAmount" name="paidAmount" inputmode="numeric" oninput="calculateTotal()" placeholder="0.00" class="input-field">
-                </div>
-                <div>
-                    <label for="balanceAmount" class="input-label">Balance Amount</label>
-                    <input type="number" id="balanceAmount" name="balanceAmount" inputmode="numeric" oninput="calculateTotal()" placeholder="0.00" class="input-field">
-                </div>
-            </div>
 
-            <!-- Utilities & Total Row -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div>
-                    <label for="powerBill" class="input-label">Power Bill</label>
-                    <input type="number" id="powerBill" name="powerBill" inputmode="numeric" placeholder="0.00" class="input-field">
+                <!-- Utilities & Total Row -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1">Power Bill</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
+                                <i class="fa-solid fa-bolt text-sm"></i>
+                            </div>
+                            <input type="number" id="powerBill" name="powerBill" inputmode="numeric" placeholder="0.00" class="w-full bg-black/40 border border-white/10 rounded-2xl pl-10 pr-4 py-3.5 text-sm font-mono font-bold text-white outline-none focus:border-indigo-500 focus:bg-black/60 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-gray-700">
+                        </div>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1">Water Bill</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
+                                <i class="fa-solid fa-faucet-drip text-sm"></i>
+                            </div>
+                            <input type="number" id="waterBill" name="waterBill" inputmode="numeric" oninput="calculateTotal()" placeholder="0.00" class="w-full bg-black/40 border border-white/10 rounded-2xl pl-10 pr-4 py-3.5 text-sm font-mono font-bold text-white outline-none focus:border-indigo-500 focus:bg-black/60 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-gray-700">
+                        </div>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] uppercase tracking-wider text-emerald-500 font-bold ml-1">Total Paid</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-emerald-500">
+                                <i class="fa-solid fa-sack-dollar text-sm"></i>
+                            </div>
+                            <input type="text" id="totalPaid" name="totalPaid" placeholder="0.00" readonly class="w-full bg-emerald-500/10 border border-emerald-500/30 rounded-2xl pl-10 pr-4 py-3.5 text-sm font-mono font-bold text-emerald-400 outline-none transition-all">
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label for="waterBill" class="input-label">Water Bill</label>
-                    <input type="number" id="waterBill" name="waterBill" inputmode="numeric" oninput="calculateTotal()" placeholder="0.00" class="input-field">
+
+                <!-- Remarks -->
+                <div class="space-y-1.5">
+                    <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1">Remarks</label>
+                    <textarea id="remarks" name="remarks" rows="3" placeholder="Enter remarks here..." class="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-3 text-sm text-gray-300 placeholder-gray-700 outline-none focus:border-indigo-500 focus:bg-black/60 focus:ring-1 focus:ring-indigo-500 transition-all resize-none"></textarea>
                 </div>
-                <div>
-                    <label for="totalPaid" class="input-label text-emerald-400">Total Paid</label>
-                    <input type="text" id="totalPaid" name="totalPaid" placeholder="0.00" readonly class="input-field font-bold text-emerald-400 bg-emerald-500/10 border-emerald-500/30">
+
+                <!-- Actions -->
+                <div class="flex flex-col sm:flex-row gap-4 pt-2">
+                    <button type="button" onclick="clearForm()" class="w-full sm:w-1/3 py-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 text-gray-400 hover:text-white font-bold flex items-center justify-center gap-2 transition-all active:scale-95">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        <span>Clear</span>
+                    </button>
+                    <button type="submit" class="w-full sm:w-2/3 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2.5 transition-all active:scale-95 hover:shadow-indigo-600/40">
+                        <i class="fa-solid fa-check"></i>
+                        <span>Submit Record</span>
+                    </button>
                 </div>
-            </div>
-
-            <!-- Remarks -->
-            <div class="mb-8">
-                <label for="remarks" class="input-label">Remarks</label>
-                <textarea id="remarks" name="remarks" rows="3" placeholder="Enter remarks here..." class="input-field resize-none"></textarea>
-            </div>
-
-            <!-- Actions -->
-            <div class="flex flex-col sm:flex-row gap-4 justify-end">
-                <button type="button" onclick="clearForm()" class="bg-white/10 hover:bg-white/20 text-white py-3 px-6 rounded-xl font-bold flex items-center justify-center gap-2 transition border border-white/10 w-full sm:w-auto">
-                    <i class="fa-solid fa-rotate-left"></i> Clear
-                </button>
-                <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-white py-3 px-8 rounded-xl font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-500/20 w-full sm:w-auto">
-                    <i class="fa-solid fa-check"></i> Submit
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <!-- Records Table -->
-    <div class="max-w-4xl mx-auto w-full glass-card p-6 rounded-2xl shadow-lg hidden" id="recordsContainer">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-bold text-white">Submitted Records</h2>
-            <span class="bg-pink-500/20 text-pink-400 text-xs font-bold px-3 py-1 rounded-full border border-pink-500/30">New</span>
+            </form>
         </div>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Side</th>
-                        <th>Rent</th>
-                        <th>Paid</th>
-                        <th>Balance</th>
-                        <th>Power</th>
-                        <th>Water</th>
-                        <th>Total</th>
-                        <th>Remarks</th>
-                    </tr>
-                </thead>
-                <tbody id="recordsTableBody">
-                </tbody>
-            </table>
+
+        <!-- Records Table -->
+        <div class="glass-panel rounded-3xl p-6 mb-8 border border-white/10 shadow-2xl shadow-black/20 hidden" id="recordsContainer">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-bold text-white">Submitted Records</h2>
+                <span class="bg-indigo-500/20 text-indigo-400 text-[10px] uppercase tracking-wider font-bold px-3 py-1 rounded-lg border border-indigo-500/30">New</span>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Side</th>
+                            <th>Rent</th>
+                            <th>Paid</th>
+                            <th>Balance</th>
+                            <th>Power</th>
+                            <th>Water</th>
+                            <th>Total</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recordsTableBody">
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
+
+    </main>
 
     <!-- Loader -->
-    <div id="loader" class="hidden fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-50">
-        <div class="glass-card p-8 rounded-2xl flex flex-col items-center gap-4">
-            <div class="animate-spin">
-                <i class="fa-solid fa-circle-notch text-4xl text-pink-500"></i>
+    <div id="loader" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-all">
+        <div class="glass-panel p-8 rounded-3xl flex flex-col items-center gap-6 shadow-2xl border border-white/10">
+            <div class="relative w-16 h-16">
+                <div class="absolute inset-0 border-4 border-indigo-500/20 rounded-full"></div>
+                <div class="absolute inset-0 border-4 border-indigo-500 rounded-full border-t-transparent animate-spin"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <i class="fa-solid fa-cloud-arrow-up text-indigo-500"></i>
+                </div>
             </div>
-            <p class="text-white font-semibold">Saving Record...</p>
+            <div class="text-center">
+                <h3 class="text-white font-bold text-lg">Saving Record</h3>
+                <p class="text-gray-400 text-sm mt-1">Syncing with database...</p>
+            </div>
         </div>
     </div>
-
-    <footer>
-        <p>&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
-    </footer>
 
     <script src="script.js"></script>
 

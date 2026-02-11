@@ -317,84 +317,100 @@
 </head>
 <body>
 
-    <div class="bg-animation">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
+<div class="bg-animation">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+</div>
+
+<div class="card">
+    <div class="header-container">
+        <h2>
+            <a href="calculator.html" style="color: var(--text-light); text-decoration: none; margin-right: 10px;" aria-label="Back"><i class="fas fa-arrow-left"></i></a>
+            Interest Calculator
+            <a href="../index.html" style="color: var(--text-light); text-decoration: none; margin-left: 10px;" aria-label="Home"><i class="fas fa-home"></i></a>
+        </h2>
     </div>
 
-    <div class="card">
-        <div class="header-container">
-            <h2>
-                <a href="calculator.html" style="color: var(--text-light); text-decoration: none; margin-right: 10px;" aria-label="Back"><i class="fas fa-arrow-left"></i></a>
-                Interest Calculator
-                <a href="../index.html" style="color: var(--text-light); text-decoration: none; margin-left: 10px;" aria-label="Home"><i class="fas fa-home"></i></a>
-            </h2>
-        </div>
+    <div class="tabs">
+        <button class="tab active" id="tab-flat" onclick="setMode('flat')">Flat Rate</button>
+        <button class="tab" id="tab-float" onclick="setMode('float')">Reducing Balance</button>
+    </div>
 
-        <div class="tabs">
-            <button class="tab active" id="tab-flat" onclick="setMode('flat')">Flat Rate</button>
-            <button class="tab" id="tab-float" onclick="setMode('float')">Reducing Balance</button>
-        </div>
+    <div class="input-group">
+        <label>Principal Amount</label>
+        <input type="text" inputmode="decimal" id="principal" placeholder="Enter amount" oninput="formatInput(this); updateAmountWords(this.value)">
+        <div id="amount-words" class="amount-words"></div>
+    </div>
 
+    <div class="input-group">
+        <label>Interest Rate (%)</label>
+        <input type="text" inputmode="decimal" id="rate" placeholder="Enter rate per annum" oninput="formatInput(this)">
+    </div>
+
+    <div class="tenure-container">
         <div class="input-group">
-            <label>Principal Amount</label>
-            <input type="number" id="principal" placeholder="Enter amount" oninput="updateAmountWords(this.value)">
-            <div id="amount-words" class="amount-words"></div>
+            <label>Tenure (Years)</label>
+            <input type="text" inputmode="decimal" id="time-years" placeholder="Years" oninput="clearOther('months'); formatInput(this)">
         </div>
-
         <div class="input-group">
-            <label>Interest Rate (%)</label>
-            <input type="number" id="rate" placeholder="Enter rate per annum">
-        </div>
-
-        <div class="tenure-container">
-            <div class="input-group">
-                <label>Tenure (Years)</label>
-                <input type="number" id="time-years" placeholder="Years" oninput="clearOther('months')">
-            </div>
-            <div class="input-group">
-                <label>Tenure (Months)</label>
-                <input type="number" id="time-months" placeholder="Months" oninput="clearOther('years')">
-            </div>
-        </div>
-
-        <div class="action-buttons">
-            <button class="calc-btn" onclick="calculate()">Calculate</button>
-            <button class="clear-btn" onclick="clearInputs()">Clear</button>
-        </div>
-
-        <div id="result">
-            <div class="res-item"><span>Total Interest:</span> <span id="total-interest" class="res-val val-interest">0</span></div>
-            <div class="res-item"><span>Total Amount:</span> <span id="total-amount" class="res-val val-total">0</span></div>
-            <div class="res-item" id="emi-row" style="display:none;"><span>Monthly EMI:</span> <span id="emi-val" class="res-val">0</span></div>
-        </div>
-
-        <div class="accordion-container" id="schedule-accordion">
-            <button class="accordion-header" onclick="toggleSchedule()">
-                <span>Repayment Schedule <i class="fas fa-list-alt" style="margin-left: 8px;"></i></span>
-                <i class="fas fa-chevron-down arrow" id="schedule-arrow"></i>
-            </button>
-            <div class="accordion-content" id="scheduleContent">
-                <table class="schedule-table">
-                    <thead>
-                        <tr>
-                            <th>Month</th>
-                            <th>Principal</th>
-                            <th>Interest</th>
-                            <th>Balance</th>
-                        </tr>
-                    </thead>
-                    <tbody id="schedule-body">
-                        <!-- Rows will be added here -->
-                    </tbody>
-                </table>
-            </div>
+            <label>Tenure (Months)</label>
+            <input type="text" inputmode="decimal" id="time-months" placeholder="Months" oninput="clearOther('years'); formatInput(this)">
         </div>
     </div>
+
+    <div class="input-group">
+        <label>GST on Interest (%)</label>
+        <input type="text" inputmode="decimal" id="gst" placeholder="Enter GST rate" value="18" oninput="formatInput(this)">
+    </div>
+
+    <div class="action-buttons">
+        <button class="calc-btn" onclick="calculate()">Calculate</button>
+        <button class="clear-btn" onclick="clearInputs()">Clear</button>
+    </div>
+
+    <div id="result">
+        <div class="res-item"><span>Total Interest:</span> <span id="total-interest" class="res-val val-interest">0</span></div>
+        <div class="res-item"><span>GST on Interest:</span> <span id="gst-amount" class="res-val">0</span></div>
+        <div class="res-item"><span>Total Amount (incl. GST):</span> <span id="total-amount" class="res-val val-total">0</span></div>
+        <div class="res-item" id="emi-row" style="display:none;"><span>Monthly EMI:</span> <span id="emi-val" class="res-val">0</span></div>
+    </div>
+
+    <div class="accordion-container" id="schedule-accordion">
+        <button class="accordion-header" onclick="toggleSchedule()">
+            <span>Repayment Schedule <i class="fas fa-list-alt" style="margin-left: 8px;"></i></span>
+            <i class="fas fa-chevron-down arrow" id="schedule-arrow"></i>
+        </button>
+        <div class="accordion-content" id="scheduleContent">
+            <table class="schedule-table">
+                <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Principal</th>
+                    <th>Interest</th>
+                    <th>GST</th>
+                    <th>Balance</th>
+                </tr>
+                </thead>
+                <tbody id="schedule-body">
+                <!-- Rows will be added here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
 <script>
     let currentMode = 'flat';
+
+    function formatInput(input) {
+        let value = input.value.replace(/[^\d.]/g, '');
+        let parts = value.split('.');
+        if (parts.length > 2) {
+            value = parts[0] + '.' + parts.slice(1).join('');
+        }
+        input.value = value;
+    }
 
     function setMode(mode) {
         currentMode = mode;
@@ -429,6 +445,7 @@
     function calculate() {
         const P = parseFloat(document.getElementById('principal').value);
         const R = parseFloat(document.getElementById('rate').value);
+        const G = parseFloat(document.getElementById('gst').value) || 0;
 
         let years = parseFloat(document.getElementById('time-years').value);
         let months = parseFloat(document.getElementById('time-months').value);
@@ -452,17 +469,20 @@
         let interest = 0;
         let total = 0;
         let emi = 0;
+        let totalGst = 0;
         let scheduleHtml = '';
 
         if (currentMode === 'flat') {
             interest = (P * R * T) / 100;
-            total = P + interest;
+            totalGst = (interest * G) / 100;
+            total = P + interest + totalGst;
             emi = total / totalMonths;
 
             // Flat Rate Schedule
             let balance = P;
             let monthlyPrincipal = P / totalMonths;
             let monthlyInterest = interest / totalMonths;
+            let monthlyGst = totalGst / totalMonths;
 
             for(let i = 1; i <= totalMonths; i++) {
                 balance -= monthlyPrincipal;
@@ -473,6 +493,7 @@
                         <td>${i}</td>
                         <td>${monthlyPrincipal.toFixed(0)}</td>
                         <td>${monthlyInterest.toFixed(0)}</td>
+                        <td>${monthlyGst.toFixed(0)}</td>
                         <td>${balance.toFixed(0)}</td>
                     </tr>
                 `;
@@ -483,34 +504,44 @@
             const r = R / (12 * 100);
             const n = totalMonths;
             emi = (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
-            total = emi * n;
-            interest = total - P;
 
-            // Reducing Balance Schedule
             let balance = P;
+            let totalInterest = 0;
             for(let i = 1; i <= n; i++) {
                 let interestPart = balance * r;
                 let principalPart = emi - interestPart;
                 balance -= principalPart;
                 if(balance < 0) balance = 0;
 
+                let gstOnInterestPart = (interestPart * G) / 100;
+                totalGst += gstOnInterestPart;
+                totalInterest += interestPart;
+
                 scheduleHtml += `
                     <tr>
                         <td>${i}</td>
                         <td>${principalPart.toFixed(0)}</td>
                         <td>${interestPart.toFixed(0)}</td>
+                        <td>${gstOnInterestPart.toFixed(0)}</td>
                         <td>${balance.toFixed(0)}</td>
                     </tr>
                 `;
             }
+            interest = totalInterest;
+            total = P + interest + totalGst;
         }
 
         document.getElementById('total-interest').innerText = interest.toLocaleString(undefined, {maximumFractionDigits: 2});
+        document.getElementById('gst-amount').innerText = totalGst.toLocaleString(undefined, {maximumFractionDigits: 2});
         document.getElementById('total-amount').innerText = total.toLocaleString(undefined, {maximumFractionDigits: 2});
 
         if (emi > 0) {
             document.getElementById('emi-row').style.display = 'flex';
-            document.getElementById('emi-val').innerText = emi.toLocaleString(undefined, {maximumFractionDigits: 2});
+            let emiText = emi.toLocaleString(undefined, {maximumFractionDigits: 2});
+            if (currentMode === 'float' && G > 0) {
+                emiText += ' + GST';
+            }
+            document.getElementById('emi-val').innerText = emiText;
         } else {
             document.getElementById('emi-row').style.display = 'none';
         }
@@ -531,6 +562,7 @@
         document.getElementById('rate').value = '';
         document.getElementById('time-years').value = '';
         document.getElementById('time-months').value = '';
+        document.getElementById('gst').value = '18';
         document.getElementById('amount-words').innerText = '';
         document.getElementById('result').style.display = 'none';
         document.getElementById('schedule-accordion').style.display = 'none';
