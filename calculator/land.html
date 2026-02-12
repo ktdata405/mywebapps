@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AP Land Converter</title>
+    <title data-translate-key="apLandConverter">AP Land Converter</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -425,25 +425,25 @@
         <div class="header-container">
             <h2>
                 <a href="calculator.html" style="color: var(--text-light); text-decoration: none; margin-right: 10px;" aria-label="Back"><i class="fas fa-arrow-left"></i></a>
-                AP Land Converter
+                <span data-translate-key="apLandConverter">AP Land Converter</span>
                 <a href="../index.html" style="color: var(--text-light); text-decoration: none; margin-left: 10px;" aria-label="Home"><i class="fas fa-home"></i></a>
             </h2>
         </div>
 
         <div class="tabs">
-            <button class="tab active" id="tab-regular" onclick="setMode('regular')">Regular Plot</button>
-            <button class="tab" id="tab-corner" onclick="setMode('corner')">Corner / Irregular</button>
+            <button class="tab active" id="tab-regular" onclick="setMode('regular')" data-translate-key="regularPlot">Regular Plot</button>
+            <button class="tab" id="tab-corner" onclick="setMode('corner')" data-translate-key="cornerIrregular">Corner / Irregular</button>
         </div>
 
         <!-- Regular Inputs -->
         <div class="inputs-row" id="regular-inputs">
             <div class="input-group">
-                <label>Length (Feet)</label>
+                <label data-translate-key="lengthFeet">Length (Feet)</label>
                 <input type="text" inputmode="decimal" id="length" placeholder="0" value="">
             </div>
 
             <div class="input-group">
-                <label>Width (Feet)</label>
+                <label data-translate-key="widthFeet">Width (Feet)</label>
                 <input type="text" inputmode="decimal" id="width" placeholder="0" value="">
             </div>
         </div>
@@ -451,38 +451,38 @@
         <!-- Corner/Irregular Inputs -->
         <div class="inputs-grid" id="corner-inputs" style="display:none;">
             <div class="input-group">
-                <label>Length 1 (Feet)</label>
+                <label data-translate-key="length1Feet">Length 1 (Feet)</label>
                 <input type="text" inputmode="decimal" id="length1" placeholder="0" value="">
             </div>
             <div class="input-group">
-                <label>Length 2 (Feet)</label>
+                <label data-translate-key="length2Feet">Length 2 (Feet)</label>
                 <input type="text" inputmode="decimal" id="length2" placeholder="0" value="">
             </div>
             <div class="input-group">
-                <label>Width 1 (Feet)</label>
+                <label data-translate-key="width1Feet">Width 1 (Feet)</label>
                 <input type="text" inputmode="decimal" id="width1" placeholder="0" value="">
             </div>
             <div class="input-group">
-                <label>Width 2 (Feet)</label>
+                <label data-translate-key="width2Feet">Width 2 (Feet)</label>
                 <input type="text" inputmode="decimal" id="width2" placeholder="0" value="">
             </div>
         </div>
 
         <div class="action-buttons">
-            <button class="calc-btn" onclick="calculate()">Calculate Area</button>
-            <button class="clear-btn" onclick="clearInputs()">Clear</button>
+            <button class="calc-btn" onclick="calculate()" data-translate-key="calculateArea">Calculate Area</button>
+            <button class="clear-btn" onclick="clearInputs()" data-translate-key="clear">Clear</button>
         </div>
 
         <div id="result">
-            <div class="res-item"><span class="val-cents">Cents:</span> <span id="cents" class="res-val val-cents">0</span></div>
-            <div class="res-item"><span class="val-sqft">Total Sq. Feet:</span> <span id="sqft" class="res-val val-sqft">0</span></div>
-            <div class="res-item"><span class="val-gajalu">Gajalu (Sq. Yds):</span> <span id="gajalu" class="res-val val-gajalu">0</span></div>
-            <div class="res-item"><span class="val-ankanam">Ankanams:</span> <span id="ankanam" class="res-val val-ankanam">0</span></div>
+            <div class="res-item"><span class="val-cents" data-translate-key="cents">Cents:</span> <span id="cents" class="res-val val-cents">0</span></div>
+            <div class="res-item"><span class="val-sqft" data-translate-key="totalSqFeet">Total Sq. Feet:</span> <span id="sqft" class="res-val val-sqft">0</span></div>
+            <div class="res-item"><span class="val-gajalu" data-translate-key="gajaluSqYds">Gajalu (Sq. Yds):</span> <span id="gajalu" class="res-val val-gajalu">0</span></div>
+            <div class="res-item"><span class="val-ankanam" data-translate-key="ankanams">Ankanams:</span> <span id="ankanam" class="res-val val-ankanam">0</span></div>
         </div>
 
         <div class="accordion-container">
             <button class="accordion-header" onclick="toggleTips()">
-                <span>Calculation Details <i class="fas fa-lightbulb" style="margin-left: 8px;"></i></span>
+                <span><span data-translate-key="calculationDetails">Calculation Details</span> <i class="fas fa-lightbulb" style="margin-left: 8px;"></i></span>
                 <i class="fas fa-chevron-down arrow"></i>
             </button>
             <div class="accordion-content" id="tipsContent">
@@ -495,14 +495,14 @@
 
                 <div id="dynamic-steps" style="display:none;">
                     <div class="step-box">
-                        <span class="step-title">How it's calculated:</span>
+                        <span class="step-title" data-translate-key="howItsCalculated">How it's calculated:</span>
                         <div class="step-row" id="step-area"></div>
                         <div class="step-row" id="step-cents"></div>
                         <div class="step-row" id="step-gajalu"></div>
                         <div class="step-row" id="step-ankanam"></div>
                     </div>
                 </div>
-                <div id="placeholder-steps" style="color: var(--text-dim); font-style: italic; font-size: 0.9em;">
+                <div id="placeholder-steps" style="color: var(--text-dim); font-style: italic; font-size: 0.9em;" data-translate-key="clickCalculateArea">
                     Click "Calculate Area" to see detailed steps for your values.
                 </div>
             </div>
@@ -511,12 +511,12 @@
         <!-- History Accordion -->
         <div class="accordion-container" style="margin-top: 1rem;">
             <button class="accordion-header" onclick="toggleHistory()">
-                <span>History <i class="fas fa-history" style="margin-left: 8px;"></i></span>
+                <span><span data-translate-key="history">History</span> <i class="fas fa-history" style="margin-left: 8px;"></i></span>
                 <i class="fas fa-chevron-down arrow" id="history-arrow"></i>
             </button>
             <div class="accordion-content" id="historyContent">
                 <div class="header-row" style="margin-bottom: 1rem;">
-                    <h3 style="font-size: 1.1rem; text-align: left; margin: 0;">Recent Calculations</h3>
+                    <h3 style="font-size: 1.1rem; text-align: left; margin: 0;" data-translate-key="recentCalculations">Recent Calculations</h3>
                     <button class="icon-btn delete-btn" onclick="clearHistory()" title="Clear History">
                         <i class="fas fa-trash-alt"></i>
                     </button>
@@ -525,7 +525,7 @@
             </div>
         </div>
     </div>
-
+    <script src="../localization.js"></script>
 <script>
     let currentMode = 'regular';
     let historyData = JSON.parse(localStorage.getItem('landCalcHistory')) || [];

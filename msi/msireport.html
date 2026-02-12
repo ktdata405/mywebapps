@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MSI Report</title>
+    <title data-translate-key="msiReportTitle">MSI Report</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -466,19 +466,19 @@
             <div class="spinner"></div>
             <div class="spinner-icon"><i class="fa-solid fa-bolt"></i></div>
         </div>
-        <p class="spinner-text">Fetching...</p>
+        <p class="spinner-text" data-translate-key="fetchingData">Fetching...</p>
     </div>
 </div>
 
 <nav class="navbar">
     <a href="#" class="brand">
         <i class="fa-solid fa-atom" style="color: var(--primary);"></i>
-        <span>MSI<span style="font-weight: 300;"> Report</span></span>
+        <span><span data-translate-key="msiTitle">MSI</span><span style="font-weight: 300;" data-translate-key="report"> Report</span></span>
     </a>
     <div class="nav-actions">
-        <a href="msi.html" class="icon-btn" title="Add New"><i class="fa-solid fa-plus"></i></a>
-        <button class="icon-btn" onclick="fetchData()" title="Refresh"><i class="fa-solid fa-rotate-right"></i></button>
-        <a href="../index.html" class="icon-btn" title="Home"><i class="fa-solid fa-house"></i></a>
+        <a href="msi.html" class="icon-btn" title="Add New" data-translate-key="addNew"><i class="fa-solid fa-plus"></i></a>
+        <button class="icon-btn" onclick="fetchData()" title="Refresh" data-translate-key="refresh"><i class="fa-solid fa-rotate-right"></i></button>
+        <a href="../index.html" class="icon-btn" title="Home" data-translate-key="homeLink"><i class="fa-solid fa-house"></i></a>
     </div>
 </nav>
 
@@ -489,7 +489,7 @@
         <!-- Net Worth -->
         <div class="balance-card">
             <div class="balance-label">
-                Total Investments
+                <span data-translate-key="totalInvestment">Total Investments</span>
                 <button onclick="toggleNetWorth()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; margin-left: 0.5rem; z-index: 10; position: relative;">
                     <i class="fa-solid fa-eye" id="eye-icon"></i>
                 </button>
@@ -501,18 +501,18 @@
         <div class="controls-card">
             <!-- User Selection -->
             <div class="user-select-container">
-                <label for="user-select" style="color: var(--text-muted);">User:</label>
+                <label for="user-select" style="color: var(--text-muted);" data-translate-key="selectUser">User:</label>
                 <select id="user-select" class="user-select" onchange="fetchData()">
-                    <option value="Kalyan">Kalyan</option>
-                    <option value="Layan">Layan</option>
+                    <option value="Kalyan" data-translate-key="kalyan">Kalyan</option>
+                    <option value="Layan" data-translate-key="layan">Layan</option>
                 </select>
             </div>
 
             <!-- Navigation Tabs -->
             <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('overview', this)">This Month</button>
-                <button class="tab-btn" onclick="switchTab('total', this)">All</button>
-                <button class="tab-btn" onclick="switchTab('history', this)">Transaction History</button>
+                <button class="tab-btn active" onclick="switchTab('overview', this)" data-translate-key="thisMonth">This Month</button>
+                <button class="tab-btn" onclick="switchTab('total', this)" data-translate-key="allTime">All</button>
+                <button class="tab-btn" onclick="switchTab('history', this)" data-translate-key="transactionHistory">Transaction History</button>
             </div>
 
             <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; justify-content: center;">
@@ -529,7 +529,7 @@
                 <div class="meta-item">
                     <i class="fa-solid fa-coins" style="color: var(--primary);"></i>
                     <span id="current-month-total" style="font-weight: 600;">Rs. 0</span>
-                    <span style="color: var(--text-muted); font-size: 0.8em;">Invested</span>
+                    <span style="color: var(--text-muted); font-size: 0.8em;" data-translate-key="invested">Invested</span>
                 </div>
             </div>
         </div>
@@ -558,8 +558,8 @@
                 <table id="dataTable">
                     <thead>
                         <tr>
-                            <th>Period</th>
-                            <th style="color: var(--primary);">Total</th>
+                            <th data-translate-key="month">Period</th>
+                            <th style="color: var(--primary);" data-translate-key="total">Total</th>
                             <!-- Dynamic Headers -->
                         </tr>
                     </thead>
@@ -574,6 +574,7 @@
 </div>
 
 <script src="../config.js"></script>
+<script src="../localization.js"></script>
 <script>
     // Configuration
     const SCRIPT_URL = CONFIG.GOOGLE_SHEET_URL_MSI;

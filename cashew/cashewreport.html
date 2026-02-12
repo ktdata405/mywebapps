@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cashew Report - Expense Tracker</title>
+    <title data-translate-key="cashewReportTitle">Cashew Report - Expense Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -117,8 +117,8 @@
                         <i class="fa-solid fa-chart-pie text-white text-xl"></i>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold tracking-tight text-white leading-tight">Cashew Report</h1>
-                        <p class="text-xs text-gray-400 font-medium">Expense Analytics</p>
+                        <h1 class="text-2xl font-bold tracking-tight text-white leading-tight" data-translate-key="cashewReport">Cashew Report</h1>
+                        <p class="text-xs text-gray-400 font-medium" data-translate-key="cashewReportAnalytics">Expense Analytics</p>
                     </div>
                 </div>
                 <div class="flex gap-3">
@@ -141,24 +141,24 @@
                         <div class="flex flex-col sm:flex-row gap-4 items-end sm:items-center">
                             <div class="flex-grow grid grid-cols-2 sm:flex gap-4 w-full">
                                 <div class="relative flex-grow sm:flex-grow-0 sm:w-48">
-                                    <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1 mb-1.5 block">Month</label>
+                                    <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1 mb-1.5 block" data-translate-key="month">Month</label>
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-indigo-400">
                                             <i class="fa-regular fa-calendar text-sm"></i>
                                         </div>
                                         <select id="month-select" class="w-full pl-10 pr-8 py-3 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-semibold text-sm input-field">
-                                            <option value="Jan">January</option>
-                                            <option value="Feb">February</option>
-                                            <option value="Mar">March</option>
-                                            <option value="Apr">April</option>
-                                            <option value="May">May</option>
-                                            <option value="Jun">June</option>
-                                            <option value="Jul">July</option>
-                                            <option value="Aug">August</option>
-                                            <option value="Sep">September</option>
-                                            <option value="Oct">October</option>
-                                            <option value="Nov">November</option>
-                                            <option value="Dec">December</option>
+                                            <option value="Jan" data-translate-key="january">January</option>
+                                            <option value="Feb" data-translate-key="february">February</option>
+                                            <option value="Mar" data-translate-key="march">March</option>
+                                            <option value="Apr" data-translate-key="april">April</option>
+                                            <option value="May" data-translate-key="may">May</option>
+                                            <option value="Jun" data-translate-key="june">June</option>
+                                            <option value="Jul" data-translate-key="july">July</option>
+                                            <option value="Aug" data-translate-key="august">August</option>
+                                            <option value="Sep" data-translate-key="september">September</option>
+                                            <option value="Oct" data-translate-key="october">October</option>
+                                            <option value="Nov" data-translate-key="november">November</option>
+                                            <option value="Dec" data-translate-key="december">December</option>
                                         </select>
                                         <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-500">
                                             <i class="fa-solid fa-chevron-down text-xs"></i>
@@ -167,7 +167,7 @@
                                 </div>
 
                                 <div class="relative flex-grow sm:flex-grow-0 sm:w-36">
-                                    <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1 mb-1.5 block">Year</label>
+                                    <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1 mb-1.5 block" data-translate-key="year">Year</label>
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-indigo-400">
                                             <i class="fa-solid fa-clock-rotate-left text-sm"></i>
@@ -184,7 +184,7 @@
                                 <div class="col-span-2 sm:col-span-1 sm:self-end">
                                     <button onclick="fetchReport()" id="fetch-btn" class="w-full sm:w-auto h-[46px] bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-8 rounded-2xl font-bold flex items-center justify-center gap-2.5 transition-all shadow-lg shadow-indigo-600/25 active:scale-95 hover:shadow-indigo-600/40">
                                         <i class="fa-solid fa-magnifying-glass text-sm"></i>
-                                        <span>Fetch</span>
+                                        <span data-translate-key="fetch">Fetch</span>
                                     </button>
                                 </div>
                             </div>
@@ -196,7 +196,7 @@
                                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
                                     <i class="fa-solid fa-search text-sm"></i>
                                 </div>
-                                <input type="text" id="search-input" placeholder="Search expenses..." class="w-full pl-10 pr-10 py-3 rounded-2xl outline-none transition-all font-medium text-sm input-field placeholder-gray-600" onkeyup="filterData()">
+                                <input type="text" id="search-input" placeholder="Search expenses..." class="w-full pl-10 pr-10 py-3 rounded-2xl outline-none transition-all font-medium text-sm input-field placeholder-gray-600" onkeyup="filterData()" data-translate-key="searchExpenses">
                                 <button id="clear-search-btn" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-500 hover:text-white hidden transition-colors" onclick="clearSearch()">
                                     <i class="fa-solid fa-times text-sm"></i>
                                 </button>
@@ -207,7 +207,7 @@
                                     <i class="fa-solid fa-filter text-sm"></i>
                                 </div>
                                 <select id="category-filter" class="w-full pl-10 pr-8 py-3 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-medium text-sm input-field" onchange="filterData()">
-                                    <option value="">All Categories</option>
+                                    <option value="" data-translate-key="allCategories">All Categories</option>
                                     <!-- Categories populated dynamically -->
                                 </select>
                                 <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-500">
@@ -226,7 +226,7 @@
                         <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20 group-hover:bg-indigo-500/20 transition-colors">
                             <i class="fa-solid fa-chart-simple"></i>
                         </div>
-                        <h3 class="text-lg font-bold text-white">Category Breakdown</h3>
+                        <h3 class="text-lg font-bold text-white" data-translate-key="categoryBreakdown">Category Breakdown</h3>
                     </div>
                     <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
                         <i id="category-summary-icon" class="fa-solid fa-chevron-right text-sm text-gray-400 transition-transform duration-300"></i>
@@ -248,7 +248,7 @@
                         </div>
                         <div>
                             <div class="flex flex-wrap items-center gap-3 mb-1">
-                                <h3 class="text-lg font-bold text-white">Expense Details</h3>
+                                <h3 class="text-lg font-bold text-white" data-translate-key="expenseDetails">Expense Details</h3>
                                 <div class="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold text-gray-400 bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
                                     <i class="fa-solid fa-calendar-check"></i>
                                     <span id="selected-period-label">--</span>
@@ -256,12 +256,12 @@
                             </div>
                             <div class="flex items-center gap-4 text-sm text-gray-400">
                                 <div class="flex items-center gap-2">
-                                    <span class="font-medium">Total:</span>
+                                    <span class="font-medium" data-translate-key="total">Total:</span>
                                     <span id="total-expenses-display" class="font-bold text-pink-400 font-mono text-base">Rs. 0.00</span>
                                 </div>
                                 <div class="w-px h-4 bg-white/10"></div>
                                 <div class="flex items-center gap-2">
-                                    <span class="font-medium">Available:</span>
+                                    <span class="font-medium" data-translate-key="available">Available:</span>
                                     <span id="available-balance-display" class="font-bold text-emerald-400 font-mono text-base">Rs. 0.00</span>
                                 </div>
                             </div>
@@ -279,7 +279,7 @@
                             <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/5 mb-4">
                                 <i class="fa-solid fa-clipboard-list text-3xl text-gray-600"></i>
                             </div>
-                            <p class="text-gray-400 font-medium">Select a month and year to view expenses</p>
+                            <p class="text-gray-400 font-medium" data-translate-key="selectMonthAndYear">Select a month and year to view expenses</p>
                         </div>
                     </div>
                 </div>
@@ -299,16 +299,17 @@
                 </div>
             </div>
             <div class="text-center">
-                <h3 class="text-white font-bold text-lg">Fetching Data</h3>
-                <p class="text-gray-400 text-sm mt-1">Retrieving your expenses...</p>
+                <h3 class="text-white font-bold text-lg" data-translate-key="fetchingData">Fetching Data</h3>
+                <p class="text-gray-400 text-sm mt-1" data-translate-key="retrievingExpenses">Retrieving your expenses...</p>
             </div>
         </div>
     </div>
 
     <footer>
-        <p>&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
+        <p data-translate-key="copyright_thammineni">&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
     </footer>
 
+    <script src="../localization.js"></script>
     <script>
         let allData = []; // Store all fetched data
 
@@ -505,7 +506,7 @@
                                 <i class="fa-solid ${iconClass}"></i>
                             </div>
                             <div>
-                                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Category</p>
+                                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider" data-translate-key="category">Category</p>
                                 <h4 class="font-bold text-white text-sm leading-tight mt-0.5">${cat}</h4>
                             </div>
                         </div>
@@ -712,7 +713,7 @@
                     <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/5 mb-4">
                         <i class="fa-regular fa-folder-open text-3xl text-gray-600"></i>
                     </div>
-                    <p class="text-gray-400 font-medium">No expenses found matching your criteria.</p>
+                    <p class="text-gray-400 font-medium" data-translate-key="noRecordsFound">No expenses found matching your criteria.</p>
                 `;
                 reportBody.appendChild(noData);
             }

@@ -13,7 +13,7 @@ function showPinEntry() {
     if (document.getElementById('try-pin-button')) {
         document.getElementById('try-pin-button').style.display = 'none';
     }
-    authContainer.querySelector('p').textContent = 'Verify your Identity';
+    // authContainer.querySelector('p').textContent = translations.verifyIdentity; // Handled by localization.js
 
     // Force focus and open keyboard
     setTimeout(() => {
@@ -27,7 +27,7 @@ function verifyPin() {
     if (pinInput.value === '0405') {
         showContent();
     } else {
-        alert('Incorrect PIN');
+        alert(translations.incorrectPin);
         pinInput.value = '';
         pinInput.focus();
     }
@@ -36,12 +36,12 @@ function verifyPin() {
 async function verifyFaceId(isAuto = false) {
     // WebAuthn requires a secure context (HTTPS or localhost)
     if (!window.isSecureContext) {
-        if (!isAuto) alert("Face ID requires a secure context (HTTPS or localhost). It will not work on file://.");
+        if (!isAuto) alert(translations.faceIdSecureContext);
         return false;
     }
 
     if (!window.PublicKeyCredential) {
-        if (!isAuto) alert("Face ID / Biometrics not supported on this device/browser.");
+        if (!isAuto) alert(translations.faceIdNotSupported);
         return false;
     }
 
@@ -73,7 +73,7 @@ async function verifyFaceId(isAuto = false) {
             // Check availability
             const available = await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
             if (!available) {
-                alert("Face ID / Touch ID is not set up or available on this device.");
+                alert(translations.faceIdNotSetup);
                 return false;
             }
 
@@ -126,12 +126,12 @@ async function verifyFaceId(isAuto = false) {
         
         // If authentication failed (e.g. credential not found), offer to reset
         if (localStorage.getItem('webauthn_credential_id')) {
-             if (confirm("Face ID verification failed. Do you want to reset Face ID and set it up again?")) {
+             if (confirm(translations.faceIdResetConfirm)) {
                  localStorage.removeItem('webauthn_credential_id');
                  return verifyFaceId(false); // Retry as registration
              }
         } else {
-             alert("Authentication failed: " + err.message);
+             alert(translations.authFailed + err.message);
         }
         return false;
     }

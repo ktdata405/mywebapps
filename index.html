@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title>KT Apps</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title data-translate-key="appTitle">KT Apps</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -444,12 +444,12 @@
     </div>
 
     <div id="auth-container">
-<!--        <p>Enter PIN</p>-->
+        <p data-translate-key="verifyIdentity">Verify your Identity</p>
         <div id="pin-container">
-            <input type="password" id="pin-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="Enter PIN" autofocus>
+            <input type="password" id="pin-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="Enter PIN" autofocus data-translate-key="enterPin">
         </div>
         <button id="face-id-btn" class="auth-button" style="margin-top: 15px;" hidden="true">
-            <i class="fa-solid fa-face-smile"></i> Face ID
+            <i class="fa-solid fa-face-smile"></i> <span data-translate-key="faceId">Face ID</span>
         </button>
     </div>
 
@@ -458,8 +458,8 @@
             <div class="brand">
                 <img src="root/logo.png" alt="Logo" class="logo-img">
                 <div>
-                    <h1>Hola KT</h1>
-                    <p>Developed by Kalyan Thammineni</p>
+                    <h1 data-translate-key="holaKT">Hola KT</h1>
+                    <p data-translate-key="developedBy">Developed by Kalyan Thammineni</p>
                 </div>
             </div>
         </header>
@@ -471,8 +471,8 @@
                     <i class="fa-solid fa-calculator"></i>
                 </div>
                 <div class="card-content">
-                    <h2>Denominations</h2>
-                    <p>Calculate and track currency breakdown.</p>
+                    <h2 data-translate-key="denominations">Denominations</h2>
+                    <p data-translate-key="denominationsDesc">Calculate and track currency breakdown.</p>
                 </div>
                 <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
             </a>
@@ -483,8 +483,8 @@
                     <i class="fa-solid fa-file-invoice-dollar"></i>
                 </div>
                 <div class="card-content">
-                    <h2>Cashew</h2>
-                    <p>Manage cashew business transactions.</p>
+                    <h2 data-translate-key="cashew">Cashew</h2>
+                    <p data-translate-key="cashewDesc">Manage cashew business transactions.</p>
                 </div>
                 <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
             </a>
@@ -495,8 +495,8 @@
                     <i class="fa-solid fa-wallet"></i>
                 </div>
                 <div class="card-content">
-                    <h2>MSI</h2>
-                    <p>Monthly Savings & Investment tracker.</p>
+                    <h2 data-translate-key="msi">MSI</h2>
+                    <p data-translate-key="msiDesc">Monthly Savings & Investment tracker.</p>
                 </div>
                 <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
             </a>
@@ -507,8 +507,8 @@
                     <i class="fa-solid fa-house"></i>
                 </div>
                 <div class="card-content">
-                    <h2>Rent Details</h2>
-                    <p>Monitor tenant payments and rental history.</p>
+                    <h2 data-translate-key="rentDetails">Rent Details</h2>
+                    <p data-translate-key="rentDetailsDesc">Monitor tenant payments and rental history.</p>
                 </div>
                 <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
             </a>
@@ -519,8 +519,8 @@
                     <i class="fa-solid fa-hand-holding-dollar"></i>
                 </div>
                 <div class="card-content">
-                    <h2>Debts</h2>
-                    <p>Enter debts and view reports.</p>
+                    <h2 data-translate-key="debts">Debts</h2>
+                    <p data-translate-key="debtsDesc">Enter debts and view reports.</p>
                 </div>
                 <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
             </a>
@@ -531,8 +531,8 @@
                     <i class="fa-solid fa-calculator"></i>
                 </div>
                 <div class="card-content">
-                    <h2>Calculators</h2>
-                    <p>Various financial and utility calculators.</p>
+                    <h2 data-translate-key="calculators">Calculators</h2>
+                    <p data-translate-key="calculatorsDesc">Various financial and utility calculators.</p>
                 </div>
                 <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
             </a>
@@ -543,15 +543,15 @@
                     <i class="fa-solid fa-chart-line"></i>
                 </div>
                 <div class="card-content">
-                    <h2>Dashboard</h2>
-                    <p>Visual overview of all financial metrics.</p>
+                    <h2 data-translate-key="dashboard">Dashboard</h2>
+                    <p data-translate-key="dashboardDesc">Visual overview of all financial metrics.</p>
                 </div>
                 <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
             </a>
         </div>
 
         <footer>
-            <p>&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
+            <p data-translate-key="copyright">&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
         </footer>
     </div>
 
@@ -564,11 +564,12 @@
                     <i class="fa-solid fa-bolt"></i>
                 </div>
             </div>
-            <p class="loading-text">Loading...</p>
+            <p class="loading-text" data-translate-key="loading">Loading...</p>
         </div>
     </div>
 
     <script src="auth.js"></script>
+    <script src="localization.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const cards = document.querySelectorAll('.card');

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Debts Manager - KT Apps</title>
+    <title data-translate-key="debtsManager">Debts Manager - KT Apps</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -92,8 +92,8 @@
                     <i class="fa-solid fa-handshake text-white text-lg"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight text-white leading-tight">Debts Manager</h1>
-                    <p class="text-xs text-gray-400 font-medium">Track Lending & Borrowing</p>
+                    <h1 class="text-xl font-bold tracking-tight text-white leading-tight" data-translate-key="debtsManager">Debts Manager</h1>
+                    <p class="text-xs text-gray-400 font-medium" data-translate-key="trackLendingBorrowing">Track Lending & Borrowing</p>
                 </div>
             </div>
             <div class="flex gap-3">
@@ -115,7 +115,7 @@
                 <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                     <i class="fa-solid fa-hand-holding-dollar text-4xl text-emerald-500"></i>
                 </div>
-                <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1">Total Lent (You'll get)</p>
+                <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1" data-translate-key="totalLent">Total Lent (You'll get)</p>
                 <h3 class="text-2xl font-bold text-emerald-400 font-mono" id="total-lent">₹0.00</h3>
             </div>
 
@@ -123,7 +123,7 @@
                 <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                     <i class="fa-solid fa-hand-holding-hand text-4xl text-rose-500"></i>
                 </div>
-                <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1">Total Borrowed (You owe)</p>
+                <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1" data-translate-key="totalBorrowed">Total Borrowed (You owe)</p>
                 <h3 class="text-2xl font-bold text-rose-400 font-mono" id="total-borrowed">₹0.00</h3>
             </div>
 
@@ -131,7 +131,7 @@
                 <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                     <i class="fa-solid fa-scale-balanced text-4xl text-indigo-500"></i>
                 </div>
-                <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1">Net Balance</p>
+                <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1" data-translate-key="netBalance">Net Balance</p>
                 <h3 class="text-2xl font-bold text-indigo-400 font-mono" id="net-balance">₹0.00</h3>
             </div>
         </div>
@@ -142,7 +142,7 @@
                 <div class="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400">
                     <i class="fa-solid fa-plus text-sm"></i>
                 </div>
-                <h2 class="text-lg font-bold text-white">Add New Debt</h2>
+                <h2 class="text-lg font-bold text-white" data-translate-key="addNewDebt">Add New Debt</h2>
             </div>
 
             <form id="debt-form" class="space-y-5">
@@ -152,7 +152,7 @@
                         <input type="radio" name="type" value="lent" checked class="peer sr-only">
                         <div class="p-4 rounded-2xl bg-black/20 border border-white/10 hover:bg-white/5 transition-all flex flex-col items-center gap-2 text-gray-400 peer-checked:text-emerald-400 peer-checked:border-emerald-500/50 peer-checked:bg-emerald-500/10">
                             <i class="fa-solid fa-arrow-trend-up text-xl mb-1"></i>
-                            <span class="font-semibold text-sm">Lent (Given)</span>
+                            <span class="font-semibold text-sm" data-translate-key="lentGiven">Lent (Given)</span>
                             <div class="check-icon absolute top-3 right-3 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs opacity-0 transform scale-50 transition-all duration-300">
                                 <i class="fa-solid fa-check"></i>
                             </div>
@@ -162,7 +162,7 @@
                         <input type="radio" name="type" value="borrowed" class="peer sr-only">
                         <div class="p-4 rounded-2xl bg-black/20 border border-white/10 hover:bg-white/5 transition-all flex flex-col items-center gap-2 text-gray-400 peer-checked:text-rose-400 peer-checked:border-rose-500/50 peer-checked:bg-rose-500/10">
                             <i class="fa-solid fa-arrow-trend-down text-xl mb-1"></i>
-                            <span class="font-semibold text-sm">Borrowed (Taken)</span>
+                            <span class="font-semibold text-sm" data-translate-key="borrowedTaken">Borrowed (Taken)</span>
                             <div class="check-icon absolute top-3 right-3 w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs opacity-0 transform scale-50 transition-all duration-300">
                                 <i class="fa-solid fa-check"></i>
                             </div>
@@ -173,18 +173,18 @@
                 <!-- Person & Amount -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div class="space-y-1.5">
-                        <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1">Person Name</label>
+                        <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1" data-translate-key="personName">Person Name</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
                                 <i class="fa-solid fa-user text-sm"></i>
                             </div>
                             <input type="text" id="person" placeholder="e.g. John Doe" required
-                                class="w-full bg-black/40 border border-white/10 rounded-2xl pl-10 pr-4 py-3.5 text-sm font-semibold text-white outline-none focus:border-indigo-500 focus:bg-black/60 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-gray-700">
+                                class="w-full bg-black/40 border border-white/10 rounded-2xl pl-10 pr-4 py-3.5 text-sm font-semibold text-white outline-none focus:border-indigo-500 focus:bg-black/60 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-gray-700" data-translate-key="personNamePlaceholder">
                         </div>
                     </div>
 
                     <div class="space-y-1.5">
-                        <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1">Amount</label>
+                        <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1" data-translate-key="amount">Amount</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
                                 <i class="fa-solid fa-indian-rupee-sign text-sm"></i>
@@ -197,7 +197,7 @@
 
                 <!-- Date & Notes -->
                 <div class="space-y-1.5">
-                    <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1">Date</label>
+                    <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1" data-translate-key="date">Date</label>
                     <div class="relative">
                         <input type="date" id="date" required
                             class="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-3.5 text-sm font-semibold text-white outline-none focus:border-indigo-500 focus:bg-black/60 focus:ring-1 focus:ring-indigo-500 transition-all cursor-pointer">
@@ -205,14 +205,14 @@
                 </div>
 
                 <div class="space-y-1.5">
-                    <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1">Notes (Optional)</label>
+                    <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1" data-translate-key="notesOptional">Notes (Optional)</label>
                     <textarea id="notes" placeholder="Description..." rows="2"
-                        class="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-3 text-sm text-gray-300 placeholder-gray-700 outline-none focus:border-indigo-500 focus:bg-black/60 focus:ring-1 focus:ring-indigo-500 transition-all resize-none"></textarea>
+                        class="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-3 text-sm text-gray-300 placeholder-gray-700 outline-none focus:border-indigo-500 focus:bg-black/60 focus:ring-1 focus:ring-indigo-500 transition-all resize-none" data-translate-key="notesPlaceholder"></textarea>
                 </div>
 
                 <button type="submit" class="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2.5 transition-all active:scale-95 hover:shadow-indigo-600/40 mt-2">
                     <i class="fa-solid fa-plus"></i>
-                    <span>Add Record</span>
+                    <span data-translate-key="addRecord">Add Record</span>
                 </button>
             </form>
         </div>
@@ -220,17 +220,17 @@
         <!-- Transactions List -->
         <div class="space-y-4">
             <div class="flex items-center justify-between px-2">
-                <h2 class="text-lg font-bold text-white">History</h2>
-                <button onclick="clearAllData()" class="text-xs font-bold text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-colors border border-red-500/20">
+                <h2 class="text-lg font-bold text-white" data-translate-key="history">History</h2>
+                <button onclick="clearAllData()" class="text-xs font-bold text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-colors border border-red-500/20" data-translate-key="clearAll">
                     Clear All
                 </button>
             </div>
 
             <!-- Filters -->
             <div class="flex gap-2 overflow-x-auto pb-2 px-1 no-scrollbar">
-                <button class="filter-chip active px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-lg shadow-indigo-600/20 transition-all whitespace-nowrap border border-indigo-500" onclick="setFilter('all', this)">All</button>
-                <button class="filter-chip px-4 py-2 rounded-xl bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 text-xs font-bold border border-white/5 transition-all whitespace-nowrap" onclick="setFilter('pending', this)">Pending</button>
-                <button class="filter-chip px-4 py-2 rounded-xl bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 text-xs font-bold border border-white/5 transition-all whitespace-nowrap" onclick="setFilter('settled', this)">Settled</button>
+                <button class="filter-chip active px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-lg shadow-indigo-600/20 transition-all whitespace-nowrap border border-indigo-500" onclick="setFilter('all', this)" data-translate-key="all">All</button>
+                <button class="filter-chip px-4 py-2 rounded-xl bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 text-xs font-bold border border-white/5 transition-all whitespace-nowrap" onclick="setFilter('pending', this)" data-translate-key="pending">Pending</button>
+                <button class="filter-chip px-4 py-2 rounded-xl bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 text-xs font-bold border border-white/5 transition-all whitespace-nowrap" onclick="setFilter('settled', this)" data-translate-key="settled">Settled</button>
             </div>
             
             <div id="debts-list" class="space-y-3">
@@ -241,12 +241,12 @@
                 <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 mb-4">
                     <i class="fa-regular fa-folder-open text-2xl text-gray-600"></i>
                 </div>
-                <p class="text-gray-500 font-medium">No records found.</p>
+                <p class="text-gray-500 font-medium" data-translate-key="noRecordsFound">No records found.</p>
             </div>
         </div>
 
     </main>
-
+    <script src="../localization.js"></script>
     <script>
         // Initialize state
         let debts = JSON.parse(localStorage.getItem('kt_debts_data')) || [];

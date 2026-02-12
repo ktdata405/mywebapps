@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Govt Schemes Calculator</title>
+    <title data-translate-key="govtSchemesCalculator">Govt Schemes Calculator</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -436,40 +436,40 @@
     </a>
 
     <div class="container">
-        <h1>Govt Schemes Calculator</h1>
+        <h1 data-translate-key="govtSchemesCalculator">Govt Schemes Calculator</h1>
 
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('ssa')">
                 <i class="fas fa-child"></i>
-                <span>SSA</span>
+                <span data-translate-key="ssa">SSA</span>
             </button>
             <button class="tab-btn" onclick="switchTab('ppf')">
                 <i class="fas fa-piggy-bank"></i>
-                <span>PPF</span>
+                <span data-translate-key="ppf">PPF</span>
             </button>
             <button class="tab-btn" onclick="switchTab('nps')">
                 <i class="fas fa-briefcase"></i>
-                <span>NPS</span>
+                <span data-translate-key="nps">NPS</span>
             </button>
             <button class="tab-btn" onclick="switchTab('nsc')">
                 <i class="fas fa-certificate"></i>
-                <span>NSC</span>
+                <span data-translate-key="nsc">NSC</span>
             </button>
             <button class="tab-btn" onclick="switchTab('kvp')">
                 <i class="fas fa-seedling"></i>
-                <span>KVP</span>
+                <span data-translate-key="kvp">KVP</span>
             </button>
             <button class="tab-btn" onclick="switchTab('scss')">
                 <i class="fas fa-person-cane"></i>
-                <span>SCSS</span>
+                <span data-translate-key="scss">SCSS</span>
             </button>
             <button class="tab-btn" onclick="switchTab('pomis')">
                 <i class="fas fa-landmark"></i>
-                <span>POMIS</span>
+                <span data-translate-key="pomis">POMIS</span>
             </button>
             <button class="tab-btn" onclick="switchTab('mssc')">
                 <i class="fas fa-venus"></i>
-                <span>MSSC</span>
+                <span data-translate-key="mssc">MSSC</span>
             </button>
         </div>
 
@@ -477,34 +477,34 @@
         <div id="ssa-form" class="calculator-form active">
             <div class="scheme-details">
                 <div class="scheme-header" onclick="toggleDetails(this)">
-                    <h2>Sukanya Samriddhi Yojana (SSA)</h2>
+                    <h2 data-translate-key="sukanyaSamriddhiYojana">Sukanya Samriddhi Yojana (SSA)</h2>
                     <div class="toggle-btn">
-                        <span>Show Details</span>
+                        <span data-translate-key="showDetails">Show Details</span>
                         <i class="fas fa-chevron-down"></i>
                     </div>
                 </div>
                 <div class="scheme-content">
-                    <p>A government-backed savings scheme for the benefit of the girl child. It offers a high interest rate and tax benefits under Section 80C.</p>
+                    <p data-translate-key="ssaDesc">A government-backed savings scheme for the benefit of the girl child. It offers a high interest rate and tax benefits under Section 80C.</p>
                     <div class="scheme-features">
                         <div class="feature-item">
                             <i class="fas fa-percent"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Interest Rate</span>
+                                <span class="feature-label" data-translate-key="interestRate">Interest Rate</span>
                                 <span class="feature-value">8.2% p.a.</span>
                             </div>
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-clock"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Tenure</span>
+                                <span class="feature-label" data-translate-key="tenure">Tenure</span>
                                 <span class="feature-value">21 Years</span>
                             </div>
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-shield-alt"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Tax Benefit</span>
-                                <span class="feature-value">EEE Status</span>
+                                <span class="feature-label" data-translate-key="taxBenefit">Tax Benefit</span>
+                                <span class="feature-value" data-translate-key="eeeStatus">EEE Status</span>
                             </div>
                         </div>
                     </div>
@@ -513,35 +513,35 @@
 
             <div class="calculator-inputs">
                 <div class="form-group">
-                    <label>Yearly Investment (₹)</label>
+                    <label data-translate-key="yearlyInvestment">Yearly Investment (₹)</label>
                     <input type="number" id="ssa-investment" placeholder="Min 250, Max 1.5L">
                 </div>
                 <div class="form-group">
-                    <label>Girl's Age (Years)</label>
+                    <label data-translate-key="girlsAge">Girl's Age (Years)</label>
                     <input type="number" id="ssa-age" placeholder="Max 10 years">
                 </div>
                 <div class="form-group">
-                    <label>Start Year</label>
+                    <label data-translate-key="startYear">Start Year</label>
                     <input type="number" id="ssa-start-year" value="2024">
                 </div>
-                <button class="calculate-btn" onclick="calculateSSA()">Calculate SSA</button>
+                <button class="calculate-btn" onclick="calculateSSA()" data-translate-key="calculateSSA">Calculate SSA</button>
             </div>
 
             <div id="ssa-result" class="result-card">
                 <div class="result-row">
-                    <span class="result-label">Total Investment</span>
+                    <span class="result-label" data-translate-key="totalInvestment">Total Investment</span>
                     <span class="result-value" id="ssa-total-invest">₹0</span>
                 </div>
                 <div class="result-row">
-                    <span class="result-label">Total Interest</span>
+                    <span class="result-label" data-translate-key="totalInterest">Total Interest</span>
                     <span class="result-value" id="ssa-total-interest">₹0</span>
                 </div>
                 <div class="result-row">
-                    <span class="result-label">Maturity Amount</span>
+                    <span class="result-label" data-translate-key="maturityAmount">Maturity Amount</span>
                     <span class="result-value" id="ssa-maturity">₹0</span>
                 </div>
                 <div class="result-row">
-                    <span class="result-label">Maturity Year</span>
+                    <span class="result-label" data-translate-key="maturityYear">Maturity Year</span>
                     <span class="result-value" id="ssa-maturity-year">0</span>
                 </div>
             </div>
@@ -551,34 +551,34 @@
         <div id="ppf-form" class="calculator-form">
             <div class="scheme-details">
                 <div class="scheme-header" onclick="toggleDetails(this)">
-                    <h2>Public Provident Fund (PPF)</h2>
+                    <h2 data-translate-key="publicProvidentFund">Public Provident Fund (PPF)</h2>
                     <div class="toggle-btn">
-                        <span>Show Details</span>
+                        <span data-translate-key="showDetails">Show Details</span>
                         <i class="fas fa-chevron-down"></i>
                     </div>
                 </div>
                 <div class="scheme-content">
-                    <p>A popular long-term investment option backed by the Government of India with attractive interest rates and returns that are fully tax-exempt.</p>
+                    <p data-translate-key="ppfDesc">A popular long-term investment option backed by the Government of India with attractive interest rates and returns that are fully tax-exempt.</p>
                     <div class="scheme-features">
                         <div class="feature-item">
                             <i class="fas fa-percent"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Interest Rate</span>
+                                <span class="feature-label" data-translate-key="interestRate">Interest Rate</span>
                                 <span class="feature-value">7.1% p.a.</span>
                             </div>
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-clock"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Lock-in Period</span>
+                                <span class="feature-label" data-translate-key="lockInPeriod">Lock-in Period</span>
                                 <span class="feature-value">15 Years</span>
                             </div>
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-shield-alt"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Tax Benefit</span>
-                                <span class="feature-value">EEE Status</span>
+                                <span class="feature-label" data-translate-key="taxBenefit">Tax Benefit</span>
+                                <span class="feature-value" data-translate-key="eeeStatus">EEE Status</span>
                             </div>
                         </div>
                     </div>
@@ -587,11 +587,11 @@
 
             <div class="calculator-inputs">
                 <div class="form-group">
-                    <label>Yearly Investment (₹)</label>
+                    <label data-translate-key="yearlyInvestment">Yearly Investment (₹)</label>
                     <input type="number" id="ppf-investment" placeholder="Min 500, Max 1.5L">
                 </div>
                 <div class="form-group">
-                    <label>Duration (Years)</label>
+                    <label data-translate-key="duration">Duration (Years)</label>
                     <select id="ppf-duration">
                         <option value="15">15 Years</option>
                         <option value="20">20 Years</option>
@@ -599,20 +599,20 @@
                         <option value="30">30 Years</option>
                     </select>
                 </div>
-                <button class="calculate-btn" onclick="calculatePPF()">Calculate PPF</button>
+                <button class="calculate-btn" onclick="calculatePPF()" data-translate-key="calculatePPF">Calculate PPF</button>
             </div>
 
             <div id="ppf-result" class="result-card">
                 <div class="result-row">
-                    <span class="result-label">Total Investment</span>
+                    <span class="result-label" data-translate-key="totalInvestment">Total Investment</span>
                     <span class="result-value" id="ppf-total-invest">₹0</span>
                 </div>
                 <div class="result-row">
-                    <span class="result-label">Total Interest</span>
+                    <span class="result-label" data-translate-key="totalInterest">Total Interest</span>
                     <span class="result-value" id="ppf-total-interest">₹0</span>
                 </div>
                 <div class="result-row">
-                    <span class="result-label">Maturity Amount</span>
+                    <span class="result-label" data-translate-key="maturityAmount">Maturity Amount</span>
                     <span class="result-value" id="ppf-maturity">₹0</span>
                 </div>
             </div>
@@ -622,33 +622,33 @@
         <div id="nps-form" class="calculator-form">
             <div class="scheme-details">
                 <div class="scheme-header" onclick="toggleDetails(this)">
-                    <h2>National Pension System (NPS)</h2>
+                    <h2 data-translate-key="nationalPensionSystem">National Pension System (NPS)</h2>
                     <div class="toggle-btn">
-                        <span>Show Details</span>
+                        <span data-translate-key="showDetails">Show Details</span>
                         <i class="fas fa-chevron-down"></i>
                     </div>
                 </div>
                 <div class="scheme-content">
-                    <p>A voluntary, long-term retirement savings scheme designed to enable systematic savings. It is regulated by PFRDA.</p>
+                    <p data-translate-key="npsDesc">A voluntary, long-term retirement savings scheme designed to enable systematic savings. It is regulated by PFRDA.</p>
                     <div class="scheme-features">
                         <div class="feature-item">
                             <i class="fas fa-chart-line"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Returns</span>
-                                <span class="feature-value">Market Linked</span>
+                                <span class="feature-label" data-translate-key="returns">Returns</span>
+                                <span class="feature-value" data-translate-key="marketLinked">Market Linked</span>
                             </div>
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-clock"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Tenure</span>
-                                <span class="feature-value">Until Age 60</span>
+                                <span class="feature-label" data-translate-key="tenure">Tenure</span>
+                                <span class="feature-value" data-translate-key="untilAge60">Until Age 60</span>
                             </div>
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-shield-alt"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Tax Benefit</span>
+                                <span class="feature-label" data-translate-key="taxBenefit">Tax Benefit</span>
                                 <span class="feature-value">Sec 80CCD</span>
                             </div>
                         </div>
@@ -658,31 +658,31 @@
 
             <div class="calculator-inputs">
                 <div class="form-group">
-                    <label>Monthly Investment (₹)</label>
+                    <label data-translate-key="monthlyInvestment">Monthly Investment (₹)</label>
                     <input type="number" id="nps-investment" placeholder="Enter amount">
                 </div>
                 <div class="form-group">
-                    <label>Current Age</label>
+                    <label data-translate-key="currentAge">Current Age</label>
                     <input type="number" id="nps-age" placeholder="18-70 years">
                 </div>
                 <div class="form-group">
-                    <label>Expected Return (%)</label>
+                    <label data-translate-key="expectedReturn">Expected Return (%)</label>
                     <input type="number" id="nps-return" value="10">
                 </div>
-                <button class="calculate-btn" onclick="calculateNPS()">Calculate NPS</button>
+                <button class="calculate-btn" onclick="calculateNPS()" data-translate-key="calculateNPS">Calculate NPS</button>
             </div>
 
             <div id="nps-result" class="result-card">
                 <div class="result-row">
-                    <span class="result-label">Total Investment</span>
+                    <span class="result-label" data-translate-key="totalInvestment">Total Investment</span>
                     <span class="result-value" id="nps-total-invest">₹0</span>
                 </div>
                 <div class="result-row">
-                    <span class="result-label">Total Interest</span>
+                    <span class="result-label" data-translate-key="totalInterest">Total Interest</span>
                     <span class="result-value" id="nps-total-interest">₹0</span>
                 </div>
                 <div class="result-row">
-                    <span class="result-label">Maturity Amount</span>
+                    <span class="result-label" data-translate-key="maturityAmount">Maturity Amount</span>
                     <span class="result-value" id="nps-maturity">₹0</span>
                 </div>
             </div>
@@ -692,33 +692,33 @@
         <div id="nsc-form" class="calculator-form">
             <div class="scheme-details">
                 <div class="scheme-header" onclick="toggleDetails(this)">
-                    <h2>National Savings Certificate (NSC)</h2>
+                    <h2 data-translate-key="nationalSavingsCertificate">National Savings Certificate (NSC)</h2>
                     <div class="toggle-btn">
-                        <span>Show Details</span>
+                        <span data-translate-key="showDetails">Show Details</span>
                         <i class="fas fa-chevron-down"></i>
                     </div>
                 </div>
                 <div class="scheme-content">
-                    <p>A fixed income investment scheme that you can open with any Post Office. It encourages small to mid-income investors to save.</p>
+                    <p data-translate-key="nscDesc">A fixed income investment scheme that you can open with any Post Office. It encourages small to mid-income investors to save.</p>
                     <div class="scheme-features">
                         <div class="feature-item">
                             <i class="fas fa-percent"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Interest Rate</span>
+                                <span class="feature-label" data-translate-key="interestRate">Interest Rate</span>
                                 <span class="feature-value">7.7% p.a.</span>
                             </div>
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-clock"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Tenure</span>
+                                <span class="feature-label" data-translate-key="tenure">Tenure</span>
                                 <span class="feature-value">5 Years</span>
                             </div>
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-shield-alt"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Tax Benefit</span>
+                                <span class="feature-label" data-translate-key="taxBenefit">Tax Benefit</span>
                                 <span class="feature-value">Sec 80C</span>
                             </div>
                         </div>
@@ -728,27 +728,27 @@
 
             <div class="calculator-inputs">
                 <div class="form-group">
-                    <label>Investment Amount (₹)</label>
+                    <label data-translate-key="investmentAmount">Investment Amount (₹)</label>
                     <input type="number" id="nsc-investment" placeholder="Min 1000">
                 </div>
                 <div class="form-group">
-                    <label>Interest Rate (%)</label>
+                    <label data-translate-key="interestRate">Interest Rate (%)</label>
                     <input type="number" id="nsc-rate" value="7.7" readonly>
                 </div>
-                <button class="calculate-btn" onclick="calculateNSC()">Calculate NSC</button>
+                <button class="calculate-btn" onclick="calculateNSC()" data-translate-key="calculateNSC">Calculate NSC</button>
             </div>
 
             <div id="nsc-result" class="result-card">
                 <div class="result-row">
-                    <span class="result-label">Total Investment</span>
+                    <span class="result-label" data-translate-key="totalInvestment">Total Investment</span>
                     <span class="result-value" id="nsc-total-invest">₹0</span>
                 </div>
                 <div class="result-row">
-                    <span class="result-label">Total Interest</span>
+                    <span class="result-label" data-translate-key="totalInterest">Total Interest</span>
                     <span class="result-value" id="nsc-total-interest">₹0</span>
                 </div>
                 <div class="result-row">
-                    <span class="result-label">Maturity Amount</span>
+                    <span class="result-label" data-translate-key="maturityAmount">Maturity Amount</span>
                     <span class="result-value" id="nsc-maturity">₹0</span>
                 </div>
             </div>
@@ -758,33 +758,33 @@
         <div id="kvp-form" class="calculator-form">
             <div class="scheme-details">
                 <div class="scheme-header" onclick="toggleDetails(this)">
-                    <h2>Kisan Vikas Patra (KVP)</h2>
+                    <h2 data-translate-key="kisanVikasPatra">Kisan Vikas Patra (KVP)</h2>
                     <div class="toggle-btn">
-                        <span>Show Details</span>
+                        <span data-translate-key="showDetails">Show Details</span>
                         <i class="fas fa-chevron-down"></i>
                     </div>
                 </div>
                 <div class="scheme-content">
-                    <p>A small savings certificate scheme that doubles your one-time investment in a specific period (currently 115 months).</p>
+                    <p data-translate-key="kvpDesc">A small savings certificate scheme that doubles your one-time investment in a specific period (currently 115 months).</p>
                     <div class="scheme-features">
                         <div class="feature-item">
                             <i class="fas fa-percent"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Interest Rate</span>
+                                <span class="feature-label" data-translate-key="interestRate">Interest Rate</span>
                                 <span class="feature-value">7.5% p.a.</span>
                             </div>
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-clock"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Doubling Period</span>
+                                <span class="feature-label" data-translate-key="doublingPeriod">Doubling Period</span>
                                 <span class="feature-value">115 Months</span>
                             </div>
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-coins"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Min Investment</span>
+                                <span class="feature-label" data-translate-key="minInvestment">Min Investment</span>
                                 <span class="feature-value">₹1000</span>
                             </div>
                         </div>
@@ -794,27 +794,27 @@
 
             <div class="calculator-inputs">
                 <div class="form-group">
-                    <label>Investment Amount (₹)</label>
+                    <label data-translate-key="investmentAmount">Investment Amount (₹)</label>
                     <input type="number" id="kvp-investment" placeholder="Min 1000">
                 </div>
                 <div class="form-group">
-                    <label>Current Interest Rate (%)</label>
+                    <label data-translate-key="currentInterestRate">Current Interest Rate (%)</label>
                     <input type="number" id="kvp-rate" value="7.5" readonly>
                 </div>
-                <button class="calculate-btn" onclick="calculateKVP()">Calculate KVP</button>
+                <button class="calculate-btn" onclick="calculateKVP()" data-translate-key="calculateKVP">Calculate KVP</button>
             </div>
 
             <div id="kvp-result" class="result-card">
                 <div class="result-row">
-                    <span class="result-label">Total Investment</span>
+                    <span class="result-label" data-translate-key="totalInvestment">Total Investment</span>
                     <span class="result-value" id="kvp-total-invest">₹0</span>
                 </div>
                 <div class="result-row">
-                    <span class="result-label">Maturity Amount</span>
+                    <span class="result-label" data-translate-key="maturityAmount">Maturity Amount</span>
                     <span class="result-value" id="kvp-maturity">₹0</span>
                 </div>
                 <div class="result-row">
-                    <span class="result-label">Tenure</span>
+                    <span class="result-label" data-translate-key="tenure">Tenure</span>
                     <span class="result-value">115 Months (9Y 7M)</span>
                 </div>
             </div>
@@ -824,34 +824,34 @@
         <div id="scss-form" class="calculator-form">
             <div class="scheme-details">
                 <div class="scheme-header" onclick="toggleDetails(this)">
-                    <h2>Senior Citizen Savings Scheme (SCSS)</h2>
+                    <h2 data-translate-key="seniorCitizenSavingsScheme">Senior Citizen Savings Scheme (SCSS)</h2>
                     <div class="toggle-btn">
-                        <span>Show Details</span>
+                        <span data-translate-key="showDetails">Show Details</span>
                         <i class="fas fa-chevron-down"></i>
                     </div>
                 </div>
                 <div class="scheme-content">
-                    <p>A government-backed retirement benefits program for senior citizens resident in India. It offers regular quarterly income.</p>
+                    <p data-translate-key="scssDesc">A government-backed retirement benefits program for senior citizens resident in India. It offers regular quarterly income.</p>
                     <div class="scheme-features">
                         <div class="feature-item">
                             <i class="fas fa-percent"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Interest Rate</span>
+                                <span class="feature-label" data-translate-key="interestRate">Interest Rate</span>
                                 <span class="feature-value">8.2% p.a.</span>
                             </div>
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-clock"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Tenure</span>
+                                <span class="feature-label" data-translate-key="tenure">Tenure</span>
                                 <span class="feature-value">5 Years</span>
                             </div>
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-hand-holding-usd"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Payout</span>
-                                <span class="feature-value">Quarterly</span>
+                                <span class="feature-label" data-translate-key="payout">Payout</span>
+                                <span class="feature-value" data-translate-key="quarterly">Quarterly</span>
                             </div>
                         </div>
                     </div>
@@ -860,31 +860,31 @@
 
             <div class="calculator-inputs">
                 <div class="form-group">
-                    <label>Investment Amount (₹)</label>
+                    <label data-translate-key="investmentAmount">Investment Amount (₹)</label>
                     <input type="number" id="scss-investment" placeholder="Max 30L">
                 </div>
                 <div class="form-group">
-                    <label>Interest Rate (%)</label>
+                    <label data-translate-key="interestRate">Interest Rate (%)</label>
                     <input type="number" id="scss-rate" value="8.2" readonly>
                 </div>
-                <button class="calculate-btn" onclick="calculateSCSS()">Calculate SCSS</button>
+                <button class="calculate-btn" onclick="calculateSCSS()" data-translate-key="calculateSCSS">Calculate SCSS</button>
             </div>
 
             <div id="scss-result" class="result-card">
                 <div class="result-row">
-                    <span class="result-label">Total Investment</span>
+                    <span class="result-label" data-translate-key="totalInvestment">Total Investment</span>
                     <span class="result-value" id="scss-total-invest">₹0</span>
                 </div>
                 <div class="result-row">
-                    <span class="result-label">Quarterly Interest</span>
+                    <span class="result-label" data-translate-key="quarterlyInterest">Quarterly Interest</span>
                     <span class="result-value" id="scss-quarterly-interest">₹0</span>
                 </div>
                 <div class="result-row">
-                    <span class="result-label">Total Interest</span>
+                    <span class="result-label" data-translate-key="totalInterest">Total Interest</span>
                     <span class="result-value" id="scss-total-interest">₹0</span>
                 </div>
                 <div class="result-row">
-                    <span class="result-label">Maturity Amount</span>
+                    <span class="result-label" data-translate-key="maturityAmount">Maturity Amount</span>
                     <span class="result-value" id="scss-maturity">₹0</span>
                 </div>
             </div>
@@ -894,34 +894,34 @@
         <div id="pomis-form" class="calculator-form">
             <div class="scheme-details">
                 <div class="scheme-header" onclick="toggleDetails(this)">
-                    <h2>Post Office Monthly Income Scheme (POMIS)</h2>
+                    <h2 data-translate-key="postOfficeMonthlyIncomeScheme">Post Office Monthly Income Scheme (POMIS)</h2>
                     <div class="toggle-btn">
-                        <span>Show Details</span>
+                        <span data-translate-key="showDetails">Show Details</span>
                         <i class="fas fa-chevron-down"></i>
                     </div>
                 </div>
                 <div class="scheme-content">
-                    <p>A low-risk savings scheme that offers a steady monthly income. Ideal for investors looking for guaranteed returns.</p>
+                    <p data-translate-key="pomisDesc">A low-risk savings scheme that offers a steady monthly income. Ideal for investors looking for guaranteed returns.</p>
                     <div class="scheme-features">
                         <div class="feature-item">
                             <i class="fas fa-percent"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Interest Rate</span>
+                                <span class="feature-label" data-translate-key="interestRate">Interest Rate</span>
                                 <span class="feature-value">7.4% p.a.</span>
                             </div>
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-clock"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Tenure</span>
+                                <span class="feature-label" data-translate-key="tenure">Tenure</span>
                                 <span class="feature-value">5 Years</span>
                             </div>
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-calendar-check"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Payout</span>
-                                <span class="feature-value">Monthly</span>
+                                <span class="feature-label" data-translate-key="payout">Payout</span>
+                                <span class="feature-value" data-translate-key="monthly">Monthly</span>
                             </div>
                         </div>
                     </div>
@@ -930,27 +930,27 @@
 
             <div class="calculator-inputs">
                 <div class="form-group">
-                    <label>Investment Amount (₹)</label>
+                    <label data-translate-key="investmentAmount">Investment Amount (₹)</label>
                     <input type="number" id="pomis-investment" placeholder="Min 1000, Max 9L/15L">
                 </div>
                 <div class="form-group">
-                    <label>Interest Rate (%)</label>
+                    <label data-translate-key="interestRate">Interest Rate (%)</label>
                     <input type="number" id="pomis-rate" value="7.4" readonly>
                 </div>
-                <button class="calculate-btn" onclick="calculatePOMIS()">Calculate POMIS</button>
+                <button class="calculate-btn" onclick="calculatePOMIS()" data-translate-key="calculatePOMIS">Calculate POMIS</button>
             </div>
 
             <div id="pomis-result" class="result-card">
                 <div class="result-row">
-                    <span class="result-label">Total Investment</span>
+                    <span class="result-label" data-translate-key="totalInvestment">Total Investment</span>
                     <span class="result-value" id="pomis-total-invest">₹0</span>
                 </div>
                 <div class="result-row">
-                    <span class="result-label">Monthly Income</span>
+                    <span class="result-label" data-translate-key="monthlyIncome">Monthly Income</span>
                     <span class="result-value" id="pomis-monthly-income">₹0</span>
                 </div>
                 <div class="result-row">
-                    <span class="result-label">Total Interest (5 Yrs)</span>
+                    <span class="result-label" data-translate-key="totalInterest">Total Interest (5 Yrs)</span>
                     <span class="result-value" id="pomis-total-interest">₹0</span>
                 </div>
             </div>
@@ -960,34 +960,34 @@
         <div id="mssc-form" class="calculator-form">
             <div class="scheme-details">
                 <div class="scheme-header" onclick="toggleDetails(this)">
-                    <h2>Mahila Samman Savings Certificate (MSSC)</h2>
+                    <h2 data-translate-key="mahilaSammanSavingsCertificate">Mahila Samman Savings Certificate (MSSC)</h2>
                     <div class="toggle-btn">
-                        <span>Show Details</span>
+                        <span data-translate-key="showDetails">Show Details</span>
                         <i class="fas fa-chevron-down"></i>
                     </div>
                 </div>
                 <div class="scheme-content">
-                    <p>A one-time small savings scheme for women and girls, introduced in Budget 2023, offering attractive returns for a short tenure.</p>
+                    <p data-translate-key="msscDesc">A one-time small savings scheme for women and girls, introduced in Budget 2023, offering attractive returns for a short tenure.</p>
                     <div class="scheme-features">
                         <div class="feature-item">
                             <i class="fas fa-percent"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Interest Rate</span>
+                                <span class="feature-label" data-translate-key="interestRate">Interest Rate</span>
                                 <span class="feature-value">7.5% p.a.</span>
                             </div>
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-clock"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Tenure</span>
+                                <span class="feature-label" data-translate-key="tenure">Tenure</span>
                                 <span class="feature-value">2 Years</span>
                             </div>
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-venus"></i>
                             <div class="feature-text">
-                                <span class="feature-label">Eligibility</span>
-                                <span class="feature-value">Women Only</span>
+                                <span class="feature-label" data-translate-key="eligibility">Eligibility</span>
+                                <span class="feature-value" data-translate-key="womenOnly">Women Only</span>
                             </div>
                         </div>
                     </div>
@@ -996,33 +996,33 @@
 
             <div class="calculator-inputs">
                 <div class="form-group">
-                    <label>Investment Amount (₹)</label>
+                    <label data-translate-key="investmentAmount">Investment Amount (₹)</label>
                     <input type="number" id="mssc-investment" placeholder="Max 2L">
                 </div>
                 <div class="form-group">
-                    <label>Interest Rate (%)</label>
+                    <label data-translate-key="interestRate">Interest Rate (%)</label>
                     <input type="number" id="mssc-rate" value="7.5" readonly>
                 </div>
-                <button class="calculate-btn" onclick="calculateMSSC()">Calculate MSSC</button>
+                <button class="calculate-btn" onclick="calculateMSSC()" data-translate-key="calculateMSSC">Calculate MSSC</button>
             </div>
 
             <div id="mssc-result" class="result-card">
                 <div class="result-row">
-                    <span class="result-label">Total Investment</span>
+                    <span class="result-label" data-translate-key="totalInvestment">Total Investment</span>
                     <span class="result-value" id="mssc-total-invest">₹0</span>
                 </div>
                 <div class="result-row">
-                    <span class="result-label">Total Interest</span>
+                    <span class="result-label" data-translate-key="totalInterest">Total Interest</span>
                     <span class="result-value" id="mssc-total-interest">₹0</span>
                 </div>
                 <div class="result-row">
-                    <span class="result-label">Maturity Amount</span>
+                    <span class="result-label" data-translate-key="maturityAmount">Maturity Amount</span>
                     <span class="result-value" id="mssc-maturity">₹0</span>
                 </div>
             </div>
         </div>
     </div>
-
+    <script src="../localization.js"></script>
     <script>
         function switchTab(tab) {
             // Hide all forms

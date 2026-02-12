@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MSI</title>
+    <title data-translate-key="msiTitle">MSI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -240,14 +240,14 @@
             <div class="spinner"></div>
             <div class="icon"><i class="fa-solid fa-bolt"></i></div>
         </div>
-        <p>Saving...</p>
+        <p data-translate-key="saving">Saving...</p>
     </div>
 </div>
 
 <header>
     <div class="header-left">
         <a href="../index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
-        <h1>MSI</h1>
+        <h1 data-translate-key="msiTitle">MSI</h1>
     </div>
     <div class="header-right">
         <a href="msireport.html" class="report-btn" title="Report"><i class="fa-solid fa-chart-pie"></i></a>
@@ -259,37 +259,37 @@
     <form id="sipForm">
         <div class="top-controls glass-card">
             <div class="form-group">
-                <label for="user_select">Select User</label>
+                <label for="user_select" data-translate-key="selectUser">Select User</label>
                 <select id="user_select" name="user_select" class="input-field">
-                    <option value="Kalyan">Kalyan</option>
-                    <option value="Layan">Layan</option>
+                    <option value="Kalyan" data-translate-key="kalyan">Kalyan</option>
+                    <option value="Layan" data-translate-key="layan">Layan</option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="month">Select Month</label>
+                <label for="month" data-translate-key="selectMonth">Select Month</label>
                 <select id="month" name="month" required class="input-field">
-                    <option value="Jan">Jan</option>
-                    <option value="Feb">Feb</option>
-                    <option value="Mar">Mar</option>
-                    <option value="Apr">Apr</option>
-                    <option value="May">May</option>
-                    <option value="Jun">Jun</option>
-                    <option value="Jul">Jul</option>
-                    <option value="Aug">Aug</option>
-                    <option value="Sep">Sep</option>
-                    <option value="Oct">Oct</option>
-                    <option value="Nov">Nov</option>
-                    <option value="Dec">Dec</option>
+                    <option value="Jan" data-translate-key="january">Jan</option>
+                    <option value="Feb" data-translate-key="february">Feb</option>
+                    <option value="Mar" data-translate-key="march">Mar</option>
+                    <option value="Apr" data-translate-key="april">Apr</option>
+                    <option value="May" data-translate-key="may">May</option>
+                    <option value="Jun" data-translate-key="june">Jun</option>
+                    <option value="Jul" data-translate-key="july">Jul</option>
+                    <option value="Aug" data-translate-key="august">Aug</option>
+                    <option value="Sep" data-translate-key="september">Sep</option>
+                    <option value="Oct" data-translate-key="october">Oct</option>
+                    <option value="Nov" data-translate-key="november">Nov</option>
+                    <option value="Dec" data-translate-key="december">Dec</option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="year">Select Year</label>
+                <label for="year" data-translate-key="selectYear">Select Year</label>
                 <select id="year" name="year" required class="input-field">
                     <!-- Populated by JS -->
                 </select>
             </div>
             <div class="form-group total-group">
-                <label for="total_investment">Total Investment</label>
+                <label for="total_investment" data-translate-key="totalInvestment">Total Investment</label>
                 <div class="input-wrapper">
                     <span class="currency-symbol">₹</span>
                     <input type="text" id="total_investment" name="total_investment" class="input-field" style="font-weight: bold; background-color: rgba(0,0,0,0.2);" readonly>
@@ -299,52 +299,52 @@
 
         <!-- Kalyan's Section -->
         <div id="kalyan-section">
-            <h2 class="section-title"><i class="fa-solid fa-coins"></i> Coin</h2>
+            <h2 class="section-title"><i class="fa-solid fa-coins"></i> <span data-translate-key="coin">Coin</span></h2>
             <div class="investment-grid">
                 <div class="investment-card glass-card">
-                    <label>Quantum Liquid Debt Fund Max -10%</label>
+                    <label data-translate-key="quantumLiquid">Quantum Liquid Debt Fund Max -10%</label>
                     <div class="input-wrapper">
                         <span class="currency-symbol">₹</span>
                         <input type="text" class="number-format input-field" name="coin_quantum_liquid" placeholder="0.00" inputmode="decimal" value="1331">
                     </div>
                 </div>
                 <div class="investment-card glass-card">
-                    <label>Navi Nifty 50 Index Funds</label>
+                    <label data-translate-key="naviNifty">Navi Nifty 50 Index Funds</label>
                     <div class="input-wrapper">
                         <span class="currency-symbol">₹</span>
                         <input type="text" class="number-format input-field" name="coin_navi_nifty" placeholder="0.00" inputmode="decimal" value="1331">
                     </div>
                 </div>
                 <div class="investment-card glass-card">
-                    <label>Invesco India Small Cap Fund</label>
+                    <label data-translate-key="invescoSmall">Invesco India Small Cap Fund</label>
                     <div class="input-wrapper">
                         <span class="currency-symbol">₹</span>
                         <input type="text" class="number-format input-field" name="coin_invesco_small" placeholder="0.00" inputmode="decimal" value="1331">
                     </div>
                 </div>
                 <div class="investment-card glass-card">
-                    <label>Axis Nifty 100 Index Fund</label>
+                    <label data-translate-key="axisNifty">Axis Nifty 100 Index Fund</label>
                     <div class="input-wrapper">
                         <span class="currency-symbol">₹</span>
                         <input type="text" class="number-format input-field" name="coin_axis_nifty" placeholder="0.00" inputmode="decimal" value="1331">
                     </div>
                 </div>
                 <div class="investment-card glass-card">
-                    <label>Aditya Birla Sun Life Nifty 50 Index</label>
+                    <label data-translate-key="birlaNifty">Aditya Birla Sun Life Nifty 50 Index</label>
                     <div class="input-wrapper">
                         <span class="currency-symbol">₹</span>
                         <input type="text" class="number-format input-field" name="coin_birla_nifty" placeholder="0.00" inputmode="decimal" value="1331">
                     </div>
                 </div>
                 <div class="investment-card glass-card">
-                    <label>DSP Nifty 50 Index Fund</label>
+                    <label data-translate-key="dspNifty">DSP Nifty 50 Index Fund</label>
                     <div class="input-wrapper">
                         <span class="currency-symbol">₹</span>
                         <input type="text" class="number-format input-field" name="coin_dsp_nifty" placeholder="0.00" inputmode="decimal" value="1331">
                     </div>
                 </div>
                 <div class="investment-card glass-card">
-                    <label>EdelWeiss Bharat Bond FOF - Apr 2031</label>
+                    <label data-translate-key="edelweissBond">EdelWeiss Bharat Bond FOF - Apr 2031</label>
                     <div class="input-wrapper">
                         <span class="currency-symbol">₹</span>
                         <input type="text" class="number-format input-field" name="coin_edelweiss_bond" placeholder="0.00" inputmode="decimal" value="1331">
@@ -352,31 +352,31 @@
                 </div>
             </div>
 
-            <h2 class="section-title"><i class="fa-solid fa-seedling"></i> Groww</h2>
+            <h2 class="section-title"><i class="fa-solid fa-seedling"></i> <span data-translate-key="groww">Groww</span></h2>
             <div class="investment-grid">
                 <div class="investment-card glass-card">
-                    <label>Canara Robeco Small Cap Fund Direct</label>
+                    <label data-translate-key="canaraRobeco">Canara Robeco Small Cap Fund Direct</label>
                     <div class="input-wrapper">
                         <span class="currency-symbol">₹</span>
                         <input type="text" class="number-format input-field" name="coin_canara_small" placeholder="0.00" inputmode="decimal" value="6050">
                     </div>
                 </div>
                 <div class="investment-card glass-card">
-                    <label>Quant Small Cap Fund Direct Plan[Lum-sum]</label>
+                    <label data-translate-key="quantSmall">Quant Small Cap Fund Direct Plan[Lum-sum]</label>
                     <div class="input-wrapper">
                         <span class="currency-symbol">₹</span>
                         <input type="text" class="number-format input-field" name="coin_quant_small" placeholder="0.00" inputmode="decimal" value="0">
                     </div>
                 </div>
                 <div class="investment-card glass-card">
-                    <label>Aditya Birla Sun Life PSU Equity Direct[Lum-sum]</label>
+                    <label data-translate-key="birlaPsu">Aditya Birla Sun Life PSU Equity Direct[Lum-sum]</label>
                     <div class="input-wrapper">
                         <span class="currency-symbol">₹</span>
                         <input type="text" class="number-format input-field" name="coin_birla_psu" placeholder="0.00" inputmode="decimal" value="0">
                     </div>
                 </div>
                 <div class="investment-card glass-card">
-                    <label>Power Grid Corp(Stock)</label>
+                    <label data-translate-key="powerGrid">Power Grid Corp(Stock)</label>
                     <div class="input-wrapper">
                         <span class="currency-symbol">₹</span>
                         <input type="text" class="number-format input-field" name="coin_power_grid" placeholder="0.00" inputmode="decimal" value="0">
@@ -384,31 +384,31 @@
                 </div>
             </div>
 
-            <h2 class="section-title"><i class="fa-solid fa-building-columns"></i> Govt Investments</h2>
+            <h2 class="section-title"><i class="fa-solid fa-building-columns"></i> <span data-translate-key="govtInvestments">Govt Investments</span></h2>
             <div class="investment-grid">
                 <div class="investment-card glass-card">
-                    <label>NPS Tier - 1</label>
+                    <label data-translate-key="npsTier1">NPS Tier - 1</label>
                     <div class="input-wrapper">
                         <span class="currency-symbol">₹</span>
                         <input type="text" class="number-format input-field" name="nps_tier1" placeholder="0.00" inputmode="decimal" value="5500">
                     </div>
                 </div>
                 <div class="investment-card glass-card">
-                    <label>NPS Tier - 2</label>
+                    <label data-translate-key="npsTier2">NPS Tier - 2</label>
                     <div class="input-wrapper">
                         <span class="currency-symbol">₹</span>
                         <input type="text" class="number-format input-field" name="nps_tier2" placeholder="0.00" inputmode="decimal" value="0">
                     </div>
                 </div>
                 <div class="investment-card glass-card">
-                    <label>Sukanya Samriddhi Account (SSA)</label>
+                    <label data-translate-key="ssa">Sukanya Samriddhi Account (SSA)</label>
                     <div class="input-wrapper">
                         <span class="currency-symbol">₹</span>
                         <input type="text" class="number-format input-field" name="ssa_account" placeholder="0.00" inputmode="decimal" value="2500">
                     </div>
                 </div>
                 <div class="investment-card glass-card">
-                    <label>PPF</label>
+                    <label data-translate-key="ppf">PPF</label>
                     <div class="input-wrapper">
                         <span class="currency-symbol">₹</span>
                         <input type="text" class="number-format input-field" name="ppf_account" placeholder="0.00" inputmode="decimal" value="10000">
@@ -419,24 +419,24 @@
 
         <!-- Layan's Section -->
         <div id="layan-section" class="hidden">
-            <h2 class="section-title"><i class="fa-solid fa-chart-line"></i> INDMoney</h2>
+            <h2 class="section-title"><i class="fa-solid fa-chart-line"></i> <span data-translate-key="indMoney">INDMoney</span></h2>
             <div class="investment-grid">
                 <div class="investment-card glass-card">
-                    <label>JioBlackRock Flexi Cap Fund</label>
+                    <label data-translate-key="jioFlexi">JioBlackRock Flexi Cap Fund</label>
                     <div class="input-wrapper">
                         <span class="currency-symbol">₹</span>
                         <input type="text" class="number-format input-field" name="ind_jio_flexi" placeholder="0.00" inputmode="decimal" value="0">
                     </div>
                 </div>
                 <div class="investment-card glass-card">
-                    <label>Bandhan Small Cap Fund</label>
+                    <label data-translate-key="bandhanSmall">Bandhan Small Cap Fund</label>
                     <div class="input-wrapper">
                         <span class="currency-symbol">₹</span>
                         <input type="text" class="number-format input-field" name="ind_bandhan_small" placeholder="0.00" inputmode="decimal" value="0">
                     </div>
                 </div>
                 <div class="investment-card glass-card">
-                    <label>NTPC Green Stock</label>
+                    <label data-translate-key="ntpcGreen">NTPC Green Stock</label>
                     <div class="input-wrapper">
                         <span class="currency-symbol">₹</span>
                         <input type="text" class="number-format input-field" name="ind_ntpc_green" placeholder="0.00" inputmode="decimal" value="0">
@@ -447,16 +447,17 @@
 
         <div class="action-bar">
             <button type="submit" class="save-btn">
-                <i class="fa-solid fa-save"></i> Save
+                <i class="fa-solid fa-save"></i> <span data-translate-key="save">Save</span>
             </button>
         </div>
     </form>
 </div>
 
 <footer>
-    <p>&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
+    <p data-translate-key="copyright_thammineni">&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
 </footer>
 <script src="../config.js"></script>
+<script src="../localization.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const monthSelect = document.getElementById('month');
@@ -532,7 +533,9 @@
                 layanSection.classList.remove('hidden');
             }
             calculateTotal();
+            fetchLastEntry(); // Fetch last entry when user changes
         }
+
 
         userSelect.addEventListener('change', toggleUserSections);
 

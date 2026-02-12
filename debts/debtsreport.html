@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Debts Analytics - KT Apps</title>
+    <title data-translate-key="debtsAnalytics">Debts Analytics - KT Apps</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -57,8 +57,8 @@
                     <i class="fa-solid fa-chart-pie text-white text-lg"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight text-white leading-tight">Analytics</h1>
-                    <p class="text-xs text-gray-400 font-medium">Debts Overview</p>
+                    <h1 class="text-xl font-bold tracking-tight text-white leading-tight" data-translate-key="debtsAnalytics">Analytics</h1>
+                    <p class="text-xs text-gray-400 font-medium" data-translate-key="debtsOverview">Debts Overview</p>
                 </div>
             </div>
             <div class="flex gap-3">
@@ -85,8 +85,8 @@
                         <i class="fa-solid fa-hand-holding-dollar"></i>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Total Lent</p>
-                        <p class="text-xs text-gray-400">Money you'll receive</p>
+                        <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold" data-translate-key="totalLentReport">Total Lent</p>
+                        <p class="text-xs text-gray-400" data-translate-key="moneyYouWillReceive">Money you'll receive</p>
                     </div>
                 </div>
                 <h3 class="text-3xl font-bold text-emerald-400 font-mono tracking-tight" id="total-lent">₹0</h3>
@@ -101,8 +101,8 @@
                         <i class="fa-solid fa-hand-holding-hand"></i>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Total Borrowed</p>
-                        <p class="text-xs text-gray-400">Money you owe</p>
+                        <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold" data-translate-key="totalBorrowedReport">Total Borrowed</p>
+                        <p class="text-xs text-gray-400" data-translate-key="moneyYouOwe">Money you owe</p>
                     </div>
                 </div>
                 <h3 class="text-3xl font-bold text-rose-400 font-mono tracking-tight" id="total-borrowed">₹0</h3>
@@ -117,8 +117,8 @@
                         <i class="fa-solid fa-scale-balanced"></i>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Net Balance</p>
-                        <p class="text-xs text-gray-400">Overall position</p>
+                        <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold" data-translate-key="netBalanceReport">Net Balance</p>
+                        <p class="text-xs text-gray-400" data-translate-key="overallPosition">Overall position</p>
                     </div>
                 </div>
                 <h3 class="text-3xl font-bold text-indigo-400 font-mono tracking-tight" id="net-balance">₹0</h3>
@@ -130,7 +130,7 @@
             <!-- Distribution Chart -->
             <div class="glass-panel p-6 rounded-3xl border border-white/5 flex flex-col">
                 <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-bold text-white">Debt Distribution</h3>
+                    <h3 class="text-lg font-bold text-white" data-translate-key="debtDistribution">Debt Distribution</h3>
                     <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
                         <i class="fa-solid fa-chart-pie text-gray-400 text-xs"></i>
                     </div>
@@ -143,7 +143,7 @@
             <!-- Top People List -->
             <div class="glass-panel p-6 rounded-3xl border border-white/5 flex flex-col">
                 <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-bold text-white">Top Active Accounts</h3>
+                    <h3 class="text-lg font-bold text-white" data-translate-key="topActiveAccounts">Top Active Accounts</h3>
                     <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
                         <i class="fa-solid fa-users text-gray-400 text-xs"></i>
                     </div>
@@ -157,7 +157,7 @@
         <!-- Monthly Trend -->
         <div class="glass-panel p-6 rounded-3xl border border-white/5 mb-8">
              <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-bold text-white">Monthly Activity <span class="text-xs font-normal text-gray-500 ml-2">(Last 6 Months)</span></h3>
+                <h3 class="text-lg font-bold text-white"><span data-translate-key="monthlyActivity">Monthly Activity</span> <span class="text-xs font-normal text-gray-500 ml-2" data-translate-key="last6Months">(Last 6 Months)</span></h3>
                 <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
                     <i class="fa-solid fa-chart-column text-gray-400 text-xs"></i>
                 </div>
@@ -168,7 +168,7 @@
         </div>
 
     </main>
-
+    <script src="../localization.js"></script>
     <script>
         // --- Data Loading ---
         const debts = JSON.parse(localStorage.getItem('kt_debts_data')) || [];

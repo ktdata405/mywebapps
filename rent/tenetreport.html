@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tenet Report</title>
+    <title data-translate-key="tenetReportTitle">Tenet Report</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -21,517 +21,263 @@
             background-color: var(--bg-dark);
             color: #f8fafc;
             font-family: 'Plus Jakarta Sans', sans-serif;
-            min-height: 100vh;
-            position: relative;
-            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* Animated Background */
-        .bg-animation {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: radial-gradient(circle at 50% 50%, #1e1b4b, #0b0f19);
-            overflow: hidden;
-        }
-
-        .glass-card {
-            background: rgba(21, 26, 37, 0.6);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        .input-field {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #f8fafc;
-        }
-
-        .input-field:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-            background: rgba(0, 0, 0, 0.5);
-        }
-
-        select.input-field option {
-            background-color: #151a25;
-            color: #f8fafc;
-        }
+        /* Smooth scrolling */
+        html { scroll-behavior: smooth; }
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
 
-        footer {
-            text-align: center;
-            padding: 24px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            color: #94a3b8;
-            font-size: 0.875rem;
+        .glass-panel {
+            background: rgba(21, 26, 37, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        footer b {
+        .input-group {
+            transition: all 0.3s ease;
+        }
+
+        .input-group:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            color: #94a3b8;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             color: #f8fafc;
+            font-size: 0.875rem;
+            white-space: nowrap;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
         }
     </style>
 </head>
 
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen pb-40 relative overflow-x-hidden">
 
-    <div class="bg-animation">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
+    <!-- Background Gradients -->
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+        <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-pink-600/20 rounded-full blur-[100px]"></div>
     </div>
 
-    <div class="flex-grow p-4 md:p-8">
-        <div class="max-w-6xl mx-auto">
-
-            <!-- Header Card -->
-            <div class="glass-card rounded-3xl p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-6 sticky top-4 z-30 backdrop-blur-xl bg-[#0b0f19]/80 border-b border-white/5">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 ring-4 ring-white/5">
-                        <i class="fa-solid fa-file-invoice-dollar text-white text-xl"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-2xl font-bold tracking-tight text-white leading-tight">Tenet Report</h1>
-                        <p class="text-xs text-gray-400 font-medium">Rent Analytics</p>
-                    </div>
+    <!-- Header -->
+    <header class="sticky top-0 z-30 glass-panel border-b border-white/5 px-6 py-4 mb-8 backdrop-blur-xl bg-[#0b0f19]/80">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 ring-4 ring-white/5">
+                    <i class="fa-solid fa-chart-pie text-white text-lg"></i>
                 </div>
-                <div class="flex gap-3 items-center flex-wrap justify-end">
-                    <div class="relative w-full sm:w-auto">
-                        <select id="sideFilter" class="w-full sm:w-40 pl-4 pr-8 py-2.5 rounded-xl outline-none appearance-none transition-all cursor-pointer hover:bg-white/10 font-semibold text-sm input-field bg-white/5 border border-white/10" onchange="filterData()">
-                            <option value="all">All Sides</option>
-                            <option value="Kalyan">Kalyan</option>
-                            <option value="Srikanth">Srikanth</option>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white leading-tight" data-translate-key="tenetReportTitle">Tenet Report</h1>
+                    <p class="text-xs text-gray-400 font-medium" data-translate-key="rentAnalytics">Rent Analytics</p>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <a href="tenet.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95">
+                    <i class="fa-solid fa-plus"></i>
+                </a>
+                <a href="../index.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95">
+                    <i class="fa-solid fa-house"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4">
+
+        <!-- Filters -->
+        <div class="glass-panel rounded-3xl p-6 mb-8 border border-white/10 shadow-2xl shadow-black/20">
+            <div class="flex flex-col md:flex-row gap-4 items-end">
+                <div class="w-full md:w-1/3 space-y-1.5">
+                    <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1" data-translate-key="filterBySide">Filter by Side</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
+                            <i class="fa-solid fa-filter text-sm"></i>
+                        </div>
+                        <select id="sideFilter" class="w-full h-[50px] bg-black/40 border border-white/10 rounded-2xl pl-10 pr-4 text-sm font-semibold text-white outline-none focus:border-indigo-500 focus:bg-black/60 focus:ring-1 focus:ring-indigo-500 transition-all appearance-none cursor-pointer">
+                            <option value="All" data-translate-key="allSides">All Sides</option>
+                            <option value="Kalyan" data-translate-key="kalyan">Kalyan</option>
+                            <option value="Srikanth" data-translate-key="srikanth">Srikanth</option>
                         </select>
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
+                        <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-500">
                             <i class="fa-solid fa-chevron-down text-xs"></i>
                         </div>
                     </div>
-                    <button onclick="fetchData()" class="w-11 h-11 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Refresh">
+                </div>
+                <div class="w-full md:w-auto">
+                    <button onclick="fetchReport()" class="w-full md:w-auto h-[50px] px-8 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2.5 transition-all active:scale-95 hover:shadow-indigo-600/40">
                         <i class="fa-solid fa-rotate-right"></i>
+                        <span data-translate-key="refreshData">Refresh Data</span>
                     </button>
-                    <a href="tenet.html" class="w-11 h-11 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Add New">
-                        <i class="fa-solid fa-plus"></i>
-                    </a>
-                    <a href="../index.html" class="w-11 h-11 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Dashboard">
-                        <i class="fa-solid fa-house"></i>
-                    </a>
                 </div>
             </div>
-
-            <!-- Financial Summary Section (Accordion) -->
-            <div id="summary-section" class="hidden mb-8 glass-card rounded-3xl overflow-hidden border border-white/10 shadow-2xl shadow-black/20">
-                <div class="p-6 border-b border-white/5 flex justify-between items-center cursor-pointer hover:bg-white/5 transition-colors group" onclick="toggleSummary()">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-pink-500/10 text-pink-400 flex items-center justify-center border border-pink-500/20 group-hover:bg-pink-500/20 transition-colors">
-                            <i class="fa-solid fa-chart-pie"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-white">Financial Summary</h3>
-                    </div>
-                    <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
-                        <i id="summary-icon" class="fa-solid fa-chevron-right text-sm text-gray-400 transition-transform duration-300"></i>
-                    </div>
-                </div>
-                <div id="summary-content" class="p-6 bg-[#0b0f19]/40 hidden">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <!-- Total Rent -->
-                        <div class="glass-card p-5 rounded-2xl flex flex-col gap-4 border border-white/5 hover:border-white/10 transition-all">
-                            <div class="flex justify-between items-start">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
-                                        <i class="fa-solid fa-indian-rupee-sign"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Total Rent</p>
-                                        <p class="text-xs text-gray-400">Expected revenue</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <h3 class="text-2xl font-bold text-white font-mono" id="summary-rent">Rs. 0</h3>
-                        </div>
-
-                        <!-- Total Paid -->
-                        <div class="glass-card p-5 rounded-2xl flex flex-col gap-4 border border-white/5 hover:border-white/10 transition-all">
-                            <div class="flex justify-between items-start">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
-                                        <i class="fa-solid fa-check"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Total Paid</p>
-                                        <p class="text-xs text-gray-400">Received amount</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <h3 class="text-2xl font-bold text-emerald-400 font-mono" id="summary-paid">Rs. 0</h3>
-                        </div>
-
-                        <!-- Total Balance -->
-                        <div class="glass-card p-5 rounded-2xl flex flex-col gap-4 border border-white/5 hover:border-white/10 transition-all">
-                            <div class="flex justify-between items-start">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-yellow-500/10 text-yellow-400 flex items-center justify-center border border-yellow-500/20">
-                                        <i class="fa-solid fa-exclamation"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Total Balance</p>
-                                        <p class="text-xs text-gray-400">Pending amount</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <h3 class="text-2xl font-bold text-yellow-400 font-mono" id="summary-balance">Rs. 0</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Data List (Accordion) -->
-            <div class="glass-card rounded-3xl overflow-hidden border border-white/10 shadow-2xl shadow-black/20">
-                <div class="p-6 border-b border-white/5 flex justify-between items-center cursor-pointer hover:bg-white/5 transition-colors group" onclick="toggleTenetRecords()">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20 group-hover:bg-indigo-500/20 transition-colors">
-                            <i class="fa-solid fa-list-ul text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-bold text-white">Tenet Records</h3>
-                            <p class="text-xs text-gray-400 font-medium">Detailed transaction history</p>
-                        </div>
-                    </div>
-                    <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
-                        <i id="records-icon" class="fa-solid fa-chevron-right text-gray-400 transition-transform duration-300"></i>
-                    </div>
-                </div>
-
-                <div id="report-body-container" class="hidden bg-[#0b0f19]/20">
-                    <div id="report-body" class="p-4 space-y-3">
-                        <!-- Accordion items will be injected here -->
-                    </div>
-                </div>
-            </div>
-
         </div>
-    </div>
 
-    <!-- Loader Overlay -->
-    <div id="loader" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md transition-all">
-        <div class="glass-card p-8 rounded-3xl flex flex-col items-center gap-6 shadow-2xl border border-white/10">
+        <!-- Report Table -->
+        <div class="glass-panel rounded-3xl p-6 mb-8 border border-white/10 shadow-2xl shadow-black/20 hidden" id="reportContainer">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-bold text-white" data-translate-key="transactionHistory">Transaction History</h2>
+                <span class="bg-emerald-500/20 text-emerald-400 text-[10px] uppercase tracking-wider font-bold px-3 py-1 rounded-lg border border-emerald-500/30" id="recordCount">0 Records</span>
+            </div>
+            <div class="table-container">
+                <table id="reportTable">
+                    <thead>
+                        <tr>
+                            <th data-translate-key="date">Date</th>
+                            <th data-translate-key="side">Side</th>
+                            <th data-translate-key="rent">Rent</th>
+                            <th data-translate-key="paid">Paid</th>
+                            <th data-translate-key="balance">Balance</th>
+                            <th data-translate-key="power">Power</th>
+                            <th data-translate-key="water">Water</th>
+                            <th data-translate-key="total">Total</th>
+                            <th data-translate-key="remarks">Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 text-center">
+            <div class="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                <i class="fa-solid fa-clipboard-list text-3xl text-gray-600"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-1" data-translate-key="noRecordsFound">No Records Found</h3>
+            <p class="text-gray-400 text-sm" data-translate-key="noRecordsFoundMessage">Try adjusting filters or add new records.</p>
+        </div>
+
+    </main>
+
+    <!-- Loader -->
+    <div id="loader" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-all">
+        <div class="glass-panel p-8 rounded-3xl flex flex-col items-center gap-6 shadow-2xl border border-white/10">
             <div class="relative w-16 h-16">
                 <div class="absolute inset-0 border-4 border-indigo-500/20 rounded-full"></div>
                 <div class="absolute inset-0 border-4 border-indigo-500 rounded-full border-t-transparent animate-spin"></div>
                 <div class="absolute inset-0 flex items-center justify-center">
-                    <i class="fa-solid fa-bolt text-indigo-500 text-xl"></i>
+                    <i class="fa-solid fa-cloud-arrow-down text-indigo-500"></i>
                 </div>
             </div>
             <div class="text-center">
-                <h3 class="text-white font-bold text-lg">Fetching Data</h3>
-                <p class="text-gray-400 text-sm mt-1">Retrieving records...</p>
+                <h3 class="text-white font-bold text-lg" data-translate-key="fetchingData">Fetching Data</h3>
+                <p class="text-gray-400 text-sm mt-1" data-translate-key="retrievingExpenses">Retrieving records...</p>
             </div>
         </div>
     </div>
 
-    <footer>
-        <p>&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
-    </footer>
-
     <script>
-        let allData = [];
-        window.pageItems = {};
+        const SCRIPT_URL = CONFIG.GOOGLE_SHEET_URL_RENT;
 
-        function formatDateToDDMMMYYYY(isoDate) {
-            if (!isoDate) return '';
-            const d = new Date(isoDate);
-            if (isNaN(d.getTime())) {
-                return isoDate;
-            }
-            const day = String(d.getDate()).padStart(2, '0');
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const month = months[d.getMonth()];
-            const year = d.getFullYear();
-            return `${day}/${month}/${year}`;
-        }
-
-        function formatCurrency(amount) {
-            if (amount === undefined || amount === null || amount === '') return '-';
-            const num = parseFloat(amount);
-            if (isNaN(num)) return amount;
-
-            return new Intl.NumberFormat('en-IN', {
-                style: 'currency',
-                currency: 'INR',
-                maximumFractionDigits: 0
-            }).format(num);
-        }
-
-        function toggleSummary() {
-            const content = document.getElementById('summary-content');
-            const icon = document.getElementById('summary-icon');
-            if (content.classList.contains('hidden')) {
-                content.classList.remove('hidden');
-                icon.classList.add('rotate-90');
-            } else {
-                content.classList.add('hidden');
-                icon.classList.remove('rotate-90');
-            }
-        }
-
-        function toggleTenetRecords() {
-            const content = document.getElementById('report-body-container');
-            const icon = document.getElementById('records-icon');
-            if (content.classList.contains('hidden')) {
-                content.classList.remove('hidden');
-                icon.classList.add('rotate-90');
-            } else {
-                content.classList.add('hidden');
-                icon.classList.remove('rotate-90');
-            }
-        }
-
-        function filterData() {
-            const side = document.getElementById('sideFilter').value;
-
-            const filtered = allData.filter(item => {
-                let sideMatch = true;
-                if (side !== 'all') {
-                    sideMatch = item.side === side;
-                }
-                return sideMatch;
-            });
-
-            populateTable(filtered);
-            updateSummary(filtered);
-        }
-
-        function updateSummary(data) {
-            let totalRent = 0;
-            let totalPaid = 0;
-            let totalBalance = 0;
-
-            data.forEach(item => {
-                totalRent += parseFloat(item.rentAmount) || 0;
-                totalPaid += parseFloat(item.totalPaid) || 0;
-                totalBalance += parseFloat(item.balanceAmount) || 0;
-            });
-
-            document.getElementById('summary-rent').textContent = formatCurrency(totalRent);
-            document.getElementById('summary-paid').textContent = formatCurrency(totalPaid);
-            document.getElementById('summary-balance').textContent = formatCurrency(totalBalance);
-
-            const summarySection = document.getElementById('summary-section');
-            if (data.length > 0) {
-                summarySection.classList.remove('hidden');
-                const content = document.getElementById('summary-content');
-                const icon = document.getElementById('summary-icon');
-                if(content.classList.contains('hidden')) {
-                    content.classList.remove('hidden');
-                    icon.classList.add('rotate-90');
-                }
-            } else {
-                summarySection.classList.add('hidden');
-            }
-        }
-
-        function populateTable(data) {
-            const reportBody = document.getElementById('report-body');
-            const container = document.getElementById('report-body-container');
-            const icon = document.getElementById('records-icon');
-
-            reportBody.innerHTML = '';
-            window.pageItems = {};
-
-            if (data && data.length > 0) {
-                const groupedData = {};
-                data.forEach(row => {
-                    const dateKey = formatDateToDDMMMYYYY(row.date);
-                    if (!groupedData[dateKey]) {
-                        groupedData[dateKey] = { total: 0, items: [], rawDate: new Date(row.date) };
-                    }
-                    groupedData[dateKey].items.push(row);
-                    groupedData[dateKey].total += (parseFloat(row.totalPaid) || 0);
-                });
-
-                const sortedDates = Object.keys(groupedData).sort((a, b) => groupedData[b].rawDate - groupedData[a].rawDate);
-
-                sortedDates.forEach((date, index) => {
-                    const group = groupedData[date];
-                    const accordionHeader = document.createElement('div');
-                    accordionHeader.className = "glass-card p-4 rounded-2xl flex justify-between items-center cursor-pointer hover:bg-white/5 transition-colors border border-white/5";
-                    accordionHeader.onclick = () => toggleDetails(index);
-
-                    accordionHeader.innerHTML = `
-                        <div class="flex items-center gap-4">
-                            <div class="w-14 h-14 rounded-xl bg-[#0b0f19]/60 flex flex-col items-center justify-center font-bold border border-white/10 shadow-inner">
-                                <span class="text-[10px] uppercase text-gray-500 tracking-wider">${new Date(group.rawDate).toLocaleString('default', { month: 'short' })}</span>
-                                <span class="text-xl text-white">${String(new Date(group.rawDate).getDate()).padStart(2, '0')}</span>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-400 font-medium mb-0.5">${new Date(group.rawDate).toLocaleString('default', { weekday: 'long' })}</p>
-                                <h4 class="font-bold text-white text-base font-mono">Total: ${formatCurrency(group.total)}</h4>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3">
-                             <button onclick="event.stopPropagation(); editDateEntries('${date}')" class="w-9 h-9 rounded-full bg-white/5 hover:bg-indigo-500/20 text-gray-400 hover:text-indigo-400 transition-all flex items-center justify-center border border-white/5 hover:border-indigo-500/30" title="Edit Entries">
-                                <i class="fa-solid fa-pen text-xs"></i>
-                            </button>
-                            <div class="w-8 h-8 flex items-center justify-center">
-                                <i id="icon-${index}" class="fa-solid fa-chevron-right transition-transform duration-200 text-gray-500 text-sm"></i>
-                            </div>
-                        </div>
-                    `;
-                    reportBody.appendChild(accordionHeader);
-
-                    const accordionContent = document.createElement('div');
-                    accordionContent.id = `details-${index}`;
-                    accordionContent.className = "hidden p-2 pl-4 sm:pl-20 space-y-2";
-
-                    let detailsHtml = '';
-                    group.items.forEach((item) => {
-                        const itemId = 'item_' + Math.random().toString(36).substr(2, 9);
-                        window.pageItems[itemId] = item;
-
-                        const sideBadge = item.side === 'Kalyan'
-                            ? '<span class="bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border border-blue-500/20">Kalyan</span>'
-                            : (item.side === 'Srikanth'
-                                ? '<span class="bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border border-emerald-500/20">Srikanth</span>'
-                                : `<span class="text-gray-400 text-xs">${item.side || '-'}</span>`);
-
-                        detailsHtml += `
-                            <div class="glass-card p-5 rounded-xl border border-white/5 flex flex-col gap-4 hover:bg-white/5 transition-all relative group">
-                                <div class="flex justify-between items-start">
-                                    <div class="flex items-center gap-3">
-                                         ${sideBadge}
-                                         ${item.remarks ? `<p class="text-xs text-gray-500 italic border-l border-white/10 pl-3 line-clamp-1">"${item.remarks}"</p>` : ''}
-                                    </div>
-                                    <button onclick="editRecord('${itemId}')" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-indigo-500/20 text-gray-400 hover:text-indigo-400 transition-all flex items-center justify-center border border-white/5 hover:border-indigo-500/30" title="Edit Record">
-                                        <i class="fa-solid fa-pen-to-square text-xs"></i>
-                                    </button>
-                                </div>
-
-                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4 text-sm">
-                                    <div class="space-y-1">
-                                        <span class="text-[10px] uppercase text-gray-500 font-bold tracking-wider">Rent</span>
-                                        <span class="text-white block font-mono font-bold">${formatCurrency(item.rentAmount)}</span>
-                                    </div>
-                                    <div class="space-y-1">
-                                        <span class="text-[10px] uppercase text-gray-500 font-bold tracking-wider">Power</span>
-                                        <span class="text-white block font-mono font-bold">${formatCurrency(item.powerBill)}</span>
-                                    </div>
-                                    <div class="space-y-1">
-                                        <span class="text-[10px] uppercase text-gray-500 font-bold tracking-wider">Water</span>
-                                        <span class="text-white block font-mono font-bold">${formatCurrency(item.waterBill)}</span>
-                                    </div>
-                                    <div class="space-y-1">
-                                        <span class="text-[10px] uppercase text-emerald-500/70 font-bold tracking-wider">Paid</span>
-                                        <span class="text-emerald-400 block font-mono font-bold">${formatCurrency(item.totalPaid)}</span>
-                                    </div>
-                                    <div class="space-y-1">
-                                        <span class="text-[10px] uppercase text-yellow-500/70 font-bold tracking-wider">Balance</span>
-                                        <span class="text-yellow-400 block font-mono font-bold">${formatCurrency(item.balanceAmount)}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    accordionContent.innerHTML = detailsHtml;
-                    reportBody.appendChild(accordionContent);
-                });
-
-                // Auto open main container
-                if (container.classList.contains('hidden')) {
-                    container.classList.remove('hidden');
-                    icon.classList.add('rotate-90');
-                }
-
-            } else {
-                const noData = document.createElement('div');
-                noData.className = "py-16 text-center";
-                noData.innerHTML = `
-                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/5 mb-4">
-                        <i class="fa-regular fa-folder-open text-3xl text-gray-600"></i>
-                    </div>
-                    <p class="text-gray-400 font-medium">No records found matching your criteria.</p>
-                `;
-                reportBody.appendChild(noData);
-            }
-        }
-
-        function toggleDetails(index) {
-            const detailsRow = document.getElementById(`details-${index}`);
-            const icon = document.getElementById(`icon-${index}`);
-            if (detailsRow.classList.contains('hidden')) {
-                detailsRow.classList.remove('hidden');
-                icon.classList.add('rotate-90');
-            } else {
-                detailsRow.classList.add('hidden');
-                icon.classList.remove('rotate-90');
-            }
-        }
-
-        function editRecord(itemId) {
-            const item = window.pageItems[itemId];
-            if (item) {
-                sessionStorage.setItem('tenetEditData', JSON.stringify(item));
-                window.location.href = 'tenet.html';
-            }
-        }
-
-        function editDateEntries(dateKey) {
-            const entriesForDate = allData.filter(item => formatDateToDDMMMYYYY(item.date) === dateKey);
-            if (entriesForDate.length > 0) {
-                if (entriesForDate.length === 1) {
-                     sessionStorage.setItem('tenetEditData', JSON.stringify(entriesForDate[0]));
-                     window.location.href = 'tenet.html';
-                } else {
-                    alert("Multiple entries found for this date. Please expand and edit the specific record.");
-                }
-            } else {
-                alert('No data found for this date to edit.');
-            }
-        }
-
-        function fetchData() {
+        function fetchReport() {
             const loader = document.getElementById('loader');
+            const reportContainer = document.getElementById('reportContainer');
+            const emptyState = document.getElementById('emptyState');
+            const tbody = document.querySelector('#reportTable tbody');
+            const sideFilter = document.getElementById('sideFilter').value;
+
             loader.classList.remove('hidden');
+            reportContainer.classList.add('hidden');
+            emptyState.classList.add('hidden');
 
-            fetch(CONFIG.GOOGLE_SHEET_URL_RENT)
+            fetch(SCRIPT_URL)
                 .then(response => response.json())
-                .then(response => {
+                .then(data => {
                     loader.classList.add('hidden');
+                    tbody.innerHTML = '';
 
-                    if (Array.isArray(response)) {
-                        allData = response;
-                    } else if (response && Array.isArray(response.data)) {
-                        allData = response.data;
-                    } else if (response && Array.isArray(response.records)) {
-                        allData = response.records;
-                    } else {
-                        const possibleArray = Object.values(response).find(val => Array.isArray(val));
-                        if (possibleArray) {
-                            allData = possibleArray;
-                        } else {
-                            alert('Error: Invalid data format received.');
-                            return;
-                        }
+                    let records = data.data || []; // Assuming API returns { data: [...] }
+
+                    // Filter
+                    if (sideFilter !== 'All') {
+                        records = records.filter(r => r.side === sideFilter);
                     }
 
-                    filterData();
+                    if (records.length === 0) {
+                        emptyState.classList.remove('hidden');
+                        return;
+                    }
+
+                    reportContainer.classList.remove('hidden');
+                    document.getElementById('recordCount').textContent = `${records.length} Records`;
+
+                    records.forEach(record => {
+                        const row = document.createElement('tr');
+
+                        // Format Date
+                        let dateStr = record.date;
+                        try {
+                            const d = new Date(record.date);
+                            if(!isNaN(d.getTime())) {
+                                dateStr = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                            }
+                        } catch(e) {}
+
+                        row.innerHTML = `
+                            <td class="font-mono text-indigo-300">${dateStr}</td>
+                            <td><span class="px-2 py-1 rounded-lg bg-white/5 text-xs font-bold border border-white/10">${record.side}</span></td>
+                            <td class="font-mono">₹${record.rentAmount || 0}</td>
+                            <td class="font-mono text-emerald-400">₹${record.paidAmount || 0}</td>
+                            <td class="font-mono text-rose-400">₹${record.balanceAmount || 0}</td>
+                            <td class="font-mono">₹${record.powerBill || 0}</td>
+                            <td class="font-mono">₹${record.waterBill || 0}</td>
+                            <td class="font-mono font-bold text-white">₹${record.totalPaid || 0}</td>
+                            <td class="text-gray-400 italic text-xs max-w-[200px] truncate" title="${record.remarks || ''}">${record.remarks || '-'}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
                 })
                 .catch(error => {
-                    console.error('Error fetching data:', error);
+                    console.error('Error:', error);
                     loader.classList.add('hidden');
-                    alert(`Error loading data: ${error.message}`);
+                    alert('Failed to load report data.');
                 });
         }
 
-        document.addEventListener('DOMContentLoaded', fetchData);
+        // Initial Load
+        document.addEventListener('DOMContentLoaded', fetchReport);
     </script>
+    <script src="../localization.js"></script>
 
 </body>
 </html>

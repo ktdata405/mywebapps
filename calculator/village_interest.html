@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Village Interest Calculator</title>
+    <title data-translate-key="villageInterestCalculator">Village Interest Calculator</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -342,67 +342,67 @@
         <div class="header-container">
             <h2>
                 <a href="calculator.html" style="color: var(--text-light); text-decoration: none; margin-right: 10px;" aria-label="Back"><i class="fas fa-arrow-left"></i></a>
-                Village Interest
+                <span data-translate-key="villageFinance">Village Interest</span>
                 <a href="../index.html" style="color: var(--text-light); text-decoration: none; margin-left: 10px;" aria-label="Home"><i class="fas fa-home"></i></a>
             </h2>
         </div>
 
         <div class="tabs">
-            <button class="tab active" id="tab-months" onclick="setMode('months')">Duration (Months)</button>
-            <button class="tab" id="tab-date" onclick="setMode('date')">Date Range</button>
+            <button class="tab active" id="tab-months" onclick="setMode('months')" data-translate-key="durationMonths">Duration (Months)</button>
+            <button class="tab" id="tab-date" onclick="setMode('date')" data-translate-key="dateRange">Date Range</button>
         </div>
 
         <div class="input-group">
-            <label>Principal Amount</label>
-            <input type="number" id="principal" placeholder="Enter amount" oninput="updateAmountWords(this.value)">
+            <label data-translate-key="principalAmount">Principal Amount</label>
+            <input type="number" id="principal" placeholder="Enter amount" oninput="updateAmountWords(this.value)" data-translate-key="enterAmount">
             <div id="amount-words" class="amount-words"></div>
         </div>
 
         <div class="input-group">
-            <label>Interest Rate (Rupees per 100)</label>
-            <input type="number" id="rate" placeholder="e.g. 2 for 2 rupees interest">
+            <label data-translate-key="interestRateRupees">Interest Rate (Rupees per 100)</label>
+            <input type="number" id="rate" placeholder="e.g. 2 for 2 rupees interest" data-translate-key="enterRatePer100">
         </div>
 
         <div id="month-inputs">
             <div class="input-group">
-                <label>Duration in Months</label>
-                <input type="number" id="duration-months" placeholder="Enter number of months">
+                <label data-translate-key="durationInMonths">Duration in Months</label>
+                <input type="number" id="duration-months" placeholder="Enter number of months" data-translate-key="enterNumberOfMonths">
             </div>
         </div>
 
         <div id="date-inputs" style="display:none;">
             <div class="input-group">
-                <label>Start Date</label>
+                <label data-translate-key="startDate">Start Date</label>
                 <input type="date" id="start-date">
             </div>
 
             <div class="input-group">
-                <label>End Date</label>
+                <label data-translate-key="endDate">End Date</label>
                 <input type="date" id="end-date">
             </div>
         </div>
 
         <div class="action-buttons">
-            <button class="calc-btn" onclick="calculate()">Calculate</button>
-            <button class="clear-btn" onclick="clearInputs()">Clear</button>
+            <button class="calc-btn" onclick="calculate()" data-translate-key="calculate">Calculate</button>
+            <button class="clear-btn" onclick="clearInputs()" data-translate-key="clear">Clear</button>
         </div>
 
         <div id="result">
-            <div class="res-item"><span>Duration:</span> <span id="duration-text" class="res-val">0</span></div>
-            <div class="res-item"><span>Total Interest:</span> <span id="total-interest" class="res-val val-interest">0</span></div>
-            <div class="res-item"><span>Total Amount:</span> <span id="total-amount" class="res-val val-total">0</span></div>
+            <div class="res-item"><span data-translate-key="duration">Duration:</span> <span id="duration-text" class="res-val">0</span></div>
+            <div class="res-item"><span data-translate-key="totalInterest">Total Interest:</span> <span id="total-interest" class="res-val val-interest">0</span></div>
+            <div class="res-item"><span data-translate-key="totalAmount">Total Amount:</span> <span id="total-amount" class="res-val val-total">0</span></div>
 
             <div class="emi-section">
-                <div class="emi-title">Monthly Payment Options</div>
+                <div class="emi-title" data-translate-key="monthlyPaymentOptions">Monthly Payment Options</div>
                 <div class="res-item">
-                    <span>Interest Only:</span>
+                    <span data-translate-key="interestOnly">Interest Only:</span>
                     <span id="monthly-interest" class="res-val val-emi">0</span>
                 </div>
                 <div class="res-item">
-                    <span>Interest + Principal (EMI):</span>
+                    <span data-translate-key="interestPlusPrincipalEmi">Interest + Principal (EMI):</span>
                     <span id="monthly-emi" class="res-val val-emi">0</span>
                 </div>
-                <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 5px;">
+                <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 5px;" data-translate-key="emiCalculatedForDuration">
                     * EMI calculated for the selected duration
                 </div>
             </div>
@@ -410,17 +410,17 @@
 
         <div class="accordion-container" id="schedule-accordion">
             <button class="accordion-header" onclick="toggleSchedule()">
-                <span>Repayment Schedule <i class="fas fa-list-alt" style="margin-left: 8px;"></i></span>
+                <span><span data-translate-key="repaymentSchedule">Repayment Schedule</span> <i class="fas fa-list-alt" style="margin-left: 8px;"></i></span>
                 <i class="fas fa-chevron-down arrow" id="schedule-arrow"></i>
             </button>
             <div class="accordion-content" id="scheduleContent">
                 <table class="schedule-table">
                     <thead>
                         <tr>
-                            <th>Month</th>
-                            <th>Principal</th>
-                            <th>Interest</th>
-                            <th>Balance</th>
+                            <th data-translate-key="month">Month</th>
+                            <th data-translate-key="principal">Principal</th>
+                            <th data-translate-key="interest">Interest</th>
+                            <th data-translate-key="balance">Balance</th>
                         </tr>
                     </thead>
                     <tbody id="schedule-body">
@@ -430,7 +430,7 @@
             </div>
         </div>
     </div>
-
+<script src="../localization.js"></script>
 <script>
     let currentMode = 'months';
     // Set default dates

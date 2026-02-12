@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cashew - Expense Tracker</title>
+    <title data-translate-key="cashewExpenseTracker">Cashew - Expense Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -85,8 +85,8 @@
                     <i class="fa-solid fa-wallet text-white text-lg"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight text-white leading-tight">Cashew</h1>
-                    <p class="text-xs text-gray-400 font-medium">Expense Tracker</p>
+                    <h1 class="text-xl font-bold tracking-tight text-white leading-tight" data-translate-key="cashew">Cashew</h1>
+                    <p class="text-xs text-gray-400 font-medium" data-translate-key="cashewExpenseTrackerShort">Expense Tracker</p>
                 </div>
             </div>
             <div class="flex gap-3">
@@ -113,7 +113,7 @@
                     <input type="date" id="date-input" class="bg-transparent text-white font-bold text-lg outline-none text-center cursor-pointer font-mono tracking-wide z-10 relative" />
                 </div>
                 <span id="last-entry-label" class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mt-0.5">
-                    Last: <span class="text-indigo-400">--</span>
+                    <span data-translate-key="lastEntryLabel">Last:</span> <span class="text-indigo-400">--</span>
                 </span>
             </div>
 
@@ -132,7 +132,7 @@
             <div class="w-10 h-10 rounded-full bg-white/5 group-hover:bg-indigo-500 group-hover:text-white flex items-center justify-center transition-all shadow-lg">
                 <i class="fa-solid fa-plus text-sm"></i>
             </div>
-            <span class="font-semibold tracking-wide">Add Another Expense</span>
+            <span class="font-semibold tracking-wide" data-translate-key="addAnotherExpense">Add Another Expense</span>
         </button>
 
     </main>
@@ -141,17 +141,17 @@
     <div class="fixed bottom-0 left-0 w-full glass-panel border-t border-white/10 z-40 pb-safe bg-[#0b0f19]/90 backdrop-blur-xl">
         <div class="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between gap-6">
             <div class="flex flex-col">
-                <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-0.5">Total Expense</span>
+                <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-0.5" data-translate-key="totalExpense">Total Expense</span>
                 <span id="total-amount" class="text-2xl font-bold text-white tracking-tight font-mono">Rs. 0.00</span>
             </div>
 
             <div class="flex items-center gap-3">
-                <button onclick="clearAll()" class="w-12 h-12 rounded-2xl bg-white/5 hover:bg-red-500/10 border border-white/5 text-gray-400 hover:text-red-400 flex items-center justify-center transition-all active:scale-95" title="Clear All">
+                <button onclick="clearAll()" class="w-12 h-12 rounded-2xl bg-white/5 hover:bg-red-500/10 border border-white/5 text-gray-400 hover:text-red-400 flex items-center justify-center transition-all active:scale-95" title="Clear All" data-translate-key="clearAll">
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
                 <button onclick="saveData()" id="save-btn" class="h-12 px-8 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-indigo-600/25 flex items-center gap-2.5 transition-all active:scale-95 hover:shadow-indigo-600/40">
                     <i class="fa-solid fa-check"></i>
-                    <span>Save</span>
+                    <span data-translate-key="save">Save</span>
                 </button>
             </div>
         </div>
@@ -168,8 +168,8 @@
                 </div>
             </div>
             <div class="text-center">
-                <h3 class="text-white font-bold text-lg">Saving Data</h3>
-                <p class="text-gray-400 text-sm mt-1">Syncing with Google Sheets...</p>
+                <h3 class="text-white font-bold text-lg" data-translate-key="savingData">Saving Data</h3>
+                <p class="text-gray-400 text-sm mt-1" data-translate-key="syncingWithGoogleSheets">Syncing with Google Sheets...</p>
             </div>
         </div>
     </div>
@@ -187,21 +187,21 @@
                 <div class="flex items-start gap-4">
                     <!-- Category Icon & Select -->
                     <div class="flex-grow space-y-1.5">
-                        <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1">Category</label>
+                        <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1" data-translate-key="category">Category</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-indigo-400">
                                 <i class="fa-solid fa-layer-group text-sm"></i>
                             </div>
                             <select class="category-select w-full bg-black/40 border border-white/10 rounded-2xl pl-10 pr-8 py-3.5 text-sm font-semibold text-white outline-none focus:border-indigo-500 focus:bg-black/60 focus:ring-1 focus:ring-indigo-500 transition-all appearance-none cursor-pointer">
-                                <option value="Select" class="text-gray-500">Select Category</option>
-                                <option value="Home">Home</option>
-                                <option value="My Personal">My Personal</option>
-                                <option value="My Family">My Family</option>
-                                <option value="For Latha">For Latha</option>
-                                <option value="Baby">Baby</option>
-                                <option value="Credit Card">Credit Card</option>
-                                <option value="Mutual Funds/Investments">Mutual Funds/Investments</option>
-                                <option value="Lap EMI">Lap EMI</option>
+                                <option value="Select" class="text-gray-500" data-translate-key="selectCategory">Select Category</option>
+                                <option value="Home" data-translate-key="home">Home</option>
+                                <option value="My Personal" data-translate-key="myPersonal">My Personal</option>
+                                <option value="My Family" data-translate-key="myFamily">My Family</option>
+                                <option value="For Latha" data-translate-key="forLatha">For Latha</option>
+                                <option value="Baby" data-translate-key="baby">Baby</option>
+                                <option value="Credit Card" data-translate-key="creditCard">Credit Card</option>
+                                <option value="Mutual Funds/Investments" data-translate-key="mutualFundsInvestments">Mutual Funds/Investments</option>
+                                <option value="Lap EMI" data-translate-key="lapEmi">Lap EMI</option>
                             </select>
                             <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-600">
                                 <i class="fa-solid fa-chevron-down text-xs"></i>
@@ -211,7 +211,7 @@
 
                     <!-- Amount Input -->
                     <div class="w-[140px] space-y-1.5">
-                        <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1 text-right block">Amount</label>
+                        <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1 text-right block" data-translate-key="amount">Amount</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-emerald-400">
                                 <i class="fa-solid fa-indian-rupee-sign text-sm"></i>
@@ -225,7 +225,7 @@
 
                 <!-- Description -->
                 <div class="space-y-1.5">
-                    <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1">Description</label>
+                    <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1" data-translate-key="description">Description</label>
                     <div class="relative">
                         <div class="absolute top-3.5 left-3.5 pointer-events-none text-gray-500">
                             <i class="fa-solid fa-align-left text-sm"></i>
@@ -233,6 +233,7 @@
                         <textarea
                             class="description-input w-full bg-black/40 border border-white/10 rounded-2xl pl-10 pr-3.5 py-3 text-sm text-gray-300 placeholder-gray-700 outline-none focus:border-indigo-500 focus:bg-black/60 focus:ring-1 focus:ring-indigo-500 transition-all resize-none h-[72px] leading-relaxed"
                             placeholder="What is this for? (e.g. Groceries 500, Milk 30)"
+                            data-translate-key="descriptionPlaceholder"
                             oninput="parseAndCalculate(this)"></textarea>
                     </div>
                 </div>
@@ -240,6 +241,7 @@
         </div>
     </template>
 
+    <script src="../localization.js"></script>
     <script>
         let isEditMode = false;
         let originalDate = null;

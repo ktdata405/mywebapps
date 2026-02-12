@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Denominations Report</title>
+    <title data-translate-key="denominationsReportTitle">Denominations Report</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -112,16 +112,16 @@
     <div class="max-w-4xl mx-auto">
         <div class="glass-card flex justify-between items-center mb-6 p-4 rounded-xl sticky top-4 z-10">
             <h5 class="text-xl font-bold flex items-center gap-3 text-white">
-                <i class="fa-solid fa-chart-pie text-emerald-400"></i> Denominations Report
+                <i class="fa-solid fa-chart-pie text-emerald-400"></i> <span data-translate-key="denominationsReport">Denominations Report</span>
             </h5>
             <div class="flex gap-3">
                 <button onclick="fetchData()" class="bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30 w-10 h-10 rounded-full transition flex items-center justify-center shadow-sm">
                     <i class="fa-solid fa-sync"></i>
                 </button>
-                <a href="denominations.html" class="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-full transition flex items-center justify-center" title="Add New">
+                <a href="denominations.html" class="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-full transition flex items-center justify-center" title="Add New" data-translate-key="addNew">
                     <i class="fa-solid fa-plus"></i>
                 </a>
-                <a href="../index.html" class="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-full transition flex items-center justify-center" title="Home">
+                <a href="../index.html" class="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-full transition flex items-center justify-center" title="Home" data-translate-key="homeLink">
                     <i class="fa-solid fa-house"></i>
                 </a>
             </div>
@@ -129,7 +129,7 @@
 
         <div id="sheet2-data-container" class="hidden mb-8 flex justify-center">
             <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-2xl shadow-lg transform hover:scale-105 transition duration-300 text-center">
-                <div class="text-sm font-medium tracking-wider opacity-90 mb-1">Available Balance</div>
+                <div class="text-sm font-medium tracking-wider opacity-90 mb-1" data-translate-key="availableBalance">Available Balance</div>
                 <div id="sheet2-value" class="text-3xl font-black tracking-tight"></div>
             </div>
         </div>
@@ -146,10 +146,11 @@
         
         <div id="empty-state" class="hidden flex flex-col items-center justify-center py-20 text-gray-500">
             <i class="fa-solid fa-clipboard-list text-6xl mb-4 text-gray-700"></i>
-            <p class="text-xl">No reports found</p>
+            <p class="text-xl" data-translate-key="noReportsFound">No reports found</p>
         </div>
     </div>
 
+    <script src="../localization.js"></script>
     <script>
         function formatDate(dateString) {
             if (!dateString) return '';
@@ -239,6 +240,7 @@
 
             const denomTitle = document.createElement('h4');
             denomTitle.className = 'text-xs font-bold text-gray-400 uppercase mb-2 tracking-wider';
+            denomTitle.setAttribute('data-translate-key', 'denominationsBreakdown');
             denomTitle.textContent = 'Denominations Breakdown';
             innerPadding.appendChild(denomTitle);
             innerPadding.appendChild(denomsGrid);
@@ -379,7 +381,7 @@
     </script>
     
     <footer>
-        <p>&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
+        <p data-translate-key="copyright_thammineni">&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
     </footer>
 </body>
 

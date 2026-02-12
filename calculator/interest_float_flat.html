@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interest Calculator</title>
+    <title data-translate-key="interestCalculator">Interest Calculator</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -327,69 +327,69 @@
     <div class="header-container">
         <h2>
             <a href="calculator.html" style="color: var(--text-light); text-decoration: none; margin-right: 10px;" aria-label="Back"><i class="fas fa-arrow-left"></i></a>
-            Interest Calculator
+            <span data-translate-key="interestCalculator">Interest Calculator</span>
             <a href="../index.html" style="color: var(--text-light); text-decoration: none; margin-left: 10px;" aria-label="Home"><i class="fas fa-home"></i></a>
         </h2>
     </div>
 
     <div class="tabs">
-        <button class="tab active" id="tab-flat" onclick="setMode('flat')">Flat Rate</button>
-        <button class="tab" id="tab-float" onclick="setMode('float')">Reducing Balance</button>
+        <button class="tab active" id="tab-flat" onclick="setMode('flat')" data-translate-key="flatRate">Flat Rate</button>
+        <button class="tab" id="tab-float" onclick="setMode('float')" data-translate-key="reducingBalance">Reducing Balance</button>
     </div>
 
     <div class="input-group">
-        <label>Principal Amount</label>
-        <input type="text" inputmode="decimal" id="principal" placeholder="Enter amount" oninput="formatInput(this); updateAmountWords(this.value)">
+        <label data-translate-key="principalAmount">Principal Amount</label>
+        <input type="text" inputmode="decimal" id="principal" placeholder="Enter amount" oninput="formatInput(this); updateAmountWords(this.value)" data-translate-key="enterAmount">
         <div id="amount-words" class="amount-words"></div>
     </div>
 
     <div class="input-group">
-        <label>Interest Rate (%)</label>
-        <input type="text" inputmode="decimal" id="rate" placeholder="Enter rate per annum" oninput="formatInput(this)">
+        <label data-translate-key="interestRatePerAnnum">Interest Rate (%)</label>
+        <input type="text" inputmode="decimal" id="rate" placeholder="Enter rate per annum" oninput="formatInput(this)" data-translate-key="enterRatePerAnnum">
     </div>
 
     <div class="tenure-container">
         <div class="input-group">
-            <label>Tenure (Years)</label>
-            <input type="text" inputmode="decimal" id="time-years" placeholder="Years" oninput="clearOther('months'); formatInput(this)">
+            <label data-translate-key="tenureYears">Tenure (Years)</label>
+            <input type="text" inputmode="decimal" id="time-years" placeholder="Years" oninput="clearOther('months'); formatInput(this)" data-translate-key="years">
         </div>
         <div class="input-group">
-            <label>Tenure (Months)</label>
-            <input type="text" inputmode="decimal" id="time-months" placeholder="Months" oninput="clearOther('years'); formatInput(this)">
+            <label data-translate-key="tenureMonths">Tenure (Months)</label>
+            <input type="text" inputmode="decimal" id="time-months" placeholder="Months" oninput="clearOther('years'); formatInput(this)" data-translate-key="months">
         </div>
     </div>
 
     <div class="input-group">
-        <label>GST on Interest (%)</label>
-        <input type="text" inputmode="decimal" id="gst" placeholder="Enter GST rate" value="18" oninput="formatInput(this)">
+        <label data-translate-key="gstOnInterest">GST on Interest (%)</label>
+        <input type="text" inputmode="decimal" id="gst" placeholder="Enter GST rate" value="18" oninput="formatInput(this)" data-translate-key="enterGstRate">
     </div>
 
     <div class="action-buttons">
-        <button class="calc-btn" onclick="calculate()">Calculate</button>
-        <button class="clear-btn" onclick="clearInputs()">Clear</button>
+        <button class="calc-btn" onclick="calculate()" data-translate-key="calculate">Calculate</button>
+        <button class="clear-btn" onclick="clearInputs()" data-translate-key="clear">Clear</button>
     </div>
 
     <div id="result">
-        <div class="res-item"><span>Total Interest:</span> <span id="total-interest" class="res-val val-interest">0</span></div>
-        <div class="res-item"><span>GST on Interest:</span> <span id="gst-amount" class="res-val">0</span></div>
-        <div class="res-item"><span>Total Amount (incl. GST):</span> <span id="total-amount" class="res-val val-total">0</span></div>
-        <div class="res-item" id="emi-row" style="display:none;"><span>Monthly EMI:</span> <span id="emi-val" class="res-val">0</span></div>
+        <div class="res-item"><span data-translate-key="totalInterest">Total Interest:</span> <span id="total-interest" class="res-val val-interest">0</span></div>
+        <div class="res-item"><span data-translate-key="gstOnInterestAmount">GST on Interest:</span> <span id="gst-amount" class="res-val">0</span></div>
+        <div class="res-item"><span data-translate-key="totalAmountInclGst">Total Amount (incl. GST):</span> <span id="total-amount" class="res-val val-total">0</span></div>
+        <div class="res-item" id="emi-row" style="display:none;"><span data-translate-key="monthlyEmi">Monthly EMI:</span> <span id="emi-val" class="res-val">0</span></div>
     </div>
 
     <div class="accordion-container" id="schedule-accordion">
         <button class="accordion-header" onclick="toggleSchedule()">
-            <span>Repayment Schedule <i class="fas fa-list-alt" style="margin-left: 8px;"></i></span>
+            <span><span data-translate-key="repaymentSchedule">Repayment Schedule</span> <i class="fas fa-list-alt" style="margin-left: 8px;"></i></span>
             <i class="fas fa-chevron-down arrow" id="schedule-arrow"></i>
         </button>
         <div class="accordion-content" id="scheduleContent">
             <table class="schedule-table">
                 <thead>
                 <tr>
-                    <th>Month</th>
-                    <th>Principal</th>
-                    <th>Interest</th>
-                    <th>GST</th>
-                    <th>Balance</th>
+                    <th data-translate-key="month">Month</th>
+                    <th data-translate-key="principal">Principal</th>
+                    <th data-translate-key="interest">Interest</th>
+                    <th data-translate-key="gst">GST</th>
+                    <th data-translate-key="balance">Balance</th>
                 </tr>
                 </thead>
                 <tbody id="schedule-body">
@@ -399,7 +399,7 @@
         </div>
     </div>
 </div>
-
+<script src="../localization.js"></script>
 <script>
     let currentMode = 'flat';
 
