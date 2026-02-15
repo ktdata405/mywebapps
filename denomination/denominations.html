@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-translate-key="denominationsTitle">Denominations</title>
+    <title>Denominations</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -103,21 +103,21 @@
             <section>
                 <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
                     <h2 class="text-2xl font-bold flex items-center gap-3 text-white">
-                        <i class="fa-solid fa-money-bill-1-wave text-emerald-400"></i><span data-translate-key="denominations">Denominations</span>
+                        <i class="fa-solid fa-money-bill-1-wave text-emerald-400"></i>Denominations
                     </h2>
                     <div class="flex items-center gap-4">
-                        <button onclick="toggleCalculator()" class="text-white/70 hover:text-white text-xl transition-colors" title="Calculator" data-translate-key="calculator">
+                        <button onclick="toggleCalculator()" class="text-white/70 hover:text-white text-xl transition-colors" title="Calculator">
                             <i class="fa-solid fa-calculator"></i>
                         </button>
-                        <a href="denominationsreport.html" class="text-white/70 hover:text-white text-xl transition-colors" title="Report" data-translate-key="report">
+                        <a href="denominationsreport.html" class="text-white/70 hover:text-white text-xl transition-colors" title="Report">
                             <i class="fa-solid fa-chart-pie"></i>
                         </a>
-                        <a href="../index.html" class="text-white/70 hover:text-white text-xl transition-colors" title="Home" data-translate-key="homeLink">
+                        <a href="../index.html" class="text-white/70 hover:text-white text-xl transition-colors" title="Home">
                             <i class="fa-solid fa-house"></i>
                         </a>
                     </div>
                 </div>
-                
+
                 <div id="notes-container" class="space-y-3">
                     <template id="row-template">
                         <div class="flex items-center justify-between p-3 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
@@ -141,13 +141,13 @@
                             <button id="next-day" class="p-2 px-4 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"><i class="fa-solid fa-chevron-right"></i></button>
                         </div>
 
-                        <div class="text-xl flex justify-center items-center gap-2 mb-2 text-white/80 font-medium" data-translate-key="totalAmount">
+                        <div class="text-xl flex justify-center items-center gap-2 mb-2 text-white/80 font-medium">
                             Total Amount
                         </div>
                         <div id="grand-total" class="text-5xl font-bold mb-6 text-center w-full tracking-tight">0</div>
 
                         <div class="pt-4 border-t border-white/20 text-center">
-                            <span class="text-xs tracking-widest opacity-70 font-bold uppercase" data-translate-key="inWords">In Words</span>
+                            <span class="text-xs tracking-widest opacity-70 font-bold uppercase">In Words</span>
                             <div id="total-in-words" class="text-lg font-medium italic mt-1 capitalize leading-tight text-white/90"></div>
                         </div>
                     </div>
@@ -156,47 +156,47 @@
                 <!-- New Fields Block -->
                 <div class="glass-card p-6 rounded-xl mt-8">
                     <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-pen-to-square text-emerald-400"></i> <span data-translate-key="additionalDetails">Additional Details</span>
+                        <i class="fa-solid fa-pen-to-square text-emerald-400"></i> Additional Details
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1" data-translate-key="weekExpenses">Week Expenses</label>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Week Expenses</label>
                             <input type="number" id="week-expenses-input" placeholder="0.00" class="w-full p-3 rounded-lg outline-none transition input-field" />
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1" data-translate-key="adjustAmount">Adjust Amount</label>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Adjust Amount</label>
                             <input type="number" id="adjust-amount-input" placeholder="0.00" class="w-full p-3 rounded-lg outline-none transition input-field" />
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1" data-translate-key="atmWithdrawal">ATM Withdrawal</label>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1">ATM Withdrawal</label>
                             <input type="number" id="atm-withdrawal-input" placeholder="0.00" inputmode="numeric" pattern="[0-9]*" class="w-full p-3 rounded-lg outline-none transition input-field" />
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1" data-translate-key="acPaid">A/C Paid</label>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1">A/C Paid</label>
                             <input type="number" id="ac-paid-input" placeholder="0.00" class="w-full p-3 rounded-lg outline-none transition input-field" />
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1" data-translate-key="remarks">Remarks</label>
-                            <textarea id="remarks-input" placeholder="Enter remarks..." class="w-full p-3 rounded-lg outline-none transition input-field h-24" data-translate-key="remarksPlaceholder"></textarea>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Remarks</label>
+                            <textarea id="remarks-input" placeholder="Enter remarks..." class="w-full p-3 rounded-lg outline-none transition input-field h-24"></textarea>
                         </div>
                     </div>
                 </div>
 
                 <div class="flex justify-between gap-4 mt-8">
                     <button onclick="clearAll()" class="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 py-3 px-6 rounded-xl font-bold flex items-center justify-center gap-2 transition w-full">
-                        <i class="fa-solid fa-trash"></i> <span data-translate-key="clear">Clear</span>
+                        <i class="fa-solid fa-trash"></i> Clear
                     </button>
                     <button onclick="saveData()" id="save-btn" class="bg-emerald-500 hover:bg-emerald-600 text-white py-3 px-6 rounded-xl font-bold flex items-center justify-center gap-2 transition w-full shadow-lg shadow-emerald-500/20">
-                        <i class="fa-solid fa-floppy-disk"></i> <span data-translate-key="save">Save</span>
+                        <i class="fa-solid fa-floppy-disk"></i> Save
                     </button>
                 </div>
-                
+
                 <div id="loader" class="hidden fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-50">
                     <div class="glass-card p-8 rounded-2xl flex flex-col items-center gap-4">
                         <div class="animate-spin">
                             <i class="fa-solid fa-circle-notch text-4xl text-emerald-400"></i>
                         </div>
-                        <p class="text-white font-semibold" data-translate-key="processing">Processing...</p>
+                        <p class="text-white font-semibold">Processing...</p>
                     </div>
                 </div>
             </section>
@@ -207,15 +207,15 @@
     <div id="calculator-modal" class="hidden fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50" tabindex="-1">
         <div class="glass-card p-6 rounded-2xl w-80 shadow-2xl border border-white/20 bg-slate-900/90">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-calculator text-emerald-400 mr-2"></i><span data-translate-key="calculator">Calculator</span></h3>
+                <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-calculator text-emerald-400 mr-2"></i>Calculator</h3>
                 <button onclick="toggleCalculator()" class="text-white/60 hover:text-red-400 transition-colors">
                     <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
 
             <div class="bg-white/10 p-4 rounded-xl mb-4 text-right flex flex-col justify-end h-24">
-                <div id="calc-history" class="text-sm text-white/50 font-mono mb-1 h-6 overflow-hidden" data-translate-key="calcHistory"></div>
-                <div id="calc-display" class="text-3xl font-mono text-white tracking-wider overflow-x-auto min-h-[2.5rem]" data-translate-key="calcDisplay">0</div>
+                <div id="calc-history" class="text-sm text-white/50 font-mono mb-1 h-6 overflow-hidden"></div>
+                <div id="calc-display" class="text-3xl font-mono text-white tracking-wider overflow-x-auto min-h-[2.5rem]">0</div>
             </div>
 
             <div class="grid grid-cols-4 gap-3">
@@ -245,7 +245,6 @@
         </div>
     </div>
 
-    <script src="../localization.js"></script>
     <script>
         const denominations = {
             notes: [{
@@ -554,7 +553,7 @@
                     // Redirect back to report view if it was an update
                     window.location.href = 'denominationsreport.html';
                 } else {
-.                    // Clear form if it was a fresh entry
+                    // Clear form if it was a fresh entry
                     editingRowIndex = null;
                     clearAll();
                 }
@@ -577,7 +576,7 @@
                     }
                 });
                 calculate();
-.            }
+            }
         }
         function loadExample() {
             document.querySelectorAll('.count-input').forEach(input => {
@@ -688,7 +687,7 @@
         init();
     </script>
     <footer>
-        <p data-translate-key="copyright_thammineni">&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
+        <p>&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
     </footer>
 </body>
 </html>

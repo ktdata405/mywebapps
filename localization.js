@@ -263,6 +263,7 @@ const translations = {
     "govtSchemes": "Govt Schemes",
     "interestOnFloatFlat": "Interest on Float/Flat",
     "villageFinance": "Village Finance",
+    "vehicleInfo": "Vehicle Info",
 
     // =============================================================================
     // FILE: calculator/land.html
@@ -382,7 +383,22 @@ const translations = {
     "enterGstRate": "Enter GST rate",
     "gstOnInterestAmount": "GST on Interest:",
     "totalAmountInclGst": "Total Amount (incl. GST):",
-    "monthlyEmi": "Monthly EMI:"
+    "monthlyEmi": "Monthly EMI:",
+
+    // =============================================================================
+    // FILE: calculator/vehicle_info.html
+    // =============================================================================
+    "vehicleInfoTitle": "Vehicle Info",
+    "ownerInfoTab": "Owner & Insurance Info",
+    "priceInfoTab": "Vehicle Price Info",
+    "vehicleNumberLabel": "Vehicle Number",
+    "clearBtn": "Clear",
+    "searchBtn": "Search",
+    "searchByLabel": "Search By",
+    "companyNameLabel": "Company Name",
+    "vehicleModelLabel": "Vehicle Model",
+    "modelYearLabel": "Model Year",
+    "indiaOnlyNote": "* This service is available for India vehicle info only."
 };
 
 document.addEventListener('DOMContentLoaded', function() {
