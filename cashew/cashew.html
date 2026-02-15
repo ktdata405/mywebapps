@@ -112,8 +112,8 @@
                 <div class="relative px-4 py-1 rounded-xl group-hover:bg-white/5 transition-colors">
                     <input type="date" id="date-input" class="bg-transparent text-white font-bold text-lg outline-none text-center cursor-pointer font-mono tracking-wide z-10 relative" />
                 </div>
-                <span id="last-entry-label" class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mt-0.5">
-                    <span data-translate-key="lastEntryLabel">Last:</span> <span class="text-indigo-400">--</span>
+                <span class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mt-0.5">
+                    <span data-translate-key="lastSeenDate">Last seen date:</span> <span id="last-seen-date" class="text-indigo-400"></span>
                 </span>
             </div>
 
@@ -146,7 +146,7 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <button onclick="clearAll()" class="w-12 h-12 rounded-2xl bg-white/5 hover:bg-red-500/10 border border-white/5 text-gray-400 hover:text-red-400 flex items-center justify-center transition-all active:scale-95" title="Clear All" data-translate-key="clearAll">
+                <button onclick="clearAll()" class="w-12 h-12 rounded-2xl bg-white/5 hover:bg-red-500/10 border border-white/5 text-gray-400 hover:text-red-400 flex items-center justify-center transition-all active:scale-95" title="Clear All">
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
                 <button onclick="saveData()" id="save-btn" class="h-12 px-8 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-indigo-600/25 flex items-center gap-2.5 transition-all active:scale-95 hover:shadow-indigo-600/40">
@@ -286,7 +286,7 @@
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             const sheetName = `${months[monthIndex]} ${year}`;
 
-            const label = document.querySelector('#last-entry-label span');
+            const label = document.getElementById('last-seen-date');
             if(label) label.textContent = '...';
 
             fetch(`${CONFIG.GOOGLE_SHEET_URL_CASHEW}?sheetName=${encodeURIComponent(sheetName)}&t=${new Date().getTime()}`)
@@ -323,15 +323,66 @@
                 });
         }
 
+        function getSheetNameFromDate(dateString) {
+            const dateObj = parseDate(dateString);
+            if (!dateObj) return '';
+            const monthIndex = dateObj.getMonth();
+            const year = dateObj.getFullYear();
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return `${months[monthIndex]} ${year}`;
+        }
+
+        function fetchDataForDate(dateString) {
+            const formattedDate = formatDateToDDMMMYYYY(dateString);
+            const sheetName = getSheetNameFromDate(dateString);
+
+            if (!sheetName) return;
+
+            const container = document.getElementById('expenses-container');
+            container.innerHTML = '<div class="text-center text-gray-400 py-8">Loading...</div>';
+
+            fetch(`${CONFIG.GOOGLE_SHEET_URL_CASHEW}?sheetName=${encodeURIComponent(sheetName)}&t=${new Date().getTime()}`)
+                .then(response => response.json())
+                .then(data => {
+                    container.innerHTML = '';
+
+                    const expensesForDate = (data.data || []).filter(entry => formatDateToDDMMMYYYY(entry.date) === formattedDate);
+
+                    if (expensesForDate.length > 0) {
+                        isEditMode = true;
+                        originalDate = formattedDate;
+                        expensesForDate.forEach(item => {
+                            addRow(item.category, item.description, item.amount);
+                        });
+                    } else {
+                        isEditMode = false;
+                        originalDate = null;
+                        const defaultCategories = ["Home", "My Personal", "My Family"];
+                        for (let i = 0; i < 3; i++) {
+                            addRow(defaultCategories[i]);
+                        }
+                    }
+                    calculateTotal();
+                })
+                .catch(error => {
+                    console.error('Error fetching data for date:', error);
+                    container.innerHTML = '<div class="text-center text-red-400 py-8">Error loading data. Please try again.</div>';
+                    isEditMode = false;
+                    originalDate = null;
+                    calculateTotal();
+                });
+        }
+
         function init() {
             const dateInput = document.getElementById('date-input');
-            const today = new Date().toISOString().split('T')[0];
-            dateInput.value = today;
 
             document.getElementById('prev-day').addEventListener('click', () => changeDate(-1));
             document.getElementById('next-day').addEventListener('click', () => changeDate(1));
 
-            dateInput.addEventListener('change', fetchLastEnteredDate);
+            dateInput.addEventListener('change', () => {
+                fetchLastEnteredDate();
+                fetchDataForDate(dateInput.value);
+            });
 
             const editData = localStorage.getItem('cashewEditData');
             if (editData) {
@@ -340,7 +391,7 @@
                 localStorage.removeItem('cashewEditData');
 
                 if (data.length > 0) {
-                    const dateObj = parseDate(data[0].date); // Use robust parser
+                    const dateObj = parseDate(data[0].date);
                     if (dateObj) {
                         const y = dateObj.getFullYear();
                         const m = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -359,15 +410,14 @@
                         addRow(item.category, item.description, item.amount);
                     });
                     calculateTotal();
+                    fetchLastEnteredDate();
                 }
             } else {
-                const defaultCategories = ["Home", "My Personal", "My Family"];
-                for (let i = 0; i < 3; i++) {
-                    addRow(defaultCategories[i]);
-                }
+                const today = new Date().toISOString().split('T')[0];
+                dateInput.value = today;
+                fetchDataForDate(dateInput.value);
+                fetchLastEnteredDate();
             }
-
-            fetchLastEnteredDate();
         }
 
         function changeDate(days) {
@@ -387,7 +437,10 @@
                 const y = dateObj.getFullYear();
                 const m = String(dateObj.getMonth() + 1).padStart(2, '0');
                 const d = String(dateObj.getDate()).padStart(2, '0');
-                dateInput.value = `${y}-${m}-${d}`;
+                const newDate = `${y}-${m}-${d}`;
+                dateInput.value = newDate;
+
+                fetchDataForDate(newDate);
                 fetchLastEnteredDate();
             }
         }
