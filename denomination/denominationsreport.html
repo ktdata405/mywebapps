@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-translate-key="denominationsReportTitle">Denominations Report</title>
+    <title>Denominations Report</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -103,195 +103,193 @@
 
 <body class="p-4 md:p-10">
 
-    <div class="bg-animation">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-    </div>
+<div class="bg-animation">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+</div>
 
-    <div class="max-w-4xl mx-auto">
-        <div class="glass-card flex justify-between items-center mb-6 p-4 rounded-xl sticky top-4 z-10">
-            <h5 class="text-xl font-bold flex items-center gap-3 text-white">
-                <i class="fa-solid fa-chart-pie text-emerald-400"></i> <span data-translate-key="denominationsReport">Denominations Report</span>
-            </h5>
-            <div class="flex gap-3">
-                <button onclick="fetchData()" class="bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30 w-10 h-10 rounded-full transition flex items-center justify-center shadow-sm">
-                    <i class="fa-solid fa-sync"></i>
-                </button>
-                <a href="denominations.html" class="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-full transition flex items-center justify-center" title="Add New" data-translate-key="addNew">
-                    <i class="fa-solid fa-plus"></i>
-                </a>
-                <a href="../index.html" class="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-full transition flex items-center justify-center" title="Home" data-translate-key="homeLink">
-                    <i class="fa-solid fa-house"></i>
-                </a>
-            </div>
-        </div>
-
-        <div id="sheet2-data-container" class="hidden mb-8 flex justify-center">
-            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-2xl shadow-lg transform hover:scale-105 transition duration-300 text-center">
-                <div class="text-sm font-medium tracking-wider opacity-90 mb-1" data-translate-key="availableBalance">Available Balance</div>
-                <div id="sheet2-value" class="text-3xl font-black tracking-tight"></div>
-            </div>
-        </div>
-
-        <div id="loader" class="flex justify-center items-center py-20">
-            <div class="animate-spin">
-                <i class="fa-solid fa-circle-notch text-4xl text-emerald-400"></i>
-            </div>
-        </div>
-
-        <div id="report-container" class="flex flex-col gap-3 hidden">
-            <!-- List items will be inserted here -->
-        </div>
-        
-        <div id="empty-state" class="hidden flex flex-col items-center justify-center py-20 text-gray-500">
-            <i class="fa-solid fa-clipboard-list text-6xl mb-4 text-gray-700"></i>
-            <p class="text-xl" data-translate-key="noReportsFound">No reports found</p>
+<div class="max-w-4xl mx-auto">
+    <div class="glass-card flex justify-between items-center mb-6 p-4 rounded-xl sticky top-4 z-10">
+        <h5 class="text-xl font-bold flex items-center gap-3 text-white">
+            <i class="fa-solid fa-chart-pie text-emerald-400"></i> Denominations Report
+        </h5>
+        <div class="flex gap-3">
+            <button onclick="fetchData()" class="bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30 w-10 h-10 rounded-full transition flex items-center justify-center shadow-sm">
+                <i class="fa-solid fa-sync"></i>
+            </button>
+            <a href="denominations.html" class="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-full transition flex items-center justify-center" title="Add New">
+                <i class="fa-solid fa-plus"></i>
+            </a>
+            <a href="../index.html" class="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-full transition flex items-center justify-center" title="Home">
+                <i class="fa-solid fa-house"></i>
+            </a>
         </div>
     </div>
 
-    <script src="../localization.js"></script>
-    <script>
-        function formatDate(dateString) {
-            if (!dateString) return '';
-            const date = new Date(dateString);
-            if (isNaN(date.getTime())) return dateString;
-            
-            const day = String(date.getDate()).padStart(2, '0');
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const month = months[date.getMonth()];
-            const year = date.getFullYear();
-            
-            return `${day} ${month} ${year}`;
+    <div id="sheet2-data-container" class="hidden mb-8 flex justify-center">
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-2xl shadow-lg transform hover:scale-105 transition duration-300 text-center">
+            <div class="text-sm font-medium tracking-wider opacity-90 mb-1">Available Balance</div>
+            <div id="sheet2-value" class="text-3xl font-black tracking-tight"></div>
+        </div>
+    </div>
+
+    <div id="loader" class="flex justify-center items-center py-20">
+        <div class="animate-spin">
+            <i class="fa-solid fa-circle-notch text-4xl text-emerald-400"></i>
+        </div>
+    </div>
+
+    <div id="report-container" class="flex flex-col gap-3 hidden">
+        <!-- List items will be inserted here -->
+    </div>
+
+    <div id="empty-state" class="hidden flex flex-col items-center justify-center py-20 text-gray-500">
+        <i class="fa-solid fa-clipboard-list text-6xl mb-4 text-gray-700"></i>
+        <p class="text-xl">No reports found</p>
+    </div>
+</div>
+
+<script>
+    function formatDate(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return dateString;
+
+        const day = String(date.getDate()).padStart(2, '0');
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const month = months[date.getMonth()];
+        const year = date.getFullYear();
+
+        return `${day} ${month} ${year}`;
+    }
+
+    function formatDateForInput(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return '';
+
+        const offset = date.getTimezoneOffset();
+        const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
+        return adjustedDate.toISOString().split('T')[0];
+    }
+
+    function formatCurrency(amount) {
+        const num = parseFloat(amount);
+        if (isNaN(num)) return amount;
+
+        return new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 0
+        }).format(num);
+    }
+
+    function toggleAccordion(element) {
+        const content = element.nextElementSibling;
+        const icon = element.querySelector('.rotate-icon');
+
+        if (content.style.maxHeight) {
+            content.style.maxHeight = null;
+            content.classList.remove('active');
+            icon.classList.remove('active');
+        } else {
+            content.classList.add('active');
+            content.style.maxHeight = content.scrollHeight + "px";
+            icon.classList.add('active');
         }
+    }
 
-        function formatDateForInput(dateString) {
-            if (!dateString) return '';
-            const date = new Date(dateString);
-            if (isNaN(date.getTime())) return '';
-
-            const offset = date.getTimezoneOffset();
-            const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
-            return adjustedDate.toISOString().split('T')[0];
+    function updateContentHeight(content) {
+        if (content.classList.contains('active')) {
+            content.style.maxHeight = content.scrollHeight + "px";
         }
+    }
 
-        function formatCurrency(amount) {
-            const num = parseFloat(amount);
-            if (isNaN(num)) return amount;
+    function renderViewMode(contentContainer, data, headerElement) {
+        contentContainer.innerHTML = '';
+        const innerPadding = document.createElement('div');
+        innerPadding.className = 'px-4';
 
-            return new Intl.NumberFormat('en-IN', {
-                style: 'currency',
-                currency: 'INR',
-                maximumFractionDigits: 0
-            }).format(num);
-        }
+        const denomsGrid = document.createElement('div');
+        denomsGrid.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4 text-sm';
 
-        function toggleAccordion(element) {
-            const content = element.nextElementSibling;
-            const icon = element.querySelector('.rotate-icon');
-            
-            if (content.style.maxHeight) {
-                content.style.maxHeight = null;
-                content.classList.remove('active');
-                icon.classList.remove('active');
-            } else {
-                content.classList.add('active');
-                content.style.maxHeight = content.scrollHeight + "px";
-                icon.classList.add('active');
-            }
-        }
+        const denoms = [
+            { key: '500', label: '500', color: 'text-blue-300', bg: 'bg-blue-500/10', border: 'border-blue-500/20' },
+            { key: '200', label: '200', color: 'text-orange-300', bg: 'bg-orange-500/10', border: 'border-orange-500/20' },
+            { key: '100', label: '100', color: 'text-emerald-300', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
+            { key: '50', label: '50', color: 'text-pink-300', bg: 'bg-pink-500/10', border: 'border-pink-500/20' },
+            { key: '20', label: '20', color: 'text-indigo-300', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20' },
+            { key: '10', label: '10', color: 'text-red-300', bg: 'bg-red-500/10', border: 'border-red-500/20' },
+            { key: '5', label: '5', color: 'text-slate-300', bg: 'bg-slate-500/10', border: 'border-slate-500/20' },
+            { key: '2', label: '2', color: 'text-slate-300', bg: 'bg-slate-500/10', border: 'border-slate-500/20' },
+            { key: '1', label: '1', color: 'text-slate-300', bg: 'bg-slate-500/10', border: 'border-slate-500/20' }
+        ];
 
-        function updateContentHeight(content) {
-            if (content.classList.contains('active')) {
-                content.style.maxHeight = content.scrollHeight + "px";
-            }
-        }
-
-        function renderViewMode(contentContainer, data, headerElement) {
-            contentContainer.innerHTML = '';
-            const innerPadding = document.createElement('div');
-            innerPadding.className = 'px-4';
-
-            const denomsGrid = document.createElement('div');
-            denomsGrid.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4 text-sm';
-
-            const denoms = [
-                { key: '500', label: '500', color: 'text-blue-300', bg: 'bg-blue-500/10', border: 'border-blue-500/20' },
-                { key: '200', label: '200', color: 'text-orange-300', bg: 'bg-orange-500/10', border: 'border-orange-500/20' },
-                { key: '100', label: '100', color: 'text-emerald-300', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
-                { key: '50', label: '50', color: 'text-pink-300', bg: 'bg-pink-500/10', border: 'border-pink-500/20' },
-                { key: '20', label: '20', color: 'text-indigo-300', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20' },
-                { key: '10', label: '10', color: 'text-red-300', bg: 'bg-red-500/10', border: 'border-red-500/20' },
-                { key: '5', label: '5', color: 'text-slate-300', bg: 'bg-slate-500/10', border: 'border-slate-500/20' },
-                { key: '2', label: '2', color: 'text-slate-300', bg: 'bg-slate-500/10', border: 'border-slate-500/20' },
-                { key: '1', label: '1', color: 'text-slate-300', bg: 'bg-slate-500/10', border: 'border-slate-500/20' }
-            ];
-
-            denoms.forEach(d => {
-                let value = data[d.key] || 0;
-                const item = document.createElement('div');
-                item.className = `${d.bg} ${d.border} border rounded-lg px-3 py-2 flex justify-between items-center`;
-                item.innerHTML = `
+        denoms.forEach(d => {
+            let value = data[d.key] || 0;
+            const item = document.createElement('div');
+            item.className = `${d.bg} ${d.border} border rounded-lg px-3 py-2 flex justify-between items-center`;
+            item.innerHTML = `
                     <span class="font-bold ${d.color}">₹${d.label}</span>
                     <span class="font-mono font-semibold text-gray-300">x ${value}</span>
                 `;
-                denomsGrid.appendChild(item);
-            });
+            denomsGrid.appendChild(item);
+        });
 
-            const denomTitle = document.createElement('h4');
-            denomTitle.className = 'text-xs font-bold text-gray-400 uppercase mb-2 tracking-wider';
-            denomTitle.setAttribute('data-translate-key', 'denominationsBreakdown');
-            denomTitle.textContent = 'Denominations Breakdown';
-            innerPadding.appendChild(denomTitle);
-            innerPadding.appendChild(denomsGrid);
+        const denomTitle = document.createElement('h4');
+        denomTitle.className = 'text-xs font-bold text-gray-400 uppercase mb-2 tracking-wider';
+        denomTitle.textContent = 'Denominations Breakdown';
+        innerPadding.appendChild(denomTitle);
+        innerPadding.appendChild(denomsGrid);
 
-            const detailsGrid = document.createElement('div');
-            detailsGrid.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm mt-6 pt-4 border-t border-white/10';
+        const detailsGrid = document.createElement('div');
+        detailsGrid.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm mt-6 pt-4 border-t border-white/10';
 
-            const fieldOrder = ['Week Expenses', 'Adjust Amount', 'ATM Withdrawal', 'A/C Paid', 'Remarks'];
-            const allKeys = new Set([...fieldOrder, ...Object.keys(data)]);
-            const handledKeys = ['Date', 'Total', '500', '200', '100', '50', '20', '10', '5', '2', '1', 'rowIndex'];
-            let hasOtherDetails = false;
+        const fieldOrder = ['Week Expenses', 'Adjust Amount', 'ATM Withdrawal', 'A/C Paid', 'Remarks'];
+        const allKeys = new Set([...fieldOrder, ...Object.keys(data)]);
+        const handledKeys = ['Date', 'Total', '500', '200', '100', '50', '20', '10', '5', '2', '1', 'rowIndex'];
+        let hasOtherDetails = false;
 
-            allKeys.forEach(key => {
-                if (handledKeys.includes(key)) return;
-                let value = data[key];
-                if (data.hasOwnProperty(key) && value !== null && value !== '') {
-                    hasOtherDetails = true;
-                    const item = document.createElement('div');
-                    item.className = 'bg-white/5 p-3 rounded-lg border border-white/10';
-                    const isCurrencyCandidate = !isNaN(parseFloat(value)) && isFinite(value) && key !== 'Remarks';
-                    value = isCurrencyCandidate ? formatCurrency(value) : value;
-                    item.innerHTML = `
+        allKeys.forEach(key => {
+            if (handledKeys.includes(key)) return;
+            let value = data[key];
+            if (data.hasOwnProperty(key) && value !== null && value !== '') {
+                hasOtherDetails = true;
+                const item = document.createElement('div');
+                item.className = 'bg-white/5 p-3 rounded-lg border border-white/10';
+                const isCurrencyCandidate = !isNaN(parseFloat(value)) && isFinite(value) && key !== 'Remarks';
+                value = isCurrencyCandidate ? formatCurrency(value) : value;
+                item.innerHTML = `
                         <div class="text-xs text-gray-400 uppercase font-bold">${key}</div>
                         <div class="font-semibold text-gray-200">${value}</div>
                     `;
-                    detailsGrid.appendChild(item);
-                }
-            });
-
-            if (hasOtherDetails) {
-                innerPadding.appendChild(detailsGrid);
+                detailsGrid.appendChild(item);
             }
+        });
 
-            contentContainer.appendChild(innerPadding);
-            setTimeout(() => updateContentHeight(contentContainer), 0);
+        if (hasOtherDetails) {
+            innerPadding.appendChild(detailsGrid);
         }
 
-        function createListItem(data) {
-            const itemContainer = document.createElement('div');
-            itemContainer.className = 'glass-card rounded-xl overflow-hidden';
+        contentContainer.appendChild(innerPadding);
+        setTimeout(() => updateContentHeight(contentContainer), 0);
+    }
 
-            const header = document.createElement('div');
-            header.className = 'p-4 flex justify-between items-center cursor-pointer hover:bg-white/5 transition select-none';
+    function createListItem(data) {
+        const itemContainer = document.createElement('div');
+        itemContainer.className = 'glass-card rounded-xl overflow-hidden';
 
-            const content = document.createElement('div');
-            content.className = 'accordion-content bg-black/20';
+        const header = document.createElement('div');
+        header.className = 'p-4 flex justify-between items-center cursor-pointer hover:bg-white/5 transition select-none';
 
-            const headerContent = document.createElement('div');
-            headerContent.className = 'flex items-center gap-4 flex-grow';
-            headerContent.onclick = () => toggleAccordion(header);
-            headerContent.innerHTML = `
+        const content = document.createElement('div');
+        content.className = 'accordion-content bg-black/20';
+
+        const headerContent = document.createElement('div');
+        headerContent.className = 'flex items-center gap-4 flex-grow';
+        headerContent.onclick = () => toggleAccordion(header);
+        headerContent.innerHTML = `
                 <div class="bg-emerald-500/20 text-emerald-300 w-10 h-10 rounded-full flex items-center justify-center border border-emerald-500/30">
                     <i class="fa-regular fa-calendar-check"></i>
                 </div>
@@ -301,88 +299,88 @@
                 </div>
             `;
 
-            const rightSection = document.createElement('div');
-            rightSection.className = 'flex items-center gap-3';
+        const rightSection = document.createElement('div');
+        rightSection.className = 'flex items-center gap-3';
 
-            const editBtn = document.createElement('button');
-            editBtn.className = 'text-gray-400 hover:text-blue-400 transition p-2 rounded-full hover:bg-blue-500/10';
-            editBtn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i>';
-            editBtn.onclick = (e) => {
-                e.stopPropagation();
-                localStorage.setItem('editReportData', JSON.stringify(data));
-                window.location.href = 'denominations.html';
-            };
+        const editBtn = document.createElement('button');
+        editBtn.className = 'text-gray-400 hover:text-blue-400 transition p-2 rounded-full hover:bg-blue-500/10';
+        editBtn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i>';
+        editBtn.onclick = (e) => {
+            e.stopPropagation();
+            localStorage.setItem('editReportData', JSON.stringify(data));
+            window.location.href = 'denominations.html';
+        };
 
-            const amountDiv = document.createElement('div');
-            amountDiv.className = 'text-right';
-            amountDiv.innerHTML = `<div class="font-bold text-lg text-emerald-400">${formatCurrency(data.Total)}</div>`;
-            amountDiv.onclick = () => toggleAccordion(header);
+        const amountDiv = document.createElement('div');
+        amountDiv.className = 'text-right';
+        amountDiv.innerHTML = `<div class="font-bold text-lg text-emerald-400">${formatCurrency(data.Total)}</div>`;
+        amountDiv.onclick = () => toggleAccordion(header);
 
-            const chevron = document.createElement('i');
-            chevron.className = 'fa-solid fa-chevron-down text-gray-500 rotate-icon ml-2';
-            chevron.onclick = () => toggleAccordion(header);
+        const chevron = document.createElement('i');
+        chevron.className = 'fa-solid fa-chevron-down text-gray-500 rotate-icon ml-2';
+        chevron.onclick = () => toggleAccordion(header);
 
-            rightSection.appendChild(editBtn);
-            rightSection.appendChild(amountDiv);
-            rightSection.appendChild(chevron);
+        rightSection.appendChild(editBtn);
+        rightSection.appendChild(amountDiv);
+        rightSection.appendChild(chevron);
 
-            header.appendChild(headerContent);
-            header.appendChild(rightSection);
-            itemContainer.appendChild(header);
-            renderViewMode(content, data, header);
-            itemContainer.appendChild(content);
-            return itemContainer;
-        }
+        header.appendChild(headerContent);
+        header.appendChild(rightSection);
+        itemContainer.appendChild(header);
+        renderViewMode(content, data, header);
+        itemContainer.appendChild(content);
+        return itemContainer;
+    }
 
-        function fetchData() {
-            const loader = document.getElementById('loader');
-            const container = document.getElementById('report-container');
-            const emptyState = document.getElementById('empty-state');
-            const sheet2Container = document.getElementById('sheet2-data-container');
-            const sheet2Value = document.getElementById('sheet2-value');
+    function fetchData() {
+        const loader = document.getElementById('loader');
+        const container = document.getElementById('report-container');
+        const emptyState = document.getElementById('empty-state');
+        const sheet2Container = document.getElementById('sheet2-data-container');
+        const sheet2Value = document.getElementById('sheet2-value');
 
-            loader.classList.remove('hidden');
-            container.classList.add('hidden');
-            emptyState.classList.add('hidden');
-            sheet2Container.classList.add('hidden');
-            container.innerHTML = '';
+        loader.classList.remove('hidden');
+        container.classList.add('hidden');
+        emptyState.classList.add('hidden');
+        sheet2Container.classList.add('hidden');
+        container.innerHTML = '';
 
-            fetch(CONFIG.GOOGLE_SHEET_URL_DENOMINATIONS)
-                .then(response => response.json())
-                .then(responsePayload => {
-                    loader.classList.add('hidden');
+        fetch(CONFIG.GOOGLE_SHEET_URL_DENOMINATIONS)
+            .then(response => response.json())
+            .then(responsePayload => {
+                loader.classList.add('hidden');
 
-                    if (responsePayload.sheet2Data !== undefined && responsePayload.sheet2Data !== null && responsePayload.sheet2Data !== '') {
-                        sheet2Value.textContent = formatCurrency(responsePayload.sheet2Data);
-                        sheet2Container.classList.remove('hidden');
-                    }
+                if (responsePayload.sheet2Data !== undefined && responsePayload.sheet2Data !== null && responsePayload.sheet2Data !== '') {
+                    sheet2Value.textContent = formatCurrency(responsePayload.sheet2Data);
+                    sheet2Container.classList.remove('hidden');
+                }
 
-                    const data = responsePayload.reports;
-                    if (data && data.length > 0) {
-                        container.classList.remove('hidden');
-                        data.forEach(item => container.appendChild(createListItem(item)));
-                    } else {
-                        emptyState.classList.remove('hidden');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching data:', error);
-                    loader.classList.add('hidden');
-                    emptyState.innerHTML = `
+                const data = responsePayload.reports;
+                if (data && data.length > 0) {
+                    container.classList.remove('hidden');
+                    data.forEach(item => container.appendChild(createListItem(item)));
+                } else {
+                    emptyState.classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+                loader.classList.add('hidden');
+                emptyState.innerHTML = `
                         <i class="fa-solid fa-triangle-exclamation text-6xl mb-4 text-red-400"></i>
                         <p class="text-xl text-red-300">Error loading reports</p>
                         <p class="text-sm text-gray-400 mt-2">${error.message}</p>
                     `;
-                    emptyState.classList.remove('hidden');
-                });
-        }
+                emptyState.classList.remove('hidden');
+            });
+    }
 
-        document.addEventListener('DOMContentLoaded', fetchData);
-    </script>
-    
-    <footer>
-        <p data-translate-key="copyright_thammineni">&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
-    </footer>
+    document.addEventListener('DOMContentLoaded', fetchData);
+</script>
+
+<footer>
+    <p>&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
+</footer>
 </body>
 
 </html>
