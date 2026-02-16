@@ -90,7 +90,7 @@ const translations = {
     // =============================================================================
     "dashboardTitle": "Dashboard",
     "backToHome": "Back to Home",
-    "denominationsReport": "Denominations Report",
+    "denominationsReport": "Denom's Report",
     "cashewReport": "Cashew Report",
     "msiReport": "MSI Report",
     "rentReport": "Rent Report",
