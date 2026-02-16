@@ -47,6 +47,7 @@ const translations = {
     "verifyIdentity": "Verify your Identity",
     "incorrectPin": "Incorrect PIN",
     "faceIdSecureContext": "Face ID requires a secure context (HTTPS or localhost). It will not work on file://.",
+    "faceId": "Face ID",
     "faceIdNotSupported": "Face ID / Biometrics not supported on this device/browser.",
     "faceIdNotSetup": "Face ID / Touch ID is not set up or available on this device.",
     "authFailed": "Authentication failed: ",
@@ -65,6 +66,24 @@ const translations = {
     "october": "Oct",
     "november": "Nov",
     "december": "Dec",
+
+    // =============================================================================
+    // FILE: index.html
+    // =============================================================================
+    "holaKT": "Hola KT",
+    "developedBy": "Developed by Kalyan Thammineni",
+    "dashboard": "Dashboard",
+    "dashboardDesc": "Visual overview of all financial metrics.",
+    "cashewDesc": "Manage cashew business transactions.",
+    "rentDetails": "Rent Details",
+    "rentDetailsDesc": "Monitor tenant payments and rental history.",
+    "msiDesc": "Monthly Savings & Investment tracker.",
+    "debts": "Debts",
+    "debtsDesc": "Enter debts and view reports.",
+    "denominationsDesc": "Calculate and track currency breakdown.",
+    "calculators": "Calculators",
+    "calculatorsDesc": "Various financial and utility calculators.",
+    "enterPin": "PIN",
 
     // =============================================================================
     // FILE: dashboard.html

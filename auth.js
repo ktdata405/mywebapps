@@ -27,7 +27,15 @@ function verifyPin() {
     if (pinInput.value === '0405') {
         showContent();
     } else {
-        alert(translations.incorrectPin);
+        // Shake animation for incorrect PIN
+        pinInput.style.borderColor = '#ef4444';
+        pinInput.style.transform = 'translateX(10px)';
+        setTimeout(() => { pinInput.style.transform = 'translateX(-10px)'; }, 100);
+        setTimeout(() => { pinInput.style.transform = 'translateX(10px)'; }, 200);
+        setTimeout(() => { 
+            pinInput.style.transform = 'translateX(0)'; 
+            pinInput.style.borderColor = '';
+        }, 300);
         pinInput.value = '';
         pinInput.focus();
     }

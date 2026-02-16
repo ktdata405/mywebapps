@@ -155,6 +155,79 @@ function doGet(e) {
   try {
     var doc = SpreadsheetApp.getActiveSpreadsheet();
     var timezone = doc.getSpreadsheetTimeZone(); // Use spreadsheet timezone
+    
+    // Check if we need to fetch all data
+    if (e.parameter.fetchAll === 'true') {
+        var allExpenses = [];
+        var totalAvailableBalance = 0;
+        var monthlyBalances = {};
+        var sheets = doc.getSheets();
+        
+        // Iterate through all sheets
+        for (var s = 0; s < sheets.length; s++) {
+            var sheet = sheets[s];
+            var sheetName = sheet.getName();
+            
+            // Skip sheets that don't look like month/year sheets (e.g., "Jan 2024")
+            // Simple regex check: 3 letters space 4 digits
+            if (!sheetName.match(/^[A-Z][a-z]{2} \d{4}$/)) {
+                continue;
+            }
+            
+            var data = sheet.getDataRange().getValues();
+            var sheetBalance = 0;
+            
+            // Accumulate Available Balance from E1 (Row 0, Col 4)
+            if (data.length > 0 && data[0].length > 4) {
+                var balance = data[0][4];
+                if (typeof balance === 'number') {
+                    sheetBalance = balance;
+                } else {
+                    sheetBalance = parseFloat(balance) || 0;
+                }
+            }
+            totalAvailableBalance += sheetBalance;
+            monthlyBalances[sheetName] = sheetBalance;
+
+            var lastDate = '';
+            
+            // Skip header row (index 0)
+            for (var i = 1; i < data.length; i++) {
+                var row = data[i];
+                // Skip empty rows (if any)
+                if (!row[1] && !row[2] && !row[3]) continue;
+
+                var date = row[0];
+                if (date) {
+                    // Format date to dd/MMM/yyyy if it's a Date object
+                    if (date instanceof Date) {
+                        date = Utilities.formatDate(date, timezone, "dd/MMM/yyyy");
+                    }
+                    lastDate = date;
+                } else {
+                    date = lastDate; // Fill in missing date from previous row
+                }
+
+                // Check if amount is a number
+                var amount = parseFloat(row[3]);
+                if (isNaN(amount)) amount = 0;
+
+                allExpenses.push({
+                    date: date,
+                    category: row[1],
+                    description: row[2],
+                    amount: amount
+                });
+            }
+        }
+        
+        return ContentService.createTextOutput(JSON.stringify({
+            data: allExpenses,
+            availableBalance: totalAvailableBalance,
+            monthlyBalances: monthlyBalances
+        })).setMimeType(ContentService.MimeType.JSON);
+    }
+
     var sheetName = e.parameter.sheetName;
 
     if (!sheetName) {

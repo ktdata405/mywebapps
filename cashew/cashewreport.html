@@ -146,7 +146,8 @@
                                         <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-indigo-400">
                                             <i class="fa-regular fa-calendar text-sm"></i>
                                         </div>
-                                        <select id="month-select" class="w-full pl-10 pr-8 py-3 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-semibold text-sm input-field">
+                                        <select id="month-select" class="w-full pl-10 pr-8 py-3 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-semibold text-sm input-field" onchange="handleMonthChange()">
+                                            <option value="All" data-translate-key="displayAll">Display All</option>
                                             <option value="Jan" data-translate-key="january">January</option>
                                             <option value="Feb" data-translate-key="february">February</option>
                                             <option value="Mar" data-translate-key="march">March</option>
@@ -166,7 +167,7 @@
                                     </div>
                                 </div>
 
-                                <div class="relative flex-grow sm:flex-grow-0 sm:w-36">
+                                <div id="year-select-container" class="relative flex-grow sm:flex-grow-0 sm:w-36">
                                     <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1 mb-1.5 block" data-translate-key="year">Year</label>
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-indigo-400">
@@ -260,7 +261,7 @@
                                     <span id="total-expenses-display" class="font-bold text-pink-400 font-mono text-base">Rs. 0.00</span>
                                 </div>
                                 <div class="w-px h-4 bg-white/10"></div>
-                                <div class="flex items-center gap-2">
+                                <div id="available-balance-container" class="flex items-center gap-2">
                                     <span class="font-medium" data-translate-key="available">Available:</span>
                                     <span id="available-balance-display" class="font-bold text-emerald-400 font-mono text-base">Rs. 0.00</span>
                                 </div>
@@ -312,6 +313,20 @@
     <script src="../localization.js"></script>
     <script>
         let allData = []; // Store all fetched data
+        let monthlyBalances = {}; // Store monthly balances
+
+        function handleMonthChange() {
+            const monthSelect = document.getElementById('month-select');
+            const yearSelect = document.getElementById('year-select');
+            const yearContainer = document.getElementById('year-select-container');
+            if (monthSelect.value === 'All') {
+                yearSelect.disabled = true;
+                yearContainer.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                yearSelect.disabled = false;
+                yearContainer.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
 
         function init() {
             const yearSelect = document.getElementById('year-select');
@@ -332,15 +347,26 @@
             // Set initial label
             updatePeriodLabel();
 
+            // Handle initial state of year select
+            handleMonthChange();
+
             // Automatically fetch report for current month/year
             fetchReport();
         }
 
         function updatePeriodLabel() {
-            const month = document.getElementById('month-select');
-            const year = document.getElementById('year-select');
-            const monthName = month.options[month.selectedIndex].text;
-            document.getElementById('selected-period-label').textContent = `${monthName} ${year.value}`;
+            const monthSelect = document.getElementById('month-select');
+            const yearSelect = document.getElementById('year-select');
+            const monthValue = monthSelect.value;
+
+            let label;
+            if (monthValue === 'All') {
+                label = 'All Time';
+            } else {
+                const monthName = monthSelect.options[monthSelect.selectedIndex].text;
+                label = `${monthName} ${yearSelect.value}`;
+            }
+            document.getElementById('selected-period-label').textContent = label;
         }
 
         function formatDateToDDMMMYYYY(isoDate) {
@@ -392,21 +418,24 @@
 
             const month = document.getElementById('month-select').value;
             const year = document.getElementById('year-select').value;
+            const availableBalanceContainer = document.getElementById('available-balance-container');
 
-            const sheetName = `${month} ${year}`;
-            const url = `${CONFIG.GOOGLE_SHEET_URL_CASHEW}?sheetName=${encodeURIComponent(sheetName)}&t=${new Date().getTime()}`;
+            let url;
+            if (month === 'All') {
+                url = `${CONFIG.GOOGLE_SHEET_URL_CASHEW}?fetchAll=true&t=${new Date().getTime()}`;
+                availableBalanceContainer.classList.remove('hidden');
+            } else {
+                const sheetName = `${month} ${year}`;
+                url = `${CONFIG.GOOGLE_SHEET_URL_CASHEW}?sheetName=${encodeURIComponent(sheetName)}&t=${new Date().getTime()}`;
+                availableBalanceContainer.classList.remove('hidden');
+            }
 
             fetch(url)
                 .then(response => response.json())
                 .then(response => {
-                    let availableBalance = 0;
-
-                    if (Array.isArray(response)) {
-                        allData = response || [];
-                    } else {
-                        allData = response.data || [];
-                        availableBalance = response.availableBalance || 0;
-                    }
+                    allData = response.data || [];
+                    let availableBalance = response.availableBalance || 0;
+                    monthlyBalances = response.monthlyBalances || {};
 
                     populateCategoryFilter(allData);
                     populateCategorySummary(allData);
@@ -566,7 +595,7 @@
             }
 
             const filteredData = allData.filter(row => {
-                const matchesSearch = (row.description || '').toLowerCase().includes(searchTerm);
+                const matchesSearch = String(row.description || '').toLowerCase().includes(searchTerm);
                 const matchesCategory = selectedCategory === '' || row.category === selectedCategory;
                 return matchesSearch && matchesCategory;
             });
@@ -584,126 +613,316 @@
             const reportBody = document.getElementById('report-body');
             reportBody.innerHTML = '';
             let total = 0;
+            const isDisplayAll = document.getElementById('month-select').value === 'All';
 
             if (data && data.length > 0) {
                 const groupedData = {};
-                data.forEach(row => {
-                    const dateKey = formatDateToDDMMMYYYY(row.date);
-                    if (!groupedData[dateKey]) {
-                        // Create a date object for sorting purposes
-                        let rawDateObj = new Date(row.date);
 
-                        // If invalid date, try parsing the dateKey (dd/MMM/yyyy)
-                        if (isNaN(rawDateObj.getTime())) {
-                            const parts = dateKey.split('/');
+                data.forEach(row => {
+                    let groupKey;
+                    let rawDateObj = new Date(row.date);
+                    const dateStr = formatDateToDDMMMYYYY(row.date);
+
+                    // Parse date if needed
+                    if (isNaN(rawDateObj.getTime())) {
+                        const parts = dateStr.split('/');
+                        if (parts.length === 3) {
+                            const day = parseInt(parts[0]);
+                            const monthStr = parts[1];
+                            const year = parseInt(parts[2]);
+                            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                            const monthIndex = months.indexOf(monthStr);
+                            if (monthIndex !== -1) {
+                                rawDateObj = new Date(year, monthIndex, day);
+                            }
+                        }
+                    }
+
+                    if (isDisplayAll) {
+                        // Group by Month Year (e.g., "Mar 2024")
+                        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        if (!isNaN(rawDateObj.getTime())) {
+                            groupKey = `${monthNames[rawDateObj.getMonth()]} ${rawDateObj.getFullYear()}`;
+                        } else {
+                            groupKey = "Unknown Date";
+                        }
+                    } else {
+                        // Group by Date (e.g., "15/Mar/2024")
+                        groupKey = dateStr;
+                    }
+
+                    if (!groupedData[groupKey]) {
+                        groupedData[groupKey] = {
+                            total: 0,
+                            items: [],
+                            rawDate: rawDateObj,
+                            displayKey: groupKey
+                        };
+                    }
+
+                    if (isDisplayAll && groupedData[groupKey].items.length === 0) {
+                         if (!isNaN(rawDateObj.getTime())) {
+                             groupedData[groupKey].rawDate = new Date(rawDateObj.getFullYear(), rawDateObj.getMonth(), 1);
+                         }
+                    }
+
+                    groupedData[groupKey].items.push(row);
+                    groupedData[groupKey].total += row.amount;
+                    total += row.amount;
+                });
+
+                const sortedKeys = Object.keys(groupedData).sort((a, b) => groupedData[b].rawDate - groupedData[a].rawDate);
+
+                sortedKeys.forEach((key, index) => {
+                    const group = groupedData[key];
+
+                    let headerHtml = '';
+
+                    if (isDisplayAll) {
+                        // Month Year Header
+                        const [monthStr, yearStr] = key.split(' ');
+                        const monthBalance = monthlyBalances[key] || 0;
+
+                        headerHtml = `
+                            <div class="flex items-center gap-4">
+                                <div class="w-14 h-14 rounded-xl bg-[#0b0f19]/60 flex flex-col items-center justify-center font-bold border border-white/10 shadow-inner">
+                                    <span class="text-[10px] uppercase text-gray-500 tracking-wider">${yearStr || ''}</span>
+                                    <span class="text-xl text-white">${monthStr || ''}</span>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-4">
+                                        <div>
+                                            <p class="text-[10px] text-gray-400 font-medium mb-0.5 uppercase tracking-wider">Expenses</p>
+                                            <h4 class="font-bold text-white text-base font-mono">Rs. ${group.total.toLocaleString('en-IN')}</h4>
+                                        </div>
+                                        <div class="w-px h-6 bg-white/10"></div>
+                                        <div>
+                                            <p class="text-[10px] text-gray-400 font-medium mb-0.5 uppercase tracking-wider">Available</p>
+                                            <h4 class="font-bold text-emerald-400 text-base font-mono">Rs. ${monthBalance.toLocaleString('en-IN')}</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 flex items-center justify-center">
+                                    <i id="icon-${index}" class="fa-solid fa-chevron-right transition-transform duration-200 text-gray-500 text-sm"></i>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        // Date Header (Existing Logic)
+                        let dayDisplay = "--";
+                        let monthDisplay = "---";
+                        let weekdayDisplay = "";
+
+                        if (group.displayKey) {
+                            const parts = group.displayKey.split('/');
                             if (parts.length === 3) {
-                                const day = parseInt(parts[0]);
-                                const monthStr = parts[1];
-                                const year = parseInt(parts[2]);
-                                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                                const monthIndex = months.indexOf(monthStr);
-                                if (monthIndex !== -1) {
-                                    rawDateObj = new Date(year, monthIndex, day);
+                                dayDisplay = parts[0];
+                                monthDisplay = parts[1];
+
+                                if (!isNaN(group.rawDate.getTime())) {
+                                    weekdayDisplay = group.rawDate.toLocaleString('default', { weekday: 'long' });
                                 }
                             }
                         }
 
-                        groupedData[dateKey] = { total: 0, items: [], rawDate: rawDateObj, displayDate: dateKey };
-                    }
-                    groupedData[dateKey].items.push(row);
-                    groupedData[dateKey].total += row.amount;
-                    total += row.amount;
-                });
-
-                const sortedDates = Object.keys(groupedData).sort((a, b) => groupedData[b].rawDate - groupedData[a].rawDate);
-
-                sortedDates.forEach((date, index) => {
-                    const group = groupedData[date];
-
-                    // Extract day and month from the displayDate (dd/MMM/yyyy) for display
-                    let dayDisplay = "--";
-                    let monthDisplay = "---";
-                    let weekdayDisplay = "";
-
-                    if (group.displayDate) {
-                        const parts = group.displayDate.split('/');
-                        if (parts.length === 3) {
-                            dayDisplay = parts[0];
-                            monthDisplay = parts[1];
-
-                            // Calculate weekday
-                            if (!isNaN(group.rawDate.getTime())) {
-                                weekdayDisplay = group.rawDate.toLocaleString('default', { weekday: 'long' });
-                            }
-                        }
+                        headerHtml = `
+                            <div class="flex items-center gap-4">
+                                <div class="w-14 h-14 rounded-xl bg-[#0b0f19]/60 flex flex-col items-center justify-center font-bold border border-white/10 shadow-inner">
+                                    <span class="text-[10px] uppercase text-gray-500 tracking-wider">${monthDisplay}</span>
+                                    <span class="text-xl text-white">${dayDisplay}</span>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-400 font-medium mb-0.5">${weekdayDisplay}</p>
+                                    <h4 class="font-bold text-white text-base font-mono">Rs. ${group.total.toLocaleString('en-IN')}</h4>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <button onclick="event.stopPropagation(); editDateEntries('${key}')" class="w-9 h-9 rounded-full bg-white/5 hover:bg-indigo-500/20 text-gray-400 hover:text-indigo-400 transition-all flex items-center justify-center border border-white/5 hover:border-indigo-500/30" title="Edit Entries">
+                                    <i class="fa-solid fa-pen text-xs"></i>
+                                </button>
+                                <div class="w-8 h-8 flex items-center justify-center">
+                                    <i id="icon-${index}" class="fa-solid fa-chevron-right transition-transform duration-200 text-gray-500 text-sm"></i>
+                                </div>
+                            </div>
+                        `;
                     }
 
                     const accordionHeader = document.createElement('div');
                     accordionHeader.className = "glass-card p-4 rounded-2xl flex justify-between items-center cursor-pointer hover:bg-white/5 transition-colors border border-white/5";
                     accordionHeader.onclick = () => toggleDetails(index);
-                    accordionHeader.innerHTML = `
-                        <div class="flex items-center gap-4">
-                            <div class="w-14 h-14 rounded-xl bg-[#0b0f19]/60 flex flex-col items-center justify-center font-bold border border-white/10 shadow-inner">
-                                <span class="text-[10px] uppercase text-gray-500 tracking-wider">${monthDisplay}</span>
-                                <span class="text-xl text-white">${dayDisplay}</span>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-400 font-medium mb-0.5">${weekdayDisplay}</p>
-                                <h4 class="font-bold text-white text-base font-mono">Rs. ${group.total.toLocaleString('en-IN')}</h4>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <button onclick="event.stopPropagation(); editDateEntries('${date}')" class="w-9 h-9 rounded-full bg-white/5 hover:bg-indigo-500/20 text-gray-400 hover:text-indigo-400 transition-all flex items-center justify-center border border-white/5 hover:border-indigo-500/30" title="Edit Entries">
-                                <i class="fa-solid fa-pen text-xs"></i>
-                            </button>
-                            <div class="w-8 h-8 flex items-center justify-center">
-                                <i id="icon-${index}" class="fa-solid fa-chevron-right transition-transform duration-200 text-gray-500 text-sm"></i>
-                            </div>
-                        </div>
-                    `;
+                    accordionHeader.innerHTML = headerHtml;
                     reportBody.appendChild(accordionHeader);
 
                     const accordionContent = document.createElement('div');
                     accordionContent.id = `details-${index}`;
                     accordionContent.className = "hidden p-2 pl-4 sm:pl-20 space-y-2";
-                    let detailsHtml = '';
-                    group.items.forEach(item => {
-                        const categoryColor = getCategoryColor(item.category);
-                        const bgClass = categoryColor.split(' ')[0];
-                        const textClass = categoryColor.split(' ')[1];
-                        const borderClass = categoryColor.split(' ')[2];
 
-                        let iconClass = "fa-tag";
-                        const c = (item.category || '').toLowerCase();
-                        if(c.includes('home')) iconClass = "fa-house";
-                        else if(c.includes('personal')) iconClass = "fa-user";
-                        else if(c.includes('family')) iconClass = "fa-users";
-                        else if(c.includes('baby')) iconClass = "fa-baby";
-                        else if(c.includes('credit')) iconClass = "fa-credit-card";
-                        else if(c.includes('emi')) iconClass = "fa-file-invoice-dollar";
-                        else if(c.includes('food')) iconClass = "fa-utensils";
-                        else if(c.includes('travel')) iconClass = "fa-plane";
-                        else if(c.includes('fuel')) iconClass = "fa-gas-pump";
-                        else if(c.includes('medical')) iconClass = "fa-notes-medical";
-                        else if(c.includes('latha')) iconClass = "fa-gift";
-                        else if(c.includes('mutual') || c.includes('investment')) iconClass = "fa-chart-line";
+                    if (isDisplayAll) {
+                        // For Display All, we need to group by date inside the month accordion
+                        const subGroupedData = {};
+                        group.items.forEach(item => {
+                            const dateKey = formatDateToDDMMMYYYY(item.date);
+                            if (!subGroupedData[dateKey]) {
+                                let rawDateObj = new Date(item.date);
+                                if (isNaN(rawDateObj.getTime())) {
+                                    const parts = dateKey.split('/');
+                                    if (parts.length === 3) {
+                                        const day = parseInt(parts[0]);
+                                        const monthStr = parts[1];
+                                        const year = parseInt(parts[2]);
+                                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                                        const monthIndex = months.indexOf(monthStr);
+                                        if (monthIndex !== -1) {
+                                            rawDateObj = new Date(year, monthIndex, day);
+                                        }
+                                    }
+                                }
+                                subGroupedData[dateKey] = { total: 0, items: [], rawDate: rawDateObj, displayKey: dateKey };
+                            }
+                            subGroupedData[dateKey].items.push(item);
+                            subGroupedData[dateKey].total += item.amount;
+                        });
 
-                        detailsHtml += `
-                            <div class="glass-card p-4 rounded-xl border border-white/5 flex items-center justify-between hover:bg-white/5 transition-all group">
-                                <div class="flex items-center gap-4 overflow-hidden">
-                                    <div class="w-10 h-10 rounded-full ${bgClass} flex items-center justify-center ${textClass} flex-shrink-0 border ${borderClass}">
-                                        <i class="fa-solid ${iconClass} text-sm"></i>
+                        const sortedSubKeys = Object.keys(subGroupedData).sort((a, b) => subGroupedData[b].rawDate - subGroupedData[a].rawDate);
+
+                        sortedSubKeys.forEach((subKey, subIndex) => {
+                            const subGroup = subGroupedData[subKey];
+                            const uniqueSubId = `${index}-${subIndex}`;
+
+                            // Date Header for Subgroup
+                            let dayDisplay = "--";
+                            let monthDisplay = "---";
+                            let weekdayDisplay = "";
+
+                            if (subGroup.displayKey) {
+                                const parts = subGroup.displayKey.split('/');
+                                if (parts.length === 3) {
+                                    dayDisplay = parts[0];
+                                    monthDisplay = parts[1];
+
+                                    if (!isNaN(subGroup.rawDate.getTime())) {
+                                        weekdayDisplay = subGroup.rawDate.toLocaleString('default', { weekday: 'long' });
+                                    }
+                                }
+                            }
+
+                            const subHeader = document.createElement('div');
+                            subHeader.className = "glass-card p-3 rounded-xl flex justify-between items-center cursor-pointer hover:bg-white/5 transition-colors border border-white/5 mt-2";
+                            subHeader.onclick = (e) => {
+                                e.stopPropagation();
+                                toggleDetails(uniqueSubId);
+                            };
+                            subHeader.innerHTML = `
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-[#0b0f19]/60 flex flex-col items-center justify-center font-bold border border-white/10 shadow-inner">
+                                        <span class="text-[8px] uppercase text-gray-500 tracking-wider">${monthDisplay}</span>
+                                        <span class="text-sm text-white">${dayDisplay}</span>
                                     </div>
-                                    <div class="min-w-0">
-                                        <h4 class="font-semibold text-white text-sm truncate">${item.category}</h4>
-                                        <p class="text-xs text-gray-400 mt-0.5 truncate pr-2">${item.description}</p>
+                                    <div>
+                                        <p class="text-[10px] text-gray-400 font-medium mb-0.5">${weekdayDisplay}</p>
+                                        <h4 class="font-bold text-white text-sm font-mono">Rs. ${subGroup.total.toLocaleString('en-IN')}</h4>
                                     </div>
                                 </div>
-                                <span class="font-bold text-white text-sm whitespace-nowrap font-mono pl-2">Rs. ${item.amount.toLocaleString('en-IN')}</span>
-                            </div>
-                        `;
-                    });
-                    accordionContent.innerHTML = detailsHtml;
+                                <div class="flex items-center gap-2">
+                                    <button onclick="event.stopPropagation(); editDateEntries('${subKey}')" class="w-7 h-7 rounded-full bg-white/5 hover:bg-indigo-500/20 text-gray-400 hover:text-indigo-400 transition-all flex items-center justify-center border border-white/5 hover:border-indigo-500/30" title="Edit Entries">
+                                        <i class="fa-solid fa-pen text-[10px]"></i>
+                                    </button>
+                                    <div class="w-6 h-6 flex items-center justify-center">
+                                        <i id="icon-${uniqueSubId}" class="fa-solid fa-chevron-right transition-transform duration-200 text-gray-500 text-xs"></i>
+                                    </div>
+                                </div>
+                            `;
+                            accordionContent.appendChild(subHeader);
+
+                            const subContent = document.createElement('div');
+                            subContent.id = `details-${uniqueSubId}`;
+                            subContent.className = "hidden p-2 pl-4 space-y-2";
+
+                            let subDetailsHtml = '';
+                            subGroup.items.forEach(item => {
+                                const categoryColor = getCategoryColor(item.category);
+                                const bgClass = categoryColor.split(' ')[0];
+                                const textClass = categoryColor.split(' ')[1];
+                                const borderClass = categoryColor.split(' ')[2];
+
+                                let iconClass = "fa-tag";
+                                const c = (item.category || '').toLowerCase();
+                                if(c.includes('home')) iconClass = "fa-house";
+                                else if(c.includes('personal')) iconClass = "fa-user";
+                                else if(c.includes('family')) iconClass = "fa-users";
+                                else if(c.includes('baby')) iconClass = "fa-baby";
+                                else if(c.includes('credit')) iconClass = "fa-credit-card";
+                                else if(c.includes('emi')) iconClass = "fa-file-invoice-dollar";
+                                else if(c.includes('food')) iconClass = "fa-utensils";
+                                else if(c.includes('travel')) iconClass = "fa-plane";
+                                else if(c.includes('fuel')) iconClass = "fa-gas-pump";
+                                else if(c.includes('medical')) iconClass = "fa-notes-medical";
+                                else if(c.includes('latha')) iconClass = "fa-gift";
+                                else if(c.includes('mutual') || c.includes('investment')) iconClass = "fa-chart-line";
+
+                                subDetailsHtml += `
+                                    <div class="glass-card p-3 rounded-lg border border-white/5 flex items-center justify-between hover:bg-white/5 transition-all group">
+                                        <div class="flex items-center gap-3 overflow-hidden">
+                                            <div class="w-8 h-8 rounded-full ${bgClass} flex items-center justify-center ${textClass} flex-shrink-0 border ${borderClass}">
+                                                <i class="fa-solid ${iconClass} text-xs"></i>
+                                            </div>
+                                            <div class="min-w-0">
+                                                <h4 class="font-semibold text-white text-xs truncate">${item.category}</h4>
+                                                <p class="text-[10px] text-gray-400 mt-0.5 truncate pr-2">${item.description}</p>
+                                            </div>
+                                        </div>
+                                        <span class="font-bold text-white text-xs whitespace-nowrap font-mono pl-2">Rs. ${item.amount.toLocaleString('en-IN')}</span>
+                                    </div>
+                                `;
+                            });
+                            subContent.innerHTML = subDetailsHtml;
+                            accordionContent.appendChild(subContent);
+                        });
+
+                    } else {
+                        // Regular view (single month)
+                        let detailsHtml = '';
+                        group.items.forEach(item => {
+                            const categoryColor = getCategoryColor(item.category);
+                            const bgClass = categoryColor.split(' ')[0];
+                            const textClass = categoryColor.split(' ')[1];
+                            const borderClass = categoryColor.split(' ')[2];
+
+                            let iconClass = "fa-tag";
+                            const c = (item.category || '').toLowerCase();
+                            if(c.includes('home')) iconClass = "fa-house";
+                            else if(c.includes('personal')) iconClass = "fa-user";
+                            else if(c.includes('family')) iconClass = "fa-users";
+                            else if(c.includes('baby')) iconClass = "fa-baby";
+                            else if(c.includes('credit')) iconClass = "fa-credit-card";
+                            else if(c.includes('emi')) iconClass = "fa-file-invoice-dollar";
+                            else if(c.includes('food')) iconClass = "fa-utensils";
+                            else if(c.includes('travel')) iconClass = "fa-plane";
+                            else if(c.includes('fuel')) iconClass = "fa-gas-pump";
+                            else if(c.includes('medical')) iconClass = "fa-notes-medical";
+                            else if(c.includes('latha')) iconClass = "fa-gift";
+                            else if(c.includes('mutual') || c.includes('investment')) iconClass = "fa-chart-line";
+
+                            detailsHtml += `
+                                <div class="glass-card p-4 rounded-xl border border-white/5 flex items-center justify-between hover:bg-white/5 transition-all group">
+                                    <div class="flex items-center gap-4 overflow-hidden">
+                                        <div class="w-10 h-10 rounded-full ${bgClass} flex items-center justify-center ${textClass} flex-shrink-0 border ${borderClass}">
+                                            <i class="fa-solid ${iconClass} text-sm"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h4 class="font-semibold text-white text-sm truncate">${item.category}</h4>
+                                            <p class="text-xs text-gray-400 mt-0.5 truncate pr-2">${item.description}</p>
+                                        </div>
+                                    </div>
+                                    <span class="font-bold text-white text-sm whitespace-nowrap font-mono pl-2">Rs. ${item.amount.toLocaleString('en-IN')}</span>
+                                </div>
+                            `;
+                        });
+                        accordionContent.innerHTML = detailsHtml;
+                    }
+
                     reportBody.appendChild(accordionContent);
                 });
             } else {

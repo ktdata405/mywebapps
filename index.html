@@ -2,39 +2,77 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title data-translate-key="appTitle">KT Apps</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-translate-key="appTitle">KT Apps</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6366f1;
-            --secondary: #ec4899;
-            --accent: #8b5cf6;
-            --bg-dark: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --text-light: #f8fafc;
-            --text-dim: #94a3b8;
+            --bg-color: #030305;
+            --card-bg: rgba(255, 255, 255, 0.02);
+            --card-border: rgba(255, 255, 255, 0.05);
+            --card-hover-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --accent-glow: radial-gradient(circle at center, rgba(124, 58, 237, 0.15), transparent 50%);
+            --spotlight-color: rgba(255, 255, 255, 0.15);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         body {
-            background-color: var(--bg-dark);
-            color: var(--text-light);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow-x: hidden;
             position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Canvas Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.6;
+        }
+
+        /* Noise Overlay */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
         }
 
         #app-content {
-            display: none; /* Hidden by default */
+            display: none;
+            position: relative;
+            z-index: 1;
+            width: 100%;
         }
 
         #auth-container {
@@ -43,298 +81,338 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
+            z-index: 10;
+            padding: 2rem;
+            position: relative;
         }
 
         #auth-container p {
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 3rem;
+            text-align: center;
+            background: linear-gradient(to bottom, #fff, #a1a1aa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            z-index: 2;
+            letter-spacing: -0.02em;
         }
 
         #pin-container {
-            display: flex; /* Visible by default for autofocus */
+            display: flex;
             flex-direction: column;
             align-items: center;
-            margin-top: 1rem;
+            width: 100%;
+            max-width: 380px;
+            gap: 2rem;
+            position: relative;
+            z-index: 2;
         }
 
         #pin-input {
-            padding: 0.5rem;
-            border-radius: 8px;
-            border: 1px solid var(--text-dim);
-            background: var(--card-bg);
-            color: var(--text-light);
-            font-size: 1rem;
-            margin-bottom: 1rem;
+            width: 100%;
+            padding: 1.5rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--text-primary);
+            font-size: 2rem;
+            letter-spacing: 1.5rem;
             text-align: center;
+            outline: none;
+            font-weight: 700;
+            -webkit-text-security: disc;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        #pin-input:focus {
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
         }
 
         .auth-button {
-            background: var(--primary);
-            color: var(--text-light);
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.1rem 3.2rem;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 1rem;
-            margin-top: 0.5rem;
+            font-size: 1.05rem;
+            font-weight: 700;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            letter-spacing: 0.2px;
+            backdrop-filter: blur(10px);
         }
 
-        /* Animated Background */
-        .bg-animation {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: radial-gradient(circle at 50% 50%, #1e1b4b, #0f172a);
-            overflow: hidden;
-            transform: translateZ(0); /* Force GPU */
+        .auth-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
         }
 
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(60px);
-            opacity: 0.4;
-            animation: float 20s infinite ease-in-out;
-            will-change: transform;
-            transform: translateZ(0);
-        }
-
-        .orb-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px; animation-delay: 0s; }
-        .orb-2 { width: 300px; height: 300px; background: var(--secondary); bottom: -50px; right: -50px; animation-delay: -5s; }
-        .orb-3 { width: 200px; height: 200px; background: var(--accent); top: 40%; left: 60%; animation-delay: -10s; }
-
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(30px, 50px); }
+        .auth-button:active {
+            transform: scale(0.96);
         }
 
         /* Header */
         header {
-            padding: 2rem 10%;
+            padding: 2rem 6%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            animation: slideDown 0.8s ease-out;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 1rem;
         }
 
         .brand {
             display: flex;
             align-items: center;
+            gap: 1.2rem;
         }
 
         .brand .logo-img {
-            height: 50px;
-            width: 50px;
-            margin-right: 15px;
-            background-color: transparent;
-            border-radius: 50%;
-            padding: 8px;
-            box-sizing: border-box;
+            height: 52px;
+            width: 52px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #fff, #ccc);
+            padding: 2px; /* Border effect */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-
-        .brand h1 {
+        
+        .brand-text h1 {
             font-size: 1.8rem;
             font-weight: 700;
-            background: linear-gradient(to right, #fff, #cbd5e1);
+            background: linear-gradient(to right, #fff 20%, #a1a1aa 40%, #a1a1aa 60%, #fff 80%);
+            background-size: 200% auto;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            letter-spacing: -0.5px;
+            animation: textShimmer 5s linear infinite;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
         }
 
-        .brand p {
-            font-size: 0.9rem;
-            color: var(--text-dim);
-            font-weight: 300;
+        @keyframes textShimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
         }
 
-        /* Main Grid */
+        .brand-text p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-top: 0.25rem;
+        }
+
+        .nav-link {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Main Container */
         .container {
-            flex: 1;
-            padding: 3rem 10%;
+            padding: 0 6% 4rem 6%;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 2rem;
-            align-items: start;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1rem;
             max-width: 1400px;
             margin: 0 auto;
             width: 100%;
         }
 
+        /* Spotlight Cards */
         .card {
             background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            padding: 1.5rem 2rem;
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1.5rem;
             text-decoration: none;
-            color: var(--text-light);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            color: var(--text-primary);
             position: relative;
             overflow: hidden;
             display: flex;
-            flex-direction: row; /* Horizontal Layout */
+            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            text-align: left;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-            animation: fadeInUp 0.6s ease-out backwards;
-            transform: translateZ(0);
+            gap: 1rem;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            height: 100%;
+            min-height: 140px;
+            transition: transform 0.2s ease;
+            text-align: center;
         }
 
-        /* Staggered Animation Delays */
-        .card:nth-child(1) { animation-delay: 0.1s; }
-        .card:nth-child(2) { animation-delay: 0.2s; }
-        .card:nth-child(3) { animation-delay: 0.3s; }
-        .card:nth-child(4) { animation-delay: 0.4s; }
-        .card:nth-child(5) { animation-delay: 0.5s; }
-        .card:nth-child(6) { animation-delay: 0.6s; }
-        .card:nth-child(7) { animation-delay: 0.7s; }
-
-        .card:hover {
-            transform: translateY(-5px) scale(1.02);
-            border-color: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-        }
-
+        /* Spotlight Effect Layer */
         .card::before {
-            content: '';
+            content: "";
             position: absolute;
+            height: 100%;
+            width: 100%;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.03), transparent);
-            transform: translateX(-100%);
-            transition: 0.6s;
+            background: radial-gradient(
+                800px circle at var(--mouse-x) var(--mouse-y),
+                rgba(255, 255, 255, 0.06),
+                transparent 40%
+            );
+            opacity: 0;
+            transition: opacity 0.5s;
             pointer-events: none;
+            z-index: 1;
         }
 
-        .card:hover::before {
-            transform: translateX(100%);
+        /* Border Glow Layer */
+        .card::after {
+            content: "";
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            top: 0;
+            left: 0;
+            background: radial-gradient(
+                600px circle at var(--mouse-x) var(--mouse-y),
+                rgba(255, 255, 255, 0.3),
+                transparent 40%
+            );
+            opacity: 0;
+            transition: opacity 0.5s;
+            z-index: 1;
+            pointer-events: none;
+            /* Mask to show only border */
+            -webkit-mask: 
+                linear-gradient(#fff 0 0) content-box, 
+                linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            padding: 1px; /* Border width */
+            border-radius: inherit;
+        }
+
+        .card:hover::before,
+        .card:hover::after {
+            opacity: 1;
         }
 
         .icon-box {
-            width: 64px;
-            height: 64px;
-            border-radius: 16px;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.8rem;
-            margin-right: 1.5rem;
-            transition: transform 0.4s ease;
+            font-size: 1.5rem;
             background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            flex-shrink: 0;
+            border: 1px solid var(--card-border);
+            margin-bottom: 0.5rem;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        .icon-box i {
+            color: var(--accent-color);
+            transition: color 0.3s ease;
         }
 
         .card:hover .icon-box {
-            transform: rotateY(180deg);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 20px var(--accent-color);
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.1);
+        }
+
+        .card:hover .icon-box i {
+            color: #fff;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
         }
 
         .card-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            z-index: 2;
         }
 
         .card h2 {
-            font-size: 1.25rem;
+            font-size: 1rem;
             font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .card p {
-            font-size: 0.85rem;
-            color: var(--text-dim);
-            margin: 0;
-            line-height: 1.4;
+            margin-bottom: 0;
+            letter-spacing: -0.02em;
         }
 
         .btn-arrow {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            color: var(--text-secondary);
+            opacity: 0;
+            transform: translateX(-10px);
             transition: all 0.3s ease;
-            margin-left: 1rem;
-            flex-shrink: 0;
+            z-index: 2;
         }
 
         .card:hover .btn-arrow {
-            background: var(--primary);
-            transform: translateX(5px);
+            opacity: 1;
+            transform: translateX(0);
+            color: var(--text-primary);
         }
 
-        /* Specific Card Colors */
-        .card-deno .icon-box i { color: #4ade80; }
-        .card-cashew .icon-box i { color: #f472b6; }
-        .card-msi .icon-box i { color: #60a5fa; }
-        .card-rent .icon-box i { color: #c084fc; }
-        .card-dash .icon-box i { color: #fbbf24; }
-        .card-calc .icon-box i { color: #f97316; }
-        .card-debts .icon-box i { color: #ef4444; }
-
-        /* Badge */
-        .badge {
-            position: absolute;
-            top: 0.75rem;
-            right: 0.75rem;
-            background: rgba(236, 72, 153, 0.2);
-            color: #ec4899;
-            padding: 0.2rem 0.6rem;
-            border-radius: 20px;
-            font-size: 0.65rem;
-            font-weight: 600;
-            border: 1px solid rgba(236, 72, 153, 0.3);
-        }
+        /* Specific Icon Colors (Subtle) */
+        .card-dash { --accent-color: #fbbf24; }
+        .card-cashew { --accent-color: #f472b6; }
+        .card-rent { --accent-color: #c084fc; }
+        .card-msi { --accent-color: #60a5fa; }
+        .card-debts { --accent-color: #f87171; }
+        .card-deno { --accent-color: #4ade80; }
+        .card-calc { --accent-color: #fb923c; }
 
         /* Footer */
         footer {
             text-align: center;
-            padding: 2rem;
-            color: var(--text-dim);
+            padding: 3rem 2rem;
+            color: var(--text-secondary);
             font-size: 0.9rem;
-            border-top: 1px solid rgba(255,255,255,0.05);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: auto;
         }
 
-        footer b { color: var(--text-light); }
-
-        /* Animations */
-        @keyframes slideDown {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        footer b {
+            color: var(--text-primary);
+            font-weight: 600;
         }
 
-        @keyframes fadeInUp {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        /* Loader Styles */
+        /* Loader */
         #loader {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             z-index: 9999;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
+            background: #030305;
+            backdrop-filter: blur(10px);
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
@@ -343,113 +421,84 @@
         #loader.visible {
             opacity: 1;
             pointer-events: auto;
-            transition: none; /* Appear instantly */
-        }
-
-        .loader-card {
-            background: rgba(30, 41, 59, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-            padding: 2rem;
-            border-radius: 1rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .spinner-container {
-            position: relative;
-            width: 4rem;
-            height: 4rem;
         }
 
         .spinner {
-            width: 100%;
-            height: 100%;
-            border: 4px solid rgba(236, 72, 153, 0.2);
-            border-top-color: #ec4899;
+            width: 50px;
+            height: 50px;
+            position: relative;
+        }
+
+        .spinner {
+            content: '';
+            position: absolute;
+            inset: 6px;
+            border: 3px solid transparent;
+            border-top-color: #fff;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-        }
-
-        .spinner-icon {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #ec4899;
-            font-size: 1.25rem;
-        }
-
-        .loading-text {
-            color: white;
-            font-weight: 600;
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: .5; }
-        }
-
         /* Responsive */
         @media (max-width: 768px) {
-            header { flex-direction: column; text-align: center; gap: 1rem; }
-            .container { padding: 2rem 5%; grid-template-columns: 1fr; }
-            .card {
-                padding: 1.25rem;
-                /* Disable heavy effects on mobile */
-                backdrop-filter: none;
-                -webkit-backdrop-filter: none;
-                background: rgba(30, 41, 59, 0.95); /* More opaque background */
-                box-shadow: none;
-            }
-
-            /* Disable heavy animations on mobile */
-            .orb {
-                filter: blur(30px); /* Significantly reduced blur */
-                animation: none; /* Disable animation completely on mobile */
-                opacity: 0.2;
-            }
-
-            .card:hover { transform: none; box-shadow: none; }
-            .card:hover .icon-box { transform: none; }
-
-            /* Simplify header on mobile */
             header {
-                backdrop-filter: none;
-                -webkit-backdrop-filter: none;
-                background: var(--bg-dark);
+                padding: 1rem 5%;
+            }
+
+            .brand .logo-img {
+                height: 40px;
+                width: 40px;
+            }
+
+            .brand-text h1 {
+                font-size: 1.3rem;
+            }
+
+            .container {
+                padding: 2rem 5%;
+                gap: 1rem;
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .card {
+                padding: 1rem;
+                min-height: 120px;
+            }
+
+            .icon-box {
+                width: 40px;
+                height: 40px;
+                font-size: 1.25rem;
+            }
+
+            #auth-container p {
+                font-size: 2rem;
+                line-height: 1.2;
+            }
+
+            .card {
+                animation: none;
+                opacity: 1;
             }
         }
     </style>
 </head>
 <body>
 
-    <div class="bg-animation">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-    </div>
+    <canvas id="bg-canvas"></canvas>
 
     <div id="auth-container">
         <p data-translate-key="verifyIdentity">Verify your Identity</p>
         <div id="pin-container">
-            <input type="password" id="pin-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="Enter PIN" autofocus data-translate-key="enterPin">
+            <label for="pin-input" class="visually-hidden" data-translate-key="enterPin">Enter PIN</label>
+            <input type="password" id="pin-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="PIN" autofocus data-translate-key="enterPin">
         </div>
-        <button id="face-id-btn" class="auth-button" style="margin-top: 15px;" hidden="true">
-            <i class="fa-solid fa-face-smile"></i> <span data-translate-key="faceId">Face ID</span>
+        <button id="face-id-btn" class="auth-button" style="margin-top: 15px;" hidden>
+            <i class="fa-solid fa-face-smile" aria-hidden="true"></i> <span data-translate-key="faceId">Face ID</span>
         </button>
     </div>
 
@@ -457,115 +506,85 @@
         <header>
             <div class="brand">
                 <img src="root/logo.png" alt="Logo" class="logo-img">
-                <div>
+                <div class="brand-text">
                     <h1 data-translate-key="holaKT">Hola KT</h1>
                     <p data-translate-key="developedBy">Developed by Kalyan Thammineni</p>
                 </div>
             </div>
+            <a href="dashboard.html" class="nav-link" aria-label="Dashboard">
+                <i class="fa-solid fa-chart-line"></i>
+            </a>
         </header>
 
-        <div class="container">
-            <!-- Denominations -->
+        <main class="container" id="cards-container">
+            <a href="cashew/cashew.html" class="card card-cashew">
+                <div class="icon-box">
+                    <i class="fa-solid fa-file-invoice-dollar" aria-hidden="true"></i>
+                </div>
+                <div class="card-content">
+                    <h2 data-translate-key="cashew">Cashew</h2>
+                </div>
+                <div class="btn-arrow"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></div>
+            </a>
+
+            <a href="rent/tenet.html" class="card card-rent">
+                <div class="icon-box">
+                    <i class="fa-solid fa-house" aria-hidden="true"></i>
+                </div>
+                <div class="card-content">
+                    <h2 data-translate-key="rentDetails">Rent Details</h2>
+                </div>
+                <div class="btn-arrow"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></div>
+            </a>
+
+            <a href="msi/msi.html" class="card card-msi">
+                <div class="icon-box">
+                    <i class="fa-solid fa-wallet" aria-hidden="true"></i>
+                </div>
+                <div class="card-content">
+                    <h2 data-translate-key="msi">MSI</h2>
+                </div>
+                <div class="btn-arrow"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></div>
+            </a>
+
+            <a href="debts/debts.html" class="card card-debts">
+                <div class="icon-box">
+                    <i class="fa-solid fa-hand-holding-dollar" aria-hidden="true"></i>
+                </div>
+                <div class="card-content">
+                    <h2 data-translate-key="debts">Debts</h2>
+                </div>
+                <div class="btn-arrow"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></div>
+            </a>
+
             <a href="denomination/denominations.html" class="card card-deno">
                 <div class="icon-box">
                     <i class="fa-solid fa-calculator"></i>
                 </div>
                 <div class="card-content">
                     <h2 data-translate-key="denominations">Denominations</h2>
-                    <p data-translate-key="denominationsDesc">Calculate and track currency breakdown.</p>
                 </div>
                 <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
             </a>
 
-            <!-- Cashew -->
-            <a href="cashew/cashew.html" class="card card-cashew">
-                <div class="icon-box">
-                    <i class="fa-solid fa-file-invoice-dollar"></i>
-                </div>
-                <div class="card-content">
-                    <h2 data-translate-key="cashew">Cashew</h2>
-                    <p data-translate-key="cashewDesc">Manage cashew business transactions.</p>
-                </div>
-                <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
-            </a>
-
-            <!-- MSI -->
-            <a href="msi/msi.html" class="card card-msi">
-                <div class="icon-box">
-                    <i class="fa-solid fa-wallet"></i>
-                </div>
-                <div class="card-content">
-                    <h2 data-translate-key="msi">MSI</h2>
-                    <p data-translate-key="msiDesc">Monthly Savings & Investment tracker.</p>
-                </div>
-                <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
-            </a>
-
-            <!-- Rent -->
-            <a href="rent/tenet.html" class="card card-rent">
-                <div class="icon-box">
-                    <i class="fa-solid fa-house"></i>
-                </div>
-                <div class="card-content">
-                    <h2 data-translate-key="rentDetails">Rent Details</h2>
-                    <p data-translate-key="rentDetailsDesc">Monitor tenant payments and rental history.</p>
-                </div>
-                <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
-            </a>
-
-            <!-- Debts -->
-            <a href="debts/debts.html" class="card card-debts">
-                <div class="icon-box">
-                    <i class="fa-solid fa-hand-holding-dollar"></i>
-                </div>
-                <div class="card-content">
-                    <h2 data-translate-key="debts">Debts</h2>
-                    <p data-translate-key="debtsDesc">Enter debts and view reports.</p>
-                </div>
-                <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
-            </a>
-
-            <!-- Calculators -->
             <a href="calculator/calculator.html" class="card card-calc">
                 <div class="icon-box">
                     <i class="fa-solid fa-calculator"></i>
                 </div>
                 <div class="card-content">
                     <h2 data-translate-key="calculators">Calculators</h2>
-                    <p data-translate-key="calculatorsDesc">Various financial and utility calculators.</p>
                 </div>
                 <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
             </a>
-
-            <!-- Dashboard -->
-            <a href="dashboard.html" class="card card-dash">
-                <div class="icon-box">
-                    <i class="fa-solid fa-chart-line"></i>
-                </div>
-                <div class="card-content">
-                    <h2 data-translate-key="dashboard">Dashboard</h2>
-                    <p data-translate-key="dashboardDesc">Visual overview of all financial metrics.</p>
-                </div>
-                <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
-            </a>
-        </div>
+        </main>
 
         <footer>
-            <p data-translate-key="copyright">&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
+            <p data-translate-key="copyright_thammineni">&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
         </footer>
     </div>
 
-    <!-- Loader Overlay -->
     <div id="loader">
-        <div class="loader-card">
-            <div class="spinner-container">
-                <div class="spinner"></div>
-                <div class="spinner-icon">
-                    <i class="fa-solid fa-bolt"></i>
-                </div>
-            </div>
-            <p class="loading-text" data-translate-key="loading">Loading...</p>
-        </div>
+        <div class="spinner"></div>
     </div>
 
     <script src="auth.js"></script>
@@ -574,6 +593,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const cards = document.querySelectorAll('.card');
             const loader = document.getElementById('loader');
+            const cardsContainer = document.getElementById('cards-container');
 
             cards.forEach(card => {
                 card.addEventListener('click', (e) => {
@@ -581,17 +601,88 @@
                     if (href && href !== '#' && card.target !== '_blank') {
                         e.preventDefault();
                         loader.classList.add('visible');
-
-                        // Delay navigation to show loader
                         setTimeout(() => {
                             window.location.href = href;
-                        }, 200);
+                        }, 400);
                     }
                 });
             });
+
+            // Spotlight Effect Logic
+            cardsContainer.onmousemove = e => {
+                for(const card of document.getElementsByClassName('card')) {
+                    const rect = card.getBoundingClientRect(),
+                          x = e.clientX - rect.left,
+                          y = e.clientY - rect.top;
+                    
+                    card.style.setProperty('--mouse-x', `${x}px`);
+                    card.style.setProperty('--mouse-y', `${y}px`);
+                }
+            };
+
+            // Canvas Background Logic
+            const canvas = document.getElementById('bg-canvas');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let particles = [];
+
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.vy = (Math.random() - 0.5) * 0.5;
+                    this.size = Math.random() * 2;
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    if (this.x < 0 || this.x > width) this.vx *= -1;
+                    if (this.y < 0 || this.y > height) this.vy *= -1;
+                }
+                draw() {
+                    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < 50; i++) particles.push(new Particle());
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                particles.forEach((p, index) => {
+                    p.update();
+                    p.draw();
+                    // Draw connections
+                    for (let j = index + 1; j < particles.length; j++) {
+                        const p2 = particles[j];
+                        const dx = p.x - p2.x;
+                        const dy = p.y - p2.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 150) {
+                            ctx.strokeStyle = `rgba(255,255,255,${0.1 - dist/1500})`;
+                            ctx.lineWidth = 1;
+                            ctx.beginPath();
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.stroke();
+                        }
+                    }
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
         });
 
-        // Hide loader when returning to the page (bfcache)
         window.addEventListener('pageshow', (event) => {
             const loader = document.getElementById('loader');
             if (loader) loader.classList.remove('visible');
