@@ -387,6 +387,7 @@
         .card-debts { --accent-color: #f87171; }
         .card-deno { --accent-color: #4ade80; }
         .card-calc { --accent-color: #fb923c; }
+        .card-scan { --accent-color: #7c3aed; }
 
         /* Footer */
         footer {
@@ -439,6 +440,76 @@
             animation: spin 1s linear infinite;
         }
 
+        /* Search Bar */
+        .search-wrapper {
+            padding: 0 6% 1.5rem 6%;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+        }
+
+        .search-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem 3rem 1rem 3rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            pointer-events: none;
+            font-size: 1rem;
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1rem;
+            display: none;
+            transition: color 0.2s ease;
+        }
+
+        .search-clear:hover {
+            color: var(--text-primary);
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+            display: none;
+            font-size: 1.1rem;
+        }
+
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -484,6 +555,9 @@
                 animation: none;
                 opacity: 1;
             }
+            .search-wrapper {
+                padding: 0 5% 1.5rem 5%;
+            }
         }
     </style>
 </head>
@@ -515,6 +589,14 @@
                 <i class="fa-solid fa-chart-line"></i>
             </a>
         </header>
+
+        <div class="search-wrapper">
+            <div class="search-container">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="search-input" class="search-input" placeholder="Search apps..." data-translate-key="searchPlaceholder">
+                <i class="fa-solid fa-xmark search-clear" id="search-clear"></i>
+            </div>
+        </div>
 
         <main class="container" id="cards-container">
             <a href="cashew/cashew.html" class="card card-cashew">
@@ -576,6 +658,19 @@
                 </div>
                 <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
             </a>
+
+            <a href="scan/scan.html" class="card card-scan">
+                <div class="icon-box">
+                    <i class="fa-solid fa-camera"></i>
+                </div>
+                <div class="card-content">
+                    <h2 data-translate-key="scan">Scan</h2>
+                </div>
+                <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+            <div id="no-results" class="no-results">
+                <p data-translate-key="noResults">No apps found matching your search.</p>
+            </div>
         </main>
 
         <footer>
@@ -607,6 +702,41 @@
                     }
                 });
             });
+
+            // Search Functionality
+            const searchInput = document.getElementById('search-input');
+            const searchClear = document.getElementById('search-clear');
+            const noResults = document.getElementById('no-results');
+
+            if (searchInput) {
+                const performSearch = () => {
+                    const searchTerm = searchInput.value.toLowerCase();
+                    let hasVisibleCards = false;
+
+                    if (searchClear) {
+                        searchClear.style.display = searchTerm.length > 0 ? 'block' : 'none';
+                    }
+
+                    cards.forEach(card => {
+                        const title = card.querySelector('h2').textContent.toLowerCase();
+                        const isVisible = title.includes(searchTerm);
+                        card.style.display = isVisible ? 'flex' : 'none';
+                        if (isVisible) hasVisibleCards = true;
+                    });
+
+                    if (noResults) noResults.style.display = hasVisibleCards ? 'none' : 'block';
+                };
+
+                searchInput.addEventListener('input', performSearch);
+
+                if (searchClear) {
+                    searchClear.addEventListener('click', () => {
+                        searchInput.value = '';
+                        searchInput.focus();
+                        performSearch();
+                    });
+                }
+            }
 
             // Spotlight Effect Logic
             cardsContainer.onmousemove = e => {

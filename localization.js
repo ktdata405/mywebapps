@@ -84,6 +84,7 @@ const translations = {
     "calculators": "Calculators",
     "calculatorsDesc": "Various financial and utility calculators.",
     "enterPin": "PIN",
+    "scan": "Scan",
 
     // =============================================================================
     // FILE: dashboard.html
@@ -95,6 +96,7 @@ const translations = {
     "msiReport": "MSI Report",
     "rentReport": "Rent Report",
     "debtsReport": "Debts Report",
+    "scanReport": "Scan Report",
 
     // =============================================================================
     // FILE: denomination/denominations.html

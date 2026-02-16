@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner - KT Apps</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="../config.js"></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #030305; color: #fff; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .dashed-border { background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='16' ry='16' stroke='%236366F155' stroke-width='2' stroke-dasharray='12%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e"); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col relative overflow-x-hidden selection:bg-indigo-500/30">
+    <!-- Background Gradients -->
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+        <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-900/20 blur-[100px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-900/20 blur-[100px]"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-40 px-4 py-4">
+        <div class="glass rounded-2xl px-4 py-3 flex justify-between items-center max-w-6xl mx-auto">
+            <div class="flex items-center gap-4">
+                <a href="../index.html" class="w-10 h-10 rounded-xl glass flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+                <div>
+                    <h1 class="text-lg font-bold leading-tight">Scanner</h1>
+                    <p class="text-xs text-gray-400">Digitize Documents</p>
+                </div>
+            </div>
+            <a href="scanreport.html" class="px-4 py-2 rounded-xl bg-indigo-600/10 text-indigo-400 hover:bg-indigo-600/20 border border-indigo-600/20 transition-all text-sm font-semibold flex items-center gap-2">
+                <i class="fa-solid fa-clock-rotate-left"></i> <span class="hidden sm:inline">History</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow p-4 flex flex-col max-w-6xl mx-auto w-full pb-32">
+        <input type="file" id="file-input" accept="image/*" multiple hidden>
+
+        <!-- Upload Area -->
+        <div id="upload-area" class="flex-grow min-h-[400px] rounded-3xl dashed-border flex flex-col items-center justify-center cursor-pointer group hover:bg-white/[0.02] transition-all relative overflow-hidden">
+            <div class="text-center p-8 relative z-10">
+                <div class="w-20 h-20 rounded-full bg-indigo-500/10 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 border border-indigo-500/20 shadow-[0_0_30px_rgba(99,102,241,0.15)]">
+                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-indigo-400"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-2">Upload Documents</h3>
+                <p class="text-gray-400 mb-8">Drag & drop or tap to browse</p>
+                <button class="px-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-lg shadow-indigo-600/20 transition-all active:scale-95">
+                    Select Files
+                </button>
+            </div>
+        </div>
+
+        <!-- Preview Grid -->
+        <div id="preview-container" class="hidden grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <!-- Items injected by JS -->
+        </div>
+    </main>
+
+    <!-- Bottom Action Bar -->
+    <div id="bottom-bar" class="fixed bottom-6 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 md:w-[500px] z-40 transition-all duration-500 translate-y-[150%]">
+        <div class="glass p-3 rounded-2xl shadow-2xl flex items-center gap-3 bg-[#0b0f19]/90 backdrop-blur-xl border-white/10">
+            <div class="pl-3 flex-grow">
+                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Selected</p>
+                <div class="flex items-baseline gap-1">
+                    <span id="selected-count" class="text-lg font-bold text-white">0</span>
+                    <span class="text-xs text-gray-500">files</span>
+                </div>
+            </div>
+            <button id="cancel-btn" class="w-12 h-12 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-colors border border-white/5">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <button id="upload-btn" class="h-12 px-6 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-indigo-600/25 flex items-center gap-2 transition-all active:scale-95">
+                <span>Upload</span>
+                <i class="fa-solid fa-paper-plane text-sm"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Crop Modal -->
+    <div id="crop-modal" class="fixed inset-0 z-50 hidden bg-black/90 backdrop-blur-sm flex flex-col">
+        <div class="p-4 flex justify-between items-center bg-black/50 border-b border-white/10">
+            <h3 class="text-white font-bold">Crop Image</h3>
+            <button id="crop-cancel" class="text-gray-400 hover:text-white w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        <div class="flex-grow relative bg-[#0b0f19] overflow-hidden flex items-center justify-center p-4">
+            <img id="crop-image" src="" class="max-w-full max-h-full block" alt="Crop">
+        </div>
+        <div class="p-4 bg-black/50 border-t border-white/10 flex justify-end gap-3">
+            <button id="crop-save" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-lg shadow-indigo-600/20 transition-all">
+                <i class="fa-solid fa-check mr-2"></i> Apply
+            </button>
+        </div>
+    </div>
+
+    <!-- Loader -->
+    <div id="loader" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-md">
+        <div class="glass p-8 rounded-3xl flex flex-col items-center gap-6 shadow-2xl border border-white/10">
+            <div class="w-12 h-12 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
+            <div class="text-center">
+                <h3 class="text-white font-bold text-lg">Uploading...</h3>
+                <p class="text-gray-400 text-sm mt-1">Please wait</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script src="../localization.js"></script>
+    <script src="scan.js"></script>
+</body>
+</html>
