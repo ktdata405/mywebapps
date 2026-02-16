@@ -163,18 +163,24 @@ function handlePost(e) {
   }
 
   if (data.action === 'update') {
-    // Update existing record
     const allData = sheet.getDataRange().getValues();
     let rowIndexToUpdate = -1;
     
     const targetDate = data.originalDate || data.date;
+    const targetSide = data.originalSide || data.side;
     
-    // Search for the row to update based on DATE ONLY
+    // Search for the row
     for (let i = 1; i < allData.length; i++) {
       const row = allData[i];
       const rowDate = colMap.date > -1 ? formatDate(row[colMap.date]) : '';
+      const rowSide = colMap.side > -1 ? row[colMap.side] : '';
       
-      if (rowDate === targetDate) {
+      let match = (rowDate === targetDate);
+      if (match && targetSide && rowSide) {
+          match = (rowSide === targetSide);
+      }
+      
+      if (match) {
         rowIndexToUpdate = i + 1; // 1-based index
         break;
       }
@@ -199,7 +205,7 @@ function handlePost(e) {
        return ContentService
         .createTextOutput(JSON.stringify({ 
             "result": "error", 
-            "error": `Record not found for update. Searched for Date: '${targetDate}'`
+            "error": `Record not found for ${data.action}. Searched for Date: '${targetDate}'` + (targetSide ? ` and Side: '${targetSide}'` : '')
         }))
         .setMimeType(ContentService.MimeType.JSON);
     }

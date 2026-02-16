@@ -3,281 +3,481 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title data-translate-key="tenetReportTitle">Tenet Report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tenet Report</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="../config.js"></script>
     <style>
         :root {
-            --bg-dark: #0b0f19;
-            --card-bg: #151a25;
             --primary: #6366f1;
-            --accent: #ec4899;
+            --secondary: #ec4899;
+            --accent: #8b5cf6;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-light: #f8fafc;
+            --text-dim: #94a3b8;
         }
 
         body {
             background-color: var(--bg-dark);
-            color: #f8fafc;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            -webkit-tap-highlight-color: transparent;
+            color: var(--text-light);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
         }
 
-        /* Smooth scrolling */
-        html { scroll-behavior: smooth; }
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #1e1b4b, #0f172a);
+            overflow: hidden;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .orb-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px; animation-delay: 0s; }
+        .orb-2 { width: 300px; height: 300px; background: var(--secondary); bottom: -50px; right: -50px; animation-delay: -5s; }
+        .orb-3 { width: 200px; height: 200px; background: var(--accent); top: 40%; left: 60%; animation-delay: -10s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, 50px); }
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .accordion-content {
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out, padding 0.3s ease-out;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+
+        .accordion-content.active {
+            opacity: 1;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+
+        .rotate-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .rotate-icon.active {
+            transform: rotate(180deg);
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            color: var(--text-dim);
+        }
+
+        footer b {
+            color: var(--text-light);
+        }
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-
-        .glass-panel {
-            background: rgba(21, 26, 37, 0.6);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .input-group {
-            transition: all 0.3s ease;
-        }
-
-        .input-group:focus-within {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-            background: rgba(99, 102, 241, 0.05);
-        }
-
-        /* Table Styles */
-        .table-container {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th {
-            text-align: left;
-            padding: 1rem;
-            color: #94a3b8;
-            font-weight: 600;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            white-space: nowrap;
-        }
-
-        td {
-            padding: 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            color: #f8fafc;
-            font-size: 0.875rem;
-            white-space: nowrap;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        tr:hover td {
-            background-color: rgba(255, 255, 255, 0.02);
-        }
     </style>
 </head>
 
-<body class="min-h-screen pb-40 relative overflow-x-hidden">
+<body class="p-4 md:p-10 pb-32">
 
-    <!-- Background Gradients -->
-    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
-        <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[100px]"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-pink-600/20 rounded-full blur-[100px]"></div>
-    </div>
+<div class="bg-animation">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+</div>
 
+<div class="max-w-4xl mx-auto">
     <!-- Header -->
-    <header class="sticky top-0 z-30 glass-panel border-b border-white/5 px-6 py-4 mb-8 backdrop-blur-xl bg-[#0b0f19]/80">
-        <div class="max-w-5xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 ring-4 ring-white/5">
-                    <i class="fa-solid fa-chart-pie text-white text-lg"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold tracking-tight text-white leading-tight" data-translate-key="tenetReportTitle">Tenet Report</h1>
-                    <p class="text-xs text-gray-400 font-medium" data-translate-key="rentAnalytics">Rent Analytics</p>
+    <div class="glass-card flex flex-col md:flex-row justify-between items-center mb-6 p-4 rounded-xl sticky top-4 z-10 gap-4">
+        <div class="flex items-center gap-4 w-full md:w-auto">
+            <h5 class="text-xl font-bold flex items-center gap-3 text-white">
+                <i class="fa-solid fa-chart-pie text-emerald-400"></i> Tenet Report
+            </h5>
+        </div>
+
+        <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+            <!-- Filter -->
+            <div class="relative">
+                <select id="sideFilter" onchange="fetchData()" class="bg-white/10 border border-white/20 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 outline-none appearance-none pr-8 cursor-pointer">
+                    <option value="All" class="bg-slate-800">All Sides</option>
+                    <option value="Kalyan" class="bg-slate-800">Kalyan</option>
+                    <option value="Srikanth" class="bg-slate-800">Srikanth</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
+                    <i class="fa-solid fa-chevron-down text-xs"></i>
                 </div>
             </div>
-            <div class="flex gap-3">
-                <a href="tenet.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95">
+
+            <div class="flex gap-2">
+                <button onclick="fetchData()" class="bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30 w-10 h-10 rounded-full transition flex items-center justify-center shadow-sm" title="Refresh">
+                    <i class="fa-solid fa-sync"></i>
+                </button>
+                <a href="tenet.html" class="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-full transition flex items-center justify-center" title="Add New">
                     <i class="fa-solid fa-plus"></i>
                 </a>
-                <a href="../index.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95">
+                <a href="../index.html" class="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-full transition flex items-center justify-center" title="Home">
                     <i class="fa-solid fa-house"></i>
                 </a>
             </div>
         </div>
-    </header>
+    </div>
 
-    <main class="max-w-5xl mx-auto px-4">
-
-        <!-- Filters -->
-        <div class="glass-panel rounded-3xl p-6 mb-8 border border-white/10 shadow-2xl shadow-black/20">
-            <div class="flex flex-col md:flex-row gap-4 items-end">
-                <div class="w-full md:w-1/3 space-y-1.5">
-                    <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1" data-translate-key="filterBySide">Filter by Side</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
-                            <i class="fa-solid fa-filter text-sm"></i>
-                        </div>
-                        <select id="sideFilter" class="w-full h-[50px] bg-black/40 border border-white/10 rounded-2xl pl-10 pr-4 text-sm font-semibold text-white outline-none focus:border-indigo-500 focus:bg-black/60 focus:ring-1 focus:ring-indigo-500 transition-all appearance-none cursor-pointer">
-                            <option value="All" data-translate-key="allSides">All Sides</option>
-                            <option value="Kalyan" data-translate-key="kalyan">Kalyan</option>
-                            <option value="Srikanth" data-translate-key="srikanth">Srikanth</option>
-                        </select>
-                        <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-500">
-                            <i class="fa-solid fa-chevron-down text-xs"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="w-full md:w-auto">
-                    <button onclick="fetchReport()" class="w-full md:w-auto h-[50px] px-8 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2.5 transition-all active:scale-95 hover:shadow-indigo-600/40">
-                        <i class="fa-solid fa-rotate-right"></i>
-                        <span data-translate-key="refreshData">Refresh Data</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Report Table -->
-        <div class="glass-panel rounded-3xl p-6 mb-8 border border-white/10 shadow-2xl shadow-black/20 hidden" id="reportContainer">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-lg font-bold text-white" data-translate-key="transactionHistory">Transaction History</h2>
-                <span class="bg-emerald-500/20 text-emerald-400 text-[10px] uppercase tracking-wider font-bold px-3 py-1 rounded-lg border border-emerald-500/30" id="recordCount">0 Records</span>
-            </div>
-            <div class="table-container">
-                <table id="reportTable">
-                    <thead>
-                        <tr>
-                            <th data-translate-key="date">Date</th>
-                            <th data-translate-key="side">Side</th>
-                            <th data-translate-key="rent">Rent</th>
-                            <th data-translate-key="paid">Paid</th>
-                            <th data-translate-key="balance">Balance</th>
-                            <th data-translate-key="power">Power</th>
-                            <th data-translate-key="water">Water</th>
-                            <th data-translate-key="total">Total</th>
-                            <th data-translate-key="remarks">Remarks</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Rows will be populated here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Empty State -->
-        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 text-center">
-            <div class="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                <i class="fa-solid fa-clipboard-list text-3xl text-gray-600"></i>
-            </div>
-            <h3 class="text-xl font-bold text-white mb-1" data-translate-key="noRecordsFound">No Records Found</h3>
-            <p class="text-gray-400 text-sm" data-translate-key="noRecordsFoundMessage">Try adjusting filters or add new records.</p>
-        </div>
-
-    </main>
-
-    <!-- Loader -->
-    <div id="loader" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-all">
-        <div class="glass-panel p-8 rounded-3xl flex flex-col items-center gap-6 shadow-2xl border border-white/10">
-            <div class="relative w-16 h-16">
-                <div class="absolute inset-0 border-4 border-indigo-500/20 rounded-full"></div>
-                <div class="absolute inset-0 border-4 border-indigo-500 rounded-full border-t-transparent animate-spin"></div>
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <i class="fa-solid fa-cloud-arrow-down text-indigo-500"></i>
-                </div>
-            </div>
-            <div class="text-center">
-                <h3 class="text-white font-bold text-lg" data-translate-key="fetchingData">Fetching Data</h3>
-                <p class="text-gray-400 text-sm mt-1" data-translate-key="retrievingExpenses">Retrieving records...</p>
-            </div>
+    <div id="loader" class="flex justify-center items-center py-20">
+        <div class="animate-spin">
+            <i class="fa-solid fa-circle-notch text-4xl text-emerald-400"></i>
         </div>
     </div>
 
-    <script>
-        const SCRIPT_URL = CONFIG.GOOGLE_SHEET_URL_RENT;
+    <div id="report-container" class="flex flex-col gap-3 hidden">
+        <!-- List items will be inserted here -->
+    </div>
 
-        function fetchReport() {
-            const loader = document.getElementById('loader');
-            const reportContainer = document.getElementById('reportContainer');
-            const emptyState = document.getElementById('emptyState');
-            const tbody = document.querySelector('#reportTable tbody');
-            const sideFilter = document.getElementById('sideFilter').value;
+    <div id="empty-state" class="hidden flex flex-col items-center justify-center py-20 text-gray-500">
+        <i class="fa-solid fa-clipboard-list text-6xl mb-4 text-gray-700"></i>
+        <p class="text-xl">No records found</p>
+    </div>
+</div>
 
-            loader.classList.remove('hidden');
-            reportContainer.classList.add('hidden');
-            emptyState.classList.add('hidden');
+<!-- Bottom Summary Bar -->
+<div id="summary-bar" class="fixed bottom-0 left-0 w-full z-50 transform translate-y-full transition-transform duration-500 ease-out">
+    <div class="absolute inset-0 bg-[#0f172a]/90 backdrop-blur-xl border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]"></div>
+    <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-50"></div>
 
-            fetch(SCRIPT_URL)
-                .then(response => response.json())
-                .then(data => {
-                    loader.classList.add('hidden');
-                    tbody.innerHTML = '';
+    <div class="relative max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Total Collected</p>
+            <h2 id="total-collected-value" class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 filter drop-shadow-lg">₹0</h2>
+        </div>
 
-                    let records = data.data || []; // Assuming API returns { data: [...] }
+        <div class="flex items-center gap-3">
+            <div class="text-right hidden sm:block">
+                <p class="text-[10px] text-gray-500 font-medium">Net Revenue</p>
+                <p class="text-xs text-emerald-400 font-bold">Verified <i class="fa-solid fa-circle-check ml-1"></i></p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/25 ring-1 ring-white/10">
+                <i class="fa-solid fa-wallet text-white text-lg"></i>
+            </div>
+        </div>
+    </div>
+</div>
 
-                    // Filter
-                    if (sideFilter !== 'All') {
-                        records = records.filter(r => r.side === sideFilter);
+<script>
+    const SCRIPT_URL = CONFIG.GOOGLE_SHEET_URL_RENT;
+    let allRecords = [];
+
+    function formatDate(dateString) {
+        if (!dateString) return '';
+        let date;
+        if (dateString instanceof Date) {
+            date = dateString;
+        } else {
+            // Handle DD/MMM/YYYY or YYYY-MM-DD
+            if (typeof dateString === 'string' && (dateString.includes('/') || dateString.includes('-'))) {
+                const separator = dateString.includes('/') ? '/' : '-';
+                const parts = dateString.split(separator);
+                if (parts.length === 3) {
+                    if (isNaN(parts[1])) {
+                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        const monthIndex = months.findIndex(m => m.toLowerCase() === parts[1].toLowerCase());
+                        if (monthIndex !== -1) {
+                            date = new Date(parts[2], monthIndex, parts[0]);
+                        }
                     }
-
-                    if (records.length === 0) {
-                        emptyState.classList.remove('hidden');
-                        return;
-                    }
-
-                    reportContainer.classList.remove('hidden');
-                    document.getElementById('recordCount').textContent = `${records.length} Records`;
-
-                    records.forEach(record => {
-                        const row = document.createElement('tr');
-
-                        // Format Date
-                        let dateStr = record.date;
-                        try {
-                            const d = new Date(record.date);
-                            if(!isNaN(d.getTime())) {
-                                dateStr = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-                            }
-                        } catch(e) {}
-
-                        row.innerHTML = `
-                            <td class="font-mono text-indigo-300">${dateStr}</td>
-                            <td><span class="px-2 py-1 rounded-lg bg-white/5 text-xs font-bold border border-white/10">${record.side}</span></td>
-                            <td class="font-mono">₹${record.rentAmount || 0}</td>
-                            <td class="font-mono text-emerald-400">₹${record.paidAmount || 0}</td>
-                            <td class="font-mono text-rose-400">₹${record.balanceAmount || 0}</td>
-                            <td class="font-mono">₹${record.powerBill || 0}</td>
-                            <td class="font-mono">₹${record.waterBill || 0}</td>
-                            <td class="font-mono font-bold text-white">₹${record.totalPaid || 0}</td>
-                            <td class="text-gray-400 italic text-xs max-w-[200px] truncate" title="${record.remarks || ''}">${record.remarks || '-'}</td>
-                        `;
-                        tbody.appendChild(row);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    loader.classList.add('hidden');
-                    alert('Failed to load report data.');
-                });
+                }
+            }
+            if (!date) date = new Date(dateString);
         }
 
-        // Initial Load
-        document.addEventListener('DOMContentLoaded', fetchReport);
-    </script>
-    <script src="../localization.js"></script>
+        if (isNaN(date.getTime())) return dateString;
 
+        const day = String(date.getDate()).padStart(2, '0');
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const month = months[date.getMonth()];
+        const year = date.getFullYear();
+
+        return `${day} ${month} ${year}`;
+    }
+
+    function parseDate(dateString) {
+        if (!dateString) return new Date(0);
+        let date;
+        if (dateString instanceof Date) {
+            date = dateString;
+        } else {
+            // Handle DD/MMM/YYYY or YYYY-MM-DD
+            if (typeof dateString === 'string' && (dateString.includes('/') || dateString.includes('-'))) {
+                const separator = dateString.includes('/') ? '/' : '-';
+                const parts = dateString.split(separator);
+                if (parts.length === 3) {
+                    if (isNaN(parts[1])) {
+                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        const monthIndex = months.findIndex(m => m.toLowerCase() === parts[1].toLowerCase());
+                        if (monthIndex !== -1) {
+                            date = new Date(parts[2], monthIndex, parts[0]);
+                        }
+                    }
+                }
+            }
+            if (!date) date = new Date(dateString);
+        }
+        return isNaN(date.getTime()) ? new Date(0) : date;
+    }
+
+    function formatCurrency(amount) {
+        const num = parseFloat(amount);
+        if (isNaN(num)) return amount || '₹0';
+
+        return new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 0
+        }).format(num);
+    }
+
+    function toggleAccordion(element) {
+        const content = element.nextElementSibling;
+        const icon = element.querySelector('.rotate-icon');
+
+        if (content.style.maxHeight) {
+            content.style.maxHeight = null;
+            content.classList.remove('active');
+            icon.classList.remove('active');
+        } else {
+            content.classList.add('active');
+            content.style.maxHeight = content.scrollHeight + "px";
+            icon.classList.add('active');
+        }
+    }
+
+    function createListItem(data) {
+        const itemContainer = document.createElement('div');
+        itemContainer.className = 'glass-card rounded-xl overflow-hidden';
+
+        const header = document.createElement('div');
+        header.className = 'p-4 flex justify-between items-center cursor-pointer hover:bg-white/5 transition select-none';
+
+        const content = document.createElement('div');
+        content.className = 'accordion-content bg-black/20';
+
+        // Header Content
+        const headerContent = document.createElement('div');
+        headerContent.className = 'flex items-center gap-4 flex-grow';
+        headerContent.onclick = () => toggleAccordion(header);
+
+        const sideColor = data.side === 'Kalyan' ? 'text-indigo-300 bg-indigo-500/20 border-indigo-500/30' : 'text-pink-300 bg-pink-500/20 border-pink-500/30';
+        const sideIcon = data.side === 'Kalyan' ? 'fa-user' : 'fa-user-group';
+
+        headerContent.innerHTML = `
+            <div class="${sideColor} w-10 h-10 rounded-full flex items-center justify-center border">
+                <i class="fa-solid ${sideIcon}"></i>
+            </div>
+            <div>
+                <div class="font-bold text-white">${formatDate(data.date)}</div>
+                <div class="text-xs text-gray-400">${data.side}</div>
+            </div>
+        `;
+
+        // Right Section (Amount + Actions)
+        const rightSection = document.createElement('div');
+        rightSection.className = 'flex items-center gap-3';
+
+        // Edit Button
+        const editBtn = document.createElement('button');
+        editBtn.className = 'text-gray-400 hover:text-blue-400 transition p-2 rounded-full hover:bg-blue-500/10';
+        editBtn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i>';
+        editBtn.onclick = (e) => {
+            e.stopPropagation();
+            sessionStorage.setItem('tenetEditData', JSON.stringify(data));
+            window.location.href = 'tenet.html';
+        };
+
+        const amountDiv = document.createElement('div');
+        amountDiv.className = 'text-right min-w-[80px]';
+        amountDiv.innerHTML = `<div class="font-bold text-lg text-emerald-400">${formatCurrency(data.totalPaid)}</div>`;
+        amountDiv.onclick = () => toggleAccordion(header);
+
+        const chevron = document.createElement('i');
+        chevron.className = 'fa-solid fa-chevron-down text-gray-500 rotate-icon ml-2';
+        chevron.onclick = () => toggleAccordion(header);
+
+        rightSection.appendChild(editBtn);
+        rightSection.appendChild(amountDiv);
+        rightSection.appendChild(chevron);
+
+        header.appendChild(headerContent);
+        header.appendChild(rightSection);
+        itemContainer.appendChild(header);
+
+        // Render Details
+        renderDetails(content, data);
+
+        itemContainer.appendChild(content);
+        return itemContainer;
+    }
+
+    function renderDetails(contentContainer, data) {
+        contentContainer.innerHTML = '';
+        const innerPadding = document.createElement('div');
+        innerPadding.className = 'px-4 pb-4';
+
+        const detailsGrid = document.createElement('div');
+        detailsGrid.className = 'grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm';
+
+        const fields = [
+            { label: 'Date', value: formatDate(data.date), color: 'text-white' },
+            { label: 'Rent Amount', value: data.rentAmount, color: 'text-gray-200' },
+            { label: 'Paid Amount', value: data.paidAmount, color: 'text-emerald-300' },
+            { label: 'Balance', value: data.balanceAmount, color: 'text-rose-300' },
+            { label: 'Power Bill', value: data.powerBill, color: 'text-yellow-300' },
+            { label: 'Water Bill', value: data.waterBill, color: 'text-blue-300' },
+        ];
+
+        fields.forEach(field => {
+            const item = document.createElement('div');
+            item.className = 'bg-white/5 p-3 rounded-lg border border-white/10';
+            item.innerHTML = `
+                <div class="text-xs text-gray-400 uppercase font-bold mb-1">${field.label}</div>
+                <div class="font-semibold ${field.color}">${field.label === 'Date' ? field.value : formatCurrency(field.value)}</div>
+            `;
+            detailsGrid.appendChild(item);
+        });
+
+        innerPadding.appendChild(detailsGrid);
+
+        // Remarks Section - Robust Check
+        let remarksText = '';
+        if (data.remarks !== undefined && data.remarks !== null) {
+            remarksText = String(data.remarks).trim();
+        }
+
+        if (remarksText !== '' && remarksText !== '-') {
+             const remarksCard = document.createElement('div');
+             remarksCard.className = 'mt-3 bg-white/5 p-4 rounded-xl border border-white/10 flex flex-col gap-1';
+             remarksCard.innerHTML = `
+                <div class="flex items-center gap-2 text-gray-400 mb-1">
+                    <i class="fa-solid fa-comment-dots text-xs"></i>
+                    <span class="text-[10px] uppercase font-bold tracking-wider">Remarks</span>
+                </div>
+                <div class="text-gray-200 text-sm leading-relaxed">${remarksText}</div>
+             `;
+             innerPadding.appendChild(remarksCard);
+        }
+
+        // NEW: Total Paid Highlight Card (Centered)
+        const totalCard = document.createElement('div');
+        totalCard.className = 'mt-4 p-4 rounded-xl bg-gradient-to-r from-emerald-900/30 to-teal-900/30 border border-emerald-500/20 flex flex-col items-center justify-center shadow-lg text-center';
+        totalCard.innerHTML = `
+            <div class="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 mb-2">
+                <i class="fa-solid fa-sack-dollar text-xl"></i>
+            </div>
+            <p class="text-[10px] uppercase tracking-widest text-emerald-400 font-bold mb-0.5">Total Paid</p>
+            <div class="text-3xl font-black text-white tracking-tight">${formatCurrency(data.totalPaid)}</div>
+        `;
+        innerPadding.appendChild(totalCard);
+
+        contentContainer.appendChild(innerPadding);
+    }
+
+    function fetchData() {
+        const loader = document.getElementById('loader');
+        const container = document.getElementById('report-container');
+        const emptyState = document.getElementById('empty-state');
+        const summaryBar = document.getElementById('summary-bar');
+        const totalValue = document.getElementById('total-collected-value');
+        const sideFilter = document.getElementById('sideFilter').value;
+
+        loader.classList.remove('hidden');
+        container.classList.add('hidden');
+        emptyState.classList.add('hidden');
+
+        // Hide summary bar initially
+        if(summaryBar) summaryBar.classList.add('translate-y-full');
+
+        container.innerHTML = '';
+
+        fetch(SCRIPT_URL)
+            .then(response => response.json())
+            .then(responsePayload => {
+                loader.classList.add('hidden');
+
+                allRecords = responsePayload.data || [];
+                let displayRecords = allRecords;
+
+                if (sideFilter !== 'All') {
+                    displayRecords = displayRecords.filter(r => r.side === sideFilter);
+                }
+
+                if (displayRecords && displayRecords.length > 0) {
+                    container.classList.remove('hidden');
+
+                    // Sort by date descending
+                    displayRecords.sort((a, b) => parseDate(b.date) - parseDate(a.date));
+
+                    // Calculate Total
+                    const total = displayRecords.reduce((sum, record) => {
+                        const val = parseFloat(record.totalPaid);
+                        return sum + (isNaN(val) ? 0 : val);
+                    }, 0);
+
+                    if (summaryBar && totalValue) {
+                        totalValue.textContent = formatCurrency(total);
+                        // Show summary bar with animation
+                        setTimeout(() => {
+                            summaryBar.classList.remove('translate-y-full');
+                        }, 100);
+                    }
+
+                    displayRecords.forEach(item => container.appendChild(createListItem(item)));
+                } else {
+                    emptyState.classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+                loader.classList.add('hidden');
+                emptyState.innerHTML = `
+                        <i class="fa-solid fa-triangle-exclamation text-6xl mb-4 text-red-400"></i>
+                        <p class="text-xl text-red-300">Error loading reports</p>
+                        <p class="text-sm text-gray-400 mt-2">${error.message}</p>
+                    `;
+                emptyState.classList.remove('hidden');
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchData);
+</script>
+
+<footer>
+    <p>&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
+</footer>
 </body>
+
 </html>
