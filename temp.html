@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Scanner Options</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="config.js"></script>
+    <style>
+        :root {
+            --bg-color: #030305;
+            --card-bg: rgba(255, 255, 255, 0.02);
+            --card-border: rgba(255, 255, 255, 0.05);
+            --card-hover-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --accent-glow: radial-gradient(circle at center, rgba(124, 58, 237, 0.15), transparent 50%);
+            --spotlight-color: rgba(255, 255, 255, 0.15);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        /* Canvas Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.6;
+        }
+
+        /* Custom Styles for Menu */
+        .menu-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff 20%, #a1a1aa 40%, #a1a1aa 60%, #fff 80%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: textShimmer 5s linear infinite;
+        }
+
+        @keyframes textShimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: transform 0.2s ease;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            top: 0;
+            left: 0;
+            background: radial-gradient(
+                800px circle at var(--mouse-x) var(--mouse-y),
+                rgba(255, 255, 255, 0.06),
+                transparent 40%
+            );
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .card::after {
+            content: "";
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            top: 0;
+            left: 0;
+            background: radial-gradient(
+                600px circle at var(--mouse-x) var(--mouse-y),
+                rgba(255, 255, 255, 0.3),
+                transparent 40%
+            );
+            opacity: 0;
+            transition: opacity 0.5s;
+            z-index: 1;
+            pointer-events: none;
+            -webkit-mask: 
+                linear-gradient(#fff 0 0) content-box, 
+                linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            padding: 1px;
+            border-radius: inherit;
+        }
+
+        .card:hover::before,
+        .card:hover::after {
+            opacity: 1;
+        }
+
+        .icon-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        .icon-box i {
+            color: var(--accent-color);
+            transition: color 0.3s ease;
+        }
+
+        .card:hover .icon-box {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 20px var(--accent-color);
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.1);
+        }
+
+        .card:hover .icon-box i {
+            color: #fff;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+        }
+
+        .btn-arrow {
+            color: var(--text-secondary);
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+
+        .card:hover .btn-arrow {
+            opacity: 1;
+            transform: translateX(0);
+            color: var(--text-primary);
+        }
+
+        /* Card Colors */
+        .card-camera { --accent-color: #7c3aed; } /* Purple */
+        .card-browse { --accent-color: #60a5fa; } /* Blue */
+        .card-showall { --accent-color: #fbbf24; } /* Amber */
+
+        /* Module Switching Logic */
+        .module-view {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .module-view.active {
+            display: flex;
+            opacity: 1;
+        }
+        
+        /* Scanner Specific Styles */
+        .scan-line {
+            background: linear-gradient(to right, transparent, rgba(99, 102, 241, 0.9), transparent);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.6);
+            animation: scan 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+        @keyframes scan {
+            0% { top: 5%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 95%; opacity: 0; }
+        }
+        .viewfinder-corner {
+            position: absolute; width: 2.5rem; height: 2.5rem;
+            border-color: rgba(255, 255, 255, 0.9); border-style: solid; border-width: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
+        }
+        @keyframes flashEffect { 0% { opacity: 0.8; } 100% { opacity: 0; } }
+        .flash-active { animation: flashEffect 0.4s ease-out forwards; pointer-events: none; }
+        
+        .mode-btn { position: relative; transition: color 0.3s; }
+        .mode-btn.active { color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.5); }
+        .mode-btn.active::after {
+            content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+            width: 4px; height: 4px; background-color: #6366f1; border-radius: 50%; box-shadow: 0 0 10px #6366f1;
+        }
+        .btn-press:active { transform: scale(0.96); }
+        .drag-active { border-color: #6366f1 !important; background-color: rgba(99, 102, 241, 0.05) !important; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Fix for Tailwind conflict */
+        .icon-box { display: flex; align-items: center; justify-content: center; }
+        .card-content { z-index: 2; }
+        .card h2 { margin-bottom: 0; }
+        
+        /* Ensure menu is scrollable */
+        #module-menu {
+            overflow-y: auto;
+            position: relative;
+            z-index: 20;
+        }
+    </style>
+</head>
+<body class="bg-neutral-950 h-screen overflow-hidden relative">
+
+    <canvas id="bg-canvas"></canvas>
+    <div id="flash-overlay" class="absolute inset-0 bg-white opacity-0 z-50 pointer-events-none"></div>
+
+    <!-- MODULE: MENU (The Cards) -->
+    <div id="module-menu" class="module-view active flex-col w-full h-full">
+        <header class="p-8 flex justify-between items-center mb-4">
+            <div class="flex items-center gap-5 menu-header">
+                <h1>Scanner</h1>
+            </div>
+            <a href="index.html" class="w-12 h-12 rounded-xl flex items-center justify-center text-xl bg-white/5 border border-white/5 text-white hover:bg-white/10 transition-all backdrop-blur-md" aria-label="Home">
+                <i class="fa-solid fa-house"></i>
+            </a>
+        </header>
+
+        <main class="px-8 pb-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-[1400px] mx-auto w-full" id="cards-container">
+            <button onclick="switchModule('camera')" class="card card-camera p-8 flex flex-col justify-center items-center gap-4 min-h-[180px] text-center w-full">
+                <div class="icon-box w-14 h-14 rounded-2xl text-3xl mb-2">
+                    <i class="fa-solid fa-camera"></i>
+                </div>
+                <div class="card-content">
+                    <h2 class="text-lg font-semibold tracking-tight">Open Camera</h2>
+                </div>
+                <div class="btn-arrow absolute top-8 right-8"><i class="fa-solid fa-arrow-right"></i></div>
+            </button>
+
+            <button onclick="openBrowse()" class="card card-browse p-8 flex flex-col justify-center items-center gap-4 min-h-[180px] text-center w-full">
+                <div class="icon-box w-14 h-14 rounded-2xl text-3xl mb-2">
+                    <i class="fa-solid fa-folder-open"></i>
+                </div>
+                <div class="card-content">
+                    <h2 class="text-lg font-semibold tracking-tight">Browse</h2>
+                </div>
+                <div class="btn-arrow absolute top-8 right-8"><i class="fa-solid fa-arrow-right"></i></div>
+            </button>
+
+            <button onclick="showAllDocuments()" class="card card-showall p-8 flex flex-col justify-center items-center gap-4 min-h-[180px] text-center w-full">
+                <div class="icon-box w-14 h-14 rounded-2xl text-3xl mb-2">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <div class="card-content">
+                    <h2 class="text-lg font-semibold tracking-tight">Show All</h2>
+                </div>
+                <div class="btn-arrow absolute top-8 right-8"><i class="fa-solid fa-arrow-right"></i></div>
+            </button>
+        </main>
+
+        <footer class="mt-auto text-center py-12 text-neutral-400 text-sm border-t border-white/5">
+            <p>&copy; 2024 <b class="text-white font-semibold">Thammineni Technologies</b>. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- MODULE: CAMERA -->
+    <div id="module-camera" class="module-view flex-col relative w-full h-full bg-black">
+        <!-- Header Controls -->
+        <header class="absolute top-0 left-0 right-0 z-30 p-4 md:p-6 flex justify-between items-center bg-gradient-to-b from-black/90 via-black/40 to-transparent">
+            <div class="flex items-center gap-2">
+                 <button onclick="switchModule('menu')" class="w-9 h-9 rounded-lg bg-neutral-900/80 backdrop-blur flex items-center justify-center border border-white/10 hover:bg-neutral-800 transition-colors">
+                    <iconify-icon icon="solar:arrow-left-linear" class="text-white" width="18"></iconify-icon>
+                </button>
+            </div>
+            <div class="flex items-center gap-4 md:gap-5 mx-auto md:mx-0 md:ml-auto bg-neutral-900/60 backdrop-blur-md rounded-full px-5 py-2.5 border border-white/10 shadow-2xl">
+                <button onclick="toggleState(this, 'text-yellow-400', 'text-neutral-400')" class="text-neutral-400 hover:text-white transition-colors btn-press">
+                    <iconify-icon icon="solar:flash-linear" width="20"></iconify-icon>
+                </button>
+                <div class="w-px h-3 bg-white/10"></div>
+                <button onclick="toggleAuto(this)" class="text-indigo-400 btn-press">
+                    <span class="text-[10px] font-semibold tracking-wider">AUTO</span>
+                </button>
+                <div class="w-px h-3 bg-white/10"></div>
+                <button onclick="toggleGrid(this)" class="text-neutral-400 hover:text-white transition-colors btn-press">
+                    <iconify-icon icon="solar:grid-frame-linear" width="20"></iconify-icon>
+                </button>
+            </div>
+            <div class="w-9"></div> <!-- Spacer for centering -->
+        </header>
+
+        <!-- Viewfinder -->
+        <div class="relative flex-1 bg-neutral-900 overflow-hidden group cursor-crosshair">
+            <video id="webcam-feed" autoplay="" playsinline="" muted="" class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500"></video>
+            <img id="static-feed" src="https://images.unsplash.com/photo-1542435503-956c469947f6?q=80&amp;w=2574&amp;auto=format&amp;fit=crop" alt="Camera Feed" class="absolute inset-0 w-full h-full object-cover opacity-50 mix-blend-overlay md:opacity-100 md:mix-blend-normal transition-opacity duration-700" style="filter: contrast(1.1) brightness(0.9);">
+            
+            <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/50 pointer-events-none"></div>
+
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none p-6 md:p-12">
+                <div id="scanner-frame" class="relative w-full max-w-[85%] aspect-[3/4] md:max-w-md md:aspect-[1/1.414] rounded-lg transition-transform duration-300">
+                    <div id="scan-laser" class="absolute left-0 right-0 h-0.5 z-10 scan-line rounded-full"></div>
+                    <div class="viewfinder-corner border-t-2 border-l-2 rounded-tl-2xl top-0 left-0"></div>
+                    <div class="viewfinder-corner border-t-2 border-r-2 rounded-tr-2xl top-0 right-0"></div>
+                    <div class="viewfinder-corner border-b-2 border-l-2 rounded-bl-2xl bottom-0 left-0"></div>
+                    <div class="viewfinder-corner border-b-2 border-r-2 rounded-br-2xl bottom-0 right-0"></div>
+                    
+                    <div class="absolute top-[20%] left-6 right-6 h-3 bg-indigo-500/20 rounded-sm border border-indigo-500/30"></div>
+                    <div class="absolute top-[25%] left-6 right-10 h-3 bg-indigo-500/20 rounded-sm border border-indigo-500/30"></div>
+                </div>
+            </div>
+
+            <div id="grid-lines" class="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-300">
+                 <div class="w-full h-full border-l border-r border-white/5 grid grid-cols-3 grid-rows-3">
+                    <div class="border border-white/5"></div><div class="border border-white/5"></div><div class="border border-white/5"></div>
+                    <div class="border border-white/5"></div><div class="border border-white/5"></div><div class="border border-white/5"></div>
+                    <div class="border border-white/5"></div><div class="border border-white/5"></div><div class="border border-white/5"></div>
+                 </div>
+            </div>
+
+            <div id="status-toast" class="absolute top-28 md:top-32 left-1/2 -translate-x-1/2 px-5 py-2.5 bg-black/60 backdrop-blur-xl rounded-full border border-white/10 shadow-2xl transition-all duration-300 opacity-100 transform translate-y-0">
+                <div class="flex items-center gap-2">
+                    <div class="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></div>
+                    <p class="text-xs font-medium text-white tracking-wide whitespace-nowrap">Detecting document...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Camera Controls -->
+        <div class="relative z-20 glass-panel pb-10 pt-6 px-6 flex flex-col items-center shadow-[0_-10px_40px_rgba(0,0,0,0.5)] bg-black/80 backdrop-blur-md">
+            <div class="w-full max-w-lg mx-auto mb-8 overflow-hidden relative">
+                <div class="overflow-x-auto hide-scrollbar flex justify-center">
+                    <div class="flex items-center gap-10 px-8 min-w-max" id="mode-container">
+                        <button onclick="setMode(this)" class="mode-btn text-neutral-500 text-[10px] font-bold tracking-[0.15em] hover:text-neutral-300 py-3 uppercase">Translate</button>
+                        <button onclick="setMode(this)" class="mode-btn active text-neutral-500 text-[10px] font-bold tracking-[0.15em] hover:text-neutral-300 py-3 uppercase">Document</button>
+                        <button onclick="setMode(this)" class="mode-btn text-neutral-500 text-[10px] font-bold tracking-[0.15em] hover:text-neutral-300 py-3 uppercase">ID Card</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full max-w-xl mx-auto grid grid-cols-3 items-center">
+                <div class="justify-self-start pl-2 md:pl-0">
+                    <button onclick="openBrowse()" class="relative group w-12 h-12 md:w-14 md:h-14 rounded-xl overflow-hidden border border-white/10 hover:border-white/30 transition-all btn-press">
+                        <img src="https://images.unsplash.com/photo-1618044733300-9472054094ee?q=80&amp;w=2670&amp;auto=format&amp;fit=crop" class="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" alt="Gallery">
+                        <span id="scan-count-badge" class="absolute top-1 right-1 bg-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden shadow-sm border border-black/20">0</span>
+                    </button>
+                </div>
+                <div class="justify-self-center">
+                    <button onclick="captureImage()" class="relative w-20 h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center group outline-none focus:outline-none btn-press transition-transform">
+                        <div class="absolute inset-0 rounded-full border-[4px] border-white/20 group-hover:border-white/40 transition-colors"></div>
+                        <div class="w-16 h-16 md:w-20 md:h-20 bg-white rounded-full shadow-[0_0_30px_rgba(255,255,255,0.15)] group-hover:shadow-[0_0_50px_rgba(255,255,255,0.3)] group-hover:scale-[0.96] transition-all duration-300"></div>
+                    </button>
+                </div>
+                <div class="justify-self-end pr-2 md:pr-0">
+                    <button onclick="finishScan()" class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-neutral-800 hover:bg-neutral-700 flex items-center justify-center text-white border border-white/10 transition-colors btn-press group">
+                        <iconify-icon icon="solar:check-read-linear" width="24" class="group-hover:text-green-400 transition-colors"></iconify-icon>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODULE: BROWSE -->
+    <div id="module-browse" class="module-view flex-col w-full h-full bg-neutral-900">
+        <div id="browse-header" class="flex-none p-6 md:p-8 border-b border-white/5 bg-neutral-900/50 backdrop-blur-md sticky top-0 z-20">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <button onclick="switchModule('menu')" class="p-2 -ml-2 rounded-lg text-white hover:bg-white/10 transition-colors">
+                        <iconify-icon icon="solar:home-linear" width="20"></iconify-icon>
+                    </button>
+                    <button id="browse-back-btn" class="p-2 rounded-lg text-white hover:bg-white/10 transition-colors hidden">
+                        <iconify-icon icon="solar:arrow-left-linear" width="20"></iconify-icon>
+                    </button>
+                    <h2 id="browse-title" class="text-xl font-medium text-white tracking-tight">Documents</h2>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button id="create-folder-btn" class="group w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-indigo-500/10 hover:border-indigo-500/50 transition-all active:scale-95" title="New Folder">
+                        <iconify-icon icon="solar:add-folder-bold-duotone" class="text-indigo-400 group-hover:text-indigo-300 transition-colors" width="24"></iconify-icon>
+                    </button>
+                    <button onclick="switchModule('upload')" class="group w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-emerald-500/10 hover:border-emerald-500/50 transition-all active:scale-95" title="Import File">
+                        <iconify-icon icon="solar:upload-track-2-bold-duotone" class="text-emerald-400 group-hover:text-emerald-300 transition-colors" width="24"></iconify-icon>
+                    </button>
+                </div>
+            </div>
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="relative flex-1">
+                    <iconify-icon icon="solar:magnifer-linear" class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" width="18"></iconify-icon>
+                    <input type="text" id="browse-search-input" placeholder="Search invoices, contracts..." class="w-full bg-black/40 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-indigo-500/50 transition-colors">
+                    <button id="browse-search-clear" class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white hidden">
+                        <iconify-icon icon="solar:close-circle-linear" width="16"></iconify-icon>
+                    </button>
+                </div>
+                <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1 md:pb-0">
+                    <button class="filter-btn px-4 py-2 rounded-full bg-white text-black text-xs font-medium whitespace-nowrap" data-filter="all">All</button>
+                    <button class="filter-btn px-4 py-2 rounded-full bg-white/5 border border-white/5 text-neutral-400 hover:text-white text-xs font-medium whitespace-nowrap transition-colors" data-filter="image">Images</button>
+                    <button class="filter-btn px-4 py-2 rounded-full bg-white/5 border border-white/5 text-neutral-400 hover:text-white text-xs font-medium whitespace-nowrap transition-colors" data-filter="application/pdf">PDF</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 md:p-8">
+            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-4" id="browse-grid">
+                <!-- Folders and files injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODULE: UPLOAD -->
+    <div id="module-upload" class="module-view flex-col w-full h-full bg-neutral-900 items-center justify-center p-6 relative">
+        <div class="absolute top-6 left-6 z-20">
+             <button onclick="switchModule('menu')" class="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors">
+                <iconify-icon icon="solar:arrow-left-linear" width="20"></iconify-icon>
+                <span class="text-sm font-medium">Back to Menu</span>
+            </button>
+        </div>
+
+        <div class="w-full max-w-3xl text-center">
+            <div class="bg-neutral-900/50 border border-white/5 rounded-2xl p-8 md:p-12 relative overflow-hidden" id="drop-zone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+                <div id="initial-upload-ui">
+                    <div class="absolute inset-0 border-2 border-dashed border-white/10 rounded-2xl pointer-events-none transition-colors duration-300" id="drop-border"></div>
+                    <div class="w-20 h-20 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full flex items-center justify-center mb-6 relative mx-auto">
+                        <div class="absolute inset-0 rounded-full bg-indigo-500/20 blur-xl"></div>
+                        <iconify-icon icon="solar:cloud-upload-linear" class="text-indigo-400 relative z-10" width="40"></iconify-icon>
+                    </div>
+                    <h3 class="text-2xl font-light text-white mb-3">Upload Documents</h3>
+                    <p class="text-sm text-neutral-400 max-w-sm mb-8 leading-relaxed mx-auto">Drag &amp; drop files here, or click to browse. Supports PDF, JPG, PNG.</p>
+                    <input type="file" id="file-input" class="hidden" multiple="" accept="image/*,application/pdf" onchange="handleFiles(this.files)">
+                    <button onclick="document.getElementById('file-input').click()" class="px-8 py-3.5 bg-white text-black text-sm font-semibold rounded-lg hover:bg-neutral-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)] btn-press flex items-center gap-2 mx-auto">
+                        <iconify-icon icon="solar:folder-open-linear" width="18"></iconify-icon>
+                        Select Files
+                    </button>
+                </div>
+
+                <div id="upload-preview-container" class="hidden text-left">
+                    <h3 class="text-xl font-medium text-white mb-2">Confirm Upload</h3>
+                    <p class="text-sm text-neutral-400 mb-6">Review your files and choose a folder before uploading.</p>
+                    <div id="upload-list" class="w-full max-h-60 overflow-y-auto space-y-3 pr-2 mb-6 hide-scrollbar"></div>
+                    <input type="text" id="folder-name-input" placeholder="Save to new or existing folder (optional)" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-indigo-500/50 transition-colors mb-6">
+                    <div class="flex gap-4 justify-end">
+                        <button id="cancel-upload-btn" class="px-6 py-3 bg-neutral-800 text-white text-sm font-semibold rounded-lg hover:bg-neutral-700 transition-colors">Cancel</button>
+                        <button id="confirm-upload-btn" class="px-6 py-3 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-500 transition-colors flex items-center gap-2">
+                            <iconify-icon icon="solar:cloud-upload-linear" width="18"></iconify-icon>
+                            Upload
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Folder Name Modal -->
+    <div id="folder-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="bg-neutral-900 border border-white/10 p-6 rounded-2xl w-full max-w-sm mx-4 shadow-2xl">
+            <h3 class="text-lg font-medium text-white mb-2">Save Scan</h3>
+            <p class="text-sm text-neutral-400 mb-4">Enter a folder name to organize these scans.</p>
+            <input type="text" id="scan-folder-input" placeholder="Folder Name (e.g., Invoices)" class="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors mb-4">
+            <div class="flex gap-3 justify-end">
+                <button onclick="closeFolderModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-neutral-400 hover:text-white transition-colors">Cancel</button>
+                <button onclick="saveScans()" class="px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-500/20">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loader -->
+    <div id="loader" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/90 backdrop-blur-md">
+        <div class="flex flex-col items-center gap-4">
+            <div class="w-12 h-12 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
+            <p id="loader-text" class="text-sm font-medium text-white animate-pulse">Processing...</p>
+        </div>
+    </div>
+
+    <!-- Custom Alert Modal -->
+    <div id="custom-alert-modal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="bg-neutral-900 border border-white/10 p-6 rounded-2xl w-full max-w-sm mx-4 shadow-2xl transform transition-all scale-100">
+            <div class="flex flex-col items-center text-center gap-4">
+                <div id="alert-icon-container" class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-2xl">
+                </div>
+                <p id="alert-message" class="text-sm text-neutral-300"></p>
+                <button onclick="closeCustomAlert()" class="w-full py-2.5 rounded-xl bg-white text-black font-semibold text-sm hover:bg-neutral-200 transition-colors">Okay</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cardsContainer = document.getElementById('cards-container');
+
+            cardsContainer.onmousemove = e => {
+                for(const card of document.getElementsByClassName('card')) {
+                    const rect = card.getBoundingClientRect(),
+                          x = e.clientX - rect.left,
+                          y = e.clientY - rect.top;
+                    
+                    card.style.setProperty('--mouse-x', `${x}px`);
+                    card.style.setProperty('--mouse-y', `${y}px`);
+                }
+            };
+
+            const canvas = document.getElementById('bg-canvas');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let particles = [];
+
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.vy = (Math.random() - 0.5) * 0.5;
+                    this.size = Math.random() * 2;
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    if (this.x < 0 || this.x > width) this.vx *= -1;
+                    if (this.y < 0 || this.y > height) this.vy *= -1;
+                }
+                draw() {
+                    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < 50; i++) particles.push(new Particle());
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                particles.forEach((p, index) => {
+                    p.update();
+                    p.draw();
+                    // Draw connections
+                    for (let j = index + 1; j < particles.length; j++) {
+                        const p2 = particles[j];
+                        const dx = p.x - p2.x;
+                        const dy = p.y - p2.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 150) {
+                            ctx.strokeStyle = `rgba(255,255,255,${0.1 - dist/1500})`;
+                            ctx.lineWidth = 1;
+                            ctx.beginPath();
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.stroke();
+                        }
+                    }
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        });
+    </script>
+    <script src="localization.js"></script>
+    <script src="scan/scan.js"></script>
+</body>
+</html>
