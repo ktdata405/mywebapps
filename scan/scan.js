@@ -6,6 +6,11 @@ let currentFolder = null; // null for root, or folder name string
 let selectedFilesForUpload = [];
 let capturedImages = [];
 let isShowAllMode = false;
+let cropper = null;
+let currentEditingFileIndex = -1;
+let currentViewMode = 'list'; // 'list' or 'grid'
+let movingItem = null; // { type: 'file' | 'folder', id: string, path: string, name: string }
+let currentEditingDoc = null;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -32,13 +37,139 @@ document.addEventListener('DOMContentLoaded', () => {
         renderBrowse();
     });
 
+    // Close dropdowns on click outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.dropdown-menu') && !e.target.closest('.dropdown-trigger')) {
+            document.querySelectorAll('.dropdown-menu').forEach(el => el.classList.add('hidden'));
+        }
+    });
+
     if (document.getElementById('module-menu')) {
         switchModule('menu');
     } else {
         switchModule('camera');
         fetchDocuments();
     }
+    
+    // Initialize view mode
+    setViewMode('list');
 });
+
+// --- MODAL UTILITIES ---
+
+// Custom Alert
+window.showAlert = function(message, type = 'info') {
+    const modal = document.getElementById('custom-alert-modal');
+    const msgEl = document.getElementById('alert-message');
+    const iconContainer = document.getElementById('alert-icon-container');
+    
+    if (!modal || !msgEl || !iconContainer) {
+        alert(message); // Fallback
+        return;
+    }
+
+    msgEl.textContent = message;
+    
+    let icon = '';
+    let colorClass = '';
+    if (type === 'error') {
+        icon = '<iconify-icon icon="solar:danger-circle-bold" class="text-red-500"></iconify-icon>';
+        colorClass = 'bg-red-500/10';
+    } else if (type === 'success') {
+        icon = '<iconify-icon icon="solar:check-circle-bold" class="text-green-500"></iconify-icon>';
+        colorClass = 'bg-green-500/10';
+    } else {
+        icon = '<iconify-icon icon="solar:info-circle-bold" class="text-indigo-500"></iconify-icon>';
+        colorClass = 'bg-indigo-500/10';
+    }
+    
+    iconContainer.innerHTML = icon;
+    iconContainer.className = `w-12 h-12 rounded-full flex items-center justify-center text-2xl ${colorClass}`;
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+};
+
+window.closeCustomAlert = function() {
+    const modal = document.getElementById('custom-alert-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+};
+
+// Custom Confirm
+window.showConfirm = function(title, description) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('confirm-modal');
+        document.getElementById('confirm-modal-title').textContent = title;
+        document.getElementById('confirm-modal-desc').textContent = description;
+        
+        const confirmBtn = document.getElementById('confirm-modal-ok');
+        const cancelBtn = document.getElementById('confirm-modal-cancel');
+
+        const onConfirm = () => {
+            close();
+            resolve(true);
+        };
+        
+        const onCancel = () => {
+            close();
+            resolve(false);
+        };
+
+        const close = () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            confirmBtn.removeEventListener('click', onConfirm);
+            cancelBtn.removeEventListener('click', onCancel);
+        };
+
+        confirmBtn.addEventListener('click', onConfirm);
+        cancelBtn.addEventListener('click', onCancel);
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    });
+};
+
+// Custom Prompt (Input Modal)
+window.showInput = function(title, description, defaultValue = '') {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('input-modal');
+        document.getElementById('input-modal-title').textContent = title;
+        document.getElementById('input-modal-desc').textContent = description;
+        const inputField = document.getElementById('input-modal-field');
+        inputField.value = defaultValue;
+        
+        const confirmBtn = document.getElementById('input-modal-confirm');
+        const cancelBtn = document.getElementById('input-modal-cancel');
+
+        const onConfirm = () => {
+            close();
+            resolve(inputField.value);
+        };
+        
+        const onCancel = () => {
+            close();
+            resolve(null);
+        };
+
+        const close = () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            confirmBtn.removeEventListener('click', onConfirm);
+            cancelBtn.removeEventListener('click', onCancel);
+        };
+
+        confirmBtn.addEventListener('click', onConfirm);
+        cancelBtn.addEventListener('click', onCancel);
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        inputField.focus();
+    });
+};
 
 // Module Switching
 window.switchModule = function(moduleName) {
@@ -100,44 +231,24 @@ window.openBrowse = async function() {
     }
 };
 
-window.showAlert = function(message, type = 'info') {
-    const modal = document.getElementById('custom-alert-modal');
-    const msgEl = document.getElementById('alert-message');
-    const iconContainer = document.getElementById('alert-icon-container');
+// View Mode Logic
+window.setViewMode = function(mode) {
+    currentViewMode = mode;
+    const listBtn = document.getElementById('view-list-btn');
+    const gridBtn = document.getElementById('view-grid-btn');
     
-    if (!modal || !msgEl || !iconContainer) {
-        alert(message); // Fallback
-        return;
-    }
-
-    msgEl.textContent = message;
-    
-    let icon = '';
-    let colorClass = '';
-    if (type === 'error') {
-        icon = '<iconify-icon icon="solar:danger-circle-bold" class="text-red-500"></iconify-icon>';
-        colorClass = 'bg-red-500/10';
-    } else if (type === 'success') {
-        icon = '<iconify-icon icon="solar:check-circle-bold" class="text-green-500"></iconify-icon>';
-        colorClass = 'bg-green-500/10';
+    if (mode === 'list') {
+        listBtn.classList.remove('text-neutral-400', 'hover:text-white');
+        listBtn.classList.add('text-white', 'bg-white/10');
+        gridBtn.classList.remove('text-white', 'bg-white/10');
+        gridBtn.classList.add('text-neutral-400', 'hover:text-white');
     } else {
-        icon = '<iconify-icon icon="solar:info-circle-bold" class="text-indigo-500"></iconify-icon>';
-        colorClass = 'bg-indigo-500/10';
+        gridBtn.classList.remove('text-neutral-400', 'hover:text-white');
+        gridBtn.classList.add('text-white', 'bg-white/10');
+        listBtn.classList.remove('text-white', 'bg-white/10');
+        listBtn.classList.add('text-neutral-400', 'hover:text-white');
     }
-    
-    iconContainer.innerHTML = icon;
-    iconContainer.className = `w-12 h-12 rounded-full flex items-center justify-center text-2xl ${colorClass}`;
-
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-};
-
-window.closeCustomAlert = function() {
-    const modal = document.getElementById('custom-alert-modal');
-    if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-    }
+    renderBrowse();
 };
 
 // Camera Logic
@@ -218,11 +329,8 @@ window.finishScan = function() {
         showAlert("No images captured yet.", "error");
         return;
     }
-    const modal = document.getElementById('folder-modal');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    document.getElementById('scan-folder-input').value = '';
-    document.getElementById('scan-folder-input').focus();
+    // Instead of going directly to folder modal, go to upload preview to allow editing
+    handleFiles(capturedImages);
 };
 
 window.closeFolderModal = function() {
@@ -234,28 +342,24 @@ window.saveScans = async function() {
     const folderName = document.getElementById('scan-folder-input').value.trim();
     closeFolderModal();
     
-    const loader = document.getElementById('loader');
-    const loaderText = document.getElementById('loader-text');
-    loader.classList.remove('hidden');
-    loader.classList.add('flex');
-    if (loaderText) loaderText.innerHTML = `Uploading ${capturedImages.length} files...`;
-
-    try {
-       await uploadFiles(capturedImages, folderName);
-        capturedImages = [];
-        const badge = document.getElementById('scan-count-badge');
-        if(badge) badge.classList.add('hidden');
-        
-        switchModule('browse');
-        fetchDocuments();
-    } catch (e) {
-        console.error(e);
-        showAlert("Upload failed: " + e.message, "error");
-    } finally {
-        loader.classList.add('hidden');
-        loader.classList.remove('flex');
-        if (loaderText) loaderText.textContent = 'Processing...';
-    }
+    // Use the existing upload logic but with capturedImages
+    // Actually, we should route through confirmUpload logic to be consistent
+    // But since we are here from finishScan -> handleFiles -> confirmUpload -> (if folder needed) -> folder modal
+    // Wait, finishScan now calls handleFiles. So this function might be redundant if we change flow.
+    // Let's keep it for now but adapt.
+    
+    // If we are here, it means we are saving directly from camera without review? 
+    // No, I changed finishScan to call handleFiles.
+    // So handleFiles will show the preview list.
+    // Then user clicks "Upload".
+    // If no folder name in input, maybe we ask? Or just upload to root.
+    // The original logic had a specific flow for camera. Let's unify it.
+    
+    // If this function is called, it means we want to upload capturedImages with a specific folder name.
+    // But now capturedImages are passed to handleFiles, so they become selectedFilesForUpload.
+    // So we should use uploadFiles with selectedFilesForUpload.
+    
+    // Let's deprecate direct usage of this function from UI and route everything through the upload preview screen.
 };
 
 // Upload Logic
@@ -281,35 +385,171 @@ window.handleFiles = function(files) {
     if (files.length === 0) return;
 
     switchModule('upload');
-    selectedFilesForUpload = Array.from(files);
+    // Append to existing if needed, but for now replace
+    // If coming from camera, capturedImages are passed.
+    // If coming from file input, FileList is passed.
+    
+    if (files instanceof FileList) {
+        selectedFilesForUpload = Array.from(files);
+    } else {
+        selectedFilesForUpload = files; // Array of Files
+    }
     
     document.getElementById('initial-upload-ui').classList.add('hidden');
     document.getElementById('upload-preview-container').classList.remove('hidden');
 
+    renderUploadList();
+};
+
+function renderUploadList() {
     const list = document.getElementById('upload-list');
     list.innerHTML = '';
-    selectedFilesForUpload.forEach(file => {
+    selectedFilesForUpload.forEach((file, index) => {
         const item = document.createElement('div');
-        item.className = 'w-full bg-white/5 rounded-lg p-3 border border-white/5 flex items-center gap-3';
+        item.className = 'w-full bg-white/5 rounded-lg p-3 border border-white/5 flex items-center gap-3 group';
+        
+        // Create thumbnail if image
+        let thumbnail = '<div class="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center text-indigo-400 flex-shrink-0"><iconify-icon icon="solar:file-text-linear" width="16"></iconify-icon></div>';
+        if (file.type.startsWith('image/')) {
+            const url = URL.createObjectURL(file);
+            thumbnail = `<div class="w-8 h-8 rounded bg-neutral-800 flex-shrink-0 overflow-hidden border border-white/10 cursor-pointer" onclick="openImagePreview('${url}')"><img src="${url}" class="w-full h-full object-cover"></div>`;
+        }
+
         item.innerHTML = `
-            <div class="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center text-indigo-400 flex-shrink-0">
-                 <iconify-icon icon="solar:file-text-linear" width="16"></iconify-icon>
-            </div>
-            <div class="flex-1 min-w-0">
+            ${thumbnail}
+            <div class="flex-1 min-w-0 cursor-pointer" onclick="openImagePreview('${file.type.startsWith('image/') ? URL.createObjectURL(file) : ''}')">
                 <p class="text-xs text-white truncate">${file.name}</p>
                 <p class="text-[10px] text-neutral-400">${(file.size / 1024).toFixed(1)} KB</p>
+            </div>
+            <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                ${file.type.startsWith('image/') ? `<button onclick="editImage(${index})" class="p-1.5 rounded-md bg-neutral-700 hover:bg-indigo-600 text-white transition-colors" title="Crop/Rotate"><iconify-icon icon="solar:crop-minimalistic-linear" width="14"></iconify-icon></button>` : ''}
+                <button onclick="removeFile(${index})" class="p-1.5 rounded-md bg-neutral-700 hover:bg-red-500 text-white transition-colors" title="Remove"><iconify-icon icon="solar:trash-bin-trash-linear" width="14"></iconify-icon></button>
             </div>
         `;
         list.appendChild(item);
     });
+}
+
+window.removeFile = function(index) {
+    selectedFilesForUpload.splice(index, 1);
+    renderUploadList();
+    if (selectedFilesForUpload.length === 0) {
+        cancelUpload();
+    }
+};
+
+window.editImage = function(indexOrDoc) {
+    currentEditingDoc = null;
+    currentEditingFileIndex = -1;
+
+    let filePromise;
+    if (typeof indexOrDoc === 'number') { // Editing a new file from upload list
+        const file = selectedFilesForUpload[indexOrDoc];
+        if (!file || !file.type.startsWith('image/')) return;
+        currentEditingFileIndex = indexOrDoc;
+        filePromise = Promise.resolve(file);
+    } else { // Editing an existing doc
+        if (!indexOrDoc.id) return;
+        currentEditingDoc = indexOrDoc;
+        // We need to fetch the original image data to edit it.
+        // This requires a proxy or CORS-enabled server if Google Drive links are used.
+        // For simplicity, let's assume we can fetch it.
+        // Add cache buster to avoid cached image
+        const imageUrl = `https://lh3.googleusercontent.com/d/${currentEditingDoc.id}?t=${new Date().getTime()}`;
+        filePromise = fetch(imageUrl).then(res => res.blob()).then(blob => new File([blob], currentEditingDoc.name, {type: blob.type}));
+    }
+
+    filePromise.then(file => {
+        const url = URL.createObjectURL(file);
+        const img = document.getElementById('image-to-edit');
+        img.src = url;
+        
+        const modal = document.getElementById('image-editor-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        if (cropper) cropper.destroy();
+        cropper = new Cropper(img, { viewMode: 1, autoCropArea: 1 });
+    }).catch(err => {
+        showAlert("Could not load image for editing. It might be protected.", "error");
+        console.error(err);
+    });
+};
+
+window.rotateImage = function(degree) {
+    if (cropper) {
+        cropper.rotate(degree);
+    }
+};
+
+window.closeImageEditor = function() {
+    const modal = document.getElementById('image-editor-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
+    }
+    currentEditingFileIndex = -1;
+    currentEditingDoc = null;
+};
+
+window.saveEditedImage = function() {
+    if (!cropper) return;
+
+    cropper.getCroppedCanvas().toBlob(async (blob) => {
+        if (currentEditingFileIndex !== -1) { // Saving a new file from upload list
+            const originalFile = selectedFilesForUpload[currentEditingFileIndex];
+            const newFile = new File([blob], originalFile.name, { type: 'image/jpeg' });
+            selectedFilesForUpload[currentEditingFileIndex] = newFile;
+            renderUploadList();
+        } else if (currentEditingDoc) { // Saving an existing document
+            const loader = document.getElementById('loader');
+            loader.classList.add('flex');
+            const fileData = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve({ name: currentEditingDoc.name, type: 'image/jpeg', data: reader.result.split(',')[1] });
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+            const result = await performAction('updateFileContent', { fileId: currentEditingDoc.id, file: fileData });
+            if (result) {
+                showAlert('File updated successfully!', "success");
+                await fetchDocuments(); // Refresh to get new thumbnail
+            }
+            loader.classList.remove('flex');
+        }
+        closeImageEditor();
+    }, 'image/jpeg', 0.9);
+};
+
+window.openImagePreview = function(url) {
+    if (!url) return;
+    const modal = document.getElementById('image-preview-modal');
+    const img = document.getElementById('preview-image-full');
+    img.src = url;
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+};
+
+window.closeImagePreview = function() {
+    const modal = document.getElementById('image-preview-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.getElementById('preview-image-full').src = '';
 };
 
 function cancelUpload() {
     selectedFilesForUpload = [];
+    capturedImages = []; // Clear captured images too if cancelled
     document.getElementById('initial-upload-ui').classList.remove('hidden');
     document.getElementById('upload-preview-container').classList.add('hidden');
     document.getElementById('folder-name-input').value = '';
     document.getElementById('file-input').value = ''; // Reset file input
+    
+    // Reset badge
+    const badge = document.getElementById('scan-count-badge');
+    if(badge) badge.classList.add('hidden');
 }
 
 async function confirmUpload() {
@@ -322,6 +562,7 @@ async function confirmUpload() {
         if (loaderText) loaderText.innerHTML = `Uploading ${selectedFilesForUpload.length} files...`;
 
         try {
+            await uploadFiles(selectedFilesForUpload, folderName);
             cancelUpload();
             fetchDocuments();
             switchModule('browse');
@@ -366,7 +607,7 @@ async function uploadFiles(fileList, folderName) {
 }
 
 async function createFolder() {
-    const folderName = prompt("Enter new folder name:");
+    const folderName = await showInput("Create New Folder", "Enter a name for the new folder.");
     if (folderName && folderName.trim() !== "" && !folderName.includes('/')) {
         const name = folderName.trim();
         // Construct full path
@@ -430,7 +671,7 @@ async function moveFileToFolder(fileId, folderPath) {
 }
 
 async function renameFile(doc) {
-    const newName = prompt("Enter new file name:", doc.name);
+    const newName = await showInput("Rename File", "Enter a new name for the file.", doc.name);
     if (newName && newName.trim() !== "" && newName.trim() !== doc.name) {
         const oldName = doc.name;
         doc.name = newName.trim();
@@ -550,7 +791,41 @@ function renderBrowse() {
         header.classList.remove('drag-active');
     }
 
+    // --- MOVE MODE UI ---
+    const actionGroup = document.getElementById('browse-actions');
+    
+    if (movingItem) {
+        if (actionGroup) actionGroup.classList.add('hidden');
+        
+        let moveControls = document.getElementById('move-controls');
+        if (!moveControls) {
+            moveControls = document.createElement('div');
+            moveControls.id = 'move-controls';
+            moveControls.className = 'flex items-center gap-3';
+            moveControls.innerHTML = `
+                <div class="text-sm text-neutral-400 mr-2 hidden sm:block">Moving: <span class="text-white font-medium max-w-[100px] truncate inline-block align-bottom">${movingItem.name}</span></div>
+                <button onclick="cancelMove()" class="px-4 py-2 rounded-lg text-sm font-medium text-neutral-400 hover:text-white bg-white/5 border border-white/5 transition-colors">Cancel</button>
+                <button onclick="confirmMove()" class="px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-500/20 whitespace-nowrap">Move Here</button>
+            `;
+            header.querySelector('.flex.items-center.justify-between').appendChild(moveControls);
+        } else {
+            moveControls.classList.remove('hidden');
+            moveControls.querySelector('span').textContent = movingItem.name;
+        }
+    } else {
+        if (actionGroup) actionGroup.classList.remove('hidden');
+        const moveControls = document.getElementById('move-controls');
+        if (moveControls) moveControls.classList.add('hidden');
+    }
+
     grid.innerHTML = '';
+    
+    // Set grid layout based on view mode
+    if (currentViewMode === 'list') {
+        grid.className = 'flex flex-col gap-2';
+    } else {
+        grid.className = 'grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 xl:grid-cols-16 gap-1 md:gap-2';
+    }
 
     // SHOW ALL MODE
     if (isShowAllMode) {
@@ -574,7 +849,71 @@ function renderBrowse() {
         foldersToRender.sort().forEach(folderName => {
             const fullPath = folderName;
             const folderEl = document.createElement('div');
-            folderEl.className = 'group relative aspect-square rounded-xl border border-white/10 hover:border-indigo-500/50 bg-neutral-800/20 hover:bg-neutral-800/50 transition-all flex flex-col items-center justify-center gap-2';
+            
+            // Folder Menu HTML
+            const menuHtml = `
+                <div class="dropdown-menu hidden absolute right-0 top-8 w-48 bg-neutral-900 border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
+                    <button onclick="event.stopPropagation(); editFolderTags('${fullPath}')" class="w-full text-left px-4 py-2.5 text-sm text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2">
+                        <iconify-icon icon="solar:tag-linear" width="16"></iconify-icon> Tags
+                    </button>
+                    <button onclick="event.stopPropagation(); toggleFolderSelect('${fullPath}')" class="w-full text-left px-4 py-2.5 text-sm text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2">
+                        <iconify-icon icon="solar:check-square-linear" width="16"></iconify-icon> Select
+                    </button>
+                    <button onclick="event.stopPropagation(); renameFolder('${folderName}', '${fullPath}')" class="w-full text-left px-4 py-2.5 text-sm text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2">
+                        <iconify-icon icon="solar:pen-new-square-linear" width="16"></iconify-icon> Rename
+                    </button>
+                    <button onclick="event.stopPropagation(); showAlert('Download as Image not supported for folders', 'info')" class="w-full text-left px-4 py-2.5 text-sm text-neutral-500 cursor-not-allowed flex items-center gap-2">
+                        <iconify-icon icon="solar:gallery-download-linear" width="16"></iconify-icon> Download Image
+                    </button>
+                    <button onclick="event.stopPropagation(); showAlert('Download as PDF not supported for folders', 'info')" class="w-full text-left px-4 py-2.5 text-sm text-neutral-500 cursor-not-allowed flex items-center gap-2">
+                        <iconify-icon icon="solar:file-download-linear" width="16"></iconify-icon> Download PDF
+                    </button>
+                    <button onclick="event.stopPropagation(); toggleFolderLock('${fullPath}')" class="w-full text-left px-4 py-2.5 text-sm text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2">
+                        <iconify-icon icon="solar:lock-linear" width="16"></iconify-icon> Lock
+                    </button>
+                    <button onclick="event.stopPropagation(); moveFolder('${fullPath}')" class="w-full text-left px-4 py-2.5 text-sm text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2">
+                        <iconify-icon icon="solar:folder-with-files-linear" width="16"></iconify-icon> Move
+                    </button>
+                    <div class="h-px bg-white/5 my-1"></div>
+                    <button onclick="event.stopPropagation(); deleteFolder('${fullPath}')" class="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 flex items-center gap-2">
+                        <iconify-icon icon="solar:trash-bin-trash-linear" width="16"></iconify-icon> Trash
+                    </button>
+                </div>
+            `;
+
+            if (currentViewMode === 'list') {
+                folderEl.className = 'group relative w-full bg-neutral-800/40 rounded-xl border border-white/5 hover:border-indigo-500/40 transition-all flex items-center p-3 gap-4';
+                folderEl.innerHTML = `
+                    <div class="w-10 h-10 flex items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400">
+                        <iconify-icon icon="solar:folder-bold" class="text-xl"></iconify-icon>
+                    </div>
+                    <div class="flex-1 min-w-0 cursor-pointer folder-link">
+                        <h3 class="text-sm font-medium text-white truncate">${folderName}</h3>
+                        <p class="text-[10px] text-neutral-400">Folder</p>
+                    </div>
+                    <div class="relative">
+                        <button class="dropdown-trigger p-2 rounded-lg hover:bg-white/10 text-white transition-colors" onclick="event.stopPropagation(); toggleDropdown(this)">
+                            <iconify-icon icon="solar:menu-dots-bold" width="20"></iconify-icon>
+                        </button>
+                        ${menuHtml}
+                    </div>
+                `;
+            } else {
+                folderEl.className = 'group relative aspect-square rounded-xl border border-white/10 hover:border-indigo-500/50 bg-neutral-800/20 hover:bg-neutral-800/50 transition-all flex flex-col items-center justify-center gap-2';
+                folderEl.innerHTML = `
+                    <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 cursor-pointer folder-link">
+                        <iconify-icon icon="solar:folder-bold" class="text-4xl text-indigo-400/50 group-hover:text-indigo-400/80 transition-colors"></iconify-icon>
+                        <span class="text-sm font-medium text-neutral-300 group-hover:text-white text-center px-2 break-all">${folderName}</span>
+                    </div>
+                    <div class="absolute top-2 right-2 z-30">
+                        <button class="dropdown-trigger p-2 rounded-lg bg-black/40 hover:bg-black/60 text-white backdrop-blur-sm transition-colors" onclick="event.stopPropagation(); toggleDropdown(this)">
+                            <iconify-icon icon="solar:menu-dots-bold" width="20"></iconify-icon>
+                        </button>
+                        ${menuHtml}
+                    </div>
+                `;
+            }
+            
             folderEl.ondragover = (e) => {
                 e.preventDefault();
                 folderEl.classList.add('drag-active');
@@ -590,27 +929,18 @@ function renderBrowse() {
                     moveFileToFolder(fileId, fullPath);
                 }
             };
-            folderEl.innerHTML = `
-                <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 cursor-pointer folder-link">
-                    <iconify-icon icon="solar:folder-bold" class="text-4xl text-indigo-400/50 group-hover:text-indigo-400/80 transition-colors"></iconify-icon>
-                    <span class="text-sm font-medium text-neutral-300 group-hover:text-white text-center px-2 break-all">${folderName}</span>
-                </div>
-                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2 z-10">
-                    <button title="Rename Folder" class="rename-folder-btn w-8 h-8 rounded-lg bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-indigo-500">
-                        <iconify-icon icon="solar:pen-new-square-linear" width="16"></iconify-icon>
-                    </button>
-                    <button title="Delete Folder" class="delete-folder-btn w-8 h-8 rounded-lg bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-red-500">
-                        <iconify-icon icon="solar:trash-bin-trash-linear" width="16"></iconify-icon>
-                    </button>
-                </div>
-            `;
+            
             folderEl.querySelector('.folder-link').onclick = () => {
-                isShowAllMode = false;
-                currentFolder = fullPath;
-                renderBrowse();
+                if (movingItem) {
+                    // In move mode, clicking a folder navigates into it
+                    currentFolder = fullPath;
+                    renderBrowse();
+                } else {
+                    isShowAllMode = false;
+                    currentFolder = fullPath;
+                    renderBrowse();
+                }
             };
-            folderEl.querySelector('.rename-folder-btn').onclick = (e) => { e.stopPropagation(); renameFolder(folderName, fullPath); };
-            folderEl.querySelector('.delete-folder-btn').onclick = (e) => { e.stopPropagation(); deleteFolder(fullPath); };
             grid.appendChild(folderEl);
         });
 
@@ -698,27 +1028,82 @@ function renderBrowse() {
     [...subFolders].sort().forEach(folderName => {
         const fullPath = currentFolder ? `${currentFolder}/${folderName}` : folderName;
         const folderEl = document.createElement('div');
-        folderEl.className = 'group relative aspect-square rounded-xl border border-white/10 hover:border-indigo-500/50 bg-neutral-800/20 hover:bg-neutral-800/50 transition-all flex flex-col items-center justify-center gap-2';
-        folderEl.innerHTML = `
-            <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 cursor-pointer folder-link">
-                <iconify-icon icon="solar:folder-bold" class="text-4xl text-indigo-400/50 group-hover:text-indigo-400/80 transition-colors"></iconify-icon>
-                <span class="text-sm font-medium text-neutral-300 group-hover:text-white text-center px-2 break-all">${folderName}</span>
-            </div>
-            <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2 z-10">
-                <button title="Rename Folder" class="rename-folder-btn w-8 h-8 rounded-lg bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-indigo-500">
-                    <iconify-icon icon="solar:pen-new-square-linear" width="16"></iconify-icon>
+        
+        // Folder Menu HTML
+        const menuHtml = `
+            <div class="dropdown-menu hidden absolute right-0 top-8 w-48 bg-neutral-900 border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
+                <button onclick="event.stopPropagation(); editFolderTags('${fullPath}')" class="w-full text-left px-4 py-2.5 text-sm text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2">
+                    <iconify-icon icon="solar:tag-linear" width="16"></iconify-icon> Tags
                 </button>
-                <button title="Delete Folder" class="delete-folder-btn w-8 h-8 rounded-lg bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-red-500">
-                    <iconify-icon icon="solar:trash-bin-trash-linear" width="16"></iconify-icon>
+                <button onclick="event.stopPropagation(); toggleFolderSelect('${fullPath}')" class="w-full text-left px-4 py-2.5 text-sm text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2">
+                    <iconify-icon icon="solar:check-square-linear" width="16"></iconify-icon> Select
+                </button>
+                <button onclick="event.stopPropagation(); renameFolder('${folderName}', '${fullPath}')" class="w-full text-left px-4 py-2.5 text-sm text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2">
+                    <iconify-icon icon="solar:pen-new-square-linear" width="16"></iconify-icon> Rename
+                </button>
+                <button onclick="event.stopPropagation(); showAlert('Download as Image not supported for folders', 'info')" class="w-full text-left px-4 py-2.5 text-sm text-neutral-500 cursor-not-allowed flex items-center gap-2">
+                    <iconify-icon icon="solar:gallery-download-linear" width="16"></iconify-icon> Download Image
+                </button>
+                <button onclick="event.stopPropagation(); showAlert('Download as PDF not supported for folders', 'info')" class="w-full text-left px-4 py-2.5 text-sm text-neutral-500 cursor-not-allowed flex items-center gap-2">
+                    <iconify-icon icon="solar:file-download-linear" width="16"></iconify-icon> Download PDF
+                </button>
+                <button onclick="event.stopPropagation(); toggleFolderLock('${fullPath}')" class="w-full text-left px-4 py-2.5 text-sm text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2">
+                    <iconify-icon icon="solar:lock-linear" width="16"></iconify-icon> Lock
+                </button>
+                <button onclick="event.stopPropagation(); moveFolder('${fullPath}')" class="w-full text-left px-4 py-2.5 text-sm text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2">
+                    <iconify-icon icon="solar:folder-with-files-linear" width="16"></iconify-icon> Move
+                </button>
+                <div class="h-px bg-white/5 my-1"></div>
+                <button onclick="event.stopPropagation(); deleteFolder('${fullPath}')" class="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 flex items-center gap-2">
+                    <iconify-icon icon="solar:trash-bin-trash-linear" width="16"></iconify-icon> Trash
                 </button>
             </div>
         `;
+
+        if (currentViewMode === 'list') {
+            folderEl.className = 'group relative w-full bg-neutral-800/40 rounded-xl border border-white/5 hover:border-indigo-500/40 transition-all flex items-center p-3 gap-4';
+            folderEl.innerHTML = `
+                <div class="w-10 h-10 flex items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400">
+                    <iconify-icon icon="solar:folder-bold" class="text-xl"></iconify-icon>
+                </div>
+                <div class="flex-1 min-w-0 cursor-pointer folder-link">
+                    <h3 class="text-sm font-medium text-white truncate">${folderName}</h3>
+                    <p class="text-[10px] text-neutral-400">Folder</p>
+                </div>
+                <div class="relative">
+                    <button class="dropdown-trigger p-2 rounded-lg hover:bg-white/10 text-white transition-colors" onclick="event.stopPropagation(); toggleDropdown(this)">
+                        <iconify-icon icon="solar:menu-dots-bold" width="20"></iconify-icon>
+                    </button>
+                    ${menuHtml}
+                </div>
+            `;
+        } else {
+            folderEl.className = 'group relative aspect-square rounded-xl border border-white/10 hover:border-indigo-500/50 bg-neutral-800/20 hover:bg-neutral-800/50 transition-all flex flex-col items-center justify-center gap-2';
+            folderEl.innerHTML = `
+                <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 cursor-pointer folder-link">
+                    <iconify-icon icon="solar:folder-bold" class="text-4xl text-indigo-400/50 group-hover:text-indigo-400/80 transition-colors"></iconify-icon>
+                    <span class="text-sm font-medium text-neutral-300 group-hover:text-white text-center px-2 break-all">${folderName}</span>
+                </div>
+                <div class="absolute top-2 right-2 z-30">
+                    <button class="dropdown-trigger p-2 rounded-lg bg-black/40 hover:bg-black/60 text-white backdrop-blur-sm transition-colors" onclick="event.stopPropagation(); toggleDropdown(this)">
+                        <iconify-icon icon="solar:menu-dots-bold" width="20"></iconify-icon>
+                    </button>
+                    ${menuHtml}
+                </div>
+            `;
+        }
+        
         folderEl.querySelector('.folder-link').onclick = () => {
-            currentFolder = fullPath;
-            renderBrowse();
+            if (movingItem) {
+                // In move mode, clicking a folder navigates into it
+                currentFolder = fullPath;
+                renderBrowse();
+            } else {
+                isShowAllMode = false;
+                currentFolder = fullPath;
+                renderBrowse();
+            }
         };
-        folderEl.querySelector('.rename-folder-btn').onclick = (e) => { e.stopPropagation(); renameFolder(folderName, fullPath); };
-        folderEl.querySelector('.delete-folder-btn').onclick = (e) => { e.stopPropagation(); deleteFolder(fullPath); };
         grid.appendChild(folderEl);
     });
 
@@ -730,48 +1115,283 @@ function renderBrowse() {
 
 function createFileElement(doc) {
     const date = new Date(doc.timestamp).toLocaleDateString();
-    const imgUrl = doc.id ? `https://lh3.googleusercontent.com/d/${doc.id}` : doc.url;
+    // Add cache buster to image URL
+    const imgUrl = doc.id ? `https://lh3.googleusercontent.com/d/${doc.id}?t=${new Date(doc.timestamp).getTime()}` : doc.url;
     
     const el = document.createElement('div');
-    el.className = 'group relative aspect-square bg-neutral-800/40 rounded-xl border border-white/5 hover:border-indigo-500/40 transition-all overflow-hidden';
     el.draggable = true;
     el.ondragstart = (e) => {
         e.dataTransfer.setData('text/plain', doc.id);
         e.dataTransfer.effectAllowed = 'move';
     };
-    el.innerHTML = `
-        <div class="absolute inset-0 cursor-pointer file-link">
-            <img src="${imgUrl}" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500" loading="lazy" onerror="this.style.display='none'">
-            <div class="absolute inset-0 flex items-center justify-center">
-                 <iconify-icon icon="solar:gallery-wide-linear" class="text-neutral-600 text-4xl"></iconify-icon>
-            </div>
-            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
-            <div class="absolute bottom-4 left-4 right-4">
-                <h3 class="text-sm font-medium text-white truncate" title="${doc.name}">${doc.name}</h3>
-                <p class="text-[10px] text-neutral-400 mt-1">${date}</p>
-            </div>
-        </div>
-        <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2 z-10">
-            <button title="Rename" class="rename-btn w-8 h-8 rounded-lg bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-indigo-500">
-                <iconify-icon icon="solar:pen-new-square-linear" width="16"></iconify-icon>
+
+    // Dropdown Menu HTML
+    const menuHtml = `
+        <div class="dropdown-menu hidden absolute right-0 top-8 w-48 bg-neutral-900 border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
+            <button onclick="event.stopPropagation(); editTags(allDocuments.find(d => d.id === '${doc.id}'))" class="w-full text-left px-4 py-2.5 text-sm text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2">
+                <iconify-icon icon="solar:tag-linear" width="16"></iconify-icon> Tags
             </button>
-            <button title="Replace" class="replace-btn w-8 h-8 rounded-lg bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-green-500">
-                <iconify-icon icon="solar:refresh-linear" width="16"></iconify-icon>
+            <button onclick="event.stopPropagation(); toggleSelect(allDocuments.find(d => d.id === '${doc.id}'))" class="w-full text-left px-4 py-2.5 text-sm text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2">
+                <iconify-icon icon="solar:check-square-linear" width="16"></iconify-icon> Select
             </button>
-            <button title="Delete" class="delete-btn w-8 h-8 rounded-lg bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-red-500">
-                <iconify-icon icon="solar:trash-bin-trash-linear" width="16"></iconify-icon>
+            <button onclick="event.stopPropagation(); openEditModal(allDocuments.find(d => d.id === '${doc.id}'))" class="w-full text-left px-4 py-2.5 text-sm text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2">
+                <iconify-icon icon="solar:pen-new-square-linear" width="16"></iconify-icon> Edit
+            </button>
+            <button onclick="event.stopPropagation(); downloadImage(allDocuments.find(d => d.id === '${doc.id}'))" class="w-full text-left px-4 py-2.5 text-sm text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2">
+                <iconify-icon icon="solar:gallery-download-linear" width="16"></iconify-icon> Download Image
+            </button>
+            <button onclick="event.stopPropagation(); downloadPDF(allDocuments.find(d => d.id === '${doc.id}'))" class="w-full text-left px-4 py-2.5 text-sm text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2">
+                <iconify-icon icon="solar:file-download-linear" width="16"></iconify-icon> Download PDF
+            </button>
+            <button onclick="event.stopPropagation(); toggleLock(allDocuments.find(d => d.id === '${doc.id}'))" class="w-full text-left px-4 py-2.5 text-sm text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2">
+                <iconify-icon icon="${doc.locked ? 'solar:lock-unlocked-linear' : 'solar:lock-linear'}" width="16"></iconify-icon> ${doc.locked ? 'Unlock' : 'Lock'}
+            </button>
+            <button onclick="event.stopPropagation(); moveFile(allDocuments.find(d => d.id === '${doc.id}'))" class="w-full text-left px-4 py-2.5 text-sm text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2">
+                <iconify-icon icon="solar:folder-with-files-linear" width="16"></iconify-icon> Move
+            </button>
+            <div class="h-px bg-white/5 my-1"></div>
+            <button onclick="event.stopPropagation(); deleteFile(allDocuments.find(d => d.id === '${doc.id}'))" class="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 flex items-center gap-2">
+                <iconify-icon icon="solar:trash-bin-trash-linear" width="16"></iconify-icon> Trash
             </button>
         </div>
     `;
-    el.querySelector('.file-link').onclick = () => window.open(doc.url, '_blank');
-    el.querySelector('.rename-btn').onclick = (e) => { e.stopPropagation(); renameFile(doc); };
-    el.querySelector('.replace-btn').onclick = (e) => { e.stopPropagation(); triggerReplaceFile(doc); };
-    el.querySelector('.delete-btn').onclick = (e) => { e.stopPropagation(); deleteFile(doc); };
+
+    const lockIcon = doc.locked ? `<div class="absolute top-2 left-2 text-white/50"><iconify-icon icon="solar:lock-bold" width="14"></iconify-icon></div>` : '';
+    const selectOverlay = doc.selected ? `<div class="absolute inset-0 bg-indigo-500/20 border-2 border-indigo-500 rounded-xl z-20 pointer-events-none"></div>` : '';
+
+    if (currentViewMode === 'list') {
+        el.className = 'group relative w-full bg-neutral-800/40 rounded-xl border border-white/5 hover:border-indigo-500/40 transition-all flex items-center p-3 gap-4';
+        el.innerHTML = `
+            ${selectOverlay}
+            <div class="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-white/10 relative">
+                <img src="${imgUrl}" class="w-full h-full object-cover" loading="lazy" onerror="this.style.display='none'">
+                ${lockIcon}
+            </div>
+            <div class="flex-1 min-w-0 cursor-pointer file-link">
+                <h3 class="text-sm font-medium text-white truncate" title="${doc.name}">${doc.name}</h3>
+                <p class="text-[10px] text-neutral-400">${date} ${doc.tags ? '• ' + doc.tags : ''}</p>
+            </div>
+            <div class="relative">
+                <button class="dropdown-trigger p-2 rounded-lg hover:bg-white/10 text-white transition-colors" onclick="event.stopPropagation(); toggleDropdown(this)">
+                    <iconify-icon icon="solar:menu-dots-bold" width="20"></iconify-icon>
+                </button>
+                ${menuHtml}
+            </div>
+        `;
+    } else {
+        el.className = 'group relative aspect-square bg-neutral-800/40 rounded-xl border border-white/5 hover:border-indigo-500/40 transition-all overflow-hidden';
+        el.innerHTML = `
+            ${selectOverlay}
+            <div class="absolute inset-0 cursor-pointer file-link">
+                <img src="${imgUrl}" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500" loading="lazy" onerror="this.style.display='none'">
+                <div class="absolute inset-0 flex items-center justify-center">
+                     <iconify-icon icon="solar:gallery-wide-linear" class="text-neutral-600 text-4xl"></iconify-icon>
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
+                ${lockIcon}
+                <div class="absolute bottom-4 left-4 right-4">
+                    <h3 class="text-sm font-medium text-white truncate" title="${doc.name}">${doc.name}</h3>
+                    <p class="text-[10px] text-neutral-400 mt-1 truncate">${date} ${doc.tags ? '• ' + doc.tags : ''}</p>
+                </div>
+            </div>
+            <div class="absolute top-2 right-2 z-30">
+                <button class="dropdown-trigger p-2 rounded-lg bg-black/40 hover:bg-black/60 text-white backdrop-blur-sm transition-colors" onclick="event.stopPropagation(); toggleDropdown(this)">
+                    <iconify-icon icon="solar:menu-dots-bold" width="20"></iconify-icon>
+                </button>
+                ${menuHtml}
+            </div>
+        `;
+    }
+
+    el.querySelector('.file-link').onclick = () => openImagePreview(imgUrl);
     return el;
 }
 
+window.toggleDropdown = function(btn) {
+    // Close all other dropdowns
+    document.querySelectorAll('.dropdown-menu').forEach(el => {
+        if (el !== btn.nextElementSibling) el.classList.add('hidden');
+    });
+    const menu = btn.nextElementSibling;
+    menu.classList.toggle('hidden');
+    
+    // Adjust position if it goes off screen (basic check)
+    const rect = menu.getBoundingClientRect();
+    if (rect.bottom > window.innerHeight) {
+        menu.style.top = 'auto';
+        menu.style.bottom = '100%';
+    } else {
+        menu.style.top = '100%';
+        menu.style.bottom = 'auto';
+    }
+};
+
+// --- New Feature Implementations ---
+
+window.openEditModal = function(doc) {
+    currentEditingDoc = doc;
+    const modal = document.getElementById('edit-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    
+    document.getElementById('edit-crop-btn').onclick = () => {
+        closeEditModal();
+        editImage(doc);
+    };
+    
+    document.getElementById('edit-rename-btn').onclick = () => {
+        closeEditModal();
+        renameFile(doc);
+    };
+};
+
+window.closeEditModal = function() {
+    const modal = document.getElementById('edit-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+};
+
+window.editTags = function(doc) {
+    const tags = prompt("Enter tags (comma separated):", doc.tags || "");
+    if (tags !== null) {
+        doc.tags = tags;
+        renderBrowse(); // Optimistic update
+        // In a real app, save to backend
+        // performAction('updateTags', { fileId: doc.id, tags: tags });
+    }
+};
+
+window.toggleSelect = function(doc) {
+    doc.selected = !doc.selected;
+    renderBrowse();
+};
+
+window.toggleLock = function(doc) {
+    doc.locked = !doc.locked;
+    renderBrowse();
+    // performAction('toggleLock', { fileId: doc.id, locked: doc.locked });
+};
+
+window.downloadImage = function(doc) {
+    const link = document.createElement('a');
+    link.href = `https://lh3.googleusercontent.com/d/${doc.id}`;
+    link.download = doc.name || 'image.jpg';
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
+
+window.downloadPDF = function(doc) {
+    const { jsPDF } = window.jspdf;
+    const docPdf = new jsPDF();
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.src = `https://lh3.googleusercontent.com/d/${doc.id}`;
+    img.onload = function() {
+        const imgProps = docPdf.getImageProperties(img);
+        const pdfWidth = docPdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        docPdf.addImage(img, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+        docPdf.save(`${doc.name || 'document'}.pdf`);
+    };
+    img.onerror = function() {
+        showAlert("Failed to load image for PDF generation.", "error");
+    };
+};
+
+window.moveFile = function(doc) {
+    if (doc.locked) {
+        showAlert("This file is locked and cannot be moved.", "error");
+        return;
+    }
+    movingItem = { type: 'file', id: doc.id, name: doc.name };
+    renderBrowse(); // Re-render to show move UI
+};
+
+// --- Folder Actions ---
+
+window.editFolderTags = function(folderPath) {
+    // In a real app, folder metadata would be stored. Here we just mock it or store in a separate structure.
+    // For simplicity, we'll just show an alert as we don't have a folder object in allDocuments to store tags on easily without refactoring.
+    // But let's try to find if we can attach it to the first doc in folder or similar? No, that's bad.
+    // We'll just alert for now as "Not implemented fully" or store in a global object.
+    const tags = prompt("Enter tags for folder (comma separated):", "");
+    if (tags !== null) {
+        showAlert(`Tags '${tags}' saved for folder (mock).`, "success");
+    }
+};
+
+window.toggleFolderSelect = function(folderPath) {
+    // Select all files in folder? Or just visual selection of folder?
+    // Let's just toggle a visual state if we had a folder object.
+    // Since we regenerate folder elements every render, we need state.
+    // We'll skip visual selection persistence for folders for now or implement a simple set.
+    showAlert("Folder selected (mock).", "success");
+};
+
+window.toggleFolderLock = function(folderPath) {
+    // Lock all files in folder?
+    const filesInFolder = allDocuments.filter(d => d.folder === folderPath || (d.folder && d.folder.startsWith(folderPath + '/')));
+    const newLockState = !filesInFolder.some(d => d.locked); // If any unlocked, lock all. If all locked, unlock all.
+    filesInFolder.forEach(d => d.locked = newLockState);
+    renderBrowse();
+    showAlert(`Folder ${newLockState ? 'locked' : 'unlocked'}.`, "success");
+};
+
+window.moveFolder = function(folderPath) {
+    const folderName = folderPath.split('/').pop();
+    movingItem = { type: 'folder', path: folderPath, name: folderName };
+    renderBrowse(); // Re-render to show move UI
+};
+
+window.confirmMove = function() {
+    if (!movingItem) return;
+    
+    const targetFolder = currentFolder || ""; // Root is empty string
+    
+    if (movingItem.type === 'file') {
+        moveFileToFolder(movingItem.id, targetFolder);
+    } else if (movingItem.type === 'folder') {
+        // Prevent moving folder into itself
+        if (targetFolder.startsWith(movingItem.path)) {
+            showAlert("Cannot move a folder into itself.", "error");
+            return;
+        }
+        
+        // Move folder logic
+        const oldPath = movingItem.path;
+        const folderName = movingItem.name;
+        const newPath = targetFolder ? `${targetFolder}/${folderName}` : folderName;
+        
+        // Update all files in this folder
+        allDocuments.forEach(d => {
+            if (d.folder === oldPath) {
+                d.folder = newPath;
+            } else if (d.folder && d.folder.startsWith(oldPath + '/')) {
+                const suffix = d.folder.substring(oldPath.length);
+                d.folder = newPath + suffix;
+            }
+        });
+        
+        // performAction('moveFolder', ...); // In real app
+        showAlert(`Moved "${folderName}" to "${targetFolder || 'Root'}"`, "success");
+    }
+    
+    movingItem = null;
+    renderBrowse();
+};
+
+window.cancelMove = function() {
+    movingItem = null;
+    renderBrowse();
+};
+
+
+// --- Existing Functions Updates ---
+
 async function renameFolder(oldName, oldPath) {
-    const newName = prompt("Enter new folder name:", oldName);
+    const newName = await showInput("Rename Folder", "Enter a new name for the folder.", oldName);
     if (newName && newName.trim() !== "" && newName.trim() !== oldName && !newName.includes('/')) {
         const trimmedNewName = newName.trim();
         
