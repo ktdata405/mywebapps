@@ -241,6 +241,31 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    if (e.parameter.datesOnly === 'true') {
+        var data = sheet.getDataRange().getValues();
+        var uniqueDates = {};
+        var lastDate = '';
+
+        // Skip header row (index 0)
+        for (var i = 1; i < data.length; i++) {
+            var row = data[i];
+            // Skip empty rows (if any)
+            if (!row[1] && !row[2] && !row[3]) continue;
+
+            var date = row[0];
+            if (date) {
+                if (date instanceof Date) {
+                    date = Utilities.formatDate(date, timezone, "dd/MMM/yyyy");
+                }
+                lastDate = date;
+            } else {
+                date = lastDate;
+            }
+            if (date) uniqueDates[date] = true;
+        }
+        return ContentService.createTextOutput(JSON.stringify({ dates: Object.keys(uniqueDates) })).setMimeType(ContentService.MimeType.JSON);
+    }
+
     // Get Available Balance from E1
     var availableBalance = sheet.getRange("E1").getValue();
     // Ensure it's a number

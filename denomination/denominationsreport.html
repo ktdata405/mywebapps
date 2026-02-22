@@ -76,8 +76,8 @@
 
         .accordion-content.active {
             opacity: 1;
-            padding-top: 1rem;
-            padding-bottom: 1rem;
+            padding-top: 0;
+            padding-bottom: 0;
         }
 
         .rotate-icon {
@@ -140,7 +140,7 @@
         </div>
     </div>
 
-    <div id="report-container" class="flex flex-col gap-3 hidden">
+    <div id="report-container" class="flex flex-col gap-4 hidden">
         <!-- List items will be inserted here -->
     </div>
 
@@ -162,6 +162,17 @@
         const year = date.getFullYear();
 
         return `${day} ${month} ${year}`;
+    }
+
+    function getDateParts(dateString) {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return { day: '-', month: '-', year: '-' };
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return {
+            day: String(date.getDate()).padStart(2, '0'),
+            month: months[date.getMonth()],
+            year: date.getFullYear()
+        };
     }
 
     function formatDateForInput(dateString) {
@@ -209,126 +220,218 @@
     function renderViewMode(contentContainer, data, headerElement) {
         contentContainer.innerHTML = '';
         const innerPadding = document.createElement('div');
-        innerPadding.className = 'px-4';
+        innerPadding.className = 'p-4 sm:p-6 space-y-6';
+
+        // --- Denominations Section ---
+        const denomsSection = document.createElement('div');
+
+        const denomTitle = document.createElement('h4');
+        denomTitle.className = 'text-xs font-bold text-gray-500 uppercase mb-3 tracking-wider flex items-center gap-2';
+        denomTitle.innerHTML = '<i class="fa-solid fa-coins text-yellow-500"></i> Denominations';
+        denomsSection.appendChild(denomTitle);
 
         const denomsGrid = document.createElement('div');
-        denomsGrid.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4 text-sm';
+        denomsGrid.className = 'flex flex-wrap gap-2';
 
         const denoms = [
-            { key: '500', label: '500', color: 'text-blue-300', bg: 'bg-blue-500/10', border: 'border-blue-500/20' },
-            { key: '200', label: '200', color: 'text-orange-300', bg: 'bg-orange-500/10', border: 'border-orange-500/20' },
-            { key: '100', label: '100', color: 'text-emerald-300', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
-            { key: '50', label: '50', color: 'text-pink-300', bg: 'bg-pink-500/10', border: 'border-pink-500/20' },
-            { key: '20', label: '20', color: 'text-indigo-300', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20' },
-            { key: '10', label: '10', color: 'text-red-300', bg: 'bg-red-500/10', border: 'border-red-500/20' },
-            { key: '5', label: '5', color: 'text-slate-300', bg: 'bg-slate-500/10', border: 'border-slate-500/20' },
-            { key: '2', label: '2', color: 'text-slate-300', bg: 'bg-slate-500/10', border: 'border-slate-500/20' },
-            { key: '1', label: '1', color: 'text-slate-300', bg: 'bg-slate-500/10', border: 'border-slate-500/20' }
+            { key: '500', label: '500', color: 'text-blue-300', bg: 'bg-blue-500/20', border: 'border-blue-500/30' },
+            { key: '200', label: '200', color: 'text-orange-300', bg: 'bg-orange-500/20', border: 'border-orange-500/30' },
+            { key: '100', label: '100', color: 'text-emerald-300', bg: 'bg-emerald-500/20', border: 'border-emerald-500/30' },
+            { key: '50', label: '50', color: 'text-pink-300', bg: 'bg-pink-500/20', border: 'border-pink-500/30' },
+            { key: '20', label: '20', color: 'text-indigo-300', bg: 'bg-indigo-500/20', border: 'border-indigo-500/30' },
+            { key: '10', label: '10', color: 'text-red-300', bg: 'bg-red-500/20', border: 'border-red-500/30' },
+            { key: '5', label: '5', color: 'text-slate-300', bg: 'bg-slate-500/20', border: 'border-slate-500/30' },
+            { key: '2', label: '2', color: 'text-slate-300', bg: 'bg-slate-500/20', border: 'border-slate-500/30' },
+            { key: '1', label: '1', color: 'text-slate-300', bg: 'bg-slate-500/20', border: 'border-slate-500/30' }
         ];
 
         denoms.forEach(d => {
             let value = data[d.key] || 0;
-            const item = document.createElement('div');
-            item.className = `${d.bg} ${d.border} border rounded-lg px-3 py-2 flex justify-between items-center`;
-            item.innerHTML = `
-                    <span class="font-bold ${d.color}">₹${d.label}</span>
-                    <span class="font-mono font-semibold text-gray-300">x ${value}</span>
+            if (value > 0) {
+                 const item = document.createElement('div');
+                 item.className = `${d.bg} ${d.border} border rounded-full px-3 py-1.5 flex items-center gap-2 shadow-sm`;
+                 item.innerHTML = `
+                    <span class="font-bold ${d.color} text-xs">₹${d.label}</span>
+                    <span class="w-px h-3 bg-white/20"></span>
+                    <span class="font-mono font-bold text-white text-sm">${value}</span>
                 `;
-            denomsGrid.appendChild(item);
+                denomsGrid.appendChild(item);
+            } else {
+                 const item = document.createElement('div');
+                 item.className = `bg-white/5 border border-white/5 rounded-full px-3 py-1.5 flex items-center gap-2 opacity-50 grayscale`;
+                 item.innerHTML = `
+                    <span class="font-bold text-gray-400 text-xs">₹${d.label}</span>
+                    <span class="w-px h-3 bg-white/10"></span>
+                    <span class="font-mono font-bold text-gray-500 text-sm">0</span>
+                `;
+                denomsGrid.appendChild(item);
+            }
         });
+        denomsSection.appendChild(denomsGrid);
+        innerPadding.appendChild(denomsSection);
 
-        const denomTitle = document.createElement('h4');
-        denomTitle.className = 'text-xs font-bold text-gray-400 uppercase mb-2 tracking-wider';
-        denomTitle.textContent = 'Denominations Breakdown';
-        innerPadding.appendChild(denomTitle);
-        innerPadding.appendChild(denomsGrid);
-
-        const detailsGrid = document.createElement('div');
-        detailsGrid.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm mt-6 pt-4 border-t border-white/10';
+        // --- Additional Details Section ---
+        const detailsSection = document.createElement('div');
 
         const fieldOrder = ['Week Expenses', 'Adjust Amount', 'ATM Withdrawal', 'A/C Paid', 'Remarks'];
         const allKeys = new Set([...fieldOrder, ...Object.keys(data)]);
         const handledKeys = ['Date', 'Total', '500', '200', '100', '50', '20', '10', '5', '2', '1', 'rowIndex'];
-        let hasOtherDetails = false;
+
+        const detailsData = [];
+        let remarksData = null;
 
         allKeys.forEach(key => {
             if (handledKeys.includes(key)) return;
             let value = data[key];
             if (data.hasOwnProperty(key) && value !== null && value !== '') {
-                hasOtherDetails = true;
-                const item = document.createElement('div');
-                item.className = 'bg-white/5 p-3 rounded-lg border border-white/10';
-                const isCurrencyCandidate = !isNaN(parseFloat(value)) && isFinite(value) && key !== 'Remarks';
-                value = isCurrencyCandidate ? formatCurrency(value) : value;
-                item.innerHTML = `
-                        <div class="text-xs text-gray-400 uppercase font-bold">${key}</div>
-                        <div class="font-semibold text-gray-200">${value}</div>
-                    `;
-                detailsGrid.appendChild(item);
+                if (key === 'Remarks') {
+                    remarksData = { key, value };
+                } else {
+                    detailsData.push({ key, value });
+                }
             }
         });
 
-        if (hasOtherDetails) {
-            innerPadding.appendChild(detailsGrid);
+        if (detailsData.length > 0 || remarksData) {
+            const separator = document.createElement('div');
+            separator.className = 'h-px bg-gradient-to-r from-transparent via-white/10 to-transparent';
+            innerPadding.appendChild(separator);
+
+            const detailsTitle = document.createElement('h4');
+            detailsTitle.className = 'text-xs font-bold text-gray-500 uppercase mb-3 tracking-wider flex items-center gap-2';
+            detailsTitle.innerHTML = '<i class="fa-solid fa-layer-group text-purple-400"></i> Details';
+            detailsSection.appendChild(detailsTitle);
+
+            const detailsGrid = document.createElement('div');
+            detailsGrid.className = 'grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm';
+
+            detailsData.forEach(item => {
+                const key = item.key;
+                let value = item.value;
+
+                const isCurrencyCandidate = !isNaN(parseFloat(value)) && isFinite(value);
+                const displayValue = isCurrencyCandidate ? formatCurrency(value) : value;
+
+                const listItem = document.createElement('div');
+                listItem.className = 'flex justify-between items-baseline border-b border-white/5 pb-2';
+                listItem.innerHTML = `
+                    <span class="text-gray-400">${key}</span>
+                    <span class="font-bold text-white">${displayValue}</span>
+                `;
+                detailsGrid.appendChild(listItem);
+            });
+            detailsSection.appendChild(detailsGrid);
+
+            if (remarksData) {
+                const remarksItem = document.createElement('div');
+                remarksItem.className = 'mt-4';
+                remarksItem.innerHTML = `
+                    <div class="text-xs font-bold text-gray-500 uppercase mb-1 tracking-wider">Remarks</div>
+                    <div class="text-sm text-gray-400 italic p-3 bg-white/5 rounded-lg border border-white/5">"${remarksData.value}"</div>
+                `;
+                detailsSection.appendChild(remarksItem);
+            }
+
+            innerPadding.appendChild(detailsSection);
         }
 
         contentContainer.appendChild(innerPadding);
-        setTimeout(() => updateContentHeight(contentContainer), 0);
+        setTimeout(() => updateContentHeight(contentContainer), 50);
     }
 
     function createListItem(data) {
         const itemContainer = document.createElement('div');
-        itemContainer.className = 'glass-card rounded-xl overflow-hidden';
+        itemContainer.className = 'glass-card rounded-xl overflow-hidden transition-all duration-300 hover:border-white/20';
 
         const header = document.createElement('div');
-        header.className = 'p-4 flex justify-between items-center cursor-pointer hover:bg-white/5 transition select-none';
+        header.className = 'p-4 flex items-center justify-between cursor-pointer select-none relative group';
+        header.onclick = () => toggleAccordion(header);
 
-        const content = document.createElement('div');
-        content.className = 'accordion-content bg-black/20';
+        // Left: Date
+        const leftSection = document.createElement('div');
+        leftSection.className = 'flex items-center gap-4';
 
-        const headerContent = document.createElement('div');
-        headerContent.className = 'flex items-center gap-4 flex-grow';
-        headerContent.onclick = () => toggleAccordion(header);
-        headerContent.innerHTML = `
-                <div class="bg-emerald-500/20 text-emerald-300 w-10 h-10 rounded-full flex items-center justify-center border border-emerald-500/30">
-                    <i class="fa-regular fa-calendar-check"></i>
+        const dateParts = getDateParts(data.Date);
+
+        const iconBox = document.createElement('div');
+        iconBox.className = 'w-12 h-12 rounded-xl bg-gradient-to-br from-white/5 to-white/10 flex flex-col items-center justify-center border border-white/10 shadow-sm group-hover:border-emerald-500/30 transition-colors';
+        iconBox.innerHTML = `
+            <div class="text-[10px] text-emerald-400 uppercase font-bold leading-none mb-0.5">${dateParts.month}</div>
+            <div class="text-xl font-bold text-gray-200 leading-none">${dateParts.day}</div>
+        `;
+
+        const dateInfo = document.createElement('div');
+        dateInfo.className = 'hidden sm:block';
+        dateInfo.innerHTML = `
+            <div class="font-bold text-gray-200 text-sm">${dateParts.year}</div>
+            <div class="text-xs text-gray-500">Tap to view details</div>
+        `;
+
+        leftSection.appendChild(iconBox);
+        leftSection.appendChild(dateInfo);
+
+        // Right: Amounts & Controls
+        const rightSection = document.createElement('div');
+        rightSection.className = 'flex items-center gap-3 sm:gap-5';
+
+        const amountsDiv = document.createElement('div');
+        amountsDiv.className = 'flex flex-col items-end text-right';
+
+        const acPaidVal = parseFloat(data['A/C Paid']);
+        const hasAcPaid = !isNaN(acPaidVal) && acPaidVal !== 0;
+
+        if (hasAcPaid) {
+            amountsDiv.innerHTML = `
+                <div class="flex items-center gap-2 mb-0.5">
+                    <span class="text-[10px] text-purple-300/70 uppercase font-bold tracking-wider">A/C Paid</span>
+                    <span class="text-xs font-bold text-purple-300">${formatCurrency(data['A/C Paid'])}</span>
                 </div>
-                <div>
-                    <div class="font-bold text-blue-300">${formatDate(data.Date)}</div>
-                    <div class="text-xs text-gray-400">Click to view details</div>
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] text-emerald-300/70 uppercase font-bold tracking-wider">Offerings</span>
+                    <span class="text-base sm:text-lg font-bold text-emerald-400">${formatCurrency(data.Total)}</span>
                 </div>
             `;
+        } else {
+            amountsDiv.innerHTML = `
+                <div class="flex flex-col items-end">
+                    <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-0.5">Offerings</span>
+                    <span class="text-lg sm:text-xl font-bold text-emerald-400">${formatCurrency(data.Total)}</span>
+                </div>
+            `;
+        }
 
-        const rightSection = document.createElement('div');
-        rightSection.className = 'flex items-center gap-3';
+        const controlsDiv = document.createElement('div');
+        controlsDiv.className = 'flex items-center gap-1 pl-3 border-l border-white/10 ml-1';
 
         const editBtn = document.createElement('button');
-        editBtn.className = 'text-gray-400 hover:text-blue-400 transition p-2 rounded-full hover:bg-blue-500/10';
-        editBtn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i>';
+        editBtn.className = 'w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-blue-400 transition-colors';
+        editBtn.innerHTML = '<i class="fa-solid fa-pen text-xs"></i>';
         editBtn.onclick = (e) => {
             e.stopPropagation();
             localStorage.setItem('editReportData', JSON.stringify(data));
             window.location.href = 'denominations.html';
         };
 
-        const amountDiv = document.createElement('div');
-        amountDiv.className = 'text-right';
-        amountDiv.innerHTML = `<div class="font-bold text-lg text-emerald-400">${formatCurrency(data.Total)}</div>`;
-        amountDiv.onclick = () => toggleAccordion(header);
+        const chevron = document.createElement('div');
+        chevron.className = 'w-8 h-8 rounded-full flex items-center justify-center text-gray-500 rotate-icon transition-transform duration-300 group-hover:text-white';
+        chevron.innerHTML = '<i class="fa-solid fa-chevron-down text-xs"></i>';
 
-        const chevron = document.createElement('i');
-        chevron.className = 'fa-solid fa-chevron-down text-gray-500 rotate-icon ml-2';
-        chevron.onclick = () => toggleAccordion(header);
+        controlsDiv.appendChild(editBtn);
+        controlsDiv.appendChild(chevron);
 
-        rightSection.appendChild(editBtn);
-        rightSection.appendChild(amountDiv);
-        rightSection.appendChild(chevron);
+        rightSection.appendChild(amountsDiv);
+        rightSection.appendChild(controlsDiv);
 
-        header.appendChild(headerContent);
+        header.appendChild(leftSection);
         header.appendChild(rightSection);
+
+        const content = document.createElement('div');
+        content.className = 'accordion-content bg-black/20 border-t border-white/5';
+
         itemContainer.appendChild(header);
         renderViewMode(content, data, header);
         itemContainer.appendChild(content);
+
         return itemContainer;
     }
 
@@ -382,5 +485,4 @@
     <p>&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
 </footer>
 </body>
-
 </html>
