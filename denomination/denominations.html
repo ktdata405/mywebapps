@@ -86,6 +86,67 @@
         footer b {
             color: var(--text-light);
         }
+
+        /* Popup Styles */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .popup-content {
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 90%;
+            width: 400px;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .popup-overlay.active .popup-content {
+            transform: scale(1);
+        }
+
+        .popup-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 24px;
+        }
+
+        .popup-success .popup-icon {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .popup-error .popup-icon {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
     </style>
 </head>
 
@@ -242,6 +303,20 @@
                 <button onclick="calcAppend('.')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">.</button>
                 <button onclick="calcResult()" class="p-3 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 font-bold transition">=</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Custom Popup -->
+    <div id="custom-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div id="popup-icon-container" class="popup-icon">
+                <!-- Icon will be inserted here -->
+            </div>
+            <h3 id="popup-title" class="text-xl font-bold text-white mb-2"></h3>
+            <p id="popup-message" class="text-gray-300 mb-6"></p>
+            <button onclick="closePopup()" class="bg-white/10 hover:bg-white/20 text-white py-2 px-6 rounded-lg font-semibold transition w-full">
+                OK
+            </button>
         </div>
     </div>
 
@@ -465,6 +540,48 @@
             return `${day}/${months[d.getMonth()]}/${d.getFullYear()}`;
         }
 
+        // Popup Functions
+        function showPopup(title, message, type = 'success') {
+            const popup = document.getElementById('custom-popup');
+            const titleEl = document.getElementById('popup-title');
+            const messageEl = document.getElementById('popup-message');
+            const iconContainer = document.getElementById('popup-icon-container');
+
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+
+            // Reset classes
+            popup.classList.remove('popup-success', 'popup-error');
+
+            if (type === 'success') {
+                popup.classList.add('popup-success');
+                iconContainer.innerHTML = '<i class="fa-solid fa-check"></i>';
+            } else {
+                popup.classList.add('popup-error');
+                iconContainer.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+            }
+
+            popup.classList.add('active');
+        }
+
+        function closePopup() {
+            const popup = document.getElementById('custom-popup');
+            popup.classList.remove('active');
+
+            // If we were updating, redirect after closing
+            if (window.pendingRedirect) {
+                window.location.href = window.pendingRedirect;
+                window.pendingRedirect = null;
+            }
+
+            // If we were clearing, do it now
+            if (window.pendingClear) {
+                editingRowIndex = null;
+                clearAll();
+                window.pendingClear = false;
+            }
+        }
+
         function saveData() {
             const loader = document.getElementById('loader');
             const saveBtn = document.getElementById('save-btn');
@@ -544,25 +661,23 @@
                 console.log('Data sent to Google Sheets (no-cors mode)');
                 loader.classList.add('hidden');
                 saveBtn.disabled = false;
-                const msg = isUpdate ? 'updated' : 'saved';
-                alert('✓ Data ' + msg + ' successfully');
+
                 // Also save locally
                 localStorage.setItem('cashCounterData', JSON.stringify(data));
 
                 if (isUpdate) {
-                    // Redirect back to report view if it was an update
-                    window.location.href = 'denominationsreport.html';
+                    window.pendingRedirect = 'denominationsreport.html';
+                    showPopup('Success', 'Data updated successfully', 'success');
                 } else {
-                    // Clear form if it was a fresh entry
-                    editingRowIndex = null;
-                    clearAll();
+                    window.pendingClear = true;
+                    showPopup('Success', 'Data saved successfully', 'success');
                 }
             })
             .catch(error => {
                 console.error('Network error:', error);
                 loader.classList.add('hidden');
                 saveBtn.disabled = false;
-                alert('⚠ Error sending data: ' + error.message);
+                showPopup('Error', 'Error sending data: ' + error.message, 'error');
             });
         }
 

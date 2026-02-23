@@ -88,6 +88,27 @@
             transform: rotate(180deg);
         }
 
+        /* Custom Scrollbar for Accordion Content */
+        .custom-scroll {
+            overflow-y: auto;
+            max-height: 300px; /* Adjust as needed */
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+        }
+
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+        }
+
         footer {
             text-align: center;
             padding: 20px;
@@ -97,6 +118,67 @@
 
         footer b {
             color: var(--text-light);
+        }
+
+        /* Popup Styles */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .popup-content {
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 90%;
+            width: 400px;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .popup-overlay.active .popup-content {
+            transform: scale(1);
+        }
+
+        .popup-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 24px;
+        }
+
+        .popup-success .popup-icon {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .popup-error .popup-icon {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
         }
     </style>
 </head>
@@ -147,6 +229,20 @@
     <div id="empty-state" class="hidden flex flex-col items-center justify-center py-20 text-gray-500">
         <i class="fa-solid fa-clipboard-list text-6xl mb-4 text-gray-700"></i>
         <p class="text-xl">No reports found</p>
+    </div>
+</div>
+
+<!-- Custom Popup -->
+<div id="custom-popup" class="popup-overlay">
+    <div class="popup-content">
+        <div id="popup-icon-container" class="popup-icon">
+            <!-- Icon will be inserted here -->
+        </div>
+        <h3 id="popup-title" class="text-xl font-bold text-white mb-2"></h3>
+        <p id="popup-message" class="text-gray-300 mb-6"></p>
+        <button onclick="closePopup()" class="bg-white/10 hover:bg-white/20 text-white py-2 px-6 rounded-lg font-semibold transition w-full">
+            OK
+        </button>
     </div>
 </div>
 
@@ -335,7 +431,12 @@
             innerPadding.appendChild(detailsSection);
         }
 
-        contentContainer.appendChild(innerPadding);
+        // Create scrollable wrapper
+        const scrollWrapper = document.createElement('div');
+        scrollWrapper.className = 'custom-scroll';
+        scrollWrapper.appendChild(innerPadding);
+        contentContainer.appendChild(scrollWrapper);
+
         setTimeout(() => updateContentHeight(contentContainer), 50);
     }
 
@@ -354,16 +455,17 @@
         const dateParts = getDateParts(data.Date);
 
         const iconBox = document.createElement('div');
-        iconBox.className = 'w-12 h-12 rounded-xl bg-gradient-to-br from-white/5 to-white/10 flex flex-col items-center justify-center border border-white/10 shadow-sm group-hover:border-emerald-500/30 transition-colors';
+        iconBox.className = 'w-12 h-12 rounded-xl bg-gradient-to-br from-white/5 to-white/10 flex flex-col items-center justify-center border border-white/10 shadow-sm group-hover:border-blue-500/30 transition-colors';
         iconBox.innerHTML = `
-            <div class="text-[10px] text-emerald-400 uppercase font-bold leading-none mb-0.5">${dateParts.month}</div>
+            <div class="text-[10px] text-blue-400 uppercase font-bold leading-none mb-0.5">${dateParts.month}</div>
             <div class="text-xl font-bold text-gray-200 leading-none">${dateParts.day}</div>
+            <div class="text-[8px] text-gray-400 font-bold leading-none mt-0.5">${dateParts.year}</div>
         `;
 
         const dateInfo = document.createElement('div');
         dateInfo.className = 'hidden sm:block';
         dateInfo.innerHTML = `
-            <div class="font-bold text-gray-200 text-sm">${dateParts.year}</div>
+            <div class="font-bold text-gray-200 text-sm">${formatDate(data.Date)}</div>
             <div class="text-xs text-gray-500">Tap to view details</div>
         `;
 
@@ -383,7 +485,7 @@
         if (hasAcPaid) {
             amountsDiv.innerHTML = `
                 <div class="flex items-center gap-2 mb-0.5">
-                    <span class="text-[10px] text-purple-300/70 uppercase font-bold tracking-wider">A/C Paid</span>
+                    <span class="text-[10px] text-purple-300 uppercase font-bold tracking-wider">A/C Paid</span>
                     <span class="text-xs font-bold text-purple-300">${formatCurrency(data['A/C Paid'])}</span>
                 </div>
                 <div class="flex items-center gap-2">
@@ -433,6 +535,35 @@
         itemContainer.appendChild(content);
 
         return itemContainer;
+    }
+
+    // Popup Functions
+    function showPopup(title, message, type = 'success') {
+        const popup = document.getElementById('custom-popup');
+        const titleEl = document.getElementById('popup-title');
+        const messageEl = document.getElementById('popup-message');
+        const iconContainer = document.getElementById('popup-icon-container');
+
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+
+        // Reset classes
+        popup.classList.remove('popup-success', 'popup-error');
+
+        if (type === 'success') {
+            popup.classList.add('popup-success');
+            iconContainer.innerHTML = '<i class="fa-solid fa-check"></i>';
+        } else {
+            popup.classList.add('popup-error');
+            iconContainer.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+        }
+
+        popup.classList.add('active');
+    }
+
+    function closePopup() {
+        const popup = document.getElementById('custom-popup');
+        popup.classList.remove('active');
     }
 
     function fetchData() {
