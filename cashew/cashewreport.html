@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="../config.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
             --bg-dark: #0b0f19;
@@ -122,6 +123,9 @@
                     </div>
                 </div>
                 <div class="flex gap-3">
+                    <button onclick="openExportOptions()" class="w-11 h-11 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Export Data">
+                        <i class="fa-solid fa-file-export"></i>
+                    </button>
                     <a href="cashew.html" class="w-11 h-11 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Add Expense">
                         <i class="fa-solid fa-plus"></i>
                     </a>
@@ -302,6 +306,96 @@
             <div class="text-center">
                 <h3 class="text-white font-bold text-lg" data-translate-key="fetchingData">Fetching Data</h3>
                 <p class="text-gray-400 text-sm mt-1" data-translate-key="retrievingExpenses">Retrieving your expenses...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Options Modal -->
+    <div id="export-options-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md transition-all p-4">
+        <div class="glass-card rounded-3xl w-full max-w-lg flex flex-col shadow-2xl border border-white/10">
+            <div class="p-6 border-b border-white/5 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20">
+                        <i class="fa-solid fa-file-export"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Export Options</h3>
+                </div>
+                <button onclick="closeExportOptions()" class="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-6">
+                <div>
+                    <label class="text-[10px] uppercase tracking-wider text-gray-400 font-bold ml-1 mb-1.5 block" data-translate-key="category">Category</label>
+                    <div class="relative">
+                        <select id="export-category-select" class="w-full py-3 px-4 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-semibold text-sm input-field"></select>
+                        <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-500">
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] uppercase tracking-wider text-gray-400 font-bold ml-1 mb-1.5 block" data-translate-key="month">Month</label>
+                        <div class="relative">
+                            <select id="export-month-select" class="w-full py-3 px-4 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-semibold text-sm input-field"></select>
+                            <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-500">
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase tracking-wider text-gray-400 font-bold ml-1 mb-1.5 block" data-translate-key="year">Year</label>
+                        <div class="relative">
+                            <select id="export-year-select" class="w-full py-3 px-4 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-semibold text-sm input-field"></select>
+                            <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-500">
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t border-white/5 flex justify-end items-center gap-4">
+                <button onclick="closeExportOptions()" class="h-11 px-6 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white font-bold transition-all">Cancel</button>
+                <button onclick="startExportProcess()" class="h-11 px-8 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold flex items-center gap-2.5 transition-all shadow-lg shadow-indigo-600/25 active:scale-95">
+                    <span>Next: Preview</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Preview Modal -->
+    <div id="export-preview-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md transition-all p-4">
+        <div class="glass-card rounded-3xl w-full max-w-4xl h-full max-h-[90vh] flex flex-col shadow-2xl border border-white/10">
+            <div class="p-6 border-b border-white/5 flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20">
+                        <i class="fa-solid fa-file-lines"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Export Preview</h3>
+                </div>
+                <button onclick="closeExportPreview()" class="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="p-6 flex-grow overflow-auto">
+                <pre id="export-content-preview" class="text-xs text-gray-300 font-mono whitespace-pre-wrap break-words"></pre>
+            </div>
+            <div class="p-6 border-t border-white/5 flex-shrink-0 flex justify-end items-center gap-4">
+                <button onclick="closeExportPreview()" class="h-11 px-6 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white font-bold transition-all">Close</button>
+                <button id="copy-report-btn" onclick="copyReportToClipboard()" class="h-11 px-8 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold flex items-center gap-2.5 transition-all shadow-lg shadow-emerald-600/25 active:scale-95">
+                    <i class="fa-solid fa-copy"></i>
+                    <span>Copy</span>
+                </button>
+                <button id="download-pdf-btn" class="h-11 px-8 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-bold flex items-center gap-2.5 transition-all shadow-lg shadow-pink-600/25 active:scale-95">
+                    <i class="fa-solid fa-file-pdf"></i>
+                    <span>Download PDF</span>
+                </button>
+                <button id="download-export-btn" class="h-11 px-8 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold flex items-center gap-2.5 transition-all shadow-lg shadow-indigo-600/25 active:scale-95">
+                    <i class="fa-solid fa-download"></i>
+                    <span>Download .txt</span>
+                </button>
             </div>
         </div>
     </div>
@@ -959,6 +1053,299 @@
             } else {
                 alert('No data found for this date to edit.');
             }
+        }
+
+        // --- Export Logic ---
+        let exportableContent = '';
+        let exportableFilename = '';
+
+        function openExportOptions() {
+            const modal = document.getElementById('export-options-modal');
+
+            // Populate Categories
+            const categorySelect = document.getElementById('export-category-select');
+            categorySelect.innerHTML = '<option value="All">All Categories</option>';
+            const categories = new Set();
+            const mainCategoryFilter = document.getElementById('category-filter');
+            for (let i = 1; i < mainCategoryFilter.options.length; i++) {
+                categories.add(mainCategoryFilter.options[i].value);
+            }
+            Array.from(categories).sort().forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                categorySelect.appendChild(option);
+            });
+            categorySelect.value = 'Home'; // Default
+
+            // Populate Month/Year
+            const monthSelect = document.getElementById('export-month-select');
+            const yearSelect = document.getElementById('export-year-select');
+            if (monthSelect.options.length === 0) { // Populate only once
+                monthSelect.innerHTML = '<option value="All">All Months</option>';
+                const mainMonthSelect = document.getElementById('month-select');
+                for (let i = 1; i < mainMonthSelect.options.length; i++) {
+                    monthSelect.add(mainMonthSelect.options[i].cloneNode(true));
+                }
+
+                yearSelect.innerHTML = '<option value="All">All Years</option>';
+                const mainYearSelect = document.getElementById('year-select');
+                for (let i = 0; i < mainYearSelect.options.length; i++) {
+                    yearSelect.add(mainYearSelect.options[i].cloneNode(true));
+                }
+            }
+
+            // Set defaults
+            const currentMonth = new Date().toLocaleString('default', { month: 'short' });
+            const currentYear = new Date().getFullYear();
+            monthSelect.value = currentMonth;
+            yearSelect.value = String(currentYear);
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeExportOptions() {
+            const modal = document.getElementById('export-options-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function startExportProcess() {
+            closeExportOptions();
+            const loader = document.getElementById('loader');
+            loader.classList.remove('hidden');
+
+            const category = document.getElementById('export-category-select').value;
+            const month = document.getElementById('export-month-select').value;
+            const year = document.getElementById('export-year-select').value;
+
+            const url = `${CONFIG.GOOGLE_SHEET_URL_CASHEW}?fetchAll=true&t=${new Date().getTime()}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(response => {
+                    loader.classList.add('hidden');
+                    generateExportContentAndPreview(response.data || [], category, month, year);
+                })
+                .catch(error => {
+                    console.error('Error fetching export data:', error);
+                    loader.classList.add('hidden');
+                    alert('⚠ Error fetching data for export: ' + error.message);
+                });
+        }
+
+        function closeExportPreview() {
+            const modal = document.getElementById('export-preview-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            // Clear content to free up memory
+            document.getElementById('export-content-preview').textContent = '';
+            exportableContent = '';
+            exportableFilename = '';
+        }
+
+        function copyReportToClipboard() {
+            if (!exportableContent) {
+                alert('No report content to copy.');
+                return;
+            }
+
+            navigator.clipboard.writeText(exportableContent).then(() => {
+                const copyBtn = document.getElementById('copy-report-btn');
+                const originalContent = copyBtn.innerHTML;
+                copyBtn.innerHTML = `
+                    <i class="fa-solid fa-check"></i>
+                    <span>Copied!</span>
+                `;
+                copyBtn.disabled = true;
+
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalContent;
+                    copyBtn.disabled = false;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+                alert('Failed to copy report. Please try again.');
+            });
+        }
+
+        function triggerDownload() {
+            if (!exportableContent || !exportableFilename) {
+                alert('No data to download.');
+                return;
+            }
+
+            const blob = new Blob([exportableContent], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', exportableFilename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function triggerPdfDownload() {
+            if (!exportableContent || !exportableFilename) {
+                alert('No data to download.');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Use Courier font to maintain the table-like alignment of the text report
+            doc.setFont("Courier");
+            doc.setFontSize(10);
+            
+            const splitText = doc.splitTextToSize(exportableContent, 180);
+            let y = 10;
+            const pageHeight = doc.internal.pageSize.height;
+            
+            splitText.forEach(line => {
+                if (y > pageHeight - 10) {
+                    doc.addPage();
+                    y = 10;
+                }
+                doc.text(line, 10, y);
+                y += 5;
+            });
+            
+            const pdfFilename = exportableFilename.replace('.txt', '.pdf');
+            doc.save(pdfFilename);
+        }
+
+        function generateExportContentAndPreview(dataForExport, categoryName, month, year) {
+            if (!dataForExport || dataForExport.length === 0) {
+                alert('No data available to export for the selected criteria.');
+                return;
+            }
+
+            // Filter data based on selections
+            const filteredForPeriod = dataForExport.filter(item => {
+                const dateStr = formatDateToDDMMMYYYY(item.date);
+                const parts = dateStr.split('/');
+                if (parts.length !== 3) return false;
+                
+                const itemMonth = parts[1];
+                const itemYear = parts[2];
+
+                const yearMatch = (year === 'All') || (itemYear === year);
+                const monthMatch = (month === 'All') || (itemMonth === month);
+                
+                return yearMatch && monthMatch;
+            });
+
+            const expensesToExport = categoryName === 'All' 
+                ? filteredForPeriod 
+                : filteredForPeriod.filter(item => item.category && item.category.toLowerCase() === categoryName.toLowerCase());
+
+            if (expensesToExport.length === 0) {
+                alert(`No "${categoryName}" expenses found for the selected period.`);
+                return;
+            }
+
+            const groupedByDate = expensesToExport.reduce((acc, item) => {
+                const dateKey = formatDateToDDMMMYYYY(item.date);
+                if (!acc[dateKey]) {
+                    acc[dateKey] = {
+                        items: [],
+                        total: 0,
+                        rawDate: null
+                    };
+                }
+                acc[dateKey].items.push(item);
+                acc[dateKey].total += item.amount;
+                return acc;
+            }, {});
+
+            // Add rawDate for sorting and sort
+            const sortedGroups = Object.keys(groupedByDate).map(dateKey => {
+                const group = groupedByDate[dateKey];
+                let rawDateObj = new Date(group.items[0].date);
+                if (isNaN(rawDateObj.getTime())) {
+                    const parts = dateKey.split('/');
+                    if (parts.length === 3) {
+                        const day = parseInt(parts[0]);
+                        const monthStr = parts[1];
+                        const year = parseInt(parts[2]);
+                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        const monthIndex = months.findIndex(m => m.toLowerCase() === monthStr.toLowerCase());
+                        if (monthIndex !== -1) rawDateObj = new Date(year, monthIndex, day);
+                    }
+                }
+                group.rawDate = rawDateObj;
+                group.dateKey = dateKey;
+                return group;
+            }).sort((a, b) => b.rawDate - a.rawDate);
+
+            // --- New Text Content Generation ---
+            const LINE_WIDTH = 70;
+            const lineSeparator = '='.repeat(LINE_WIDTH);
+            const subLineSeparator = '-'.repeat(LINE_WIDTH);
+
+            let period = 'All Time';
+            if (month !== 'All' && year !== 'All') period = `${month} ${year}`;
+            else if (month !== 'All') period = `All months of ${month}`;
+            else if (year !== 'All') period = `All of ${year}`;
+
+            const reportTitle = categoryName === 'All' ? 'ALL EXPENSES' : `${categoryName.toUpperCase()} EXPENSES`;
+
+            let grandTotal = 0;
+            sortedGroups.forEach(group => grandTotal += group.total);
+
+            let textContent = '';
+            textContent += lineSeparator + '\n';
+            textContent += reportTitle.padStart(Math.floor((LINE_WIDTH + reportTitle.length) / 2)).padEnd(LINE_WIDTH) + '\n';
+            textContent += lineSeparator + '\n';
+            textContent += `Report for: ${period}`.padEnd(LINE_WIDTH) + '\n';
+            const grandTotalLabel = 'Grand Total: ';
+            const grandTotalValue = grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            textContent += `${grandTotalLabel}${grandTotalValue}\n`;
+            textContent += subLineSeparator + '\n\n';
+
+            sortedGroups.forEach(group => {
+                const dateHeader = `DATE: ${group.dateKey}`;
+                textContent += `${dateHeader}\n`;
+                textContent += subLineSeparator + '\n';
+
+                group.items.forEach(item => {
+                    const description = item.description || 'No description';
+                    
+                    const descPrefix = '  ';
+                    const maxLineLength = LINE_WIDTH - descPrefix.length;
+                    
+                    let remainingDesc = description;
+                    if (remainingDesc.length === 0) textContent += descPrefix + '\n';
+
+                    while (remainingDesc.length > 0) {
+                        let chunk = remainingDesc.substring(0, maxLineLength);
+                        remainingDesc = remainingDesc.substring(maxLineLength);
+                        textContent += descPrefix + chunk + '\n';
+                    }
+                });
+                textContent += '\n';
+            });
+
+            textContent += lineSeparator + '\n';
+
+            // --- Show Modal ---
+            exportableContent = textContent;
+            
+            let filename = `${categoryName.replace(' ', '_')}_Expenses_${month}_${year}.txt`;
+            if (month === 'All' || year === 'All') {
+                filename = 'Home_Expenses_All_Time.txt';
+            }
+            exportableFilename = filename;
+
+            document.getElementById('export-content-preview').textContent = exportableContent;
+            document.getElementById('download-export-btn').onclick = triggerDownload;
+            document.getElementById('download-pdf-btn').onclick = triggerPdfDownload;
+            const modal = document.getElementById('export-preview-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
         }
 
         init();
