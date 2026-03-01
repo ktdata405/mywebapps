@@ -1300,7 +1300,7 @@
             textContent += lineSeparator + '\n';
             textContent += reportTitle.padStart(Math.floor((LINE_WIDTH + reportTitle.length) / 2)).padEnd(LINE_WIDTH) + '\n';
             textContent += lineSeparator + '\n';
-            textContent += `Report for: ${period}`.padEnd(LINE_WIDTH) + '\n';
+            textContent += `Month & Year : ${period}`.padEnd(LINE_WIDTH) + '\n';
             const grandTotalLabel = 'Grand Total: ';
             const grandTotalValue = grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             textContent += `${grandTotalLabel}${grandTotalValue}\n`;

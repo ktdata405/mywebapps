@@ -285,6 +285,7 @@ const translations = {
     "interestOnFloatFlat": "Interest on Float/Flat",
     "villageFinance": "Village Finance",
     "vehicleInfo": "Vehicle Info",
+    "lamfCalculator": "Loan Against MF",
 
     // =============================================================================
     // FILE: calculator/land.html
@@ -366,6 +367,24 @@ const translations = {
     "eligibility": "Eligibility",
     "womenOnly": "Women Only",
     "calculateMSSC": "Calculate MSSC",
+
+    // =============================================================================
+    // FILE: calculator/lamf.html
+    // =============================================================================
+    "lamfCalculatorTitle": "Loan Against Mutual Funds",
+    "lamfCalculatorDesc": "Calculate your eligible loan limit against your mutual fund portfolio.",
+    "portfolioValue": "Portfolio Value (₹)",
+    "fundType": "Fund Type",
+    "equity": "Equity (Max 45% LTV)",
+    "debt": "Debt (Max 80% LTV)",
+    "hybrid": "Hybrid (Max 50% LTV)",
+    "ltvRatio": "LTV Ratio (%)",
+    "loanInterestRate": "Interest Rate (% p.a.)",
+    "eligibleLimit": "Eligible Loan Limit",
+    "monthlyInterest": "Monthly Interest",
+    "dailyInterest": "Daily Interest",
+    "yearlyInterest": "Yearly Interest",
+
 
     // =============================================================================
     // FILE: calculator/village_interest.html

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-translate-key="lamfCalculatorTitle">LAMF Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #fb923c;
+            --secondary: #f59e0b;
+            --accent: #d97706;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-light: #f8fafc;
+            --text-dim: #94a3b8;
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body {
+            background-color: var(--bg-dark); color: var(--text-light); min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 2rem; position: relative; overflow-x: hidden;
+        }
+        .bg-animation {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #1e1b4b, #0f172a); overflow: hidden;
+        }
+        .orb {
+            position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+        .orb-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px; }
+        .orb-2 { width: 300px; height: 300px; background: var(--secondary); bottom: -50px; right: -50px; animation-delay: -5s; }
+        @keyframes float { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(30px, 50px); } }
+        .nav-back {
+            position: absolute; top: 2rem; left: 2rem; width: 50px; height: 50px;
+            border-radius: 50%; background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center;
+            justify-content: center; color: var(--text-light); text-decoration: none;
+            backdrop-filter: blur(10px); transition: all 0.3s ease; font-size: 1.2rem; z-index: 10;
+        }
+        .nav-back:hover {
+            background: var(--primary); transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.5); color: #000;
+        }
+        .container {
+            width: 100%; max-width: 800px; margin-top: 4rem;
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 24px; padding: 2rem; backdrop-filter: blur(12px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center; margin-bottom: 2.5rem; font-size: 2.5rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700;
+        }
+        .calculator-form { display: flex; flex-direction: column; gap: 1.5rem; }
+        .scheme-details {
+            background: rgba(255, 255, 255, 0.03); border-radius: 20px;
+            padding: 1rem 1.5rem; border: 1px solid var(--border-color); margin-bottom: 1rem;
+        }
+        .scheme-details p { color: var(--text-dim); line-height: 1.6; font-size: 0.95rem; }
+        .calculator-inputs {
+            background: rgba(0, 0, 0, 0.2); border-radius: 20px; padding: 1.5rem;
+            border: 1px solid var(--border-color); display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;
+        }
+        .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        label { color: var(--text-dim); font-size: 0.9rem; margin-left: 0.5rem; }
+        input {
+            background: var(--input-bg); border: 1px solid var(--border-color);
+            padding: 1rem; border-radius: 12px; color: var(--text-light);
+            font-size: 1rem; transition: all 0.3s ease; width: 100%;
+        }
+        input:focus {
+            outline: none; border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2); background: rgba(255, 255, 255, 0.08);
+        }
+        button.calculate-btn {
+            background: linear-gradient(to right, var(--primary), var(--secondary)); color: #000;
+            border: none; padding: 1rem; border-radius: 12px; font-weight: 700;
+            font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease;
+            margin-top: 0.5rem; text-transform: uppercase; letter-spacing: 1px;
+        }
+        button.calculate-btn:hover {
+            transform: translateY(-2px); box-shadow: 0 10px 20px rgba(251, 191, 36, 0.3);
+        }
+        .result-card {
+            margin-top: 2rem; background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px; padding: 1.5rem; display: none;
+            border: 1px solid var(--border-color);
+        }
+        .result-card.show { display: block; animation: slideUp 0.5s ease-out; }
+        .result-row {
+            display: flex; justify-content: space-between; margin-bottom: 1rem;
+            padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);
+        }
+        .result-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .result-label { color: var(--text-dim); }
+        .result-value { font-weight: 600; color: var(--primary); font-size: 1.1rem; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* Tooltip Styles */
+        .tooltip { position: relative; display: inline-block; cursor: help; margin-left: 8px; }
+        .tooltip .tooltip-text {
+            visibility: hidden; width: 240px; background-color: #1e293b;
+            color: #f8fafc; text-align: left; border-radius: 8px; padding: 12px;
+            position: absolute; z-index: 10; bottom: 135%; left: 50%; margin-left: -120px;
+            opacity: 0; transition: opacity 0.3s; font-size: 0.85rem; line-height: 1.5;
+            border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .tooltip .tooltip-text::after {
+            content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px;
+            border-width: 5px; border-style: solid; border-color: #1e293b transparent transparent transparent;
+        }
+        .tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
+        .formula-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .formula-label { color: #94a3b8; }
+        .formula-val { color: #fb923c; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <div class="bg-animation">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <a href="calculator.html" class="nav-back" aria-label="Back">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+
+    <div class="container">
+        <h1 data-translate-key="lamfCalculatorTitle">LAMF Calculator</h1>
+
+        <div class="calculator-form">
+            <div class="scheme-details">
+                <p data-translate-key="lamfCalculatorDesc">Calculate your eligible loan limit against your mutual fund portfolio.</p>
+            </div>
+
+            <div class="calculator-inputs">
+                <div class="form-group">
+                    <label data-translate-key="portfolioValue">Portfolio Value (₹)</label>
+                    <input type="text" inputmode="decimal" id="lamf-value" placeholder="e.g. 1,00,000" oninput="formatPortfolioInput(this); calculateLAMF();">
+                </div>
+                <div class="form-group">
+                    <label data-translate-key="fundType">Fund Type</label>
+                    <select id="lamf-type" onchange="updateLTV()" style="background: var(--input-bg); border: 1px solid var(--border-color); padding: 1rem; border-radius: 12px; color: var(--text-light); font-size: 1rem; width: 100%; outline: none;">
+                        <option value="45" data-translate-key="equity">Equity (Max 45% LTV)</option>
+                        <option value="80" data-translate-key="debt">Debt (Max 80% LTV)</option>
+                        <option value="50" data-translate-key="hybrid">Hybrid (Max 50% LTV)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label data-translate-key="ltvRatio">LTV Ratio (%)</label>
+                    <input type="number" id="lamf-ltv" value="45" oninput="calculateLAMF()">
+                </div>
+                <div class="form-group">
+                    <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                        <label data-translate-key="loanInterestRate" style="margin-bottom: 0;">Interest Rate (% p.a.)</label>
+                        <div class="tooltip">
+                            <i class="fas fa-info-circle" style="color: var(--primary); font-size: 0.9rem;"></i>
+                            <div class="tooltip-text">
+                                <div style="margin-bottom: 8px; font-weight: 600; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">Interest Calculation</div>
+                                <div class="formula-row"><span class="formula-label">Yearly:</span> <span class="formula-val">Limit × Rate%</span></div>
+                                <div class="formula-row"><span class="formula-label">Monthly:</span> <span class="formula-val">Yearly / 12</span></div>
+                                <div class="formula-row"><span class="formula-label">Daily:</span> <span class="formula-val">Yearly / 365</span></div>
+                                <div style="margin-top: 6px; font-size: 0.75rem; color: #94a3b8; font-style: italic;">* Calculated on Sanctioned Limit</div>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="number" id="lamf-rate" value="10.5" oninput="calculateLAMF()">
+                </div>
+            </div>
+            <!-- <button class="calculate-btn" onclick="calculateLAMF()" data-translate-key="calculate">Calculate</button> -->
+
+            <div id="lamf-result" class="result-card show">
+                <div class="result-row">
+                    <span class="result-label" data-translate-key="portfolioValue">Portfolio Value (Actively Eligible Amount)</span>
+                    <span class="result-value" id="lamf-eligible-portfolio">₹0</span>
+                </div>
+                <!-- Optionally, keep or remove the next row if you want to avoid redundancy -->
+                <!-- <div class="result-row">
+                    <span class="result-label" data-translate-key="eligibleLimit">Eligible Loan Limit</span>
+                    <span class="result-value" id="lamf-limit">₹0</span>
+                </div> -->
+                <div class="result-row">
+                    <span class="result-label" data-translate-key="dailyInterest">Daily Interest</span>
+                    <span class="result-value" id="lamf-daily">₹0</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label" data-translate-key="monthlyInterest">Monthly Interest</span>
+                    <span class="result-value" id="lamf-interest">₹0</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label" data-translate-key="yearlyInterest">Yearly Interest</span>
+                    <span class="result-value" id="lamf-yearly">₹0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../localization.js"></script>
+    <script>
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        function formatPortfolioInput(input) {
+            // Remove non-digit characters
+            let rawValue = input.value.replace(/[^\d]/g, '');
+            
+            if (rawValue) {
+                // Format with commas for Indian numbering system and set it back
+                input.value = Number(rawValue).toLocaleString('en-IN');
+            } else {
+                input.value = '';
+            }
+        }
+
+        function updateLTV() {
+            const typeSelect = document.getElementById('lamf-type');
+            const ltvInput = document.getElementById('lamf-ltv');
+            ltvInput.value = typeSelect.value;
+            calculateLAMF();
+        }
+
+        function calculateLAMF() {
+            const portfolioValue = parseFloat(document.getElementById('lamf-value').value.replace(/,/g, '')) || 0;
+            const ltv = parseFloat(document.getElementById('lamf-ltv').value) || 0;
+            const annualRate = parseFloat(document.getElementById('lamf-rate').value) || 0;
+
+            // Calculate Eligible Loan Limit
+            const loanLimit = portfolioValue * (ltv / 100);
+
+            // Calculate Interest (Simple Interest on the limit)
+            const yearlyInterest = (loanLimit * annualRate) / 100;
+            const monthlyInterest = yearlyInterest / 12;
+            const dailyInterest = yearlyInterest / 365;
+
+            // Show eligible amount as portfolio value
+            document.getElementById('lamf-eligible-portfolio').textContent = formatCurrency(loanLimit);
+            // Optionally, update or remove the following line if you keep the Eligible Loan Limit row
+            // document.getElementById('lamf-limit').textContent = formatCurrency(loanLimit);
+            document.getElementById('lamf-daily').textContent = formatCurrency(dailyInterest);
+            document.getElementById('lamf-interest').textContent = formatCurrency(monthlyInterest);
+            document.getElementById('lamf-yearly').textContent = formatCurrency(yearlyInterest);
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            calculateLAMF();
+        });
+    </script>
+</body>
+</html>

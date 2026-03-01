@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>New Loan Entry - Loan Manager</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Reusing styles from style.css but adapting for Tailwind integration where needed */
+        :root {
+            --primary-color: #6C63FF;
+            --secondary-color: #2A2D3E;
+            --accent-color: #00D2FC;
+            --text-color: #2A2D3E;
+            --text-light: #8F9BB3;
+            --white: #ffffff;
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            --gradient-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        body {
+            background: #e0e5ec;
+            background-image:
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%),
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+            background-color: #1a1a2e;
+            min-height: 100vh;
+            color: var(--white);
+            font-family: 'Poppins', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Form Styling Overrides for Tailwind compatibility */
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            transition: color 0.3s ease;
+            pointer-events: none;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 15px 12px 45px;
+            border-radius: 10px;
+            color: var(--white);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .form-group select {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+            padding-right: 2.5rem;
+        }
+
+        .form-group textarea {
+            padding-left: 15px;
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.1);
+        }
+
+        .form-group input:focus + i {
+            color: var(--primary-color);
+        }
+
+        .btn-submit {
+            background: linear-gradient(90deg, var(--primary-color), #8B80F9);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(108, 99, 255, 0.4);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        #message {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+
+        #message.success {
+            display: block;
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+            border: 1px solid rgba(46, 204, 113, 0.3);
+        }
+
+        #message.error {
+            display: block;
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+
+        /* Amount Text Styling */
+        #amountText {
+            font-size: 0.8rem;
+            color: var(--accent-color);
+            margin-top: 0.5rem;
+            font-style: italic;
+            min-height: 1.2em;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-20 relative overflow-x-hidden flex flex-col items-center justify-center">
+
+    <main class="max-w-3xl w-full px-4">
+        <!-- Header Block -->
+        <div class="glass-panel border-b border-white/5 px-6 py-4 mb-6 backdrop-blur-xl bg-[#0b0f19]/80 rounded-3xl flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 ring-4 ring-white/5">
+                    <i class="fas fa-hand-holding-usd text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white leading-tight">New Loan Entry</h1>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <a href="loanreport.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="View Report">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </a>
+                <a href="../index.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Home">
+                    <i class="fa-solid fa-house"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Form Block -->
+        <div class="glass-panel rounded-3xl p-6 shadow-2xl shadow-black/20 border border-white/10">
+            <form id="loanForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Date -->
+                <div class="form-group">
+                    <label for="date">Date</label>
+                    <div class="input-wrapper">
+                        <input type="date" id="date" name="date" required>
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                </div>
+
+                <!-- Name -->
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="name" name="name" required placeholder="Who is involved?">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+
+                <!-- Amount -->
+                <div class="form-group">
+                    <label for="amount">Amount</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="amount" name="amount" required placeholder="0.00" inputmode="decimal">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div id="amountText"></div>
+                </div>
+
+                <!-- Interest Rate -->
+                <div class="form-group">
+                    <label for="interestRate">Interest Rate (%)</label>
+                    <div class="input-wrapper" style="width: 110px;">
+                        <input type="number" id="interestRate" name="interestRate" required step="0.01" placeholder="5.5">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                </div>
+
+                <!-- Tenure -->
+                <div class="form-group">
+                    <label for="tenure">Tenure</label>
+                    <div class="flex gap-3">
+                        <div class="input-wrapper flex-grow">
+                            <input type="number" id="tenure" name="tenure" required step="1" placeholder="Duration">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="input-wrapper w-1/3">
+                            <select id="tenureType" name="tenureType">
+                                <option value="Months">Months</option>
+                                <option value="Years">Years</option>
+                            </select>
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Type -->
+                <div class="form-group">
+                    <label for="type">Transaction Type</label>
+                    <div class="input-wrapper">
+                        <select id="type" name="type">
+                            <option value="Given">Given (Lent)</option>
+                            <option value="Taken">Taken (Borrowed)</option>
+                        </select>
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <div class="input-wrapper">
+                        <select id="status" name="status">
+                            <option value="Active">Active</option>
+                            <option value="Closed">Closed</option>
+                            <option value="Defaulted">Defaulted</option>
+                        </select>
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                </div>
+
+                <!-- Remarks -->
+                <div class="form-group md:col-span-2">
+                    <label for="remarks">Remarks (Optional)</label>
+                    <textarea id="remarks" name="remarks" placeholder="Any additional notes..."></textarea>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="md:col-span-2">
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        <i class="fas fa-save"></i>
+                        <span id="submitBtnText">Save Transaction</span>
+                    </button>
+                </div>
+            </form>
+            <div id="message"></div>
+        </div>
+    </main>
+
+    <script src="../config.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Number to Text Conversion Logic
+        const amountInput = document.getElementById('amount');
+        const amountTextDisplay = document.getElementById('amountText');
+
+        amountInput.addEventListener('input', function(e) {
+            // Remove existing commas to get raw number
+            let value = e.target.value.replace(/,/g, '');
+
+            // Allow only numbers and one decimal point
+            if (!/^\d*\.?\d*$/.test(value)) {
+                value = value.replace(/[^0-9.]/g, '');
+            }
+
+            // Format with commas for display (Indian Numbering System: 1,00,000)
+            if (value) {
+                const parts = value.split('.');
+                let integerPart = parts[0];
+                const decimalPart = parts.length > 1 ? '.' + parts[1] : '';
+
+                if (integerPart.length > 3) {
+                    const lastThree = integerPart.substring(integerPart.length - 3);
+                    const otherNumbers = integerPart.substring(0, integerPart.length - 3);
+                    integerPart = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + "," + lastThree;
+                }
+
+                e.target.value = integerPart + decimalPart;
+
+                // Convert to text
+                const numVal = parseFloat(value);
+                if (!isNaN(numVal)) {
+                    const text = numberToText(Math.floor(numVal));
+                    amountTextDisplay.textContent = text + " Rupees Only";
+                } else {
+                    amountTextDisplay.textContent = '';
+                }
+            } else {
+                e.target.value = '';
+                amountTextDisplay.textContent = '';
+            }
+        });
+
+        function numberToText(n) {
+            if (n < 0) return "Minus " + numberToText(-n);
+            if (n === 0) return "Zero";
+
+            const units = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+            const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+
+            function convert(num) {
+                if (num < 20) return units[num];
+                if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 ? " " + units[num % 10] : "");
+                if (num < 1000) return units[Math.floor(num / 100)] + " Hundred" + (num % 100 ? " and " + convert(num % 100) : "");
+                if (num < 100000) return convert(Math.floor(num / 1000)) + " Thousand" + (num % 1000 ? " " + convert(num % 1000) : "");
+                if (num < 10000000) return convert(Math.floor(num / 100000)) + " Lakh" + (num % 100000 ? " " + convert(num % 100000) : "");
+                return convert(Math.floor(num / 10000000)) + " Crore" + (num % 10000000 ? " " + convert(num % 10000000) : "");
+            }
+
+            return convert(n);
+        }
+
+        window.addEventListener('DOMContentLoaded', function() {
+            const editData = localStorage.getItem('loanEditData');
+            if (editData) {
+                const data = JSON.parse(editData);
+                // Prepopulate fields
+                if (data.date) {
+                    // Convert DD/MMM/YYYY to YYYY-MM-DD
+                    const parts = data.date.split('/');
+                    if (parts.length === 3) {
+                        const day = parts[0];
+                        const monthStr = parts[1];
+                        const year = parts[2];
+                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        const month = (months.indexOf(monthStr) + 1).toString().padStart(2, '0');
+                        document.getElementById('date').value = `${year}-${month}-${day}`;
+                    }
+                }
+                if (data.name) document.getElementById('name').value = data.name;
+                if (data.amount) document.getElementById('amount').value = data.amount;
+                if (data.interestRate) document.getElementById('interestRate').value = data.interestRate;
+                if (data.tenure) {
+                    const tenureParts = data.tenure.split(' ');
+                    if (tenureParts.length === 2) {
+                        document.getElementById('tenure').value = tenureParts[0];
+                        document.getElementById('tenureType').value = tenureParts[1];
+                    }
+                }
+                if (data.type) document.getElementById('type').value = data.type;
+                if (data.status) document.getElementById('status').value = data.status;
+                if (data.remarks) document.getElementById('remarks').value = data.remarks;
+                // Change button to Update
+                document.getElementById('submitBtnText').textContent = 'Update Transaction';
+                document.getElementById('submitBtn').dataset.editId = data.id || '';
+                localStorage.removeItem('loanEditData');
+            }
+        });
+    </script>
+</body>
+</html>

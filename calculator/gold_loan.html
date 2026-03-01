@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-translate-key="goldLoanTitle">Gold Loan Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --gold: #ffd700;
+            --gold-dim: #b49b3e;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-light: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #1e1b4b, #0f172a);
+            overflow: hidden;
+        }
+        .orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; animation: float 20s infinite ease-in-out; }
+        .orb-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px; }
+        .orb-2 { width: 300px; height: 300px; background: #ec4899; bottom: -50px; right: -50px; animation-delay: -5s; }
+        .orb-3 { width: 200px; height: 200px; background: var(--gold); top: 40%; left: 60%; animation-delay: -10s; opacity: 0.2; }
+        @keyframes float { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(30px, 50px); } }
+
+        /* Navigation */
+        .nav-back {
+            position: absolute; top: 2rem; left: 2rem;
+            width: 45px; height: 45px; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-light); text-decoration: none;
+            backdrop-filter: blur(10px); transition: all 0.3s ease;
+            z-index: 10;
+        }
+        .nav-back:hover { background: var(--primary); transform: scale(1.1); }
+
+        .page-title {
+            font-size: 2rem; font-weight: 700; margin-bottom: 2rem; margin-top: 1rem;
+            background: linear-gradient(to right, #fff, #ffd700);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+
+        /* Layout */
+        .calculator-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+            width: 100%; max-width: 1000px;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px; padding: 2rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Inputs */
+        .input-group { margin-bottom: 1.5rem; position: relative; }
+        .input-label { display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: var(--text-dim); font-size: 0.9rem; font-weight: 500; }
+        .input-wrapper { position: relative; }
+        .input-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-dim); }
+        
+        .input-field {
+            width: 100%; padding: 1rem 1rem 1rem 3rem;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px; color: var(--text-light);
+            font-size: 1.1rem; transition: all 0.3s;
+        }
+        .input-field:focus { outline: none; border-color: var(--gold); background: rgba(0, 0, 0, 0.4); }
+
+        /* Range Slider */
+        .range-container { margin-top: 0.5rem; }
+        .range-slider {
+            -webkit-appearance: none; width: 100%; height: 6px;
+            background: rgba(255,255,255,0.1); border-radius: 5px; outline: none;
+        }
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 20px; height: 20px; border-radius: 50%;
+            background: var(--gold); cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Results */
+        .result-card {
+            display: flex; flex-direction: column; justify-content: center;
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(20, 20, 30, 0.9));
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            position: relative; overflow: hidden;
+        }
+        .result-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--gold));
+        }
+
+        .result-item { margin-bottom: 1.5rem; text-align: center; }
+        .result-label { color: var(--text-dim); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+        .result-value { font-size: 2.5rem; font-weight: 700; color: var(--text-light); }
+        .result-value.highlight { color: var(--gold); text-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+        .result-sub { font-size: 0.9rem; color: var(--text-dim); margin-top: 0.2rem; }
+
+        .visual-bar {
+            height: 8px; background: rgba(255,255,255,0.1);
+            border-radius: 4px; margin: 2rem 0 1rem; overflow: hidden; position: relative;
+        }
+        .visual-fill {
+            height: 100%; background: linear-gradient(90deg, var(--primary), var(--gold));
+            width: 0%; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .info-badge {
+            display: inline-block; padding: 0.25rem 0.75rem;
+            background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 20px; color: var(--gold); font-size: 0.8rem; margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .calculator-container { grid-template-columns: 1fr; }
+            .page-title { font-size: 1.5rem; }
+            .nav-back { top: 1rem; left: 1rem; width: 40px; height: 40px; }
+            body { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-animation">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <a href="calculator.html" class="nav-back" aria-label="Back">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+
+    <h1 class="page-title" data-translate-key="goldLoanCalculator">Gold Loan Calculator</h1>
+
+    <div class="calculator-container">
+        <!-- Input Section -->
+        <div class="glass-card">
+            <div class="input-group">
+                <label class="input-label">
+                    <span data-translate-key="goldWeight">Gold Weight (grams)</span>
+                </label>
+                <div class="input-wrapper">
+                    <i class="fas fa-balance-scale input-icon"></i>
+                    <input type="number" id="weight" class="input-field" placeholder="e.g. 50" oninput="calculate()">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">
+                    <span data-translate-key="ratePerGram">Rate per Gram (₹)</span>
+                    <span style="font-size: 0.8rem; color: var(--gold);">Today's Approx: ₹6,850</span>
+                </label>
+                <div class="input-wrapper">
+                    <i class="fas fa-tag input-icon"></i>
+                    <input type="number" id="rate" class="input-field" value="6850" oninput="calculate()">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">
+                    <span data-translate-key="ltvRatio">LTV Ratio (Loan to Value)</span>
+                    <span id="ltv-display" style="color: var(--primary);">75%</span>
+                </label>
+                <div class="range-container">
+                    <input type="range" id="ltv" class="range-slider" min="50" max="90" value="75" oninput="calculate()">
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 0.75rem; color: var(--text-dim);">
+                    <span>Safe (50%)</span>
+                    <span>RBI Cap (75%)</span>
+                    <span>High Risk (90%)</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">
+                    <span data-translate-key="interestRate">Interest Rate (% p.a.)</span>
+                </label>
+                <div class="input-wrapper">
+                    <i class="fas fa-percent input-icon"></i>
+                    <input type="number" id="interest" class="input-field" value="12" step="0.1" oninput="calculate()">
+                </div>
+            </div>
+
+            <div class="input-group" style="margin-bottom: 0;">
+                <label class="input-label">
+                    <span data-translate-key="tenure">Tenure (Months)</span>
+                </label>
+                <div class="input-wrapper">
+                    <i class="fas fa-calendar-alt input-icon"></i>
+                    <input type="number" id="tenure" class="input-field" value="12" oninput="calculate()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Section -->
+        <div class="glass-card result-card">
+            <div class="result-item">
+                <div class="result-label" data-translate-key="eligibleLoanAmount">Eligible Loan Amount</div>
+                <div class="result-value highlight" id="loan-amount">₹0</div>
+                <div class="info-badge">
+                    <i class="fas fa-check-circle"></i> Based on <span id="ltv-badge">75</span>% LTV
+                </div>
+            </div>
+
+            <div class="visual-bar">
+                <div class="visual-fill" id="visual-fill"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 2rem;">
+                <span>Loan Amount</span>
+                <span>Total Gold Value: <span id="total-value" style="color: var(--text-light);">₹0</span></span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem;">
+                <div class="result-item" style="margin-bottom: 0;">
+                    <div class="result-label" style="font-size: 0.75rem;">Monthly Interest</div>
+                    <div class="result-value" style="font-size: 1.5rem;" id="monthly-interest">₹0</div>
+                </div>
+                <div class="result-item" style="margin-bottom: 0;">
+                    <div class="result-label" style="font-size: 0.75rem;">Total Interest</div>
+                    <div class="result-value" style="font-size: 1.5rem;" id="total-interest">₹0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../localization.js"></script>
+    <script>
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        function calculate() {
+            // Get inputs
+            const weight = parseFloat(document.getElementById('weight').value) || 0;
+            const rate = parseFloat(document.getElementById('rate').value) || 0;
+            const ltv = parseFloat(document.getElementById('ltv').value) || 0;
+            const interestRate = parseFloat(document.getElementById('interest').value) || 0;
+            const tenure = parseFloat(document.getElementById('tenure').value) || 0;
+
+            // Update LTV Display
+            document.getElementById('ltv-display').textContent = ltv + '%';
+            document.getElementById('ltv-badge').textContent = ltv;
+
+            // Calculations
+            const totalGoldValue = weight * rate;
+            const loanAmount = totalGoldValue * (ltv / 100);
+            
+            // Monthly Interest = Loan * (Rate/100) / 12
+            const monthlyInterest = loanAmount * (interestRate / 100) / 12;
+            const totalInterest = monthlyInterest * tenure;
+
+            // Update UI
+            const loanAmountEl = document.getElementById('loan-amount');
+            const totalValueEl = document.getElementById('total-value');
+            const monthlyInterestEl = document.getElementById('monthly-interest');
+            const totalInterestEl = document.getElementById('total-interest');
+            const visualFill = document.getElementById('visual-fill');
+
+            // Animate Numbers (Simple text update for responsiveness)
+            loanAmountEl.textContent = formatCurrency(loanAmount);
+            totalValueEl.textContent = formatCurrency(totalGoldValue);
+            monthlyInterestEl.textContent = formatCurrency(monthlyInterest);
+            totalInterestEl.textContent = formatCurrency(totalInterest);
+
+            // Visual Bar Width
+            // Width represents Loan Amount relative to Total Value (which is exactly LTV %)
+            visualFill.style.width = ltv + '%';
+
+            // Color logic for LTV
+            if(ltv > 75) {
+                visualFill.style.background = 'linear-gradient(90deg, #f59e0b, #ef4444)'; // Orange to Red
+                document.getElementById('ltv-display').style.color = '#ef4444';
+            } else {
+                visualFill.style.background = 'linear-gradient(90deg, var(--primary), var(--gold))';
+                document.getElementById('ltv-display').style.color = 'var(--primary)';
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            calculate();
+            
+            // Add slight animation to inputs on load
+            const inputs = document.querySelectorAll('.input-field');
+            inputs.forEach((input, index) => {
+                input.style.opacity = '0';
+                input.style.transform = 'translateY(10px)';
+                setTimeout(() => {
+                    input.style.transition = 'all 0.5s ease';
+                    input.style.opacity = '1';
+                    input.style.transform = 'translateY(0)';
+                }, 100 * index);
+            });
+        });
+    </script>
+</body>
+</html>
