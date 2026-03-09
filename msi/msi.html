@@ -533,7 +533,6 @@
                 layanSection.classList.remove('hidden');
             }
             calculateTotal();
-            fetchLastEntry(); // Fetch last entry when user changes
         }
 
 
@@ -619,15 +618,17 @@
             loader.style.display = 'flex';
             saveBtn.disabled = true;
 
-            const formData = new FormData(this);
             const data = {};
+            data.month = monthSelect.value;
+            data.year = yearSelect.value;
+            data.user_select = userSelect.value;
 
-            formData.forEach((value, key) => {
-                if (key === 'month' || key === 'year' || key === 'user_select') {
-                    data[key] = value;
-                } else {
-                    data[key] = unformatNumber(value);
-                }
+            // Only collect data from the visible section
+            const activeSection = userSelect.value === 'Kalyan' ? kalyanSection : layanSection;
+            const inputs = activeSection.querySelectorAll('.number-format');
+
+            inputs.forEach(input => {
+                data[input.name] = unformatNumber(input.value);
             });
 
             const user = document.getElementById('user_select').value;
@@ -636,6 +637,9 @@
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'text/plain'
+                },
                 body: JSON.stringify(data)
             })
             .then(response => {

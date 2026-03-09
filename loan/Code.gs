@@ -1,6 +1,6 @@
 // This code should be pasted into the Google Apps Script editor associated with your Google Sheet.
 
-const SHEET_NAME = 'Loan Details'; // Changed back to 'Loans' to match previous version and preserve data
+const SHEET_NAME = 'Loan Details';
 
 function doGet(e) {
   const action = e.parameter.action;
@@ -27,9 +27,9 @@ function doPost(e) {
     } else if (action === 'deleteLoan') {
       return deleteLoan(data);
     } else if (action === 'getRepaymentStatus') {
-      return getRepaymentStatus(e);
+      return getRepaymentStatus(data);
     } else if (action === 'updateRepaymentStatus') {
-      return updateRepaymentStatus(e);
+      return updateRepaymentStatus(data);
     }
 
     return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Invalid action' }))
@@ -52,6 +52,16 @@ function getSheet() {
   return sheet;
 }
 
+function getRepaymentSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName('RepaymentStatus');
+  if (!sheet) {
+    sheet = ss.insertSheet('RepaymentStatus');
+    sheet.appendRow(['LoanID', 'Year', 'Month', 'Status']);
+  }
+  return sheet;
+}
+
 function getHeaderMap(sheet) {
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   const map = {};
@@ -69,27 +79,7 @@ function addLoan(data) {
   const id = Utilities.getUuid();
   const status = data.status || 'Active';
 
-  // Check if we are in legacy mode (no ID column)
   if (headerMap['ID'] === undefined) {
-     // Legacy mode append: Date, Name, Amount, Interest Rate, Tenure, Type, Remarks, Timestamp
-     // We try to fit data into existing structure.
-     // If 'Status' is also missing, we skip it.
-
-     // Construct array based on what we think the old structure was:
-     // ['Date', 'Name', 'Amount', 'Interest Rate', 'Tenure', 'Type', 'Remarks', 'Timestamp']
-     // Note: Tenure was added in v2. If v1, it might be missing too.
-
-     // Safest bet: Append row using the headers we found?
-     // Or just append to the end.
-
-     const row = [];
-     // We iterate known columns in order of appearance in the sheet?
-     // No, appendRow takes an array.
-
-     // Let's try to be smart. If ID is missing, we just append the fields we have in a fixed order
-     // that matches the previous version (Turn 12 + Tenure update).
-     // Order: Date, Name, Amount, Interest Rate, Tenure, Type, Remarks, Timestamp
-
      sheet.appendRow([
        data.date,
        data.name,
@@ -100,9 +90,7 @@ function addLoan(data) {
        data.remarks || '',
        timestamp
      ]);
-
   } else {
-     // Standard/New mode append
      const lastCol = sheet.getLastColumn();
      const row = new Array(lastCol).fill('');
 
@@ -230,10 +218,11 @@ function getLoans() {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-function getRepaymentStatus(e) {
-  var loanId = e.parameter.loanId;
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('RepaymentStatus');
-  if (!sheet) return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Sheet not found' })).setMimeType(ContentService.MimeType.JSON);
+function getRepaymentStatus(eOrData) {
+  // Handle both event object (from doGet) and data object (from doPost)
+  var loanId = eOrData.loanId || (eOrData.parameter && eOrData.parameter.loanId);
+
+  var sheet = getRepaymentSheet();
   var data = sheet.getDataRange().getValues();
   var result = [];
   for (var i = 1; i < data.length; i++) {
@@ -248,24 +237,29 @@ function getRepaymentStatus(e) {
   return ContentService.createTextOutput(JSON.stringify({ status: 'success', data: result })).setMimeType(ContentService.MimeType.JSON);
 }
 
-function updateRepaymentStatus(e) {
-  var loanId = e.parameter.loanId;
-  var year = e.parameter.year;
-  var month = e.parameter.month;
-  var status = e.parameter.status;
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('RepaymentStatus');
-  if (!sheet) return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Sheet not found' })).setMimeType(ContentService.MimeType.JSON);
-  var data = sheet.getDataRange().getValues();
+function updateRepaymentStatus(data) {
+  // Expects data object directly
+  var loanId = data.loanId;
+  var year = data.year;
+  var month = data.month;
+  var status = data.status;
+
+  var sheet = getRepaymentSheet();
+  var range = sheet.getDataRange();
+  var values = range.getValues();
   var found = false;
-  for (var i = 1; i < data.length; i++) {
-    if (String(data[i][0]) === String(loanId) && String(data[i][1]) === String(year) && String(data[i][2]) === String(month)) {
+
+  for (var i = 1; i < values.length; i++) {
+    if (String(values[i][0]) === String(loanId) && String(values[i][1]) === String(year) && String(values[i][2]) === String(month)) {
       sheet.getRange(i+1, 4).setValue(status);
       found = true;
       break;
     }
   }
+
   if (!found) {
     sheet.appendRow([loanId, year, month, status]);
   }
+
   return ContentService.createTextOutput(JSON.stringify({ status: 'success' })).setMimeType(ContentService.MimeType.JSON);
 }

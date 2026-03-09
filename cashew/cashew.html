@@ -5,10 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title data-translate-key="cashewExpenseTracker">Cashew - Expense Tracker</title>
+    <!-- Preconnect to speed up external resource loading -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="../config.js"></script>
+
     <style>
         :root {
             --bg-dark: #0b0f19;
@@ -141,6 +147,92 @@
             transform: scale(1.05);
             z-index: 2;
         }
+
+        /* New Progress Bar Styles */
+        .progress-bar-container {
+            width: 80%;
+            max-width: 300px;
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 4px;
+            animation: progress-indeterminate 2s infinite ease-in-out;
+            transform-origin: left;
+        }
+
+        @keyframes progress-indeterminate {
+            0% { transform: translateX(-100%) scaleX(0.5); }
+            50% { transform: translateX(0) scaleX(0.3); }
+            100% { transform: translateX(100%) scaleX(0.5); }
+        }
+
+        /* Popup Styles */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .popup-content {
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 90%;
+            width: 400px;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .popup-overlay.active .popup-content {
+            transform: scale(1);
+        }
+
+        .popup-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 24px;
+        }
+
+        .popup-success .popup-icon {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .popup-error .popup-icon {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
     </style>
 </head>
 
@@ -154,7 +246,7 @@
 
     <!-- Header -->
     <header class="sticky top-0 z-30 glass-panel border-b border-white/5 px-6 py-4 mb-8 backdrop-blur-xl bg-[#0b0f19]/80">
-        <div class="max-w-3xl mx-auto flex justify-between items-center">
+        <div class="max-w-3xl lg:max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-4">
                 <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 ring-4 ring-white/5">
                     <i class="fa-solid fa-wallet text-white text-lg"></i>
@@ -175,78 +267,92 @@
         </div>
     </header>
 
-    <main class="max-w-3xl mx-auto px-4">
+    <main class="max-w-3xl mx-auto px-4 lg:max-w-7xl lg:px-8">
 
-        <!-- Date Navigator -->
-        <div class="glass-panel rounded-3xl p-1.5 flex items-center justify-between mb-8 shadow-2xl shadow-black/20 border border-white/10">
-            <button id="prev-day" class="w-12 h-12 rounded-2xl hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all active:scale-90">
-                <i class="fa-solid fa-chevron-left"></i>
-            </button>
+        <div class="lg:grid lg:grid-cols-12 lg:gap-8 items-start">
 
-            <div class="flex flex-col items-center cursor-pointer group" onclick="document.getElementById('date-input').showPicker()">
-                <div class="relative px-4 py-1 rounded-xl group-hover:bg-white/5 transition-colors">
-                    <input type="date" id="date-input" class="bg-transparent text-white font-bold text-lg outline-none text-center cursor-pointer font-mono tracking-wide z-10 relative" />
+            <!-- Left Sidebar (Desktop) / Top Section (Mobile) -->
+            <div class="lg:col-span-4 lg:sticky lg:top-28 space-y-6 mb-8 lg:mb-0">
+
+                <!-- Date Navigator -->
+                <div class="glass-panel rounded-3xl p-1.5 flex items-center justify-between shadow-2xl shadow-black/20 border border-white/10">
+                    <button id="prev-day" class="w-12 h-12 rounded-2xl hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all active:scale-90">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+
+                    <div class="flex flex-col items-center cursor-pointer group" onclick="document.getElementById('date-input').showPicker()">
+                        <div class="relative px-4 py-1 rounded-xl group-hover:bg-white/5 transition-colors">
+                            <input type="date" id="date-input" class="bg-transparent text-white font-bold text-lg outline-none text-center cursor-pointer font-mono tracking-wide z-10 relative" />
+                        </div>
+                        <span class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mt-0.5">
+                            <span data-translate-key="lastSeenDate">Last seen date:</span> <span id="last-seen-date" class="text-indigo-400"></span>
+                        </span>
+                    </div>
+
+                    <button id="next-day" class="w-12 h-12 rounded-2xl hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all active:scale-90">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
                 </div>
-                <span class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mt-0.5">
-                    <span data-translate-key="lastSeenDate">Last seen date:</span> <span id="last-seen-date" class="text-indigo-400"></span>
-                </span>
+
+                <!-- Date Selection Accordion -->
+                <div class="accordion-container">
+                    <button type="button" onclick="toggleDateAccordion()" class="w-full p-3 flex justify-between items-center bg-transparent border-none text-white cursor-pointer hover:bg-white/5 transition-colors lg:hidden">
+                        <div class="flex items-center gap-3">
+                            <div class="w-7 h-7 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400">
+                                <i class="fa-regular fa-calendar-days text-xs"></i>
+                            </div>
+                            <span class="font-semibold text-xs" id="accordion-month-label">Month Overview</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-gray-400 text-xs transition-transform duration-300" id="date-accordion-arrow"></i>
+                    </button>
+                    <div id="date-accordion-content" class="hidden lg:block border-t border-white/5 lg:border-t-0">
+                        <div id="date-radio-grid" class="calendar-wrapper">
+                            <!-- Radio buttons generated here -->
+                        </div>
+                        <div class="pb-3 flex items-center gap-4 text-[9px] font-bold text-gray-500 uppercase tracking-widest justify-center">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-3 h-3 rounded bg-emerald-500/20 border border-emerald-500/40"></span> Data
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-3 h-3 rounded bg-white/5 border border-white/10"></span> Empty
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
-            <button id="next-day" class="w-12 h-12 rounded-2xl hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all active:scale-90">
-                <i class="fa-solid fa-chevron-right"></i>
-            </button>
-        </div>
+            <!-- Right Content (Desktop) / Bottom Section (Mobile) -->
+            <div class="lg:col-span-8 space-y-5">
 
-        <!-- Date Selection Accordion -->
-        <div class="accordion-container">
-            <button type="button" onclick="toggleDateAccordion()" class="w-full p-3 flex justify-between items-center bg-transparent border-none text-white cursor-pointer hover:bg-white/5 transition-colors">
-                <div class="flex items-center gap-3">
-                    <div class="w-7 h-7 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400">
-                        <i class="fa-regular fa-calendar-days text-xs"></i>
-                    </div>
-                    <span class="font-semibold text-xs" id="accordion-month-label">Month Overview</span>
+                <!-- Expenses List -->
+                <div id="expenses-container" class="space-y-5">
+                    <!-- Rows injected via JS -->
                 </div>
-                <i class="fa-solid fa-chevron-down text-gray-400 text-xs transition-transform duration-300" id="date-accordion-arrow"></i>
-            </button>
-            <div id="date-accordion-content" class="hidden border-t border-white/5">
-                <div id="date-radio-grid" class="calendar-wrapper">
-                    <!-- Radio buttons generated here -->
-                </div>
-                <div class="pb-3 flex items-center gap-4 text-[9px] font-bold text-gray-500 uppercase tracking-widest justify-center">
-                    <div class="flex items-center gap-1.5">
-                        <span class="w-3 h-3 rounded bg-emerald-500/20 border border-emerald-500/40"></span> Data
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="w-3 h-3 rounded bg-white/5 border border-white/10"></span> Empty
-                    </div>
-                </div>
+
+                <!-- The "Add Another Expense" button is moved to the bottom action bar -->
+
             </div>
-        </div>
 
-        <!-- Expenses List -->
-        <div id="expenses-container" class="space-y-5">
-            <!-- Rows injected via JS -->
         </div>
-
-        <!-- Add Button -->
-        <button onclick="addRow()" class="w-full py-4 mt-8 rounded-3xl border border-dashed border-white/20 bg-white/5 hover:bg-indigo-500/10 hover:border-indigo-500/50 text-gray-400 hover:text-indigo-400 transition-all duration-300 flex items-center justify-center gap-3 group active:scale-[0.99]">
-            <div class="w-10 h-10 rounded-full bg-white/5 group-hover:bg-indigo-500 group-hover:text-white flex items-center justify-center transition-all shadow-lg">
-                <i class="fa-solid fa-plus text-sm"></i>
-            </div>
-            <span class="font-semibold tracking-wide" data-translate-key="addAnotherExpense">Add Another Expense</span>
-        </button>
 
     </main>
 
     <!-- Bottom Action Bar -->
     <div class="fixed bottom-0 left-0 w-full glass-panel border-t border-white/10 z-40 pb-safe bg-[#0b0f19]/90 backdrop-blur-xl">
-        <div class="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between gap-6">
+        <div class="max-w-3xl lg:max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-6">
             <div class="flex flex-col">
                 <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-0.5" data-translate-key="totalExpense">Total Expense</span>
                 <span id="total-amount" class="text-2xl font-bold text-white tracking-tight font-mono">Rs. 0.00</span>
             </div>
 
             <div class="flex items-center gap-3">
+                <!-- Add Another Expense Button -->
+                <button onclick="addRow()" class="h-12 px-4 rounded-2xl bg-white/5 hover:bg-indigo-500/10 border border-white/5 text-gray-400 hover:text-indigo-400 transition-all duration-300 flex items-center justify-center gap-2 group active:scale-[0.95]">
+                    <i class="fa-solid fa-plus text-sm"></i>
+                    <span class="font-semibold tracking-wide text-sm hidden sm:inline" data-translate-key="addAnotherExpense">Add Expense</span>
+                </button>
+
                 <button onclick="clearAll()" class="w-12 h-12 rounded-2xl bg-white/5 hover:bg-red-500/10 border border-white/5 text-gray-400 hover:text-red-400 flex items-center justify-center transition-all active:scale-95" title="Clear All">
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
@@ -260,18 +366,31 @@
 
     <!-- Loader -->
     <div id="loader" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-all">
-        <div class="glass-panel p-8 rounded-3xl flex flex-col items-center gap-6 shadow-2xl">
-            <div class="relative w-16 h-16">
-                <div class="absolute inset-0 border-4 border-indigo-500/20 rounded-full"></div>
-                <div class="absolute inset-0 border-4 border-indigo-500 rounded-full border-t-transparent animate-spin"></div>
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <i class="fa-solid fa-cloud-arrow-up text-indigo-500"></i>
+        <div class="glass-panel p-8 rounded-3xl flex flex-col items-center gap-6 shadow-2xl w-[90%] max-w-sm">
+            <div class="flex items-center justify-center gap-3 w-full">
+                <i class="fa-solid fa-cloud-arrow-up text-indigo-400 text-2xl"></i>
+                <div class="text-center">
+                    <h3 id="loader-title" class="text-white font-bold text-lg" data-translate-key="savingData">Saving Data</h3>
+                    <p id="loader-message" class="text-gray-400 text-sm mt-1" data-translate-key="syncingWithGoogleSheets">Syncing with Google Sheets...</p>
                 </div>
             </div>
-            <div class="text-center">
-                <h3 class="text-white font-bold text-lg" data-translate-key="savingData">Saving Data</h3>
-                <p class="text-gray-400 text-sm mt-1" data-translate-key="syncingWithGoogleSheets">Syncing with Google Sheets...</p>
+            <div class="progress-bar-container">
+                <div class="progress-bar"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- Custom Popup -->
+    <div id="custom-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div id="popup-icon-container" class="popup-icon">
+                <!-- Icon will be inserted here -->
+            </div>
+            <h3 id="popup-title" class="text-xl font-bold text-white mb-2"></h3>
+            <p id="popup-message" class="text-gray-300 mb-6"></p>
+            <button onclick="closePopup()" class="bg-white/10 hover:bg-white/20 text-white py-2 px-6 rounded-lg font-semibold transition w-full">
+                OK
+            </button>
         </div>
     </div>
 
@@ -342,6 +461,7 @@
         </div>
     </template>
 
+    <script src="../config.js"></script>
     <script src="../localization.js"></script>
     <script>
         let isEditMode = false;
@@ -434,17 +554,26 @@
         }
 
         function fetchDataForDate(dateString) {
+            const loader = document.getElementById('loader');
+            const loaderTitle = document.getElementById('loader-title');
+            const loaderMessage = document.getElementById('loader-message');
+
+            loaderTitle.textContent = 'Fetching Data';
+            loaderMessage.textContent = 'Please wait...';
+            loader.classList.remove('hidden');
+
             const formattedDate = formatDateToDDMMMYYYY(dateString);
             const sheetName = getSheetNameFromDate(dateString);
 
-            if (!sheetName) return;
-
-            const container = document.getElementById('expenses-container');
-            container.innerHTML = '<div class="text-center text-gray-400 py-8">Loading...</div>';
+            if (!sheetName) {
+                loader.classList.add('hidden');
+                return;
+            }
 
             fetch(`${CONFIG.GOOGLE_SHEET_URL_CASHEW}?sheetName=${encodeURIComponent(sheetName)}&t=${new Date().getTime()}`)
                 .then(response => response.json())
                 .then(data => {
+                    const container = document.getElementById('expenses-container');
                     container.innerHTML = '';
 
                     const expensesForDate = (data.data || []).filter(entry => formatDateToDDMMMYYYY(entry.date) === formattedDate);
@@ -464,13 +593,16 @@
                         }
                     }
                     calculateTotal();
+                    loader.classList.add('hidden');
                 })
                 .catch(error => {
                     console.error('Error fetching data for date:', error);
+                    const container = document.getElementById('expenses-container');
                     container.innerHTML = '<div class="text-center text-red-400 py-8">Error loading data. Please try again.</div>';
                     isEditMode = false;
                     originalDate = null;
                     calculateTotal();
+                    loader.classList.add('hidden');
                 });
         }
 
@@ -668,9 +800,55 @@
             return `${day}/${months[d.getMonth()]}/${d.getFullYear()}`;
         }
 
+        // Popup Functions
+        function showPopup(title, message, type = 'success') {
+            const popup = document.getElementById('custom-popup');
+            const titleEl = document.getElementById('popup-title');
+            const messageEl = document.getElementById('popup-message');
+            const iconContainer = document.getElementById('popup-icon-container');
+
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+
+            // Reset classes
+            popup.classList.remove('popup-success', 'popup-error');
+
+            if (type === 'success') {
+                popup.classList.add('popup-success');
+                iconContainer.innerHTML = '<i class="fa-solid fa-check"></i>';
+            } else {
+                popup.classList.add('popup-error');
+                iconContainer.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+            }
+
+            popup.classList.add('active');
+        }
+
+        function closePopup() {
+            const popup = document.getElementById('custom-popup');
+            popup.classList.remove('active');
+
+            // If we were updating, redirect after closing
+            if (window.pendingRedirect) {
+                window.location.href = window.pendingRedirect;
+                window.pendingRedirect = null;
+            }
+
+            // If we were clearing, do it now
+            if (window.pendingClear) {
+                clearAll();
+                window.pendingClear = false;
+            }
+        }
+
         function saveData() {
             const loader = document.getElementById('loader');
+            const loaderTitle = document.getElementById('loader-title');
+            const loaderMessage = document.getElementById('loader-message');
             const saveBtn = document.getElementById('save-btn');
+
+            loaderTitle.textContent = 'Saving Data';
+            loaderMessage.textContent = 'Syncing with Google Sheets...';
             loader.classList.remove('hidden');
             saveBtn.disabled = true;
 
@@ -696,14 +874,14 @@
             });
 
             if (expenses.length === 0) {
-                alert("Please add at least one valid expense.");
+                showPopup('No Expenses', 'Please add at least one valid expense.', 'error');
                 loader.classList.add('hidden');
                 saveBtn.disabled = false;
                 return;
             }
 
             if (isEditMode && !originalDate) {
-                alert("Error: Original date missing for update. Please go back to report and try again.");
+                showPopup('Error', 'Original date missing for update. Please go back to report and try again.', 'error');
                 loader.classList.add('hidden');
                 saveBtn.disabled = false;
                 return;
@@ -726,19 +904,20 @@
             .then(response => {
                 loader.classList.add('hidden');
                 saveBtn.disabled = false;
-                alert('✓ Expenses saved successfully!');
                 fetchLastEnteredDate();
                 if (isEditMode) {
-                     window.location.href = 'cashewreport.html';
+                    window.pendingRedirect = 'cashewreport.html';
+                    showPopup('Success', 'Expenses updated successfully!', 'success');
                 } else {
-                    clearAll();
+                    window.pendingClear = true;
+                    showPopup('Success', 'Expenses saved successfully!', 'success');
                 }
             })
             .catch(error => {
                 console.error('Network error:', error);
                 loader.classList.add('hidden');
                 saveBtn.disabled = false;
-                alert('⚠ Error sending data: ' + error.message);
+                showPopup('Error', 'Error sending data: ' + error.message, 'error');
             });
         }
 

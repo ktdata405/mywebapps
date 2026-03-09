@@ -7,924 +7,537 @@
     <title>Loan Report - Loan Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="../config.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
-            --bg-dark: #0b0f19;
-            --card-bg: #151a25;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
             --primary: #6366f1;
             --accent: #ec4899;
+            --text-light: #f8fafc;
+            --text-dim: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.1);
         }
 
         body {
             background-color: var(--bg-dark);
-            color: #f8fafc;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            min-height: 100vh;
-            position: relative;
-            overflow-x: hidden;
+            color: var(--text-light);
+            font-family: 'Outfit', sans-serif;
         }
 
-        /* Animated Background */
-        .bg-animation {
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-dim);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .icon-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Repayment Modal Styles */
+        .repayment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+        }
+
+        .month-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .month-box:hover {
+            border-color: var(--primary);
+        }
+
+        .month-box.paid {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.5);
+            color: #34d399;
+        }
+
+        .month-box.pending {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-dim);
+        }
+
+        /* Popup Styles */
+        .popup-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1;
-            background: radial-gradient(circle at 50% 50%, #1e1b4b, #0b0f19);
-            overflow: hidden;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
         }
 
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.4;
-            animation: float 20s infinite ease-in-out;
+        .popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
         }
 
-        .orb-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px; animation-delay: 0s; }
-        .orb-2 { width: 300px; height: 300px; background: var(--accent); bottom: -50px; right: -50px; animation-delay: -5s; }
-        .orb-3 { width: 200px; height: 200px; background: #8b5cf6; top: 40%; left: 60%; animation-delay: -10s; }
-
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(30px, 50px); }
-        }
-
-        .glass-card {
-            background: rgba(21, 26, 37, 0.6);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        .input-field {
-            background: rgba(0, 0, 0, 0.3);
+        .popup-content {
+            background: rgba(30, 41, 59, 0.95);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #f8fafc;
-        }
-
-        .input-field:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-            background: rgba(0, 0, 0, 0.5);
-        }
-
-        select.input-field option {
-            background-color: #151a25;
-            color: #f8fafc;
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-
-        footer {
-            text-align: center;
+            border-radius: 16px;
             padding: 24px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            color: #94a3b8;
-            font-size: 0.875rem;
+            max-width: 90%;
+            width: 400px;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
-        footer b {
-            color: #f8fafc;
+        .popup-overlay.active .popup-content {
+            transform: scale(1);
         }
 
-        .loan-table-container {
-            width: 100%;
-            overflow-x: auto;
-            background: transparent;
-            border-radius: 1.5rem;
-            margin-bottom: 2rem;
+        .popup-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 24px;
         }
-        .loan-table {
-            width: 100%;
-            min-width: 900px;
-            border-collapse: separate;
-            border-spacing: 0;
-            background: rgba(21,26,37,0.95);
-            border-radius: 1.5rem;
-            overflow: hidden;
-            font-size: 0.98rem;
-        }
-        .loan-table th, .loan-table td {
-            padding: 0.75rem 1rem;
-            text-align: left;
-            vertical-align: middle;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
-        }
-        .loan-table th {
-            background: rgba(36,41,56,0.98);
-            color: #a5b4fc;
-            font-weight: 700;
-            position: sticky;
-            top: 0;
-            z-index: 2;
-        }
-        .loan-table tr:last-child td {
-            border-bottom: none;
-        }
-        .badge-type {
-            display: inline-block;
-            padding: 0.25em 0.7em;
-            border-radius: 1em;
-            font-size: 0.85em;
-            font-weight: 600;
-            color: #fff;
-        }
-        .badge-type.Given { background: #059669; }
-        .badge-type.Taken { background: #f43f5e; }
-        .badge-status.Active { background: #2563eb; }
-        .badge-status.Closed { background: #64748b; }
-        .badge-status.Defaulted { background: #e11d48; }
-        .action-btn {
-            background: none;
-            border: none;
-            padding: 0.3em 0.5em;
-            border-radius: 0.5em;
-            cursor: pointer;
-            color: #818cf8;
-            transition: background 0.2s, color 0.2s;
-            font-size: 1.1em;
-        }
-        .action-btn:hover, .action-btn:focus {
-            background: #312e81;
-            color: #fff;
-        }
-        .loan-table td.amount {
-            text-align: right;
-            font-family: 'Plus Jakarta Sans', 'Poppins', monospace;
-            font-weight: 700;
+
+        .popup-success .popup-icon {
+            background: rgba(16, 185, 129, 0.2);
             color: #34d399;
         }
-        .loan-table td.remarks {
-            max-width: 180px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            position: relative;
-        }
-        .loan-table td.remarks[title]:hover::after {
-            content: attr(title);
-            position: absolute;
-            left: 0;
-            top: 100%;
-            background: #23263a;
-            color: #fff;
-            padding: 0.5em 1em;
-            border-radius: 0.5em;
-            white-space: normal;
-            z-index: 10;
-            min-width: 120px;
-            max-width: 300px;
-            font-size: 0.95em;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-        @media (max-width: 900px) {
-            .loan-table { min-width: 700px; }
-        }
-        @media (max-width: 640px) {
-            .loan-table { display: none; }
-            .loan-accordion-list { display: block; }
-            .loan-accordion-card {
-                background: rgba(21,26,37,0.95);
-                border-radius: 1rem;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-                margin-bottom: 1.2rem;
-                overflow: hidden;
-                border: 1px solid rgba(255,255,255,0.04);
-            }
-            .loan-accordion-header {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: 1rem 1.2rem;
-                cursor: pointer;
-                background: rgba(36,41,56,0.98);
-            }
-            .loan-accordion-header .main {
-                display: flex;
-                flex-direction: column;
-                gap: 0.2rem;
-            }
-            .loan-accordion-header .main .name {
-                font-weight: 700;
-                color: #fff;
-                font-size: 1.1rem;
-            }
-            .loan-accordion-header .main .meta {
-                display: flex;
-                gap: 0.5rem;
-                align-items: center;
-            }
-            .loan-accordion-header .main .meta .badge-type {
-                font-size: 0.85em;
-                padding: 0.2em 0.7em;
-            }
-            .loan-accordion-header .main .meta .badge-status {
-                font-size: 0.85em;
-                padding: 0.2em 0.7em;
-            }
-            .loan-accordion-header .amount {
-                font-weight: 700;
-                color: #34d399;
-                font-size: 1.1rem;
-                font-family: 'Plus Jakarta Sans', 'Poppins', monospace;
-            }
-            .loan-accordion-header .toggle {
-                margin-left: 1rem;
-                color: #a5b4fc;
-                font-size: 1.3em;
-                transition: transform 0.2s;
-            }
-            .loan-accordion-header.open .toggle {
-                transform: rotate(90deg);
-            }
-            .loan-accordion-details {
-                max-height: 0;
-                overflow: hidden;
-                background: rgba(21,26,37,0.95);
-                transition: max-height 0.3s cubic-bezier(0.4,0,0.2,1);
-            }
-            .loan-accordion-card.open .loan-accordion-details {
-                max-height: 500px;
-                transition: max-height 0.5s cubic-bezier(0.4,0,0.2,1);
-            }
-            .loan-accordion-details-inner {
-                padding: 1rem 1.2rem 1.2rem 1.2rem;
-                display: flex;
-                flex-direction: column;
-                gap: 0.7rem;
-            }
-            .loan-accordion-details-inner .row {
-                display: flex;
-                justify-content: space-between;
-                font-size: 0.97em;
-                color: #cbd5e1;
-            }
-            .loan-accordion-details-inner .row .label {
-                color: #a5b4fc;
-                font-weight: 600;
-            }
-            .loan-accordion-details-inner .remarks {
-                color: #fbbf24;
-                font-style: italic;
-                font-size: 0.97em;
-                margin-top: 0.3em;
-            }
-            .loan-accordion-details-inner .actions {
-                display: flex;
-                gap: 1rem;
-                margin-top: 0.7em;
-            }
-            .loan-accordion-details-inner .actions .action-btn {
-                font-size: 1.2em;
-                margin-right: 0.2em;
-            }
-        }
 
-        .repayment-status-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 0.5em;
-            font-size: 0.95em;
-        }
-        .repayment-status-table th, .repayment-status-table td {
-            border: 1px solid #e2e8f0;
-            padding: 4px 8px;
-            text-align: left;
-        }
-        .repayment-status-table th {
-            background: #f1f5f9;
-        }
-
-        .repayment-badge-row {
-            padding: 0.5rem 0;
-            white-space: nowrap;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        .repayment-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.5rem 1rem;
-            border-radius: 1.5rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-right: 0.5rem;
-            transition: background 0.2s, transform 0.2s;
-        }
-        .repayment-badge:hover {
-            transform: translateY(-2px);
-        }
-        .repayment-badge.Pending {
-            background: rgba(229, 231, 235, 0.6);
-            color: #374151;
-        }
-        .repayment-badge.Done {
-            background: rgba(34, 197, 94, 0.6);
-            color: #fff;
+        .popup-error .popup-icon {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
         }
     </style>
 </head>
 
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen">
 
-    <div class="bg-animation">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-    </div>
-
-    <div class="flex-grow p-4 md:p-8">
-        <div class="max-w-6xl mx-auto">
-
-            <!-- Header Card -->
-            <div class="glass-card rounded-3xl p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-6 sticky top-4 z-30 backdrop-blur-xl bg-[#0b0f19]/80 border-b border-white/5">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 ring-4 ring-white/5">
-                        <i class="fa-solid fa-hand-holding-usd text-white text-xl"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-2xl font-bold tracking-tight text-white leading-tight">Loan Report</h1>
-                        <p class="text-xs text-gray-400 font-medium">Transaction History</p>
-                    </div>
+    <nav class="sticky top-0 z-40 glass-card border-b-0 rounded-none">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="../index.html" class="flex-shrink-0 text-white text-xl font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-hand-holding-dollar text-indigo-400"></i>
+                        <span>Loan Report</span>
+                    </a>
                 </div>
-                <div class="flex gap-3">
-                    <button onclick="fetchLoans()" class="w-11 h-11 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Refresh Data">
-                        <i class="fa-solid fa-rotate-right"></i>
-                    </button>
-                    <a href="loan.html" class="w-11 h-11 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Add Loan">
+                <div class="flex items-center gap-2">
+                    <a href="loan.html" class="icon-btn" title="Add New Loan">
                         <i class="fa-solid fa-plus"></i>
                     </a>
-                    <a href="../index.html" class="w-11 h-11 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Dashboard">
-                        <i class="fa-solid fa-house"></i>
+                    <button onclick="fetchLoans()" class="icon-btn" title="Refresh Data">
+                        <i class="fa-solid fa-sync"></i>
+                    </button>
+                    <a href="../index.html" class="icon-btn" title="Home">
+                        <i class="fa-solid fa-home"></i>
                     </a>
                 </div>
             </div>
-
-            <!-- Controls & Summary Section -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
-                <!-- Filters Card -->
-                <div class="lg:col-span-12 glass-card rounded-3xl p-6">
-                    <div class="flex flex-col gap-6">
-                        <!-- Search & Type Filter -->
-                        <div class="flex flex-col sm:flex-row gap-4">
-                            <div class="relative flex-grow">
-                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
-                                    <i class="fa-solid fa-search text-sm"></i>
-                                </div>
-                                <input type="text" id="search-input" placeholder="Search by name or remarks..." class="w-full pl-10 pr-10 py-3 rounded-2xl outline-none transition-all font-medium text-sm input-field placeholder-gray-600" onkeyup="filterData()">
-                                <button id="clear-search-btn" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-500 hover:text-white hidden transition-colors" onclick="clearSearch()">
-                                    <i class="fa-solid fa-times text-sm"></i>
-                                </button>
-                            </div>
-
-                            <div class="relative min-w-[220px]">
-                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
-                                    <i class="fa-solid fa-filter text-sm"></i>
-                                </div>
-                                <select id="type-filter" class="w-full pl-10 pr-8 py-3 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-medium text-sm input-field" onchange="filterData()">
-                                    <option value="">All Types</option>
-                                    <option value="Given">Given (Lent)</option>
-                                    <option value="Taken">Taken (Borrowed)</option>
-                                </select>
-                                <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-500">
-                                    <i class="fa-solid fa-chevron-down text-xs"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Data Table (Accordion) -->
-            <div class="glass-card rounded-3xl overflow-hidden border border-white/10 shadow-2xl shadow-black/20">
-                <div class="p-6 border-b border-white/5 flex justify-between items-center">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20">
-                            <i class="fa-solid fa-list-ul text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-bold text-white">Loan Details</h3>
-                            <div class="flex items-center gap-4 text-sm text-gray-400 mt-1">
-                                <div class="flex items-center gap-2">
-                                    <span class="font-medium">Total Given:</span>
-                                    <span id="total-given-display" class="font-bold text-emerald-400 font-mono text-base">Rs. 0.00</span>
-                                </div>
-                                <div class="w-px h-4 bg-white/10"></div>
-                                <div class="flex items-center gap-2">
-                                    <span class="font-medium">Total Taken:</span>
-                                    <span id="total-taken-display" class="font-bold text-pink-400 font-mono text-base">Rs. 0.00</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="loan-table-container">
-                    <table class="loan-table" id="loan-table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Type</th>
-                                <th>Amount</th>
-                                <th>Interest</th>
-                                <th>Tenure</th>
-                                <th>Start Date</th>
-                                <th>End Date</th>
-                                <th>Status</th>
-                                <th>Remarks</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="loan-table-body">
-                            <!-- JS will populate rows here -->
-                        </tbody>
-                    </table>
-                </div>
-                <div class="loan-accordion-list" id="loan-accordion-list"></div>
-            </div>
-
         </div>
-    </div>
+    </nav>
 
-    <!-- Edit Modal -->
-    <div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md transition-all p-4">
-        <div class="glass-card rounded-3xl w-full max-w-lg flex flex-col shadow-2xl border border-white/10">
-            <div class="p-6 border-b border-white/5 flex justify-between items-center">
-                <h3 class="text-lg font-bold text-white">Edit Loan Status</h3>
-                <button onclick="closeEditModal()" class="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all flex items-center justify-center">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="glass-card rounded-2xl p-6 flex items-center gap-6">
+                <div class="w-16 h-16 rounded-full bg-indigo-500/20 flex items-center justify-center">
+                    <i class="fa-solid fa-landmark text-3xl text-indigo-400"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-indigo-300 font-semibold">Total Loan Amount</p>
+                    <p id="total-loan" class="text-3xl font-bold">₹0</p>
+                </div>
+            </div>
+            <div class="glass-card rounded-2xl p-6 flex items-center gap-6">
+                <div class="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                    <i class="fa-solid fa-hand-holding-dollar text-3xl text-emerald-400"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-emerald-300 font-semibold">Total Paid</p>
+                    <p id="total-paid" class="text-3xl font-bold">₹0</p>
+                </div>
+            </div>
+            <div class="glass-card rounded-2xl p-6 flex items-center gap-6">
+                <div class="w-16 h-16 rounded-full bg-rose-500/20 flex items-center justify-center">
+                    <i class="fa-solid fa-hourglass-half text-3xl text-rose-400"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-rose-300 font-semibold">Total Balance</p>
+                    <p id="total-balance" class="text-3xl font-bold">₹0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loan Cards -->
+        <div id="loan-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Loan cards will be injected here -->
+        </div>
+
+    </main>
+
+    <!-- Repayment History Modal -->
+    <div id="repayment-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+        <div class="glass-card rounded-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
+            <div class="p-6 border-b border-white/10 flex justify-between items-center">
+                <div>
+                    <h3 class="text-xl font-bold text-white">Repayment History</h3>
+                    <p class="text-sm text-gray-400" id="modal-loan-name">Loan Name</p>
+                </div>
+                <button onclick="closeRepaymentModal()" class="icon-btn">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <div class="p-6 space-y-6">
-                <input type="hidden" id="edit-id">
-                <div>
-                    <label class="text-[10px] uppercase tracking-wider text-gray-400 font-bold ml-1 mb-1.5 block">Status</label>
-                    <div class="relative">
-                        <select id="edit-status" class="w-full py-3 px-4 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-semibold text-sm input-field">
-                            <option value="Active">Active</option>
-                            <option value="Closed">Closed</option>
-                            <option value="Defaulted">Defaulted</option>
-                        </select>
-                        <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-500">
-                            <i class="fa-solid fa-chevron-down text-xs"></i>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <label class="text-[10px] uppercase tracking-wider text-gray-400 font-bold ml-1 mb-1.5 block">Remarks</label>
-                    <textarea id="edit-remarks" class="w-full py-3 px-4 rounded-2xl outline-none transition-all font-medium text-sm input-field min-h-[100px]" placeholder="Update remarks..."></textarea>
+
+            <div class="p-6 overflow-y-auto flex-grow">
+                <div id="repayment-grid" class="repayment-grid">
+                    <!-- Months will be injected here -->
                 </div>
             </div>
-            <div class="p-6 border-t border-white/5 flex justify-end items-center gap-4">
-                <button onclick="closeEditModal()" class="h-11 px-6 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white font-bold transition-all">Cancel</button>
-                <button onclick="saveEdit()" class="h-11 px-8 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold flex items-center gap-2.5 transition-all shadow-lg shadow-indigo-600/25 active:scale-95">
-                    <i class="fa-solid fa-save"></i>
-                    <span>Save Changes</span>
+
+            <div class="p-6 border-t border-white/10 flex justify-end">
+                <button onclick="closeRepaymentModal()" class="px-6 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold transition-all">
+                    Close
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Loader Overlay -->
-    <div id="loader" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md transition-all">
-        <div class="glass-card p-8 rounded-3xl flex flex-col items-center gap-6 shadow-2xl border border-white/10">
-            <div class="relative w-16 h-16">
-                <div class="absolute inset-0 border-4 border-indigo-500/20 rounded-full"></div>
-                <div class="absolute inset-0 border-4 border-indigo-500 rounded-full border-t-transparent animate-spin"></div>
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <i class="fa-solid fa-bolt text-indigo-500 text-xl"></i>
-                </div>
+    <!-- Custom Popup -->
+    <div id="custom-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div id="popup-icon-container" class="popup-icon">
+                <!-- Icon will be inserted here -->
             </div>
-            <div class="text-center">
-                <h3 class="text-white font-bold text-lg">Processing</h3>
-                <p class="text-gray-400 text-sm mt-1">Please wait...</p>
-            </div>
+            <h3 id="popup-title" class="text-xl font-bold text-white mb-2"></h3>
+            <p id="popup-message" class="text-gray-300 mb-6"></p>
+            <button onclick="closePopup()" class="bg-white/10 hover:bg-white/20 text-white py-2 px-6 rounded-lg font-semibold transition w-full">
+                OK
+            </button>
         </div>
     </div>
 
-    <footer>
-        <p>&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
-    </footer>
+    <!-- Loader -->
+    <div id="loader" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
+        <div class="w-16 h-16 border-4 border-t-transparent border-indigo-500 rounded-full animate-spin"></div>
+    </div>
 
-      <script>
-        let allData = [];
+    <script>
         const SCRIPT_URL = CONFIG.GOOGLE_SHEET_URL_LOAN;
-        let currentView = null; // 'table' or 'accordion'
+        let allData = [];
+        let currentLoanId = null;
 
-        function isMobileView() {
-            return window.innerWidth <= 640;
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchLoans();
-            window.addEventListener('resize', handleResponsiveView);
-        });
-
-        function handleResponsiveView() {
-            // Re-render the correct view on resize
-            if (allData && allData.length > 0) {
-                renderLoanList(allData);
-            }
-        }
+        document.addEventListener('DOMContentLoaded', fetchLoans);
 
         function fetchLoans() {
             const loader = document.getElementById('loader');
             loader.classList.remove('hidden');
 
             fetch(`${SCRIPT_URL}?action=getLoans`)
-            .then(response => response.json())
-            .then(result => {
-                loader.classList.add('hidden');
-                if (result.status === 'success') {
-                    allData = result.data;
-                    filterData();
-                } else {
-                    throw new Error(result.message || 'Failed to fetch data');
-                }
-            })
-            .catch(error => {
-                loader.classList.add('hidden');
-                console.error('Error:', error);
-                document.getElementById('report-body').innerHTML = `
-                    <div class="py-16 text-center">
-                        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-500/10 mb-4">
-                            <i class="fa-solid fa-exclamation-triangle text-3xl text-red-500"></i>
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        allData = result.data;
+                        renderUI(allData);
+                    } else {
+                        throw new Error(result.message || 'Failed to fetch data');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('loan-cards-container').innerHTML = `<p class="text-red-400">Error: ${error.message}</p>`;
+                })
+                .finally(() => {
+                    loader.classList.add('hidden');
+                });
+        }
+
+        function renderUI(data) {
+            const container = document.getElementById('loan-cards-container');
+            container.innerHTML = '';
+
+            let totalLoan = 0;
+            let totalPaid = 0;
+
+            if (data.length === 0) {
+                container.innerHTML = `<p class="text-gray-400 col-span-full text-center">No loans found.</p>`;
+            }
+
+            data.forEach(loan => {
+                const loanAmount = parseFloat(loan.amount) || 0;
+                const paidAmount = parseFloat(loan.paid) || 0;
+                const balance = loanAmount - paidAmount;
+                const isClosed = loan.status === 'Closed';
+                const interestRate = parseFloat(loan.interestRate) || 0;
+                const tenure = parseInt(loan.tenure) || 0;
+
+                // Calculate EMI (Simple Interest for estimation)
+                const totalInterest = (loanAmount * interestRate * tenure) / 1200;
+                const totalPayable = loanAmount + totalInterest;
+                const emi = tenure > 0 ? totalPayable / tenure : 0;
+
+                const emisPaid = emi > 0 ? Math.floor(paidAmount / emi) : 0;
+
+                totalLoan += loanAmount;
+                totalPaid += paidAmount;
+
+                const card = document.createElement('div');
+                card.className = `glass-card rounded-2xl p-6 flex flex-col gap-4 transition-all duration-300 ${isClosed ? 'opacity-60' : 'hover:border-indigo-500'}`;
+
+                const percentage = loanAmount > 0 ? (paidAmount / loanAmount) * 100 : 0;
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-lg font-bold">${loan.name}</p>
+                            <p class="text-sm text-gray-400">${new Date(loan.date).toLocaleDateString('en-GB')}</p>
                         </div>
-                        <p class="text-red-400 font-medium">Error loading data: ${error.message}</p>
+                        <div class="badge ${loan.type === 'Given' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}">${loan.type}</div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="text-gray-400">Interest Rate</p>
+                            <p class="font-semibold">${interestRate}%</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400">Tenure</p>
+                            <p class="font-semibold">${tenure} Months</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400">EMI Amount</p>
+                            <p class="font-semibold">₹${emi.toLocaleString('en-IN', {maximumFractionDigits: 0})}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400">EMIs Paid</p>
+                            <p class="font-semibold">${emisPaid} / ${tenure}</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-baseline mb-1">
+                            <span class="text-sm font-semibold text-gray-300">₹${paidAmount.toLocaleString('en-IN')} / ₹${loanAmount.toLocaleString('en-IN')}</span>
+                            <span class="text-sm font-bold ${isClosed ? 'text-gray-400' : 'text-indigo-400'}">${percentage.toFixed(0)}%</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2.5">
+                            <div class="bg-indigo-500 h-2.5 rounded-full" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="text-sm text-gray-400 italic">
+                        ${loan.remarks || 'No remarks.'}
+                    </div>
+
+                    <div class="mt-2 pt-4 border-t border-gray-700 flex justify-between items-center">
+                        <div>
+                            <p class="text-xs text-gray-400">Balance</p>
+                            <p class="text-lg font-bold ${isClosed ? 'text-gray-500' : 'text-white'}">₹${balance.toLocaleString('en-IN')}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="viewRepaymentHistory('${loan.id}')" class="icon-btn !w-10 !h-10" title="View History">
+                                <i class="fa-solid fa-history"></i>
+                            </button>
+                            <a href="loan.html?id=${loan.id}" class="icon-btn !w-10 !h-10" title="Edit Loan">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                        </div>
                     </div>
                 `;
-            });
-        }
-
-        function filterData() {
-            const searchInput = document.getElementById('search-input');
-            const clearBtn = document.getElementById('clear-search-btn');
-            const searchTerm = searchInput.value.toLowerCase();
-            const selectedType = document.getElementById('type-filter').value;
-
-            if (searchTerm.length > 0) {
-                clearBtn.classList.remove('hidden');
-            } else {
-                clearBtn.classList.add('hidden');
-            }
-
-            const filteredData = allData.filter(row => {
-                const matchesSearch = String(row.name || '').toLowerCase().includes(searchTerm) ||
-                                      String(row.remarks || '').toLowerCase().includes(searchTerm);
-                const matchesType = selectedType === '' || row.type === selectedType;
-                return matchesSearch && matchesType;
+                container.appendChild(card);
             });
 
-            renderLoanList(filteredData);
+            document.getElementById('total-loan').textContent = `₹${totalLoan.toLocaleString('en-IN')}`;
+            document.getElementById('total-paid').textContent = `₹${totalPaid.toLocaleString('en-IN')}`;
+            document.getElementById('total-balance').textContent = `₹${(totalLoan - totalPaid).toLocaleString('en-IN')}`;
         }
 
-        function clearSearch() {
-            const searchInput = document.getElementById('search-input');
-            searchInput.value = '';
-            filterData();
-        }
+        function viewRepaymentHistory(loanId) {
+            currentLoanId = loanId;
+            const loan = allData.find(l => l.id === loanId);
+            if (!loan) return;
 
-        // Helper to get all months between two dates (inclusive)
-        function getMonthlyPeriods(startDate, endDate) {
-            const months = [];
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            start.setDate(1); // normalize to first of month
-            end.setDate(1);
-            while (start <= end) {
-                months.push({
-                    year: start.getFullYear(),
-                    month: start.getMonth() + 1 // 1-based
+            document.getElementById('modal-loan-name').textContent = loan.name;
+            const modal = document.getElementById('repayment-modal');
+            const grid = document.getElementById('repayment-grid');
+            grid.innerHTML = '<div class="col-span-full text-center text-gray-400">Loading...</div>';
+
+            modal.classList.remove('hidden');
+
+            // Fetch repayment status
+            fetch(`${SCRIPT_URL}?action=getRepaymentStatus&loanId=${loanId}`)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        renderRepaymentGrid(loan, result.data);
+                    } else {
+                        grid.innerHTML = '<div class="col-span-full text-center text-red-400">Failed to load history</div>';
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    grid.innerHTML = '<div class="col-span-full text-center text-red-400">Error loading history</div>';
                 });
-                start.setMonth(start.getMonth() + 1);
-            }
-            return months;
         }
 
-        // Helper: format date as DD/MMMM/YYYY
-        function formatMonthYear(year, month) {
-            const date = new Date(year, month - 1, 1);
-            const day = '01';
-            const monthName = date.toLocaleString('en-IN', { month: 'long' });
-            return `${day}/${monthName}/${year}`;
-        }
+        function renderRepaymentGrid(loan, historyData) {
+            const grid = document.getElementById('repayment-grid');
+            grid.innerHTML = '';
 
-        // Fetch repayment status for a loan (returns a map: 'YYYY-MM' -> status)
-        async function fetchRepaymentStatus(loanId) {
-            try {
-                const url = `${SCRIPT_URL}?action=getRepaymentStatus&loanId=${encodeURIComponent(loanId)}`;
-                const res = await fetch(url);
-                const data = await res.json();
-                console.log('Repayment status fetch', {loanId, url, data});
-                if (data.status === 'success') {
-                    const map = {};
-                    data.data.forEach(row => {
-                        map[`${row.year}-${String(row.month).padStart(2, '0')}`] = row.status;
-                    });
-                    return map;
-                }
-                return {};
-            } catch (err) {
-                console.error('Error fetching repayment status', err);
-                return null;
-            }
-        }
+            const startDate = new Date(loan.date);
+            const tenure = parseInt(loan.tenure) || 0;
 
-        // Update repayment status for a loan/month
-        async function updateRepaymentStatus(loanId, year, month, status) {
-            const url = `${SCRIPT_URL}?action=updateRepaymentStatus&loanId=${encodeURIComponent(loanId)}&year=${year}&month=${month}&status=${status}`;
-            await fetch(url);
-        }
-
-        // Render modern repayment status tracker with loading skeleton
-        async function renderMonthlyRepaymentStatusAsync(loanId, startDate, endDate, container, isLoading) {
-            if (isLoading) {
-                // Show skeleton loader
-                container.innerHTML = `<div class="mb-2 text-xs text-gray-400 font-semibold">Repayment Progress</div>
-                <div class='flex items-center gap-2 overflow-x-auto pb-2 repayment-badge-row'>
-                    ${Array(6).fill('').map(() => `<div class='animate-pulse bg-gray-800 rounded-xl h-10 w-16'></div>`).join('')}
-                </div>`;
-                return;
-            }
-            if (!startDate || !endDate) { container.innerHTML = ''; return; }
-            const months = getMonthlyPeriods(startDate, endDate);
-            let statusMap = null;
-            try {
-                statusMap = await fetchRepaymentStatus(loanId);
-            } catch (err) {
-                statusMap = null;
-            }
-            if (statusMap === null) {
-                container.innerHTML = '<span style="color:red;">Error loading repayment status. Check your network or backend.</span>';
-                return;
-            }
-            let repaid = 0;
-            let html = '<div class="mb-2 text-xs text-gray-400 font-semibold">Repayment Progress</div>';
-            html += '<div class="flex items-center gap-2 overflow-x-auto pb-2 repayment-badge-row">';
-            months.forEach(m => {
-                const key = `${m.year}-${String(m.month).padStart(2, '0')}`;
-                const status = statusMap[key] || 'Pending';
-                if (status === 'Done') repaid++;
-                const color = status === 'Done' ? 'bg-emerald-500 text-white' : 'bg-gray-700 text-gray-300';
-                const border = status === 'Done' ? 'border-emerald-400' : 'border-gray-500';
-                const label = new Date(m.year, m.month-1, 1).toLocaleString('en-IN', { month: 'short', year: '2-digit' });
-                html += `<button class="px-3 py-2 rounded-xl border ${color} ${border} font-bold shadow-sm flex flex-col items-center min-w-[70px] transition-colors duration-200 hover:scale-105 focus:outline-none" style="outline:none;" onclick="toggleRepaymentStatus('${loanId}',${m.year},${m.month},'${status==='Done'?'Pending':'Done'}')">
-                    <span class="text-xs">${label}</span>
-                    <span class="text-[10px] mt-1 tracking-wide">${status}</span>
-                </button>`;
+            // Create a map for quick lookup: "YYYY-MM" -> status
+            const historyMap = {};
+            historyData.forEach(item => {
+                const key = `${item.year}-${String(item.month).padStart(2, '0')}`;
+                historyMap[key] = item.status;
             });
-            html += '</div>';
-            html = `<div class="flex items-center gap-2 mb-1"><span class="text-emerald-400 font-bold">${repaid}</span><span class="text-gray-400">of</span><span class="font-bold">${months.length}</span><span class="text-gray-400">months repaid</span></div>` + html;
-            container.innerHTML = html;
-        }
 
-        // Toggle repayment status and refresh UI (robust for both table and accordion views)
-        async function toggleRepaymentStatus(loanId, year, month, status) {
-            try {
-                await updateRepaymentStatus(loanId, year, month, status);
-                // Try to find the repayment container in both table and accordion views
-                let container = document.getElementById(`repay-status-${loanId}`);
-                if (!container) {
-                    // Try to find in table rows (for table view)
-                    container = document.querySelector(`#repay-status-${loanId}`);
-                }
-                if (!container) {
-                    // Try to find in accordion (for mobile view)
-                    container = document.querySelector(`[id^='repay-status-${loanId}']`);
-                }
-                const loan = allData.find(l => l.id === loanId);
-                if (container && loan) {
-                    await renderMonthlyRepaymentStatusAsync(loanId, loan.date, calculateEndDate(loan.date, loan.tenure), container);
-                }
-            } catch (err) {
-                alert('Failed to update repayment status. Please try again.');
-                console.error('Repayment status update error:', err);
+            for (let i = 0; i < tenure; i++) {
+                const currentDate = new Date(startDate);
+                currentDate.setMonth(startDate.getMonth() + i);
+
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth() + 1;
+                const monthName = currentDate.toLocaleString('default', { month: 'short' });
+                const key = `${year}-${String(month).padStart(2, '0')}`;
+
+                const status = historyMap[key] || 'Pending';
+                const isPaid = status === 'Done';
+
+                const box = document.createElement('div');
+                box.className = `month-box ${isPaid ? 'paid' : 'pending'}`;
+                box.innerHTML = `
+                    <div class="text-xs font-bold">${monthName}</div>
+                    <div class="text-[10px] opacity-70">${year}</div>
+                    <div class="mt-1 text-[10px] uppercase tracking-wider font-bold">${status}</div>
+                `;
+
+                box.onclick = () => toggleMonthStatus(loan.id, year, month, status);
+
+                grid.appendChild(box);
             }
         }
 
-        // Patch renderLoanList to show skeleton and optimize rendering
-        async function renderLoanList(data) {
-            const tbody = document.getElementById('loan-table-body');
-            const accordionList = document.getElementById('loan-accordion-list');
-            tbody.innerHTML = '';
-            accordionList.innerHTML = '';
-            let totalGiven = 0;
-            let totalTaken = 0;
-            // Pre-render skeletons for repayment blocks
-            if (isMobileView()) {
-                currentView = 'accordion';
-                if (data && data.length > 0) {
-                    data.sort((a, b) => new Date(b.date) - new Date(a.date));
-                    for (let idx = 0; idx < data.length; idx++) {
-                        const item = data[idx];
-                        if (item.status !== 'Closed') {
-                            if (item.type === 'Given') totalGiven += item.amount;
-                            if (item.type === 'Taken') totalTaken += item.amount;
-                        }
-                        const dateStr = formatDisplayDate(item.date);
-                        let endDateStr = '-';
-                        const endDate = calculateEndDate(item.date, item.tenure);
-                        if (endDate) endDateStr = formatDisplayDate(endDate);
-                        const card = document.createElement('div');
-                        card.className = 'loan-accordion-card';
-                        card.innerHTML = `
-                            <div class="loan-accordion-header" data-idx="${idx}">
-                                <div class="main">
-                                    <span class="name">${item.name}</span>
-                                    <span class="meta">
-                                        <span class="badge-type ${item.type}">${item.type}</span>
-                                        <span class="badge-status ${item.status}">${item.status || 'Active'}</span>
-                                    </span>
-                                </div>
-                                <span class="amount">Rs. ${item.amount.toLocaleString('en-IN')}</span>
-                                <span class="toggle"><i class="fa-solid fa-chevron-right"></i></span>
-                            </div>
-                            <div class="loan-accordion-details">
-                                <div class="loan-accordion-details-inner">
-                                    <div class="row"><span class="label">Interest:</span> <span>${item.interestRate}%</span></div>
-                                    <div class="row"><span class="label">Tenure:</span> <span>${item.tenure || '-'}</span></div>
-                                    <div class="row"><span class="label">Start Date:</span> <span>${dateStr}</span></div>
-                                    <div class="row"><span class="label">End Date:</span> <span>${endDateStr}</span></div>
-                                    <div class="row remarks"><span class="label">Remarks:</span> <span>${item.remarks || ''}</span></div>
-                                    <div class="row"><span class="label">Repayment Status:</span><span id='repay-status-${item.id}' style='width:100%;display:block;'></span></div>
-                                    <div class="actions">
-                                        <button class="action-btn" aria-label="Edit Status" title="Edit Status" onclick="openEditModal('${item.id}', '${item.status || 'Active'}', ${JSON.stringify(item.remarks || '')})"><i class="fa-solid fa-toggle-on"></i></button>
-                                        <button class="action-btn" aria-label="Edit Full Loan" title="Edit Full Loan" onclick='editFullLoan(${JSON.stringify(item)})'><i class="fa-solid fa-pen"></i></button>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        accordionList.appendChild(card);
-                        // Show skeleton immediately
-                        const repayContainer = card.querySelector(`#repay-status-${item.id}`);
-                        if (repayContainer && endDate) {
-                            renderMonthlyRepaymentStatusAsync(item.id, item.date, endDate, repayContainer, true);
-                        }
-                    }
-                    // Accordion toggle logic (only one open at a time)
-                    setTimeout(() => {
-                        Array.from(accordionList.querySelectorAll('.loan-accordion-header')).forEach(header => {
-                            header.addEventListener('click', function() {
-                                const idx = this.getAttribute('data-idx');
-                                Array.from(accordionList.children).forEach((c, i) => {
-                                    if (String(i) === String(idx)) {
-                                        c.classList.toggle('open');
-                                        this.classList.toggle('open');
-                                    } else {
-                                        c.classList.remove('open');
-                                        c.querySelector('.loan-accordion-header').classList.remove('open');
-                                    }
-                                });
-                            });
-                        });
-                    }, 0);
-                    // Now fetch and render repayment details in parallel
-                    for (let idx = 0; idx < data.length; idx++) {
-                        const item = data[idx];
-                        const endDate = calculateEndDate(item.date, item.tenure);
-                        const repayContainer = accordionList.querySelector(`#repay-status-${item.id}`);
-                        if (repayContainer && endDate) {
-                            renderMonthlyRepaymentStatusAsync(item.id, item.date, endDate, repayContainer, false);
-                        }
-                    }
-                } else {
-                    accordionList.innerHTML = `<div style='text-align:center;color:#94a3b8;padding:2em;'>No loans found matching your criteria.</div>`;
-                }
-                document.querySelector('.loan-table-container').style.display = 'none';
-                accordionList.style.display = 'block';
-            } else {
-                currentView = 'table';
-                if (data && data.length > 0) {
-                    data.sort((a, b) => new Date(b.date) - new Date(a.date));
-                    for (const item of data) {
-                        if (item.status !== 'Closed') {
-                            if (item.type === 'Given') totalGiven += item.amount;
-                            if (item.type === 'Taken') totalTaken += item.amount;
-                        }
-                        const dateStr = formatDisplayDate(item.date);
-                        let endDateStr = '-';
-                        const endDate = calculateEndDate(item.date, item.tenure);
-                        if (endDate) endDateStr = formatDisplayDate(endDate);
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td data-label="Name">${item.name}</td>
-                            <td data-label="Type"><span class="badge-type ${item.type}">${item.type}</span></td>
-                            <td data-label="Amount" class="amount">Rs. ${item.amount.toLocaleString('en-IN')}</td>
-                            <td data-label="Interest">${item.interestRate}%</td>
-                            <td data-label="Tenure">${item.tenure || '-'}</td>
-                            <td data-label="Start Date">${dateStr}</td>
-                            <td data-label="End Date">${endDateStr}</td>
-                            <td data-label="Status"><span class="badge-status ${item.status}">${item.status || 'Active'}</span></td>
-                            <td data-label="Remarks" class="remarks" title="${item.remarks ? item.remarks.replace(/"/g, '&quot;') : ''}">${item.remarks || ''}</td>
-                            <td data-label="Actions">
-                                <button class="action-btn" aria-label="Edit Status" title="Edit Status" onclick="openEditModal('${item.id}', '${item.status || 'Active'}', ${JSON.stringify(item.remarks || '')})"><i class="fa-solid fa-toggle-on"></i></button>
-                                <button class="action-btn" aria-label="Edit Full Loan" title="Edit Full Loan" onclick='editFullLoan(${JSON.stringify(item)})'><i class="fa-solid fa-pen"></i></button>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
-                        // Add monthly repayment status row after each loan row
-                        if (endDate) {
-                            const statusTr = document.createElement('tr');
-                            statusTr.innerHTML = `<td colspan="11"><div id='repay-status-${item.id}' style='margin:0.5em 0;'></div></td>`;
-                            tbody.appendChild(statusTr);
-                            const repayContainer = statusTr.querySelector(`#repay-status-${item.id}`);
-                            if (repayContainer) {
-                                renderMonthlyRepaymentStatusAsync(item.id, item.date, endDate, repayContainer, true);
-                            }
-                        }
-                    }
-                    // Now fetch and render repayment details in parallel
-                    for (const item of data) {
-                        const endDate = calculateEndDate(item.date, item.tenure);
-                        const repayContainer = tbody.querySelector(`#repay-status-${item.id}`);
-                        if (repayContainer && endDate) {
-                            renderMonthlyRepaymentStatusAsync(item.id, item.date, endDate, repayContainer, false);
-                        }
-                    }
-                } else {
-                    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:#94a3b8;padding:2em;">No loans found matching your criteria.</td></tr>`;
-                }
-                document.querySelector('.loan-table-container').style.display = 'block';
-                document.getElementById('loan-accordion-list').style.display = 'none';
-            }
-            document.getElementById('total-given-display').textContent = `Rs. ${totalGiven.toLocaleString('en-IN')}`;
-            document.getElementById('total-taken-display').textContent = `Rs. ${totalTaken.toLocaleString('en-IN')}`;
-        }
-
-        function openEditModal(id, status, remarks) {
-            document.getElementById('edit-id').value = id;
-            document.getElementById('edit-status').value = status;
-            document.getElementById('edit-remarks').value = remarks.replace(/&quot;/g, '"');
-            document.getElementById('edit-modal').classList.remove('hidden');
-        }
-
-        function closeEditModal() {
-            document.getElementById('edit-modal').classList.add('hidden');
-        }
-
-        function saveEdit() {
-            const id = document.getElementById('edit-id').value;
-            const status = document.getElementById('edit-status').value;
-            const remarks = document.getElementById('edit-remarks').value;
-
+        function toggleMonthStatus(loanId, year, month, currentStatus) {
+            const newStatus = currentStatus === 'Done' ? 'Pending' : 'Done';
             const loader = document.getElementById('loader');
             loader.classList.remove('hidden');
 
-            fetch(`${SCRIPT_URL}?action=updateLoan`, {
+            const payload = {
+                action: 'updateRepaymentStatus',
+                loanId: loanId,
+                year: year,
+                month: month,
+                status: newStatus
+            };
+
+            fetch(`${SCRIPT_URL}?action=updateRepaymentStatus`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'text/plain;charset=utf-8'
                 },
-                body: JSON.stringify({ id, status, remarks }),
+                body: JSON.stringify(payload)
             })
             .then(response => response.json())
             .then(result => {
-                loader.classList.add('hidden');
                 if (result.status === 'success') {
-                    closeEditModal();
-                    fetchLoans();
+                    // Refresh the grid
+                    viewRepaymentHistory(loanId);
+                    showPopup('Success', `Payment marked as ${newStatus}`, 'success');
                 } else {
-                    throw new Error(result.message || 'Failed to update data');
+                    showPopup('Error', 'Failed to update status: ' + (result.message || 'Unknown error'), 'error');
                 }
             })
-            .catch(error => {
+            .catch(err => {
+                console.error(err);
+                showPopup('Error', 'Error updating status: ' + err.message, 'error');
+            })
+            .finally(() => {
                 loader.classList.add('hidden');
-                console.error('Error:', error);
-                alert('Error: ' + error.message);
             });
         }
 
-        function formatDisplayDate(dateStr) {
-            const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('en-IN', options);
+        // Popup Functions
+        function showPopup(title, message, type = 'success') {
+            const popup = document.getElementById('custom-popup');
+            const titleEl = document.getElementById('popup-title');
+            const messageEl = document.getElementById('popup-message');
+            const iconContainer = document.getElementById('popup-icon-container');
+
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+
+            // Reset classes
+            popup.classList.remove('popup-success', 'popup-error');
+
+            if (type === 'success') {
+                popup.classList.add('popup-success');
+                iconContainer.innerHTML = '<i class="fa-solid fa-check"></i>';
+            } else {
+                popup.classList.add('popup-error');
+                iconContainer.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+            }
+
+            popup.classList.add('active');
         }
 
-        function calculateEndDate(startDate, tenure) {
-            if (!startDate || !tenure) return null;
-            const start = new Date(startDate);
-            const end = new Date(start);
-            end.setMonth(start.getMonth() + parseInt(tenure));
-            return end;
+        function closePopup() {
+            const popup = document.getElementById('custom-popup');
+            popup.classList.remove('active');
         }
 
-        function editFullLoan(loanData) {
-            // Redirect to the loan edit page with the loan ID
-            window.location.href = `loan.html?id=${loanData.id}`;
+        function closeRepaymentModal() {
+            document.getElementById('repayment-modal').classList.add('hidden');
         }
 
-        window.toggleRepaymentStatus = toggleRepaymentStatus;
     </script>
+
 </body>
 
 </html>
