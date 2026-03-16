@@ -1,808 +1,642 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Denominations</title>
+    <title>Cash Counter · Denominations</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="../config.js"></script>
     <style>
         :root {
-            --primary: #6366f1;
-            --secondary: #ec4899;
-            --accent: #8b5cf6;
-            --bg-dark: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --text-light: #f8fafc;
-            --text-dim: #94a3b8;
+            --bg:        #09090b;
+            --surface:   #18181b;
+            --surface2:  #27272a;
+            --border:    rgba(255,255,255,0.07);
+            --text:      #fafafa;
+            --muted:     #71717a;
+            --accent:    #6366f1;
+            --accent-lt: #818cf8;
+            --green:     #22c55e;
+        }
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; margin: 0; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 99px; }
+
+        .topbar { background: rgba(9,9,11,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 40; }
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; }
+        .card-inner { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; }
+        .total-glow { background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.18) 0%, transparent 70%), var(--surface); border: 1px solid rgba(99,102,241,0.25); }
+
+        #grand-total {
+            font-size: clamp(2.4rem, 6vw, 3.2rem); font-weight: 900; letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #a5b4fc 0%, #818cf8 50%, #6366f1 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1;
         }
 
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-light);
-            font-family: 'Outfit', sans-serif;
-            min-height: 100vh;
-            position: relative;
-            overflow-x: hidden;
-        }
+        #date-input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 8px 14px; font-size: 0.9rem; font-weight: 600; font-family: 'Inter', sans-serif; outline: none; text-align: center; cursor: pointer; }
+        #date-input:focus { border-color: var(--accent); }
+        .nav-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s ease; }
+        .nav-btn:hover { background: var(--surface); color: var(--text); border-color: rgba(255,255,255,0.15); }
 
-        /* Animated Background */
-        .bg-animation {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: radial-gradient(circle at 50% 50%, #1e1b4b, #0f172a);
-            overflow: hidden;
-        }
+        .denom-row { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; display: flex; align-items: center; overflow: hidden; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+        .denom-row:hover { border-color: rgba(255,255,255,0.12); }
+        .denom-row.has-value { border-color: rgba(99,102,241,0.4); box-shadow: 0 0 0 1px rgba(99,102,241,0.15), 0 4px 24px rgba(99,102,241,0.1); }
 
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.4;
-            animation: float 20s infinite ease-in-out;
-        }
+        .denom-pill { width: 80px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px 10px; position: relative; }
+        .denom-pill::after { content: ''; position: absolute; right: 0; top: 20%; bottom: 20%; width: 1px; background: var(--border); }
+        .denom-pill .rupee { font-size: 0.6rem; font-weight: 700; color: var(--muted); letter-spacing: 0.06em; }
+        .denom-pill .amount { font-size: 1.7rem; font-weight: 900; letter-spacing: -0.03em; line-height: 1; }
+        .denom-pill .kind { font-size: 0.5rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
 
-        .orb-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px; animation-delay: 0s; }
-        .orb-2 { width: 300px; height: 300px; background: var(--secondary); bottom: -50px; right: -50px; animation-delay: -5s; }
-        .orb-3 { width: 200px; height: 200px; background: var(--accent); top: 40%; left: 60%; animation-delay: -10s; }
+        .denom-mid { flex: 1; display: flex; align-items: center; padding: 12px 16px; gap: 10px; }
+        .denom-lbl { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+        .stepper-wrap { display: flex; align-items: center; gap: 6px; }
+        .stp-btn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); font-size: 1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.12s ease; -webkit-tap-highlight-color: transparent; }
+        .stp-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .stp-btn:active { transform: scale(0.88); }
+        .count-input { width: 60px; height: 30px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.95rem; font-weight: 700; text-align: center; outline: none; padding: 0 4px; transition: border-color 0.2s ease; -moz-appearance: textfield; font-family: 'Inter', sans-serif; }
+        .count-input::-webkit-outer-spin-button, .count-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .count-input:focus { border-color: var(--accent); }
+        .count-input.active { border-color: rgba(99,102,241,0.5); }
 
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(30px, 50px); }
-        }
+        .denom-total { min-width: 88px; padding: 12px 16px 12px 8px; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; }
+        .row-lbl { font-size: 0.55rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+        .row-amt { font-size: 1rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; font-variant-numeric: tabular-nums; transition: color 0.2s ease; }
 
-        .glass-card {
-            background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(12px);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-        }
+        .section-divider { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
+        .section-divider span { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+        .section-divider::before, .section-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-        .input-field {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text-light);
-        }
+        .field-wrap { display: flex; flex-direction: column; gap: 5px; }
+        .field-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+        .field-input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 10px 12px; font-size: 0.9rem; font-weight: 500; font-family: 'Inter', sans-serif; outline: none; width: 100%; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+        .field-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+        .field-input[readonly] { color: var(--accent-lt); }
+        textarea.field-input { resize: none; }
 
-        .input-field:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-        }
+        .btn-save { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; border: none; padding: 13px 24px; border-radius: 12px; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s; box-shadow: 0 4px 20px rgba(99,102,241,0.35); font-family: 'Inter', sans-serif; width: 100%; justify-content: center; }
+        .btn-save:hover { opacity: 0.9; box-shadow: 0 6px 28px rgba(99,102,241,0.5); transform: translateY(-1px); }
+        .btn-save:active { transform: scale(0.97); }
+        .btn-save:disabled { opacity: 0.55; pointer-events: none; }
+        .btn-clear { background: transparent; border: 1px solid rgba(239,68,68,0.3); color: #f87171; padding: 13px 24px; border-radius: 12px; font-weight: 600; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.15s ease; font-family: 'Inter', sans-serif; width: 100%; justify-content: center; }
+        .btn-clear:hover { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.5); }
 
-        footer {
-            text-align: center;
-            padding: 20px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            color: var(--text-dim);
-        }
+        #loader { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        #loader.hidden { display: none; }
+        .loader-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 36px 48px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+        .spin { animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        footer b {
-            color: var(--text-light);
-        }
+        .popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 9998; opacity: 0; visibility: hidden; transition: opacity 0.25s ease, visibility 0.25s ease; }
+        .popup-overlay.active { opacity: 1; visibility: visible; }
+        .popup-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 32px; max-width: 380px; width: 90%; text-align: center; transform: scale(0.88); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+        .popup-overlay.active .popup-box { transform: scale(1); }
+        .popup-icon-wrap { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 16px; }
+        .popup-success .popup-icon-wrap { background: rgba(34,197,94,0.15); color: var(--green); }
+        .popup-error   .popup-icon-wrap { background: rgba(239,68,68,0.15); color: #f87171; }
+        .popup-ok { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 10px 32px; border-radius: 10px; font-weight: 600; cursor: pointer; font-family: 'Inter',sans-serif; font-size: 0.9rem; transition: background 0.15s ease; margin-top: 4px; }
+        .popup-ok:hover { background: rgba(255,255,255,0.08); }
 
-        /* Popup Styles */
-        .popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(4px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
+        #calculator-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9997; }
+        #calculator-modal.hidden { display: none; }
+        .calc-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; width: 320px; }
+        .calc-screen { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; text-align: right; margin-bottom: 16px; min-height: 88px; display: flex; flex-direction: column; justify-content: flex-end; }
+        #calc-history { font-size: 0.8rem; color: var(--muted); font-family: monospace; min-height: 22px; }
+        #calc-display  { font-size: 2.2rem; font-weight: 800; font-family: 'Inter', sans-serif; letter-spacing: -0.03em; line-height: 1; }
+        .calc-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+        .calc-btn { padding: 0; height: 52px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.12s ease; font-family: 'Inter', sans-serif; }
+        .calc-btn:hover { background: rgba(255,255,255,0.08); }
+        .calc-btn:active { transform: scale(0.93); }
+        .calc-btn.op  { background: rgba(99,102,241,0.15); color: var(--accent-lt); border-color: rgba(99,102,241,0.25); }
+        .calc-btn.op:hover { background: rgba(99,102,241,0.25); }
+        .calc-btn.eq  { background: linear-gradient(135deg,#6366f1,#8b5cf6); color: #fff; border-color: transparent; }
+        .calc-btn.eq:hover { opacity: 0.88; }
+        .calc-btn.del { background: rgba(239,68,68,0.12); color: #f87171; border-color: rgba(239,68,68,0.2); }
+        .calc-btn.del:hover { background: rgba(239,68,68,0.2); }
+        .calc-btn.ac  { background: rgba(239,68,68,0.12); color: #f87171; border-color: rgba(239,68,68,0.2); }
+        .calc-btn.ac:hover { background: rgba(239,68,68,0.2); }
+        .calc-btn.span2 { grid-column: span 2; }
 
-        .popup-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
+        footer { text-align: center; padding: 24px; color: var(--muted); font-size: 0.78rem; }
+        footer b { color: var(--accent-lt); }
 
-        .popup-content {
-            background: rgba(30, 41, 59, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 24px;
-            max-width: 90%;
-            width: 400px;
-            text-align: center;
-            transform: scale(0.9);
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
+        /* Denomination color themes */
+        .note-500 .denom-pill { background: linear-gradient(160deg,#3d2a00,#6e4b00); }
+        .note-500 .amount,.note-500 .rupee,.note-500 .row-amt { color: #f5c842; }
+        .note-200 .denom-pill { background: linear-gradient(160deg,#0d2b1e,#1e5e38); }
+        .note-200 .amount,.note-200 .rupee,.note-200 .row-amt { color: #4ade80; }
+        .note-100 .denom-pill { background: linear-gradient(160deg,#00234a,#004b90); }
+        .note-100 .amount,.note-100 .rupee,.note-100 .row-amt { color: #60a5fa; }
+        .note-50 .denom-pill { background: linear-gradient(160deg,#3a1b00,#7a3800); }
+        .note-50 .amount,.note-50 .rupee,.note-50 .row-amt { color: #fb923c; }
+        .note-20 .denom-pill { background: linear-gradient(160deg,#420e0e,#8b2020); }
+        .note-20 .amount,.note-20 .rupee,.note-20 .row-amt { color: #f87171; }
+        .note-10 .denom-pill { background: linear-gradient(160deg,#0f2a0f,#2a5e2a); }
+        .note-10 .amount,.note-10 .rupee,.note-10 .row-amt { color: #86efac; }
+        .coin-5 .denom-pill { background: linear-gradient(160deg,#2a2a2a,#555); }
+        .coin-5 .amount,.coin-5 .rupee,.coin-5 .row-amt { color: #d4d4d4; }
+        .coin-2 .denom-pill { background: linear-gradient(160deg,#2e2200,#6b5200); }
+        .coin-2 .amount,.coin-2 .rupee,.coin-2 .row-amt { color: #fcd34d; }
+        .coin-1 .denom-pill { background: linear-gradient(160deg,#1c1c1c,#444); }
+        .coin-1 .amount,.coin-1 .rupee,.coin-1 .row-amt { color: #c0c0c0; }
 
-        .popup-overlay.active .popup-content {
-            transform: scale(1);
+        @media (max-width: 1023px) {
+            .mobile-save-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(9,9,11,0.95); backdrop-filter: blur(16px); border-top: 1px solid var(--border); padding: 12px 16px; z-index: 50; display: flex; gap: 10px; }
+            body { padding-bottom: 80px; }
         }
-
-        .popup-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px;
-            font-size: 24px;
-        }
-
-        .popup-success .popup-icon {
-            background: rgba(16, 185, 129, 0.2);
-            color: #34d399;
-        }
-
-        .popup-error .popup-icon {
-            background: rgba(239, 68, 68, 0.2);
-            color: #f87171;
-        }
+        @media (min-width: 1024px) { .mobile-save-bar { display: none; } }
     </style>
 </head>
+<body>
 
-<body class="p-4 md:p-10">
-
-    <div class="bg-animation">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-    </div>
-
-    <div class="max-w-6xl mx-auto glass-card p-6 rounded-2xl shadow-lg">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-            <section>
-                <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
-                    <h2 class="text-2xl font-bold flex items-center gap-3 text-white">
-                        <i class="fa-solid fa-money-bill-1-wave text-emerald-400"></i>Denominations
-                    </h2>
-                    <div class="flex items-center gap-4">
-                        <button onclick="toggleCalculator()" class="text-white/70 hover:text-white text-xl transition-colors" title="Calculator">
-                            <i class="fa-solid fa-calculator"></i>
-                        </button>
-                        <a href="denominationsreport.html" class="text-white/70 hover:text-white text-xl transition-colors" title="Report">
-                            <i class="fa-solid fa-chart-pie"></i>
-                        </a>
-                        <a href="../index.html" class="text-white/70 hover:text-white text-xl transition-colors" title="Home">
-                            <i class="fa-solid fa-house"></i>
-                        </a>
-                    </div>
-                </div>
-
-                <div id="notes-container" class="space-y-3">
-                    <template id="row-template">
-                        <div class="flex items-center justify-between p-3 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
-                            <span class="font-bold text-lg label-text text-white"></span>
-                            <div class="flex items-center gap-4">
-                                <input type="number" min="0" value="" placeholder="0" inputmode="numeric" pattern="[0-9]*" class="w-24 p-2 rounded-lg text-center outline-none count-input input-field font-mono text-lg">
-                                <span class="font-bold text-lg min-w-[80px] text-right row-total text-emerald-400 font-mono">0</span>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-                
-                <div id="coins-container" class="space-y-3 mt-6 mb-8"></div>
-
-                <div class="mt-auto bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-8 rounded-2xl shadow-lg relative overflow-hidden">
-                    <div class="absolute inset-0 bg-black/10"></div>
-                    <div class="relative z-10">
-                        <div class="mb-6 flex justify-center items-center gap-2">
-                            <button id="prev-day" class="p-2 px-4 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"><i class="fa-solid fa-chevron-left"></i></button>
-                            <input type="date" id="date-input" class="p-2 px-6 rounded-lg outline-none text-white text-lg font-semibold bg-white/20 border border-white/20 backdrop-blur-sm shadow-inner text-center" />
-                            <button id="next-day" class="p-2 px-4 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"><i class="fa-solid fa-chevron-right"></i></button>
-                        </div>
-
-                        <div class="text-xl flex justify-center items-center gap-2 mb-2 text-white/80 font-medium">
-                            Total Amount
-                        </div>
-                        <div id="grand-total" class="text-5xl font-bold mb-6 text-center w-full tracking-tight">0</div>
-
-                        <div class="pt-4 border-t border-white/20 text-center">
-                            <span class="text-xs tracking-widest opacity-70 font-bold uppercase">In Words</span>
-                            <div id="total-in-words" class="text-lg font-medium italic mt-1 capitalize leading-tight text-white/90"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- New Fields Block -->
-                <div class="glass-card p-6 rounded-xl mt-8">
-                    <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-pen-to-square text-emerald-400"></i> Additional Details
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Week Expenses</label>
-                            <input type="number" id="week-expenses-input" placeholder="0.00" class="w-full p-3 rounded-lg outline-none transition input-field" />
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Adjust Amount</label>
-                            <input type="number" id="adjust-amount-input" placeholder="0.00" class="w-full p-3 rounded-lg outline-none transition input-field" />
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1">ATM Withdrawal</label>
-                            <input type="number" id="atm-withdrawal-input" placeholder="0.00" inputmode="numeric" pattern="[0-9]*" class="w-full p-3 rounded-lg outline-none transition input-field" />
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1">A/C Paid</label>
-                            <input type="number" id="ac-paid-input" placeholder="0.00" class="w-full p-3 rounded-lg outline-none transition input-field" />
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Remarks</label>
-                            <textarea id="remarks-input" placeholder="Enter remarks..." class="w-full p-3 rounded-lg outline-none transition input-field h-24"></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex justify-between gap-4 mt-8">
-                    <button onclick="clearAll()" class="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 py-3 px-6 rounded-xl font-bold flex items-center justify-center gap-2 transition w-full">
-                        <i class="fa-solid fa-trash"></i> Clear
-                    </button>
-                    <button onclick="saveData()" id="save-btn" class="bg-emerald-500 hover:bg-emerald-600 text-white py-3 px-6 rounded-xl font-bold flex items-center justify-center gap-2 transition w-full shadow-lg shadow-emerald-500/20">
-                        <i class="fa-solid fa-floppy-disk"></i> Save
-                    </button>
-                </div>
-
-                <div id="loader" class="hidden fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-50">
-                    <div class="glass-card p-8 rounded-2xl flex flex-col items-center gap-4">
-                        <div class="animate-spin">
-                            <i class="fa-solid fa-circle-notch text-4xl text-emerald-400"></i>
-                        </div>
-                        <p class="text-white font-semibold">Processing...</p>
-                    </div>
-                </div>
-            </section>
+<header class="topbar px-4 py-3">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">
+                <i class="fa-solid fa-indian-rupee-sign text-white text-sm"></i>
+            </div>
+            <span class="font-bold text-base tracking-tight">Denominations</span>
+        </div>
+        <div class="flex items-center gap-1">
+            <button onclick="toggleCalculator()" title="Calculator" class="w-9 h-9 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white transition-all">
+                <i class="fa-solid fa-calculator"></i>
+            </button>
+            <a href="denominationsreport.html" title="Report" class="w-9 h-9 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white transition-all">
+                <i class="fa-solid fa-chart-pie"></i>
+            </a>
+            <a href="../index.html" title="Home" class="w-9 h-9 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white transition-all">
+                <i class="fa-solid fa-house"></i>
+            </a>
         </div>
     </div>
+</header>
 
-    <!-- Calculator Modal -->
-    <div id="calculator-modal" class="hidden fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50" tabindex="-1">
-        <div class="glass-card p-6 rounded-2xl w-80 shadow-2xl border border-white/20 bg-slate-900/90">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-calculator text-emerald-400 mr-2"></i>Calculator</h3>
-                <button onclick="toggleCalculator()" class="text-white/60 hover:text-red-400 transition-colors">
-                    <i class="fa-solid fa-xmark text-xl"></i>
+<main class="max-w-6xl mx-auto px-4 py-6">
+    <div class="flex flex-col lg:flex-row gap-6">
+
+        <div class="flex-1 space-y-3">
+            <div class="section-divider"><span>Notes</span></div>
+            <div id="notes-container" class="space-y-2"></div>
+            <div class="section-divider mt-4"><span>Coins</span></div>
+            <div id="coins-container" class="space-y-2"></div>
+        </div>
+
+        <div class="lg:w-80 space-y-4 lg:sticky lg:top-20 h-min">
+
+            <div class="card total-glow p-5">
+                <div class="flex items-center justify-center gap-2 mb-5">
+                    <button id="prev-day" class="nav-btn"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                    <input type="date" id="date-input" />
+                    <button id="next-day" class="nav-btn"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                </div>
+                <div class="text-center space-y-2">
+                    <p class="text-xs font-semibold uppercase tracking-widest" style="color:var(--muted)">Total Amount</p>
+                    <div id="grand-total">&#8377;0</div>
+                    <div id="total-in-words" class="text-xs leading-snug capitalize px-2" style="color:var(--muted);min-height:32px">Zero Rupees Only</div>
+                </div>
+                <div class="mt-4 pt-4 border-t" style="border-color:var(--border)">
+                    <div class="grid grid-cols-3 gap-2 text-center">
+                        <div class="card-inner p-2">
+                            <div class="text-xs font-semibold mb-1" style="color:var(--muted)">Notes</div>
+                            <div id="notes-total" class="text-sm font-bold" style="color:var(--accent-lt)">&#8377;0</div>
+                        </div>
+                        <div class="card-inner p-2">
+                            <div class="text-xs font-semibold mb-1" style="color:var(--muted)">Coins</div>
+                            <div id="coins-total" class="text-sm font-bold" style="color:#fbbf24">&#8377;0</div>
+                        </div>
+                        <div class="card-inner p-2">
+                            <div class="text-xs font-semibold mb-1" style="color:var(--muted)">A/C Paid</div>
+                            <div id="ac-paid-pill" class="text-sm font-bold" style="color:var(--green)">&#8377;0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-5">
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="fa-solid fa-pen-to-square text-xs" style="color:var(--accent-lt)"></i>
+                    <span class="text-sm font-bold">Additional Details</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="field-wrap">
+                        <label class="field-label">Week Expenses</label>
+                        <input type="number" id="week-expenses-input" placeholder="0.00" class="field-input" />
+                    </div>
+                    <div class="field-wrap">
+                        <label class="field-label">Adjust Amount</label>
+                        <input type="number" id="adjust-amount-input" placeholder="0.00" class="field-input" />
+                    </div>
+                    <div class="field-wrap">
+                        <label class="field-label">ATM Withdrawal</label>
+                        <input type="number" id="atm-withdrawal-input" placeholder="0.00" inputmode="numeric" class="field-input" />
+                    </div>
+                    <div class="field-wrap">
+                        <label class="field-label">A/C Paid</label>
+                        <input type="number" id="ac-paid-input" placeholder="0.00" class="field-input" readonly />
+                    </div>
+                    <div class="field-wrap col-span-2">
+                        <label class="field-label">Remarks</label>
+                        <textarea id="remarks-input" placeholder="Enter remarks..." class="field-input" rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hidden lg:flex flex-col gap-3">
+                <button onclick="saveData()" id="save-btn" class="btn-save">
+                    <i class="fa-solid fa-floppy-disk"></i> Save
+                </button>
+                <button onclick="clearAll()" class="btn-clear">
+                    <i class="fa-solid fa-trash-can"></i> Clear
                 </button>
             </div>
-
-            <div class="bg-white/10 p-4 rounded-xl mb-4 text-right flex flex-col justify-end h-24">
-                <div id="calc-history" class="text-sm text-white/50 font-mono mb-1 h-6 overflow-hidden"></div>
-                <div id="calc-display" class="text-3xl font-mono text-white tracking-wider overflow-x-auto min-h-[2.5rem]">0</div>
-            </div>
-
-            <div class="grid grid-cols-4 gap-3">
-                <button onclick="calcClear()" class="col-span-2 p-3 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 font-bold transition">AC</button>
-                <button onclick="calcDelete()" class="p-3 rounded-lg bg-white/10 text-white hover:bg-white/20 font-bold transition"><i class="fa-solid fa-delete-left"></i></button>
-                <button onclick="calcAppend('/')" class="p-3 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 font-bold transition">÷</button>
-
-                <button onclick="calcAppend('7')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">7</button>
-                <button onclick="calcAppend('8')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">8</button>
-                <button onclick="calcAppend('9')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">9</button>
-                <button onclick="calcAppend('*')" class="p-3 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 font-bold transition">×</button>
-
-                <button onclick="calcAppend('4')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">4</button>
-                <button onclick="calcAppend('5')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">5</button>
-                <button onclick="calcAppend('6')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">6</button>
-                <button onclick="calcAppend('-')" class="p-3 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 font-bold transition">−</button>
-
-                <button onclick="calcAppend('1')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">1</button>
-                <button onclick="calcAppend('2')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">2</button>
-                <button onclick="calcAppend('3')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">3</button>
-                <button onclick="calcAppend('+')" class="p-3 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 font-bold transition">+</button>
-
-                <button onclick="calcAppend('0')" class="col-span-2 p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">0</button>
-                <button onclick="calcAppend('.')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">.</button>
-                <button onclick="calcResult()" class="p-3 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 font-bold transition">=</button>
-            </div>
         </div>
     </div>
+</main>
 
-    <!-- Custom Popup -->
-    <div id="custom-popup" class="popup-overlay">
-        <div class="popup-content">
-            <div id="popup-icon-container" class="popup-icon">
-                <!-- Icon will be inserted here -->
+<div class="mobile-save-bar">
+    <button onclick="clearAll()" class="btn-clear" style="flex:0 0 auto;width:auto;padding:12px 20px">
+        <i class="fa-solid fa-trash-can"></i>
+    </button>
+    <button onclick="saveData()" id="save-btn-mobile" class="btn-save">
+        <i class="fa-solid fa-floppy-disk"></i> Save
+    </button>
+</div>
+
+<div id="loader" class="hidden">
+    <div class="loader-box">
+        <div class="spin" style="font-size:2rem;color:var(--accent-lt)"><i class="fa-solid fa-circle-notch"></i></div>
+        <p class="text-sm font-semibold" style="color:var(--muted)">Processing...</p>
+    </div>
+</div>
+
+<div id="custom-popup" class="popup-overlay">
+    <div class="popup-box">
+        <div id="popup-icon-container" class="popup-icon-wrap"></div>
+        <h3 id="popup-title" class="text-lg font-bold mb-2"></h3>
+        <p id="popup-message" class="text-sm mb-5" style="color:var(--muted)"></p>
+        <button onclick="closePopup()" class="popup-ok">OK</button>
+    </div>
+</div>
+
+<div id="calculator-modal" class="hidden" tabindex="-1">
+    <div class="calc-box">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-calculator" style="color:var(--accent-lt)"></i>
+                <span class="font-bold text-sm">Calculator</span>
             </div>
-            <h3 id="popup-title" class="text-xl font-bold text-white mb-2"></h3>
-            <p id="popup-message" class="text-gray-300 mb-6"></p>
-            <button onclick="closePopup()" class="bg-white/10 hover:bg-white/20 text-white py-2 px-6 rounded-lg font-semibold transition w-full">
-                OK
+            <button onclick="toggleCalculator()" class="w-7 h-7 rounded-md flex items-center justify-center text-zinc-500 hover:text-red-400 transition-all">
+                <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
+        <div class="calc-screen">
+            <div id="calc-history"></div>
+            <div id="calc-display">0</div>
+        </div>
+        <div class="calc-grid">
+            <button class="calc-btn ac span2" onclick="calcClear()">AC</button>
+            <button class="calc-btn del" onclick="calcDelete()"><i class="fa-solid fa-delete-left"></i></button>
+            <button class="calc-btn op" onclick="calcAppend('/')">&#247;</button>
+            <button class="calc-btn" onclick="calcAppend('7')">7</button>
+            <button class="calc-btn" onclick="calcAppend('8')">8</button>
+            <button class="calc-btn" onclick="calcAppend('9')">9</button>
+            <button class="calc-btn op" onclick="calcAppend('*')">&#215;</button>
+            <button class="calc-btn" onclick="calcAppend('4')">4</button>
+            <button class="calc-btn" onclick="calcAppend('5')">5</button>
+            <button class="calc-btn" onclick="calcAppend('6')">6</button>
+            <button class="calc-btn op" onclick="calcAppend('-')">&#8722;</button>
+            <button class="calc-btn" onclick="calcAppend('1')">1</button>
+            <button class="calc-btn" onclick="calcAppend('2')">2</button>
+            <button class="calc-btn" onclick="calcAppend('3')">3</button>
+            <button class="calc-btn op" onclick="calcAppend('+')">+</button>
+            <button class="calc-btn span2" onclick="calcAppend('0')">0</button>
+            <button class="calc-btn" onclick="calcAppend('.')">.</button>
+            <button class="calc-btn eq" onclick="calcResult()">=</button>
+        </div>
     </div>
+</div>
 
-    <script>
-        const denominations = {
-            notes: [{
-                    val: 500,
-                    color: '' // Colors handled by CSS now
-                },
-                {
-                    val: 200,
-                    color: ''
-                },
-                {
-                    val: 100,
-                    color: ''
-                },
-                {
-                    val: 50,
-                    color: ''
-                },
-                {
-                    val: 20,
-                    color: ''
-                },
-                {
-                    val: 10,
-                    color: ''
-                }
-            ],
-            coins: [{
-                    val: 5,
-                    color: ''
-                },
-                {
-                    val: 2,
-                    color: ''
-                },
-                {
-                    val: 1,
-                    color: ''
-                }
-            ]
-        };
+<footer><p>&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p></footer>
 
-        let editingRowIndex = null;
+<script>
+    var NOTES = [500, 200, 100, 50, 20, 10];
+    var COINS = [5, 2, 1];
+    var ALL   = NOTES.concat(COINS);
+    var editingRowIndex = null;
 
-        function init() {
-            // Set up date picker
-            const dateInput = document.getElementById('date-input');
-            const today = new Date().toISOString().split('T')[0];
-            
-            dateInput.value = today;
-            dateInput.max = today;
+    var noteClass = { 500:'note-500', 200:'note-200', 100:'note-100', 50:'note-50', 20:'note-20', 10:'note-10' };
+    var coinClass = { 5:'coin-5', 2:'coin-2', 1:'coin-1' };
 
-            document.getElementById('prev-day').addEventListener('click', () => changeDate(-1));
-            document.getElementById('next-day').addEventListener('click', () => changeDate(1));
+    function buildRow(val, type) {
+        var cls = type === 'note' ? noteClass[val] : coinClass[val];
+        var row = document.createElement('div');
+        row.className = 'denom-row ' + cls;
+        row.dataset.val = val;
+        row.innerHTML =
+            '<div class="denom-pill">' +
+                '<span class="rupee">&#8377;</span>' +
+                '<span class="amount">' + val + '</span>' +
+                '<span class="kind">' + type + '</span>' +
+            '</div>' +
+            '<div class="denom-mid">' +
+                '<span class="denom-lbl">Count</span>' +
+                '<div class="stepper-wrap">' +
+                    '<button class="stp-btn dec-btn" type="button" tabindex="-1">&#8722;</button>' +
+                    '<input type="number" class="count-input" min="0" inputmode="numeric" placeholder="0" data-value="' + val + '" id="denom-input-' + val + '">' +
+                    '<button class="stp-btn inc-btn" type="button" tabindex="-1">+</button>' +
+                '</div>' +
+            '</div>' +
+            '<div class="denom-total">' +
+                '<span class="row-lbl">Total</span>' +
+                '<span class="row-amt" style="opacity:.3">&#8377;0</span>' +
+            '</div>';
 
-            renderSection('notes-container', denominations.notes, '');
-            renderSection('coins-container', denominations.coins, '');
+        var input   = row.querySelector('.count-input');
+        var totalEl = row.querySelector('.row-amt');
 
-            document.getElementById('week-expenses-input').addEventListener('input', calculate);
-            document.getElementById('adjust-amount-input').addEventListener('input', calculate);
-            document.getElementById('atm-withdrawal-input').addEventListener('input', calculate);
-
-            // Check if there is data to edit
-            const editData = localStorage.getItem('editReportData');
-            if (editData) {
-                const data = JSON.parse(editData);
-                populateData(data);
-                if (data.rowIndex !== undefined) {
-                    editingRowIndex = data.rowIndex;
-                }
-                localStorage.removeItem('editReportData'); // Clear after use
-            }
-        }
-
-        function changeDate(days) {
-            const dateInput = document.getElementById('date-input');
-            const currentVal = dateInput.value;
-            if (!currentVal) return;
-
-            const parts = currentVal.split('-');
-            const year = parseInt(parts[0]);
-            const month = parseInt(parts[1]) - 1;
-            const day = parseInt(parts[2]);
-
-            const dateObj = new Date(year, month, day);
-            dateObj.setDate(dateObj.getDate() + days);
-
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            if (dateObj <= today) {
-                const y = dateObj.getFullYear();
-                const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-                const d = String(dateObj.getDate()).padStart(2, '0');
-                dateInput.value = `${y}-${m}-${d}`;
-            }
-        }
-
-        function populateData(data) {
-            // Populate Date
-            if (data.Date) {
-                const dateInput = document.getElementById('date-input');
-                const date = new Date(data.Date);
-                if (!isNaN(date.getTime())) {
-                    // Adjust for timezone offset
-                    const offset = date.getTimezoneOffset();
-                    const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
-                    dateInput.value = adjustedDate.toISOString().split('T')[0];
-                }
-            }
-
-            // Populate Denominations
-            const denoms = [500, 200, 100, 50, 20, 10, 5, 2, 1];
-            denoms.forEach(d => {
-                const val = data[d.toString()];
-                if (val !== undefined && val !== null) {
-                    const input = document.querySelector(`.count-input[data-value="${d}"]`);
-                    if (input) {
-                        input.value = val;
-                    }
-                }
-            });
-
-            // Populate Other Fields
-            if (data['Week Expenses']) document.getElementById('week-expenses-input').value = data['Week Expenses'];
-            if (data['Adjust Amount']) document.getElementById('adjust-amount-input').value = data['Adjust Amount'];
-            if (data['ATM Withdrawal']) document.getElementById('atm-withdrawal-input').value = data['ATM Withdrawal'];
-            if (data['A/C Paid']) document.getElementById('ac-paid-input').value = data['A/C Paid'];
-            if (data['Remarks']) document.getElementById('remarks-input').value = data['Remarks'];
-
-            // Recalculate totals
+        function update() {
+            var c = parseInt(input.value) || 0;
+            var t = c * val;
+            totalEl.textContent = '\u20B9' + t.toLocaleString('en-IN');
+            totalEl.style.opacity = c > 0 ? '1' : '0.3';
+            row.classList.toggle('has-value', c > 0);
+            input.classList.toggle('active', c > 0);
             calculate();
         }
 
-        function renderSection(containerId, list, suffix) {
-            const container = document.getElementById(containerId);
-            const template = document.getElementById('row-template');
-
-            list.forEach(item => {
-                const clone = template.content.cloneNode(true);
-                // Removed specific color classes logic as we use a unified dark theme now
-                clone.querySelector('.label-text').textContent = suffix ? `${item.val} ${suffix}` : `${item.val}`;
-
-                const input = clone.querySelector('.count-input');
-                input.dataset.value = item.val;
-                input.addEventListener('input', calculate);
-                container.appendChild(clone);
-            });
-        }
-
-        function calculate() {
-            let grandTotal = 0;
-            const inputs = document.querySelectorAll('.count-input');
-
-            inputs.forEach(input => {
-                const count = parseInt(input.value) || 0;
-                const multiplier = parseInt(input.dataset.value);
-                const rowTotal = count * multiplier;
-                grandTotal += rowTotal;
-                input.nextElementSibling.textContent = `${rowTotal}`;
-            });
-
-            document.getElementById('grand-total').textContent = `Rs. ${grandTotal}`;
-            document.getElementById('total-in-words').textContent = numberToWords(grandTotal) + " Rupees Only";
-
-            const weekExpenses = parseFloat(document.getElementById('week-expenses-input').value) || 0;
-            const adjustAmount = parseFloat(document.getElementById('adjust-amount-input').value) || 0;
-            const acPaid = (grandTotal + adjustAmount) - weekExpenses;
-            document.getElementById('ac-paid-input').value = acPaid;
-        }
-
-        // Function to convert Number to Indian Word System
-        function numberToWords(num) {
-            if (num === 0) return "Zero";
-
-            const a = ['', 'one ', 'two ', 'three ', 'four ', 'five ', 'six ', 'seven ', 'eight ', 'nine ', 'ten ', 'eleven ', 'twelve ', 'thirteen ', 'fourteen ', 'fifteen ', 'sixteen ', 'seventeen ', 'eighteen ', 'nineteen '];
-            const b = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
-
-            const format = (n, suffix) => {
-                if (n === 0) return "";
-                let str = "";
-                if (n > 19) {
-                    str += b[Math.floor(n / 10)] + " " + a[n % 10];
-                } else {
-                    str += a[n];
-                }
-                return str + suffix;
-            };
-
-            let res = "";
-            res += format(Math.floor(num / 10000000), "Crore ");
-            res += format(Math.floor((num / 100000) % 100), "Lakh ");
-            res += format(Math.floor((num / 1000) % 100), "Thousand ");
-            res += format(Math.floor((num / 100) % 10), "Hundred ");
-
-            if (num > 100 && num % 100 !== 0) res += "and ";
-            res += format(num % 100, "");
-
-            return res.trim();
-        }
-
-        function clearAll() {
-            document.querySelectorAll('.count-input').forEach(input => input.value = "");
-            document.getElementById('week-expenses-input').value = "";
-            document.getElementById('adjust-amount-input').value = "";
-            document.getElementById('atm-withdrawal-input').value = "";
-            document.getElementById('ac-paid-input').value = "";
-            document.getElementById('remarks-input').value = "";
-            editingRowIndex = null;
-            calculate();
-        }
-        function formatDateToDDMMMYYYY(isoDate) {
-            if (!isoDate) return '';
-            const d = new Date(isoDate);
-            if (isNaN(d)) return isoDate;
-            const day = String(d.getDate()).padStart(2, '0');
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            return `${day}/${months[d.getMonth()]}/${d.getFullYear()}`;
-        }
-
-        // Popup Functions
-        function showPopup(title, message, type = 'success') {
-            const popup = document.getElementById('custom-popup');
-            const titleEl = document.getElementById('popup-title');
-            const messageEl = document.getElementById('popup-message');
-            const iconContainer = document.getElementById('popup-icon-container');
-
-            titleEl.textContent = title;
-            messageEl.textContent = message;
-
-            // Reset classes
-            popup.classList.remove('popup-success', 'popup-error');
-
-            if (type === 'success') {
-                popup.classList.add('popup-success');
-                iconContainer.innerHTML = '<i class="fa-solid fa-check"></i>';
-            } else {
-                popup.classList.add('popup-error');
-                iconContainer.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
-            }
-
-            popup.classList.add('active');
-        }
-
-        function closePopup() {
-            const popup = document.getElementById('custom-popup');
-            popup.classList.remove('active');
-
-            // If we were updating, redirect after closing
-            if (window.pendingRedirect) {
-                window.location.href = window.pendingRedirect;
-                window.pendingRedirect = null;
-            }
-
-            // If we were clearing, do it now
-            if (window.pendingClear) {
-                editingRowIndex = null;
-                clearAll();
-                window.pendingClear = false;
-            }
-        }
-
-        function saveData() {
-            const loader = document.getElementById('loader');
-            const saveBtn = document.getElementById('save-btn');
-            loader.classList.remove('hidden');
-            saveBtn.disabled = true;
-            
-            const dateInput = document.getElementById('date-input');
-            const weekExpensesInput = document.getElementById('week-expenses-input');
-            const adjustAmountInput = document.getElementById('adjust-amount-input');
-            const atmWithdrawalInput = document.getElementById('atm-withdrawal-input');
-            const acPaidInput = document.getElementById('ac-paid-input');
-            const remarksInput = document.getElementById('remarks-input');
-
-            const grandTotalText = document.getElementById('grand-total').textContent;
-            const total = parseInt(grandTotalText.replace('Rs. ', '')) || 0;
-            
-            // Collect denomination counts
-            const data = {
-                date: formatDateToDDMMMYYYY(dateInput.value),
-                weekExpenses: parseFloat(weekExpensesInput.value) || 0,
-                adjustAmount: parseFloat(adjustAmountInput.value) || 0,
-                atmWithdrawal: parseFloat(atmWithdrawalInput.value) || 0,
-                acPaid: parseFloat(acPaidInput.value) || 0,
-                remarks: remarksInput.value,
-                d500: 0,
-                d200: 0,
-                d100: 0,
-                d50: 0,
-                d20: 0,
-                d10: 0,
-                d5: 0,
-                d2: 0,
-                d1: 0,
-                total: total
-            };
-            
-            // Map input values to denomination keys
-            const denominationMap = {
-                '500': 'd500',
-                '200': 'd200',
-                '100': 'd100',
-                '50': 'd50',
-                '20': 'd20',
-                '10': 'd10',
-                '5': 'd5',
-                '2': 'd2',
-                '1': 'd1'
-            };
-            
-            document.querySelectorAll('.count-input').forEach(input => {
-                const value = input.dataset.value;
-                const count = parseInt(input.value) || 0;
-                const key = denominationMap[value];
-                if (key) {
-                    data[key] = count;
-                }
-            });
-
-            let isUpdate = false;
-            if (editingRowIndex !== null) {
-                data.action = 'update';
-                data.rowIndex = editingRowIndex;
-                // Use YYYY-MM-DD for updates to match denominationsreport.html behavior
-                data.date = dateInput.value;
-                isUpdate = true;
-            }
-
-            console.log('Sending data to Google Sheets:', data);
-            
-            // Save to Google Sheets
-            fetch(CONFIG.GOOGLE_SHEET_URL_DENOMINATIONS, {
-                method: 'POST',
-                body: JSON.stringify(data),
-                mode: 'no-cors'
-            })
-            .then(response => {
-                console.log('Data sent to Google Sheets (no-cors mode)');
-                loader.classList.add('hidden');
-                saveBtn.disabled = false;
-
-                // Also save locally
-                localStorage.setItem('cashCounterData', JSON.stringify(data));
-
-                if (isUpdate) {
-                    window.pendingRedirect = 'denominationsreport.html';
-                    showPopup('Success', 'Data updated successfully', 'success');
-                } else {
-                    window.pendingClear = true;
-                    showPopup('Success', 'Data saved successfully', 'success');
-                }
-            })
-            .catch(error => {
-                console.error('Network error:', error);
-                loader.classList.add('hidden');
-                saveBtn.disabled = false;
-                showPopup('Error', 'Error sending data: ' + error.message, 'error');
-            });
-        }
-
-        function loadData() {
-            const saved = localStorage.getItem('cashCounterData');
-            if (saved) {
-                const data = JSON.parse(saved);
-                document.querySelectorAll('.count-input').forEach((input, index) => {
-                    if (data[`denomination_${index}`]) {
-                        input.value = data[`denomination_${index}`];
-                    }
-                });
-                calculate();
-            }
-        }
-        function loadExample() {
-            document.querySelectorAll('.count-input').forEach(input => {
-                input.value = Math.floor(Math.random() * 5);
-            });
-            calculate();
-        }
-
-        // Calculator Logic
-        let calcExpression = "";
-
-        function toggleCalculator() {
-            const modal = document.getElementById('calculator-modal');
-            const isHidden = modal.classList.toggle('hidden');
-
-            if (!isHidden) {
-                modal.focus();
-            }
-        }
-
-        function updateCalcUI() {
-            const display = document.getElementById('calc-display');
-            const history = document.getElementById('calc-history');
-
-            const operators = ['+', '-', '*', '/'];
-            let splitIndex = -1;
-
-            // Find last operator
-            for (let i = calcExpression.length - 1; i >= 0; i--) {
-                if (operators.includes(calcExpression[i])) {
-                    splitIndex = i;
-                    break;
-                }
-            }
-
-            if (splitIndex !== -1) {
-                history.textContent = calcExpression.substring(0, splitIndex + 1);
-                display.textContent = calcExpression.substring(splitIndex + 1);
-            } else {
-                history.textContent = "";
-                display.textContent = calcExpression || "0";
-            }
-        }
-
-        function calcAppend(val) {
-            if (calcExpression === "" && ["/", "*", "+"].includes(val)) return;
-            calcExpression += val;
-            updateCalcUI();
-        }
-
-        function calcClear() {
-            calcExpression = "";
-            document.getElementById('calc-history').textContent = "";
-            document.getElementById('calc-display').textContent = "0";
-        }
-
-        function calcDelete() {
-            calcExpression = calcExpression.slice(0, -1);
-            updateCalcUI();
-        }
-
-        function calcResult() {
-            try {
-                if (!calcExpression) return;
-
-                // Handle trailing operators by removing them
-                let expressionToEval = calcExpression;
-                const operators = ['+', '-', '*', '/'];
-                while (expressionToEval.length > 0 && operators.includes(expressionToEval.slice(-1))) {
-                    expressionToEval = expressionToEval.slice(0, -1);
-                }
-
-                if (!expressionToEval) return;
-
-                const result = eval(expressionToEval);
-                document.getElementById('calc-history').textContent = expressionToEval + " =";
-                document.getElementById('calc-display').textContent = result;
-                calcExpression = String(result);
-            } catch (e) {
-                document.getElementById('calc-display').textContent = "Error";
-                calcExpression = "";
-            }
-        }
-
-        // Keyboard support for calculator
-        document.addEventListener('keydown', function(event) {
-            const modal = document.getElementById('calculator-modal');
-            if (modal.classList.contains('hidden')) return;
-
-            const key = event.key;
-
-            if (/[0-9]/.test(key)) {
-                calcAppend(key);
-            } else if (['+', '-', '*', '/', '.'].includes(key)) {
-                calcAppend(key);
-            } else if (key === 'Enter' || key === '=') {
-                event.preventDefault();
-                calcResult();
-            } else if (key === 'Backspace') {
-                calcDelete();
-            } else if (key === 'Escape') {
-                toggleCalculator();
-            } else if (key === 'c' || key === 'C') {
-                calcClear();
-            }
+        input.addEventListener('input', update);
+        row.querySelector('.dec-btn').addEventListener('click', function() {
+            var v = parseInt(input.value) || 0;
+            if (v > 0) { input.value = v - 1; update(); }
+        });
+        row.querySelector('.inc-btn').addEventListener('click', function() {
+            input.value = (parseInt(input.value) || 0) + 1; update();
         });
 
-        init();
-    </script>
-    <footer>
-        <p>&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
-    </footer>
+        return row;
+    }
+
+    function renderDenominations() {
+        var nc = document.getElementById('notes-container');
+        var cc = document.getElementById('coins-container');
+        NOTES.forEach(function(v) { nc.appendChild(buildRow(v, 'note')); });
+        COINS.forEach(function(v) { cc.appendChild(buildRow(v, 'coin')); });
+    }
+
+    function calculate() {
+        var notesTotal = 0, coinsTotal = 0;
+        NOTES.forEach(function(v) {
+            var el = document.getElementById('denom-input-' + v);
+            notesTotal += (parseInt(el ? el.value : 0) || 0) * v;
+        });
+        COINS.forEach(function(v) {
+            var el = document.getElementById('denom-input-' + v);
+            coinsTotal += (parseInt(el ? el.value : 0) || 0) * v;
+        });
+        var grandTotal = notesTotal + coinsTotal;
+
+        var el   = document.getElementById('grand-total');
+        var prev = parseInt(el.dataset.raw || 0);
+        el.dataset.raw = grandTotal;
+        if (prev !== grandTotal) animateValue(el, prev, grandTotal, 280);
+
+        document.getElementById('notes-total').textContent = '\u20B9' + notesTotal.toLocaleString('en-IN');
+        document.getElementById('coins-total').textContent = '\u20B9' + coinsTotal.toLocaleString('en-IN');
+        document.getElementById('total-in-words').textContent = numberToWords(grandTotal);
+
+        var weekExp = parseFloat(document.getElementById('week-expenses-input').value) || 0;
+        var adjAmt  = parseFloat(document.getElementById('adjust-amount-input').value) || 0;
+        var acPaid  = (grandTotal + adjAmt) - weekExp;
+        document.getElementById('ac-paid-input').value = acPaid.toFixed(2);
+        document.getElementById('ac-paid-pill').textContent = '\u20B9' + acPaid.toLocaleString('en-IN');
+    }
+
+    function animateValue(el, from, to, dur) {
+        var start = null;
+        function step(ts) {
+            if (!start) start = ts;
+            var p = Math.min((ts - start) / dur, 1);
+            el.textContent = '\u20B9' + Math.floor(p * (to - from) + from).toLocaleString('en-IN');
+            if (p < 1) requestAnimationFrame(step);
+            else el.textContent = '\u20B9' + to.toLocaleString('en-IN');
+        }
+        requestAnimationFrame(step);
+    }
+
+    function initDate() {
+        var inp = document.getElementById('date-input');
+        inp.value = new Date().toISOString().split('T')[0];
+        inp.max   = inp.value;
+        document.getElementById('prev-day').addEventListener('click', function() { shiftDate(-1); });
+        document.getElementById('next-day').addEventListener('click', function() { shiftDate(1); });
+    }
+
+    function shiftDate(d) {
+        var inp = document.getElementById('date-input');
+        if (!inp.value) return;
+        var dt = new Date(inp.value);
+        dt.setDate(dt.getDate() + d);
+        var today = new Date(); today.setHours(0,0,0,0);
+        if (dt <= today) inp.value = dt.toISOString().split('T')[0];
+    }
+
+    function formatDate(iso) {
+        if (!iso) return '';
+        var d = new Date(iso);
+        if (isNaN(d)) return iso;
+        var day = String(d.getDate()).padStart(2, '0');
+        var mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return day + '/' + mon[d.getMonth()] + '/' + d.getFullYear();
+    }
+
+    function numberToWords(num) {
+        if (num === 0) return 'Zero Rupees Only';
+        var a = ['','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+        var b = ['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+        function fmt(n, sfx) {
+            if (!n) return '';
+            var s = n > 19 ? b[Math.floor(n/10)] + (n%10 ? ' '+a[n%10] : '') : a[n];
+            return s ? s + sfx : '';
+        }
+        var r = '';
+        r += fmt(Math.floor(num/10000000), ' Crore ');
+        r += fmt(Math.floor((num/100000)%100), ' Lakh ');
+        r += fmt(Math.floor((num/1000)%100), ' Thousand ');
+        r += fmt(Math.floor((num/100)%10), ' Hundred ');
+        if (num > 100 && num % 100) r += 'and ';
+        r += fmt(num%100, '');
+        return r.trim().replace(/\s+/g,' ') + ' Rupees Only';
+    }
+
+    function clearAll() {
+        document.querySelectorAll('.count-input').forEach(function(i) {
+            i.value = ''; i.classList.remove('active');
+        });
+        document.querySelectorAll('.denom-row').forEach(function(r) {
+            r.classList.remove('has-value');
+            r.querySelector('.row-amt').style.opacity = '0.3';
+            r.querySelector('.row-amt').textContent = '\u20B90';
+        });
+        ['week-expenses-input','adjust-amount-input','atm-withdrawal-input','ac-paid-input','remarks-input'].forEach(function(id) {
+            document.getElementById(id).value = '';
+        });
+        document.getElementById('ac-paid-pill').textContent = '\u20B90';
+        editingRowIndex = null;
+        calculate();
+    }
+
+    function populateData(data) {
+        if (data.Date) {
+            var dt = new Date(data.Date);
+            if (!isNaN(dt)) {
+                var adj = new Date(dt.getTime() - dt.getTimezoneOffset()*60000);
+                document.getElementById('date-input').value = adj.toISOString().split('T')[0];
+            }
+        }
+        ALL.forEach(function(d) {
+            var v = data[d.toString()];
+            if (v !== undefined && v !== null) {
+                var inp = document.getElementById('denom-input-' + d);
+                if (inp) { inp.value = v; inp.dispatchEvent(new Event('input')); }
+            }
+        });
+        if (data['Week Expenses'])  document.getElementById('week-expenses-input').value  = data['Week Expenses'];
+        if (data['Adjust Amount'])  document.getElementById('adjust-amount-input').value  = data['Adjust Amount'];
+        if (data['ATM Withdrawal']) document.getElementById('atm-withdrawal-input').value = data['ATM Withdrawal'];
+        if (data['Remarks'])        document.getElementById('remarks-input').value        = data['Remarks'];
+        calculate();
+    }
+
+    function showPopup(title, msg, type) {
+        type = type || 'success';
+        var popup = document.getElementById('custom-popup');
+        document.getElementById('popup-title').textContent   = title;
+        document.getElementById('popup-message').textContent = msg;
+        popup.classList.remove('popup-success','popup-error');
+        popup.classList.add(type === 'success' ? 'popup-success' : 'popup-error');
+        document.getElementById('popup-icon-container').innerHTML =
+            type === 'success' ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-triangle-exclamation"></i>';
+        popup.classList.add('active');
+    }
+
+    function closePopup() {
+        document.getElementById('custom-popup').classList.remove('active');
+        if (window.pendingRedirect) { window.location.href = window.pendingRedirect; window.pendingRedirect = null; }
+        if (window.pendingClear)    { editingRowIndex = null; clearAll(); window.pendingClear = false; }
+    }
+
+    function saveData() {
+        var loader   = document.getElementById('loader');
+        var saveBtn  = document.getElementById('save-btn');
+        var saveBtnM = document.getElementById('save-btn-mobile');
+        loader.classList.remove('hidden');
+        saveBtn.disabled = true;
+        if (saveBtnM) saveBtnM.disabled = true;
+
+        var dateInput     = document.getElementById('date-input');
+        var grandTotalRaw = parseInt(document.getElementById('grand-total').textContent.replace(/[^0-9]/g,'')) || 0;
+        var denomMap = {'500':'d500','200':'d200','100':'d100','50':'d50','20':'d20','10':'d10','5':'d5','2':'d2','1':'d1'};
+        var data = {
+            date:          formatDate(dateInput.value),
+            weekExpenses:  parseFloat(document.getElementById('week-expenses-input').value)  || 0,
+            adjustAmount:  parseFloat(document.getElementById('adjust-amount-input').value)  || 0,
+            atmWithdrawal: parseFloat(document.getElementById('atm-withdrawal-input').value) || 0,
+            acPaid:        parseFloat(document.getElementById('ac-paid-input').value)        || 0,
+            remarks:       document.getElementById('remarks-input').value,
+            d500:0,d200:0,d100:0,d50:0,d20:0,d10:0,d5:0,d2:0,d1:0,
+            total: grandTotalRaw
+        };
+        document.querySelectorAll('.count-input').forEach(function(inp) {
+            var key = denomMap[inp.dataset.value];
+            if (key) data[key] = parseInt(inp.value) || 0;
+        });
+
+        var isUpdate = false;
+        if (editingRowIndex !== null) {
+            data.action   = 'update';
+            data.rowIndex = editingRowIndex;
+            data.date     = dateInput.value;
+            isUpdate      = true;
+        }
+
+        fetch(CONFIG.GOOGLE_SHEET_URL_DENOMINATIONS, { method:'POST', body:JSON.stringify(data), mode:'no-cors' })
+        .then(function() {
+            loader.classList.add('hidden');
+            saveBtn.disabled = false;
+            if (saveBtnM) saveBtnM.disabled = false;
+            localStorage.setItem('cashCounterData', JSON.stringify(data));
+            if (isUpdate) { window.pendingRedirect = 'denominationsreport.html'; showPopup('Success','Data updated successfully','success'); }
+            else          { window.pendingClear = true; showPopup('Success','Data saved successfully','success'); }
+        })
+        .catch(function(err) {
+            loader.classList.add('hidden');
+            saveBtn.disabled = false;
+            if (saveBtnM) saveBtnM.disabled = false;
+            showPopup('Error','Error sending data: ' + err.message,'error');
+        });
+    }
+
+    /* ── Calculator ─── */
+    var calcExpr = '';
+    function toggleCalculator() { document.getElementById('calculator-modal').classList.toggle('hidden'); }
+    function updateCalcUI() {
+        var ops = ['+','-','*','/'], si = -1;
+        for (var i = calcExpr.length-1; i >= 0; i--) { if (ops.indexOf(calcExpr[i]) !== -1) { si = i; break; } }
+        if (si !== -1) {
+            document.getElementById('calc-history').textContent = calcExpr.substring(0, si+1);
+            document.getElementById('calc-display').textContent = calcExpr.substring(si+1) || '0';
+        } else {
+            document.getElementById('calc-history').textContent = '';
+            document.getElementById('calc-display').textContent = calcExpr || '0';
+        }
+    }
+    function calcAppend(v) { if (!calcExpr && ['/','*','+'].indexOf(v) !== -1) return; calcExpr += v; updateCalcUI(); }
+    function calcClear()  { calcExpr = ''; document.getElementById('calc-history').textContent = ''; document.getElementById('calc-display').textContent = '0'; }
+    function calcDelete() { calcExpr = calcExpr.slice(0,-1); updateCalcUI(); }
+    function calcResult() {
+        try {
+            if (!calcExpr) return;
+            var expr = calcExpr;
+            while (expr && ['+','-','*','/'].indexOf(expr.slice(-1)) !== -1) expr = expr.slice(0,-1);
+            if (!expr) return;
+            var res = eval(expr);
+            document.getElementById('calc-history').textContent = expr + ' =';
+            document.getElementById('calc-display').textContent = res;
+            calcExpr = String(res);
+        } catch(e) { document.getElementById('calc-display').textContent = 'Error'; calcExpr = ''; }
+    }
+    document.addEventListener('keydown', function(e) {
+        if (document.getElementById('calculator-modal').classList.contains('hidden')) return;
+        if (/[0-9]/.test(e.key)) calcAppend(e.key);
+        else if (['+','-','*','/','.']. indexOf(e.key) !== -1) calcAppend(e.key);
+        else if (e.key === 'Enter' || e.key === '=') { e.preventDefault(); calcResult(); }
+        else if (e.key === 'Backspace') calcDelete();
+        else if (e.key === 'Escape')   toggleCalculator();
+        else if (e.key.toLowerCase() === 'c') calcClear();
+    });
+
+    function init() {
+        initDate();
+        renderDenominations();
+        ['week-expenses-input','adjust-amount-input','atm-withdrawal-input'].forEach(function(id) {
+            document.getElementById(id).addEventListener('input', calculate);
+        });
+        var edit = localStorage.getItem('editReportData');
+        if (edit) {
+            var d = JSON.parse(edit);
+            populateData(d);
+            editingRowIndex = d.rowIndex !== undefined ? d.rowIndex : null;
+            localStorage.removeItem('editReportData');
+        }
+        calculate();
+    }
+
+    init();
+</script>
 </body>
 </html>

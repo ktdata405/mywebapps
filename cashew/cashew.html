@@ -257,6 +257,9 @@
                 </div>
             </div>
             <div class="flex gap-3">
+                <button onclick="toggleCalculator()" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Calculator">
+                    <i class="fa-solid fa-calculator"></i>
+                </button>
                 <a href="cashewreport.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95">
                     <i class="fa-solid fa-chart-pie"></i>
                 </a>
@@ -376,6 +379,48 @@
             </div>
             <div class="progress-bar-container">
                 <div class="progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calculator Modal -->
+    <div id="calculator-modal" class="hidden fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50" tabindex="-1">
+        <div class="glass-panel p-6 rounded-2xl w-80 shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-calculator text-emerald-400 mr-2"></i>Calculator</h3>
+                <button onclick="toggleCalculator()" class="text-white/60 hover:text-red-400 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="bg-white/10 p-4 rounded-xl mb-4 text-right flex flex-col justify-end h-24">
+                <div id="calc-history" class="text-sm text-white/50 font-mono mb-1 h-6 overflow-hidden"></div>
+                <div id="calc-display" class="text-3xl font-mono text-white tracking-wider overflow-x-auto min-h-[2.5rem]">0</div>
+            </div>
+
+            <div class="grid grid-cols-4 gap-3">
+                <button onclick="calcClear()" class="col-span-2 p-3 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 font-bold transition">AC</button>
+                <button onclick="calcDelete()" class="p-3 rounded-lg bg-white/10 text-white hover:bg-white/20 font-bold transition"><i class="fa-solid fa-delete-left"></i></button>
+                <button onclick="calcAppend('/')" class="p-3 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 font-bold transition">÷</button>
+
+                <button onclick="calcAppend('7')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">7</button>
+                <button onclick="calcAppend('8')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">8</button>
+                <button onclick="calcAppend('9')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">9</button>
+                <button onclick="calcAppend('*')" class="p-3 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 font-bold transition">×</button>
+
+                <button onclick="calcAppend('4')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">4</button>
+                <button onclick="calcAppend('5')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">5</button>
+                <button onclick="calcAppend('6')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">6</button>
+                <button onclick="calcAppend('-')" class="p-3 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 font-bold transition">−</button>
+
+                <button onclick="calcAppend('1')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">1</button>
+                <button onclick="calcAppend('2')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">2</button>
+                <button onclick="calcAppend('3')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">3</button>
+                <button onclick="calcAppend('+')" class="p-3 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 font-bold transition">+</button>
+
+                <button onclick="calcAppend('0')" class="col-span-2 p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">0</button>
+                <button onclick="calcAppend('.')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">.</button>
+                <button onclick="calcResult()" class="p-3 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 font-bold transition">=</button>
             </div>
         </div>
     </div>
@@ -1022,6 +1067,106 @@
             }
             container.appendChild(grid);
         }
+
+
+        // Calculator Logic
+        let calcExpression = "";
+
+        function toggleCalculator() {
+            const modal = document.getElementById('calculator-modal');
+            const isHidden = modal.classList.toggle('hidden');
+
+            if (!isHidden) {
+                modal.focus();
+            }
+        }
+
+        function updateCalcUI() {
+            const display = document.getElementById('calc-display');
+            const history = document.getElementById('calc-history');
+
+            const operators = ['+', '-', '*', '/'];
+            let splitIndex = -1;
+
+            // Find last operator
+            for (let i = calcExpression.length - 1; i >= 0; i--) {
+                if (operators.includes(calcExpression[i])) {
+                    splitIndex = i;
+                    break;
+                }
+            }
+
+            if (splitIndex !== -1) {
+                history.textContent = calcExpression.substring(0, splitIndex + 1);
+                display.textContent = calcExpression.substring(splitIndex + 1);
+            } else {
+                history.textContent = "";
+                display.textContent = calcExpression || "0";
+            }
+        }
+
+        function calcAppend(val) {
+            if (calcExpression === "" && ["/", "*", "+"].includes(val)) return;
+            calcExpression += val;
+            updateCalcUI();
+        }
+
+        function calcClear() {
+            calcExpression = "";
+            document.getElementById('calc-history').textContent = "";
+            document.getElementById('calc-display').textContent = "0";
+        }
+
+        function calcDelete() {
+            calcExpression = calcExpression.slice(0, -1);
+            updateCalcUI();
+        }
+
+        function calcResult() {
+            try {
+                if (!calcExpression) return;
+
+                // Handle trailing operators by removing them
+                let expressionToEval = calcExpression;
+                const operators = ['+', '-', '*', '/'];
+                while (expressionToEval.length > 0 && operators.includes(expressionToEval.slice(-1))) {
+                    expressionToEval = expressionToEval.slice(0, -1);
+                }
+
+                if (!expressionToEval) return;
+
+                const result = eval(expressionToEval);
+                document.getElementById('calc-history').textContent = expressionToEval + " =";
+                document.getElementById('calc-display').textContent = result;
+                calcExpression = String(result);
+            } catch (e) {
+                document.getElementById('calc-display').textContent = "Error";
+                calcExpression = "";
+            }
+        }
+
+        // Keyboard support for calculator
+        document.addEventListener('keydown', function(event) {
+            const modal = document.getElementById('calculator-modal');
+            if (!modal || modal.classList.contains('hidden')) return;
+
+            const key = event.key;
+
+            if (/[0-9]/.test(key)) {
+                calcAppend(key);
+            } else if (['+', '-', '*', '/', '.'].includes(key)) {
+                calcAppend(key);
+            } else if (key === 'Enter' || key === '=') {
+                event.preventDefault();
+                calcResult();
+            } else if (key === 'Backspace') {
+                calcDelete();
+            } else if (key === 'Escape') {
+                toggleCalculator();
+            } else if (key === 'c' || key === 'C') {
+                calcClear();
+            }
+        });
 
         init();
     </script>
