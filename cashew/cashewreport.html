@@ -123,6 +123,9 @@
                     </div>
                 </div>
                 <div class="flex gap-3">
+                    <button onclick="toggleCalculator()" class="w-11 h-11 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Calculator">
+                        <i class="fa-solid fa-calculator"></i>
+                    </button>
                     <button onclick="openExportOptions()" class="w-11 h-11 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Export Data">
                         <i class="fa-solid fa-file-export"></i>
                     </button>
@@ -310,6 +313,48 @@
         </div>
     </div>
 
+    <!-- Calculator Modal -->
+    <div id="calculator-modal" class="hidden fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50" tabindex="-1">
+        <div class="glass-card p-6 rounded-2xl w-80 shadow-2xl border border-white/20 bg-slate-900/90">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-calculator text-emerald-400 mr-2"></i>Calculator</h3>
+                <button onclick="toggleCalculator()" class="text-white/60 hover:text-red-400 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="bg-white/10 p-4 rounded-xl mb-4 text-right flex flex-col justify-end h-24">
+                <div id="calc-history" class="text-sm text-white/50 font-mono mb-1 h-6 overflow-hidden"></div>
+                <div id="calc-display" class="text-3xl font-mono text-white tracking-wider overflow-x-auto min-h-[2.5rem]">0</div>
+            </div>
+
+            <div class="grid grid-cols-4 gap-3">
+                <button onclick="calcClear()" class="col-span-2 p-3 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 font-bold transition">AC</button>
+                <button onclick="calcDelete()" class="p-3 rounded-lg bg-white/10 text-white hover:bg-white/20 font-bold transition"><i class="fa-solid fa-delete-left"></i></button>
+                <button onclick="calcAppend('/')" class="p-3 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 font-bold transition">÷</button>
+
+                <button onclick="calcAppend('7')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">7</button>
+                <button onclick="calcAppend('8')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">8</button>
+                <button onclick="calcAppend('9')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">9</button>
+                <button onclick="calcAppend('*')" class="p-3 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 font-bold transition">×</button>
+
+                <button onclick="calcAppend('4')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">4</button>
+                <button onclick="calcAppend('5')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">5</button>
+                <button onclick="calcAppend('6')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">6</button>
+                <button onclick="calcAppend('-')" class="p-3 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 font-bold transition">−</button>
+
+                <button onclick="calcAppend('1')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">1</button>
+                <button onclick="calcAppend('2')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">2</button>
+                <button onclick="calcAppend('3')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">3</button>
+                <button onclick="calcAppend('+')" class="p-3 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 font-bold transition">+</button>
+
+                <button onclick="calcAppend('0')" class="col-span-2 p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">0</button>
+                <button onclick="calcAppend('.')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">.</button>
+                <button onclick="calcResult()" class="p-3 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 font-bold transition">=</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Export Options Modal -->
     <div id="export-options-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md transition-all p-4">
         <div class="glass-card rounded-3xl w-full max-w-lg flex flex-col shadow-2xl border border-white/10">
@@ -334,20 +379,47 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="flex items-center gap-3 px-1">
+                    <div class="relative flex items-center">
+                        <input type="checkbox" id="export-current-month-only" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-white/10 bg-white/5 checked:border-indigo-500 checked:bg-indigo-500 transition-all" onchange="toggleExportCurrentMonth()">
+                        <i class="fa-solid fa-check absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-xs opacity-0 peer-checked:opacity-100 pointer-events-none"></i>
+                    </div>
+                    <label for="export-current-month-only" class="text-sm text-gray-300 font-medium cursor-pointer select-none">Export Current Month Only</label>
+                </div>
+
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-[10px] uppercase tracking-wider text-gray-400 font-bold ml-1 mb-1.5 block" data-translate-key="month">Month</label>
+                        <label class="text-[10px] uppercase tracking-wider text-gray-400 font-bold ml-1 mb-1.5 block">From Month</label>
                         <div class="relative">
-                            <select id="export-month-select" class="w-full py-3 px-4 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-semibold text-sm input-field"></select>
+                            <select id="export-from-month-select" class="w-full py-3 px-4 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-semibold text-sm input-field"></select>
                             <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-500">
                                 <i class="fa-solid fa-chevron-down text-xs"></i>
                             </div>
                         </div>
                     </div>
                     <div>
-                        <label class="text-[10px] uppercase tracking-wider text-gray-400 font-bold ml-1 mb-1.5 block" data-translate-key="year">Year</label>
+                        <label class="text-[10px] uppercase tracking-wider text-gray-400 font-bold ml-1 mb-1.5 block">From Year</label>
                         <div class="relative">
-                            <select id="export-year-select" class="w-full py-3 px-4 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-semibold text-sm input-field"></select>
+                            <select id="export-from-year-select" class="w-full py-3 px-4 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-semibold text-sm input-field"></select>
+                            <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-500">
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase tracking-wider text-gray-400 font-bold ml-1 mb-1.5 block">To Month</label>
+                        <div class="relative">
+                            <select id="export-to-month-select" class="w-full py-3 px-4 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-semibold text-sm input-field"></select>
+                            <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-500">
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase tracking-wider text-gray-400 font-bold ml-1 mb-1.5 block">To Year</label>
+                        <div class="relative">
+                            <select id="export-to-year-select" class="w-full py-3 px-4 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-semibold text-sm input-field"></select>
                             <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-500">
                                 <i class="fa-solid fa-chevron-down text-xs"></i>
                             </div>
@@ -358,8 +430,8 @@
             <div class="p-6 border-t border-white/5 flex justify-end items-center gap-4">
                 <button onclick="closeExportOptions()" class="h-11 px-6 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white font-bold transition-all">Cancel</button>
                 <button onclick="startExportProcess()" class="h-11 px-8 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold flex items-center gap-2.5 transition-all shadow-lg shadow-indigo-600/25 active:scale-95">
-                    <span>Next: Preview</span>
-                    <i class="fa-solid fa-arrow-right"></i>
+                    <span data-translate-key="export">Export</span>
+                    <i class="fa-solid fa-file-export"></i>
                 </button>
             </div>
         </div>
@@ -1062,7 +1134,7 @@
         function openExportOptions() {
             const modal = document.getElementById('export-options-modal');
 
-            // Populate Categories
+            // Populate Categories and set default
             const categorySelect = document.getElementById('export-category-select');
             categorySelect.innerHTML = '<option value="All">All Categories</option>';
             const categories = new Set();
@@ -1076,33 +1148,90 @@
                 option.textContent = cat;
                 categorySelect.appendChild(option);
             });
-            categorySelect.value = 'Home'; // Default
+            categorySelect.value = 'Home'; // Default to Home
 
-            // Populate Month/Year
-            const monthSelect = document.getElementById('export-month-select');
-            const yearSelect = document.getElementById('export-year-select');
-            if (monthSelect.options.length === 0) { // Populate only once
-                monthSelect.innerHTML = '<option value="All">All Months</option>';
-                const mainMonthSelect = document.getElementById('month-select');
-                for (let i = 1; i < mainMonthSelect.options.length; i++) {
-                    monthSelect.add(mainMonthSelect.options[i].cloneNode(true));
-                }
-
-                yearSelect.innerHTML = '<option value="All">All Years</option>';
-                const mainYearSelect = document.getElementById('year-select');
-                for (let i = 0; i < mainYearSelect.options.length; i++) {
-                    yearSelect.add(mainYearSelect.options[i].cloneNode(true));
-                }
-            }
-
-            // Set defaults
-            const currentMonth = new Date().toLocaleString('default', { month: 'short' });
+            // Populate Month/Year selectors
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             const currentYear = new Date().getFullYear();
-            monthSelect.value = currentMonth;
-            yearSelect.value = String(currentYear);
+            const currentMonthIndex = new Date().getMonth();
+
+            const populateMonthSelect = (selectElementId) => {
+                const select = document.getElementById(selectElementId);
+                if (select.options.length > 1) return;
+                select.innerHTML = '';
+                months.forEach(month => {
+                    const option = document.createElement('option');
+                    option.value = month;
+                    option.textContent = month;
+                    select.appendChild(option);
+                });
+            };
+
+            const populateYearSelect = (selectElementId) => {
+                const select = document.getElementById(selectElementId);
+                if (select.options.length > 1) return;
+                select.innerHTML = '';
+                for (let year = currentYear + 5; year >= 2020; year--) {
+                    const option = document.createElement('option');
+                    option.value = String(year);
+                    option.textContent = String(year);
+                    select.appendChild(option);
+                }
+            };
+
+            populateMonthSelect('export-from-month-select');
+            populateYearSelect('export-from-year-select');
+            populateMonthSelect('export-to-month-select');
+            populateYearSelect('export-to-year-select');
+
+            // Pre-fill with current month and year
+            document.getElementById('export-from-month-select').value = months[currentMonthIndex];
+            document.getElementById('export-from-year-select').value = String(currentYear);
+            document.getElementById('export-to-month-select').value = months[currentMonthIndex];
+            document.getElementById('export-to-year-select').value = String(currentYear);
+
+            // Set checkbox to unchecked by default
+            const currentMonthCheckbox = document.getElementById('export-current-month-only');
+            currentMonthCheckbox.checked = false;
+
+            // Update UI based on checkbox state
+            toggleExportCurrentMonth();
 
             modal.classList.remove('hidden');
             modal.classList.add('flex');
+        }
+
+
+        function toggleExportCurrentMonth() {
+            const checkbox = document.getElementById('export-current-month-only');
+            const fromMonth = document.getElementById('export-from-month-select');
+            const fromYear = document.getElementById('export-from-year-select');
+            const toMonth = document.getElementById('export-to-month-select');
+            const toYear = document.getElementById('export-to-year-select');
+
+            const fields = [fromMonth, fromYear, toMonth, toYear];
+
+            if (checkbox.checked) {
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const now = new Date();
+                const currentMonthName = months[now.getMonth()];
+                const currentYearStr = String(now.getFullYear());
+
+                fromMonth.value = currentMonthName;
+                fromYear.value = currentYearStr;
+                toMonth.value = currentMonthName;
+                toYear.value = currentYearStr;
+
+                fields.forEach(el => {
+                    el.disabled = true;
+                    el.parentElement.classList.add('opacity-50', 'cursor-not-allowed');
+                });
+            } else {
+                fields.forEach(el => {
+                    el.disabled = false;
+                    el.parentElement.classList.remove('opacity-50', 'cursor-not-allowed');
+                });
+            }
         }
 
         function closeExportOptions() {
@@ -1117,8 +1246,10 @@
             loader.classList.remove('hidden');
 
             const category = document.getElementById('export-category-select').value;
-            const month = document.getElementById('export-month-select').value;
-            const year = document.getElementById('export-year-select').value;
+            const fromMonth = document.getElementById('export-from-month-select').value;
+            const fromYear = document.getElementById('export-from-year-select').value;
+            const toMonth = document.getElementById('export-to-month-select').value;
+            const toYear = document.getElementById('export-to-year-select').value;
 
             const url = `${CONFIG.GOOGLE_SHEET_URL_CASHEW}?fetchAll=true&t=${new Date().getTime()}`;
 
@@ -1126,7 +1257,7 @@
                 .then(response => response.json())
                 .then(response => {
                     loader.classList.add('hidden');
-                    generateExportContentAndPreview(response.data || [], category, month, year);
+                    generateExportContentAndPreview(response.data || [], category, fromMonth, fromYear, toMonth, toYear);
                 })
                 .catch(error => {
                     console.error('Error fetching export data:', error);
@@ -1195,15 +1326,15 @@
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            
+
             // Use Courier font to maintain the table-like alignment of the text report
             doc.setFont("Courier");
             doc.setFontSize(10);
-            
+
             const splitText = doc.splitTextToSize(exportableContent, 180);
             let y = 10;
             const pageHeight = doc.internal.pageSize.height;
-            
+
             splitText.forEach(line => {
                 if (y > pageHeight - 10) {
                     doc.addPage();
@@ -1212,141 +1343,247 @@
                 doc.text(line, 10, y);
                 y += 5;
             });
-            
+
             const pdfFilename = exportableFilename.replace('.txt', '.pdf');
             doc.save(pdfFilename);
         }
 
-        function generateExportContentAndPreview(dataForExport, categoryName, month, year) {
-            if (!dataForExport || dataForExport.length === 0) {
-                alert('No data available to export for the selected criteria.');
-                return;
+        function generateExportContentAndPreview(dataForExport, categoryName, fromMonth, fromYear, toMonth, toYear) {
+    if (!dataForExport || dataForExport.length === 0) {
+        alert('No data available to export for the selected criteria.');
+        return;
+    }
+
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const fromMonthIndex = months.indexOf(fromMonth);
+    const toMonthIndex = months.indexOf(toMonth);
+
+    const startDate = new Date(parseInt(fromYear), fromMonthIndex, 1);
+    const endDate = new Date(parseInt(toYear), toMonthIndex + 1, 0);
+
+    const filteredForPeriod = dataForExport.filter(item => {
+        const itemDate = new Date(item.date);
+        return itemDate >= startDate && itemDate <= endDate;
+    });
+
+    const expensesToExport = categoryName === 'All'
+        ? filteredForPeriod
+        : filteredForPeriod.filter(item => item.category && item.category.toLowerCase() === categoryName.toLowerCase());
+
+    if (expensesToExport.length === 0) {
+        alert(`No "${categoryName}" expenses found for the selected period.`);
+        return;
+    }
+
+    const groupedByMonthYear = expensesToExport.reduce((acc, item) => {
+        const itemDate = new Date(item.date);
+        const monthYearKey = `${months[itemDate.getMonth()]} ${itemDate.getFullYear()}`;
+        if (!acc[monthYearKey]) {
+            acc[monthYearKey] = {
+                items: [],
+                total: 0,
+                rawDate: new Date(itemDate.getFullYear(), itemDate.getMonth(), 1)
+            };
+        }
+        const amount = parseFloat(item.amount);
+        if (!isNaN(amount)) {
+            acc[monthYearKey].items.push(item);
+            acc[monthYearKey].total += amount;
+        }
+        return acc;
+    }, {});
+
+    const sortedMonthYearGroups = Object.keys(groupedByMonthYear).map(key => groupedByMonthYear[key])
+        .sort((a, b) => a.rawDate - b.rawDate);
+
+    const LINE_WIDTH = 70;
+    const lineSeparator = '='.repeat(LINE_WIDTH);
+    const subLineSeparator = '-'.repeat(LINE_WIDTH);
+
+    const periodLabel = `From ${fromMonth} ${fromYear} To ${toMonth} ${toYear}`;
+    const reportTitle = categoryName === 'All' ? 'ALL EXPENSES' : `${categoryName.toUpperCase()} EXPENSES`;
+
+    let grandTotal = 0;
+    sortedMonthYearGroups.forEach(monthGroup => grandTotal += monthGroup.total);
+
+    let textContent = '';
+    textContent += lineSeparator + '\n';
+    textContent += reportTitle.padStart(Math.floor((LINE_WIDTH + reportTitle.length) / 2)).padEnd(LINE_WIDTH) + '\n';
+    textContent += lineSeparator + '\n';
+    textContent += `Report for: ${periodLabel}`.padEnd(LINE_WIDTH) + '\n';
+    const grandTotalLabel = 'Grand Total: ';
+    const grandTotalValue = grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    textContent += `${grandTotalLabel}${grandTotalValue}\n`;
+    textContent += subLineSeparator + '\n';
+
+    sortedMonthYearGroups.forEach(monthGroup => {
+        const monthName = `${months[monthGroup.rawDate.getMonth()]} ${monthGroup.rawDate.getFullYear()}`;
+        const monthTotal = monthGroup.total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        textContent += `${monthName.padEnd(45)}: Rs. ${monthTotal}\n`;
+    });
+
+    textContent += subLineSeparator + '\n\n';
+
+    sortedMonthYearGroups.forEach(monthGroup => {
+        const monthYearHeader = `MONTH: ${months[monthGroup.rawDate.getMonth()]} ${monthGroup.rawDate.getFullYear()}`;
+        const monthTotalLabel = 'Monthly Total: ';
+        const monthTotalValue = monthGroup.total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        textContent += monthYearHeader + '\n';
+        textContent += `${monthTotalLabel}${monthTotalValue}\n`;
+        textContent += subLineSeparator + '\n';
+
+        const groupedByDate = monthGroup.items.reduce((acc, item) => {
+            const dateKey = formatDateToDDMMMYYYY(item.date);
+            if (!acc[dateKey]) {
+                acc[dateKey] = {
+                    items: [],
+                    rawDate: new Date(item.date)
+                };
             }
+            acc[dateKey].items.push(item);
+            return acc;
+        }, {});
 
-            // Filter data based on selections
-            const filteredForPeriod = dataForExport.filter(item => {
-                const dateStr = formatDateToDDMMMYYYY(item.date);
-                const parts = dateStr.split('/');
-                if (parts.length !== 3) return false;
-                
-                const itemMonth = parts[1];
-                const itemYear = parts[2];
+        const sortedDateGroups = Object.keys(groupedByDate).map(dateKey => groupedByDate[dateKey])
+            .sort((a, b) => a.rawDate - b.rawDate);
 
-                const yearMatch = (year === 'All') || (itemYear === year);
-                const monthMatch = (month === 'All') || (itemMonth === month);
-                
-                return yearMatch && monthMatch;
-            });
+        sortedDateGroups.forEach(dateGroup => {
+            const dateHeader = `  DATE: ${formatDateToDDMMMYYYY(dateGroup.rawDate)}`;
+            textContent += dateHeader + '\n';
 
-            const expensesToExport = categoryName === 'All' 
-                ? filteredForPeriod 
-                : filteredForPeriod.filter(item => item.category && item.category.toLowerCase() === categoryName.toLowerCase());
+            dateGroup.items.forEach(item => {
+                const description = item.description || 'No description';
+                const amount = parseFloat(item.amount);
+                const amountDisplay = !isNaN(amount) ? amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A';
+                const category = item.category || 'N/A';
 
-            if (expensesToExport.length === 0) {
-                alert(`No "${categoryName}" expenses found for the selected period.`);
-                return;
-            }
+                const categoryPart = `    Category: ${category}`;
+                const amountPart = `    Amount: Rs. ${amountDisplay}`;
+                const descPart = `    Description: ${description}`;
 
-            const groupedByDate = expensesToExport.reduce((acc, item) => {
-                const dateKey = formatDateToDDMMMYYYY(item.date);
-                if (!acc[dateKey]) {
-                    acc[dateKey] = {
-                        items: [],
-                        total: 0,
-                        rawDate: null
-                    };
-                }
-                acc[dateKey].items.push(item);
-                acc[dateKey].total += item.amount;
-                return acc;
-            }, {});
-
-            // Add rawDate for sorting and sort
-            const sortedGroups = Object.keys(groupedByDate).map(dateKey => {
-                const group = groupedByDate[dateKey];
-                let rawDateObj = new Date(group.items[0].date);
-                if (isNaN(rawDateObj.getTime())) {
-                    const parts = dateKey.split('/');
-                    if (parts.length === 3) {
-                        const day = parseInt(parts[0]);
-                        const monthStr = parts[1];
-                        const year = parseInt(parts[2]);
-                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                        const monthIndex = months.findIndex(m => m.toLowerCase() === monthStr.toLowerCase());
-                        if (monthIndex !== -1) rawDateObj = new Date(year, monthIndex, day);
-                    }
-                }
-                group.rawDate = rawDateObj;
-                group.dateKey = dateKey;
-                return group;
-            }).sort((a, b) => b.rawDate - a.rawDate);
-
-            // --- New Text Content Generation ---
-            const LINE_WIDTH = 70;
-            const lineSeparator = '='.repeat(LINE_WIDTH);
-            const subLineSeparator = '-'.repeat(LINE_WIDTH);
-
-            let period = 'All Time';
-            if (month !== 'All' && year !== 'All') period = `${month} ${year}`;
-            else if (month !== 'All') period = `All months of ${month}`;
-            else if (year !== 'All') period = `All of ${year}`;
-
-            const reportTitle = categoryName === 'All' ? 'ALL EXPENSES' : `${categoryName.toUpperCase()} EXPENSES`;
-
-            let grandTotal = 0;
-            sortedGroups.forEach(group => grandTotal += group.total);
-
-            let textContent = '';
-            textContent += lineSeparator + '\n';
-            textContent += reportTitle.padStart(Math.floor((LINE_WIDTH + reportTitle.length) / 2)).padEnd(LINE_WIDTH) + '\n';
-            textContent += lineSeparator + '\n';
-            textContent += `Month & Year : ${period}`.padEnd(LINE_WIDTH) + '\n';
-            const grandTotalLabel = 'Grand Total: ';
-            const grandTotalValue = grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            textContent += `${grandTotalLabel}${grandTotalValue}\n`;
-            textContent += subLineSeparator + '\n\n';
-
-            sortedGroups.forEach(group => {
-                const dateHeader = `DATE: ${group.dateKey}`;
-                textContent += `${dateHeader}\n`;
-                textContent += subLineSeparator + '\n';
-
-                group.items.forEach(item => {
-                    const description = item.description || 'No description';
-                    
-                    const descPrefix = '  ';
-                    const maxLineLength = LINE_WIDTH - descPrefix.length;
-                    
-                    let remainingDesc = description;
-                    if (remainingDesc.length === 0) textContent += descPrefix + '\n';
-
-                    while (remainingDesc.length > 0) {
-                        let chunk = remainingDesc.substring(0, maxLineLength);
-                        remainingDesc = remainingDesc.substring(maxLineLength);
-                        textContent += descPrefix + chunk + '\n';
-                    }
-                });
+                textContent += categoryPart + '\n';
+                textContent += amountPart + '\n';
+                textContent += descPart + '\n';
                 textContent += '\n';
             });
+        });
+        textContent += lineSeparator + '\n\n';
+    });
 
-            textContent += lineSeparator + '\n';
+    textContent += lineSeparator + '\n';
 
-            // --- Show Modal ---
-            exportableContent = textContent;
-            
-            let filename = `${categoryName.replace(' ', '_')}_Expenses_${month}_${year}.txt`;
-            if (month === 'All' || year === 'All') {
-                filename = 'Home_Expenses_All_Time.txt';
+    exportableContent = textContent;
+
+    let filename = `${categoryName.replace(' ', '_')}_Expenses_${fromMonth}${fromYear}_to_${toMonth}${toYear}.txt`;
+    exportableFilename = filename;
+
+    document.getElementById('export-content-preview').textContent = exportableContent;
+    document.getElementById('download-export-btn').onclick = triggerDownload;
+    document.getElementById('download-pdf-btn').onclick = triggerPdfDownload;
+    const modal = document.getElementById('export-preview-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+        // Calculator Logic
+        let calcExpression = "";
+
+        function toggleCalculator() {
+            const modal = document.getElementById('calculator-modal');
+            const isHidden = modal.classList.toggle('hidden');
+
+            if (!isHidden) {
+                modal.focus();
             }
-            exportableFilename = filename;
-
-            document.getElementById('export-content-preview').textContent = exportableContent;
-            document.getElementById('download-export-btn').onclick = triggerDownload;
-            document.getElementById('download-pdf-btn').onclick = triggerPdfDownload;
-            const modal = document.getElementById('export-preview-modal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
         }
+
+        function updateCalcUI() {
+            const display = document.getElementById('calc-display');
+            const history = document.getElementById('calc-history');
+
+            const operators = ['+', '-', '*', '/'];
+            let splitIndex = -1;
+
+            // Find last operator
+            for (let i = calcExpression.length - 1; i >= 0; i--) {
+                if (operators.includes(calcExpression[i])) {
+                    splitIndex = i;
+                    break;
+                }
+            }
+
+            if (splitIndex !== -1) {
+                history.textContent = calcExpression.substring(0, splitIndex + 1);
+                display.textContent = calcExpression.substring(splitIndex + 1);
+            } else {
+                history.textContent = "";
+                display.textContent = calcExpression || "0";
+            }
+        }
+
+        function calcAppend(val) {
+            if (calcExpression === "" && ["/", "*", "+"].includes(val)) return;
+            calcExpression += val;
+            updateCalcUI();
+        }
+
+        function calcClear() {
+            calcExpression = "";
+            document.getElementById('calc-history').textContent = "";
+            document.getElementById('calc-display').textContent = "0";
+        }
+
+        function calcDelete() {
+            calcExpression = calcExpression.slice(0, -1);
+            updateCalcUI();
+        }
+
+        function calcResult() {
+            try {
+                if (!calcExpression) return;
+
+                // Handle trailing operators by removing them
+                let expressionToEval = calcExpression;
+                const operators = ['+', '-', '*', '/'];
+                while (expressionToEval.length > 0 && operators.includes(expressionToEval.slice(-1))) {
+                    expressionToEval = expressionToEval.slice(0, -1);
+                }
+
+                if (!expressionToEval) return;
+
+                const result = eval(expressionToEval);
+                document.getElementById('calc-history').textContent = expressionToEval + " =";
+                document.getElementById('calc-display').textContent = result;
+                calcExpression = String(result);
+            } catch (e) {
+                document.getElementById('calc-display').textContent = "Error";
+                calcExpression = "";
+            }
+        }
+
+        // Keyboard support for calculator
+        document.addEventListener('keydown', function(event) {
+            const modal = document.getElementById('calculator-modal');
+            if (!modal || modal.classList.contains('hidden')) return;
+
+            const key = event.key;
+
+            if (/[0-9]/.test(key)) {
+                calcAppend(key);
+            } else if (['+', '-', '*', '/', '.'].includes(key)) {
+                calcAppend(key);
+            } else if (key === 'Enter' || key === '=') {
+                event.preventDefault();
+                calcResult();
+            } else if (key === 'Backspace') {
+                calcDelete();
+            } else if (key === 'Escape') {
+                toggleCalculator();
+            } else if (key === 'c' || key === 'C') {
+                calcClear();
+            }
+        });
 
         init();
     </script>
