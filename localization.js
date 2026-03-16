@@ -101,8 +101,8 @@ const translations = {
     // =============================================================================
     // FILE: denomination/denominations.html
     // =============================================================================
-    "denominationsTitle": "Denominations",
-    "denominations": "Denominations",
+    "denominationsTitle": "Denom's",
+    "denominations": "Denom's",
     "totalAmount": "Total Amount",
     "inWords": "In Words",
     "additionalDetails": "Additional Details",
