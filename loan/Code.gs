@@ -1,6 +1,7 @@
 // This code should be pasted into the Google Apps Script editor associated with your Google Sheet.
 
 const SHEET_NAME = 'Loan Details';
+const TRANSACTION_SHEET_NAME = 'Transactions';
 
 function doGet(e) {
   const action = e.parameter.action;
@@ -30,6 +31,8 @@ function doPost(e) {
       return getRepaymentStatus(data);
     } else if (action === 'updateRepaymentStatus') {
       return updateRepaymentStatus(data);
+    } else if (action === 'addTransaction') {
+      return addTransaction(data);
     }
 
     return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Invalid action' }))
@@ -41,13 +44,16 @@ function doPost(e) {
   }
 }
 
-function getSheet() {
+function getSheet(sheetName) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(SHEET_NAME);
+  let sheet = ss.getSheetByName(sheetName);
   if (!sheet) {
-    sheet = ss.insertSheet(SHEET_NAME);
-    // Initialize with new headers
-    sheet.appendRow(['ID', 'Date', 'Name', 'Amount', 'Interest Rate', 'Tenure', 'Type', 'Status', 'Remarks', 'Timestamp']);
+    sheet = ss.insertSheet(sheetName);
+    if (sheetName === SHEET_NAME) {
+      sheet.appendRow(['ID', 'Date', 'Name', 'Amount', 'Interest Rate', 'Tenure', 'Type', 'Status', 'Remarks', 'Timestamp']);
+    } else if (sheetName === TRANSACTION_SHEET_NAME) {
+      sheet.appendRow(['Transaction ID', 'Loan ID', 'Date', 'Amount', 'Type', 'Remarks', 'Timestamp']);
+    }
   }
   return sheet;
 }
@@ -72,52 +78,77 @@ function getHeaderMap(sheet) {
 }
 
 function addLoan(data) {
-  const sheet = getSheet();
+  const sheet = getSheet(SHEET_NAME);
   const headerMap = getHeaderMap(sheet);
 
   const timestamp = new Date();
   const id = Utilities.getUuid();
   const status = data.status || 'Active';
 
-  if (headerMap['ID'] === undefined) {
-     sheet.appendRow([
-       data.date,
-       data.name,
-       data.amount,
-       data.interestRate,
-       data.tenure || '',
-       data.type,
-       data.remarks || '',
-       timestamp
-     ]);
-  } else {
-     const lastCol = sheet.getLastColumn();
-     const row = new Array(lastCol).fill('');
+  const lastCol = sheet.getLastColumn();
+  const row = new Array(lastCol).fill('');
 
-     const setVal = (header, val) => {
-        if (headerMap[header] !== undefined) row[headerMap[header]] = val;
-     };
+  const setVal = (header, val) => {
+    if (headerMap[header] !== undefined) {
+      row[headerMap[header]] = val;
+    }
+  };
 
-     setVal('ID', id);
-     setVal('Date', data.date);
-     setVal('Name', data.name);
-     setVal('Amount', data.amount);
-     setVal('Interest Rate', data.interestRate);
-     setVal('Tenure', data.tenure || '');
-     setVal('Type', data.type);
-     setVal('Status', status);
-     setVal('Remarks', data.remarks || '');
-     setVal('Timestamp', timestamp);
+  setVal('ID', id);
+  setVal('Date', data.date);
+  setVal('Name', data.name);
+  setVal('Amount', data.amount);
+  setVal('Interest Rate', data.interestRate);
+  setVal('Tenure', data.tenure || '');
+  setVal('Type', data.type);
+  setVal('Status', status);
+  setVal('Remarks', data.remarks || '');
+  setVal('Timestamp', timestamp);
 
-     sheet.appendRow(row);
-  }
+  sheet.appendRow(row);
 
   return ContentService.createTextOutput(JSON.stringify({ status: 'success', message: 'Loan added successfully' }))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
+function addTransaction(data) {
+  const sheet = getSheet(TRANSACTION_SHEET_NAME);
+  const timestamp = new Date();
+  const transactionId = Utilities.getUuid();
+
+  sheet.appendRow([
+    transactionId,
+    data.loanId,
+    data.date,
+    data.amount,
+    data.type,
+    data.remarks || '',
+    timestamp
+  ]);
+
+  // If it's a full settlement, update the loan status to "Closed"
+  if (data.type === 'Full Settlement') {
+    const loanSheet = getSheet(SHEET_NAME);
+    const headerMap = getHeaderMap(loanSheet);
+    const idIndex = headerMap['ID'];
+    const statusIndex = headerMap['Status'];
+    const dataRange = loanSheet.getDataRange();
+    const values = dataRange.getValues();
+
+    for (let i = 1; i < values.length; i++) {
+      if (values[i][idIndex] === data.loanId) {
+        loanSheet.getRange(i + 1, statusIndex + 1).setValue('Closed');
+        break;
+      }
+    }
+  }
+
+  return ContentService.createTextOutput(JSON.stringify({ status: 'success', message: 'Transaction added successfully' }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
 function updateLoan(data) {
-  const sheet = getSheet();
+  const sheet = getSheet(SHEET_NAME);
   const headerMap = getHeaderMap(sheet);
 
   if (headerMap['ID'] === undefined) {
@@ -163,7 +194,7 @@ function updateLoan(data) {
 }
 
 function deleteLoan(data) {
-  const sheet = getSheet();
+  const sheet = getSheet(SHEET_NAME);
   const headerMap = getHeaderMap(sheet);
 
   if (headerMap['ID'] === undefined) return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Sheet incompatible' })).setMimeType(ContentService.MimeType.JSON);
@@ -188,29 +219,51 @@ function deleteLoan(data) {
 }
 
 function getLoans() {
-  const sheet = getSheet();
-  const data = sheet.getDataRange().getValues();
+  const loanSheet = getSheet(SHEET_NAME);
+  const loanData = loanSheet.getDataRange().getValues();
 
-  if (data.length < 2) {
+  if (loanData.length < 2) {
     return ContentService.createTextOutput(JSON.stringify({ status: 'success', data: [] })).setMimeType(ContentService.MimeType.JSON);
   }
 
-  const headers = data.shift();
-  const headerMap = {};
-  headers.forEach((h, i) => headerMap[h.toString().trim()] = i);
+  const loanHeaders = loanData.shift();
+  const loanHeaderMap = {};
+  loanHeaders.forEach((h, i) => loanHeaderMap[h.toString().trim()] = i);
 
-  const loans = data.map(row => {
+  // Get all transactions and calculate total paid for each loan
+  const transactionSheet = getSheet(TRANSACTION_SHEET_NAME);
+  const transactionData = transactionSheet.getDataRange().getValues();
+  const paidAmounts = {};
+  if (transactionData.length > 1) {
+    const transactionHeaders = transactionData.shift();
+    const transHeaderMap = {};
+    transactionHeaders.forEach((h, i) => transHeaderMap[h.toString().trim()] = i);
+    const loanIdIndex = transHeaderMap['Loan ID'];
+    const amountIndex = transHeaderMap['Amount'];
+
+    transactionData.forEach(row => {
+      const loanId = row[loanIdIndex];
+      const amount = parseFloat(row[amountIndex]) || 0;
+      if (loanId) {
+        paidAmounts[loanId] = (paidAmounts[loanId] || 0) + amount;
+      }
+    });
+  }
+
+  const loans = loanData.map(row => {
+    const loanId = row[loanHeaderMap['ID']];
     return {
-      id: headerMap['ID'] !== undefined ? row[headerMap['ID']] : ('temp_' + Math.random().toString(36).substr(2, 9)),
-      date: headerMap['Date'] !== undefined ? row[headerMap['Date']] : '',
-      name: headerMap['Name'] !== undefined ? row[headerMap['Name']] : '',
-      amount: headerMap['Amount'] !== undefined ? row[headerMap['Amount']] : 0,
-      interestRate: headerMap['Interest Rate'] !== undefined ? row[headerMap['Interest Rate']] : 0,
-      tenure: headerMap['Tenure'] !== undefined ? row[headerMap['Tenure']] : '',
-      type: headerMap['Type'] !== undefined ? row[headerMap['Type']] : '',
-      status: headerMap['Status'] !== undefined ? row[headerMap['Status']] : 'Active',
-      remarks: headerMap['Remarks'] !== undefined ? row[headerMap['Remarks']] : '',
-      timestamp: headerMap['Timestamp'] !== undefined ? row[headerMap['Timestamp']] : ''
+      id: loanId,
+      date: row[loanHeaderMap['Date']] || '',
+      name: row[loanHeaderMap['Name']] || '',
+      amount: row[loanHeaderMap['Amount']] || 0,
+      interestRate: row[loanHeaderMap['Interest Rate']] || 0,
+      tenure: row[loanHeaderMap['Tenure']] || '',
+      type: row[loanHeaderMap['Type']] || '',
+      status: row[loanHeaderMap['Status']] || 'Active',
+      remarks: row[loanHeaderMap['Remarks']] || '',
+      timestamp: row[loanHeaderMap['Timestamp']] || '',
+      paid: paidAmounts[loanId] || 0 // Add the paid amount
     };
   });
 

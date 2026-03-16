@@ -50,6 +50,9 @@ function handleFormSubmit(e) {
 
     fetch(SCRIPT_URL, {
         method: 'POST',
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+        },
         body: JSON.stringify(data)
     })
     .then(response => response.json())

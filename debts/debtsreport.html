@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0b0f19">
     <title data-translate-key="debtsAnalytics">Debts Analytics - KT Apps</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -39,9 +43,185 @@
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
+
+        /* ===== MOBILE RESPONSIVE IMPROVEMENTS ===== */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-text-size-adjust: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Safe area insets for notched devices */
+        body {
+            padding-top: env(safe-area-inset-top);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+            padding-bottom: calc(2.5rem + env(safe-area-inset-bottom));
+        }
+
+        button, a {
+            touch-action: manipulation;
+        }
+
+        /* Header safe area */
+        header {
+            padding-top: max(1rem, env(safe-area-inset-top));
+        }
+
+        @media (max-width: 640px) {
+            /* Header - reduce padding */
+            header.sticky { padding: 0.75rem 1rem; }
+
+            /* Title size */
+            h1.text-xl { font-size: 1rem !important; }
+
+            /* Header buttons touch targets */
+            header a.w-10.h-10,
+            header button.w-10.h-10 {
+                width: 44px !important;
+                height: 44px !important;
+            }
+
+            /* Summary cards - full width stack */
+            .grid.grid-cols-1.md\\:grid-cols-3 {
+                grid-template-columns: 1fr !important;
+                gap: 0.75rem !important;
+            }
+
+            /* Summary card values */
+            h3.text-2xl { font-size: 1.5rem !important; }
+            h3.text-3xl { font-size: 1.75rem !important; }
+
+            /* Charts grid - single column */
+            .grid.grid-cols-1.lg\\:grid-cols-2 {
+                grid-template-columns: 1fr !important;
+                gap: 1rem !important;
+            }
+
+            /* Chart height */
+            .relative.h-64 { height: 12rem !important; }
+
+            /* Top people list scroll */
+            .space-y-3.overflow-y-auto.max-h-64 {
+                max-height: 200px !important;
+            }
+
+            /* Main container padding */
+            main.max-w-5xl { padding: 0.75rem !important; }
+
+            /* Summary card padding */
+            .glass-panel.p-6.rounded-3xl { padding: 1rem !important; }
+
+            /* Card icon size */
+            .w-10.h-10.rounded-xl { width: 2.25rem !important; height: 2.25rem !important; }
+        }
+
+        @media (max-width: 768px) {
+            /* Charts grid on tablet */
+            .grid.grid-cols-1.lg\\:grid-cols-2 {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Ensure charts render properly on mobile */
+            canvas {
+                max-width: 100% !important;
+            }
+        }
+
+        /* iOS momentum scrolling */
+        .space-y-3.overflow-y-auto {
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Prevent chart overflow */
+        .relative.h-64.w-full {
+            overflow: hidden;
+        }
+
+        /* ===== MOBILE ENHANCEMENTS ===== */
+        .ptr-indicator {
+            position: fixed;
+            top: calc(env(safe-area-inset-top) + 0.5rem);
+            left: 50%;
+            transform: translateX(-50%) translateY(-80px);
+            background: #151a25;
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #94a3b8;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            z-index: 200;
+            transition: transform 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+        .ptr-indicator.visible { transform: translateX(-50%) translateY(0); }
+        .ptr-indicator.refreshing .ptr-icon { animation: ptr-spin 1s linear infinite; }
+        @keyframes ptr-spin { to { transform: rotate(360deg); } }
+
+        .kt-toast {
+            position: fixed;
+            bottom: calc(1.5rem + env(safe-area-inset-bottom));
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #151a25;
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #f8fafc;
+            padding: 0.75rem 1.25rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            z-index: 9999;
+            transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease;
+            opacity: 0;
+            white-space: nowrap;
+            max-width: 92vw;
+        }
+        .kt-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .kt-toast.success { border-color: rgba(16,185,129,0.5); }
+        .kt-toast.error { border-color: rgba(239,68,68,0.5); }
+
+        .kt-fab {
+            position: fixed;
+            bottom: calc(1.5rem + env(safe-area-inset-bottom));
+            right: max(1.25rem, env(safe-area-inset-right));
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: 0 8px 25px rgba(99,102,241,0.4);
+            cursor: pointer;
+            z-index: 40;
+            transition: transform 0.2s ease;
+            text-decoration: none;
+        }
+        .kt-fab:active { transform: scale(0.9); }
+        @media (min-width: 768px) { .kt-fab { display: none; } }
+
+        /* Summary card press animation */
+        @media (hover: none) {
+            .glass-panel.p-4:active { opacity: 0.85; transform: scale(0.99); }
+        }
+
+        /* Recharts / Chart.js canvas safe sizes */
+        canvas { touch-action: pan-y; }
     </style>
 </head>
-<body class="min-h-screen pb-10 relative overflow-x-hidden">
+<body class="min-h-screen pb-10 relative overflow-x-hidden" style="padding-bottom: calc(2.5rem + env(safe-area-inset-bottom));">
 
     <!-- Background Gradients -->
     <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
@@ -50,119 +230,119 @@
     </div>
 
     <!-- Header -->
-    <header class="sticky top-0 z-30 glass-panel border-b border-white/5 px-6 py-4 mb-8 backdrop-blur-xl bg-[#0b0f19]/80">
-        <div class="max-w-5xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 ring-4 ring-white/5">
-                    <i class="fa-solid fa-chart-pie text-white text-lg"></i>
+    <header class="sticky top-0 z-30 glass-panel border-b border-white/5 px-4 sm:px-6 py-3 sm:py-4 mb-5 sm:mb-8 backdrop-blur-xl bg-[#0b0f19]/80">
+        <div class="max-w-5xl mx-auto flex justify-between items-center gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 ring-4 ring-white/5 flex-shrink-0">
+                    <i class="fa-solid fa-chart-pie text-white text-base sm:text-lg"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight text-white leading-tight" data-translate-key="debtsAnalytics">Analytics</h1>
+                    <h1 class="text-base sm:text-xl font-bold tracking-tight text-white leading-tight" data-translate-key="debtsAnalytics">Analytics</h1>
                     <p class="text-xs text-gray-400 font-medium" data-translate-key="debtsOverview">Debts Overview</p>
                 </div>
             </div>
-            <div class="flex gap-3">
-                <a href="debts.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95">
+            <div class="flex gap-2 sm:gap-3">
+                <a href="debts.html" class="w-11 h-11 rounded-full bg-white/5 hover:bg-white/10 active:bg-white/20 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95">
                     <i class="fa-solid fa-plus"></i>
                 </a>
-                <a href="../index.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95">
+                <a href="../index.html" class="w-11 h-11 rounded-full bg-white/5 hover:bg-white/10 active:bg-white/20 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95">
                     <i class="fa-solid fa-house"></i>
                 </a>
             </div>
         </div>
     </header>
 
-    <main class="max-w-5xl mx-auto px-4">
+    <main class="max-w-5xl mx-auto px-3 sm:px-4">
 
         <!-- Summary Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div class="glass-panel p-6 rounded-3xl border border-white/5 relative overflow-hidden group">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <div class="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-white/5 relative overflow-hidden group">
                 <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                     <i class="fa-solid fa-arrow-trend-up text-5xl text-emerald-500"></i>
                 </div>
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
-                        <i class="fa-solid fa-hand-holding-dollar"></i>
+                <div class="flex items-center gap-3 mb-2 sm:mb-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20 flex-shrink-0">
+                        <i class="fa-solid fa-hand-holding-dollar text-sm sm:text-base"></i>
                     </div>
                     <div>
                         <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold" data-translate-key="totalLentReport">Total Lent</p>
-                        <p class="text-xs text-gray-400" data-translate-key="moneyYouWillReceive">Money you'll receive</p>
+                        <p class="text-xs text-gray-400 hidden sm:block" data-translate-key="moneyYouWillReceive">Money you'll receive</p>
                     </div>
                 </div>
-                <h3 class="text-3xl font-bold text-emerald-400 font-mono tracking-tight" id="total-lent">₹0</h3>
+                <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-emerald-400 font-mono tracking-tight" id="total-lent">₹0</h3>
             </div>
 
-            <div class="glass-panel p-6 rounded-3xl border border-white/5 relative overflow-hidden group">
+            <div class="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-white/5 relative overflow-hidden group">
                 <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                     <i class="fa-solid fa-arrow-trend-down text-5xl text-rose-500"></i>
                 </div>
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center border border-rose-500/20">
-                        <i class="fa-solid fa-hand-holding-hand"></i>
+                <div class="flex items-center gap-3 mb-2 sm:mb-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center border border-rose-500/20 flex-shrink-0">
+                        <i class="fa-solid fa-hand-holding-hand text-sm sm:text-base"></i>
                     </div>
                     <div>
                         <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold" data-translate-key="totalBorrowedReport">Total Borrowed</p>
-                        <p class="text-xs text-gray-400" data-translate-key="moneyYouOwe">Money you owe</p>
+                        <p class="text-xs text-gray-400 hidden sm:block" data-translate-key="moneyYouOwe">Money you owe</p>
                     </div>
                 </div>
-                <h3 class="text-3xl font-bold text-rose-400 font-mono tracking-tight" id="total-borrowed">₹0</h3>
+                <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-rose-400 font-mono tracking-tight" id="total-borrowed">₹0</h3>
             </div>
 
-            <div class="glass-panel p-6 rounded-3xl border border-white/5 relative overflow-hidden group">
+            <div class="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-white/5 relative overflow-hidden group">
                 <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                     <i class="fa-solid fa-wallet text-5xl text-indigo-500"></i>
                 </div>
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20">
-                        <i class="fa-solid fa-scale-balanced"></i>
+                <div class="flex items-center gap-3 mb-2 sm:mb-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20 flex-shrink-0">
+                        <i class="fa-solid fa-scale-balanced text-sm sm:text-base"></i>
                     </div>
                     <div>
                         <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold" data-translate-key="netBalanceReport">Net Balance</p>
-                        <p class="text-xs text-gray-400" data-translate-key="overallPosition">Overall position</p>
+                        <p class="text-xs text-gray-400 hidden sm:block" data-translate-key="overallPosition">Overall position</p>
                     </div>
                 </div>
-                <h3 class="text-3xl font-bold text-indigo-400 font-mono tracking-tight" id="net-balance">₹0</h3>
+                <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-indigo-400 font-mono tracking-tight" id="net-balance">₹0</h3>
             </div>
         </div>
 
         <!-- Charts Area -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
             <!-- Distribution Chart -->
-            <div class="glass-panel p-6 rounded-3xl border border-white/5 flex flex-col">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-bold text-white" data-translate-key="debtDistribution">Debt Distribution</h3>
+            <div class="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-white/5 flex flex-col">
+                <div class="flex items-center justify-between mb-4 sm:mb-6">
+                    <h3 class="text-base sm:text-lg font-bold text-white" data-translate-key="debtDistribution">Debt Distribution</h3>
                     <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
                         <i class="fa-solid fa-chart-pie text-gray-400 text-xs"></i>
                     </div>
                 </div>
-                <div class="relative h-64 w-full flex items-center justify-center">
+                <div class="relative h-48 sm:h-64 w-full flex items-center justify-center">
                     <canvas id="distributionChart"></canvas>
                 </div>
             </div>
 
             <!-- Top People List -->
-            <div class="glass-panel p-6 rounded-3xl border border-white/5 flex flex-col">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-bold text-white" data-translate-key="topActiveAccounts">Top Active Accounts</h3>
+            <div class="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-white/5 flex flex-col">
+                <div class="flex items-center justify-between mb-4 sm:mb-6">
+                    <h3 class="text-base sm:text-lg font-bold text-white" data-translate-key="topActiveAccounts">Top Active Accounts</h3>
                     <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
                         <i class="fa-solid fa-users text-gray-400 text-xs"></i>
                     </div>
                 </div>
-                <div class="space-y-3 overflow-y-auto max-h-64 pr-2 custom-scrollbar" id="top-people-list">
+                <div class="space-y-2 sm:space-y-3 overflow-y-auto max-h-48 sm:max-h-64 pr-1 sm:pr-2" id="top-people-list">
                     <!-- Populated by JS -->
                 </div>
             </div>
         </div>
 
         <!-- Monthly Trend -->
-        <div class="glass-panel p-6 rounded-3xl border border-white/5 mb-8">
-             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-bold text-white"><span data-translate-key="monthlyActivity">Monthly Activity</span> <span class="text-xs font-normal text-gray-500 ml-2" data-translate-key="last6Months">(Last 6 Months)</span></h3>
+        <div class="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-white/5 mb-6 sm:mb-8">
+             <div class="flex items-center justify-between mb-4 sm:mb-6">
+                <h3 class="text-base sm:text-lg font-bold text-white"><span data-translate-key="monthlyActivity">Monthly Activity</span> <span class="text-xs font-normal text-gray-500 ml-2" data-translate-key="last6Months">(Last 6 Months)</span></h3>
                 <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
                     <i class="fa-solid fa-chart-column text-gray-400 text-xs"></i>
                 </div>
             </div>
-            <div class="relative h-64 w-full">
+            <div class="relative h-48 sm:h-64 w-full">
                 <canvas id="trendChart"></canvas>
             </div>
         </div>
@@ -194,10 +374,10 @@
         netEl.textContent = `₹${Math.abs(netBalance).toLocaleString('en-IN')}`;
 
         if (netBalance >= 0) {
-            netEl.className = 'text-3xl font-bold text-emerald-400 font-mono tracking-tight';
+            netEl.className = 'text-2xl sm:text-3xl font-bold text-emerald-400 font-mono tracking-tight';
             netEl.textContent = '+ ' + netEl.textContent;
         } else {
-            netEl.className = 'text-3xl font-bold text-rose-400 font-mono tracking-tight';
+            netEl.className = 'text-2xl sm:text-3xl font-bold text-rose-400 font-mono tracking-tight';
             netEl.textContent = '- ' + netEl.textContent;
         }
 
@@ -403,6 +583,54 @@
             }
         });
 
+    // ===== MOBILE ENHANCEMENTS =====
+    window.showToast = function(msg, type = 'success', duration = 2800) {
+        let toast = document.getElementById('kt-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'kt-toast';
+            toast.className = 'kt-toast';
+            document.body.appendChild(toast);
+        }
+        const icon = type === 'success' ? '✓' : '✕';
+        const color = type === 'success' ? '#34d399' : '#f87171';
+        toast.innerHTML = `<span style="color:${color};font-size:1rem;">${icon}</span> ${msg}`;
+        toast.className = `kt-toast ${type}`;
+        requestAnimationFrame(() => toast.classList.add('show'));
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(() => toast.classList.remove('show'), duration);
+    };
+
+    // Pull-to-refresh (page reload)
+    (function() {
+        const ptr = document.createElement('div');
+        ptr.className = 'ptr-indicator';
+        ptr.innerHTML = '<i class="fa-solid fa-arrows-rotate ptr-icon"></i><span class="ptr-text">Pull to refresh</span>';
+        document.body.appendChild(ptr);
+        let startY = 0, pulling = false;
+        document.addEventListener('touchstart', e => { if (window.scrollY === 0) { startY = e.touches[0].clientY; pulling = true; } }, { passive: true });
+        document.addEventListener('touchmove', e => {
+            if (!pulling) return;
+            const dy = e.touches[0].clientY - startY;
+            if (dy > 30) { ptr.classList.add('visible'); ptr.querySelector('.ptr-text').textContent = dy > 80 ? 'Release to refresh' : 'Pull to refresh'; }
+        }, { passive: true });
+        document.addEventListener('touchend', e => {
+            if (!pulling) return; pulling = false;
+            const dy = e.changedTouches[0].clientY - startY;
+            if (dy > 80) {
+                ptr.classList.add('refreshing'); ptr.querySelector('.ptr-text').textContent = 'Refreshing…';
+                if (navigator.vibrate) navigator.vibrate(30);
+                setTimeout(() => location.reload(), 400);
+            } else ptr.classList.remove('visible');
+        }, { passive: true });
+    })();
+
     </script>
+
+<!-- FAB -->
+<a href="debts.html" class="kt-fab" title="Add Debt" aria-label="Add Debt">
+    <i class="fa-solid fa-plus"></i>
+</a>
+
 </body>
 </html>

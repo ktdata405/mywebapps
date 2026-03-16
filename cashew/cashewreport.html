@@ -3,7 +3,11 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0b0f19">
     <title data-translate-key="cashewReportTitle">Cashew Report - Expense Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -89,6 +93,7 @@
         footer {
             text-align: center;
             padding: 24px;
+            padding-bottom: calc(24px + env(safe-area-inset-bottom));
             border-top: 1px solid rgba(255,255,255,0.05);
             color: #94a3b8;
             font-size: 0.875rem;
@@ -97,10 +102,205 @@
         footer b {
             color: #f8fafc;
         }
+
+        /* ===== MOBILE RESPONSIVE IMPROVEMENTS ===== */
+
+        /* Safe area padding for notched devices */
+        body {
+            padding-top: env(safe-area-inset-top);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+
+        /* Touch-friendly tap targets - minimum 44px */
+        button, a, [role="button"] {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        /* Sticky header on mobile - full width */
+        @media (max-width: 640px) {
+            .sticky.top-4 {
+                top: 0 !important;
+                border-radius: 0 !important;
+                margin-left: -1rem;
+                margin-right: -1rem;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            /* Better font sizes on mobile */
+            h1.text-2xl { font-size: 1.25rem !important; }
+
+            /* Summary numbers more readable */
+            #total-expenses-display,
+            #available-balance-display {
+                font-size: 1rem !important;
+            }
+
+            /* Stack header actions properly */
+            .glass-card.rounded-3xl.p-6.mb-8 .flex.gap-3 {
+                gap: 0.5rem !important;
+            }
+
+            /* Make select dropdowns full-width on mobile */
+            select.input-field {
+                font-size: 16px !important; /* Prevents iOS zoom on focus */
+            }
+
+            input.input-field {
+                font-size: 16px !important; /* Prevents iOS zoom on focus */
+            }
+
+            /* Category grid - 2 columns on mobile */
+            #category-summary-grid {
+                grid-template-columns: 1fr 1fr !important;
+            }
+
+            /* Export modal - full height on mobile */
+            #export-options-modal .glass-card {
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+
+            /* Calculator modal - full screen on mobile */
+            #calculator-modal .glass-card.p-6.rounded-2xl.w-80 {
+                width: 95vw !important;
+                max-width: 95vw !important;
+                margin: 0.5rem;
+            }
+        }
+
+        /* Medium mobile (641px - 768px) */
+        @media (max-width: 768px) {
+            /* Reduce padding on mobile */
+            .p-4.md\\:p-8 {
+                padding: 0.75rem;
+            }
+
+            /* Make filter row stack nicely */
+            .grid.grid-cols-2.sm\\:flex {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            /* Accordion items touch-friendly */
+            #report-body > div {
+                border-radius: 1rem !important;
+            }
+
+            /* Loader modal responsive */
+            #loader .glass-card {
+                width: 90%;
+                max-width: 320px;
+            }
+        }
+
+        /* iOS momentum scrolling */
+        #report-body-container {
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Prevent horizontal scroll */
+        .max-w-6xl {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* Better touch scroll for category grid */
+        #category-summary-content {
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Pull-to-refresh visual hint */
+        @supports (-webkit-touch-callout: none) {
+            /* iOS specific styles */
+            .glass-card.rounded-3xl.p-6.mb-8.flex.flex-col {
+                padding-top: max(1.5rem, env(safe-area-inset-top));
+            }
+        }
+
+        /* ===== MOBILE ENHANCEMENT STYLES ===== */
+        .ptr-indicator {
+            position: fixed;
+            top: calc(env(safe-area-inset-top) + 0.5rem);
+            left: 50%;
+            transform: translateX(-50%) translateY(-80px);
+            background: rgba(21,26,37,0.97);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #94a3b8;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            z-index: 200;
+            transition: transform 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+        .ptr-indicator.visible { transform: translateX(-50%) translateY(0); }
+        .ptr-indicator.refreshing .ptr-icon { animation: ptr-spin 1s linear infinite; }
+        @keyframes ptr-spin { to { transform: rotate(360deg); } }
+
+        .kt-toast {
+            position: fixed;
+            bottom: calc(1.5rem + env(safe-area-inset-bottom));
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: rgba(21,26,37,0.97);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #f8fafc;
+            padding: 0.75rem 1.25rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            z-index: 9999;
+            transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease;
+            opacity: 0;
+            white-space: nowrap;
+            max-width: 92vw;
+        }
+        .kt-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .kt-toast.success { border-color: rgba(16,185,129,0.5); }
+        .kt-toast.error { border-color: rgba(239,68,68,0.5); }
+
+        .kt-fab {
+            position: fixed;
+            bottom: calc(1.5rem + env(safe-area-inset-bottom));
+            right: max(1.25rem, env(safe-area-inset-right));
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #ec4899, #f43f5e);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: 0 8px 25px rgba(236,72,153,0.4);
+            cursor: pointer;
+            z-index: 40;
+            transition: transform 0.2s ease;
+            text-decoration: none;
+        }
+        .kt-fab:active { transform: scale(0.9); }
+        @media (min-width: 768px) { .kt-fab { display: none; } }
+
+        /* Touch feedback on accordion rows */
+        @media (hover: none) {
+            #report-body > div:active { opacity: 0.85; }
+        }
     </style>
 </head>
 
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col pb-safe">
 
     <div class="bg-animation">
         <div class="orb orb-1"></div>
@@ -265,12 +465,12 @@
                             <div class="flex items-center gap-4 text-sm text-gray-400">
                                 <div class="flex items-center gap-2">
                                     <span class="font-medium" data-translate-key="total">Total:</span>
-                                    <span id="total-expenses-display" class="font-bold text-pink-400 font-mono text-base">Rs. 0.00</span>
+                                    <span id="total-expenses-display" class="font-bold text-pink-400 font-mono text-base sm:text-lg">Rs. 0.00</span>
                                 </div>
                                 <div class="w-px h-4 bg-white/10"></div>
                                 <div id="available-balance-container" class="flex items-center gap-2">
                                     <span class="font-medium" data-translate-key="available">Available:</span>
-                                    <span id="available-balance-display" class="font-bold text-emerald-400 font-mono text-base">Rs. 0.00</span>
+                                    <span id="available-balance-display" class="font-bold text-emerald-400 font-mono text-base sm:text-lg">Rs. 0.00</span>
                                 </div>
                             </div>
                         </div>
@@ -427,7 +627,7 @@
                     </div>
                 </div>
             </div>
-            <div class="p-6 border-t border-white/5 flex justify-end items-center gap-4">
+            <div class="p-6 border-t border-white/5 flex-shrink-0 flex justify-end items-center gap-4">
                 <button onclick="closeExportOptions()" class="h-11 px-6 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white font-bold transition-all">Cancel</button>
                 <button onclick="startExportProcess()" class="h-11 px-8 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold flex items-center gap-2.5 transition-all shadow-lg shadow-indigo-600/25 active:scale-95">
                     <span data-translate-key="export">Export</span>
@@ -1418,8 +1618,11 @@
 
     sortedMonthYearGroups.forEach(monthGroup => {
         const monthName = `${months[monthGroup.rawDate.getMonth()]} ${monthGroup.rawDate.getFullYear()}`;
+        const monthBalance = monthlyBalances[monthName] || 0; // Get monthly balance
         const monthTotal = monthGroup.total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        textContent += `${monthName.padEnd(45)}: Rs. ${monthTotal}\n`;
+        const monthBalanceDisplay = monthBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        textContent += `${monthName.padEnd(20)} Expenses: Rs. ${monthTotal.padEnd(15)} Available: Rs. ${monthBalanceDisplay}\n`;
     });
 
     textContent += subLineSeparator + '\n\n';
@@ -1566,27 +1769,97 @@
         document.addEventListener('keydown', function(event) {
             const modal = document.getElementById('calculator-modal');
             if (!modal || modal.classList.contains('hidden')) return;
-
             const key = event.key;
-
-            if (/[0-9]/.test(key)) {
-                calcAppend(key);
-            } else if (['+', '-', '*', '/', '.'].includes(key)) {
-                calcAppend(key);
-            } else if (key === 'Enter' || key === '=') {
-                event.preventDefault();
-                calcResult();
-            } else if (key === 'Backspace') {
-                calcDelete();
-            } else if (key === 'Escape') {
-                toggleCalculator();
-            } else if (key === 'c' || key === 'C') {
-                calcClear();
-            }
+            if (/[0-9]/.test(key)) { calcAppend(key); }
+            else if (['+', '-', '*', '/', '.'].includes(key)) { calcAppend(key); }
+            else if (key === 'Enter' || key === '=') { event.preventDefault(); calcResult(); }
+            else if (key === 'Backspace') { calcDelete(); }
+            else if (key === 'Escape') { toggleCalculator(); }
+            else if (key === 'c' || key === 'C') { calcClear(); }
         });
 
         init();
+
+        // ===== MOBILE ENHANCEMENTS =====
+        function showToast(msg, type = 'success', duration = 2800) {
+            let toast = document.getElementById('kt-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'kt-toast';
+                document.body.appendChild(toast);
+            }
+            const icon = type === 'success' ? '✓' : '✕';
+            const color = type === 'success' ? '#34d399' : '#f87171';
+            toast.innerHTML = `<span style="color:${color};font-size:1rem;">${icon}</span> ${msg}`;
+            toast.className = `kt-toast ${type}`;
+            requestAnimationFrame(() => toast.classList.add('show'));
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => toast.classList.remove('show'), duration);
+        }
+
+        // Pull-to-refresh
+        (function() {
+            const ptr = document.createElement('div');
+            ptr.className = 'ptr-indicator';
+            ptr.innerHTML = '<i class="fa-solid fa-arrows-rotate ptr-icon"></i><span class="ptr-text">Pull to refresh</span>';
+            document.body.appendChild(ptr);
+            let startY = 0, pulling = false;
+            document.addEventListener('touchstart', e => { if (window.scrollY === 0) { startY = e.touches[0].clientY; pulling = true; } }, { passive: true });
+            document.addEventListener('touchmove', e => {
+                if (!pulling) return;
+                const dy = e.touches[0].clientY - startY;
+                if (dy > 30) { ptr.classList.add('visible'); ptr.querySelector('.ptr-text').textContent = dy > 80 ? 'Release to refresh' : 'Pull to refresh'; }
+            }, { passive: true });
+            document.addEventListener('touchend', e => {
+                if (!pulling) return; pulling = false;
+                const dy = e.changedTouches[0].clientY - startY;
+                if (dy > 80) {
+                    ptr.classList.add('refreshing'); ptr.querySelector('.ptr-text').textContent = 'Refreshing…';
+                    if (navigator.vibrate) navigator.vibrate(30);
+                    // trigger data refresh (call init or loadData equivalent)
+                    init();
+                    setTimeout(() => ptr.classList.remove('visible', 'refreshing'), 1200);
+                } else ptr.classList.remove('visible');
+            }, { passive: true });
+        })();
+
+        // Swipe down to close calculator modal
+        (function() {
+            const modal = document.getElementById('calculator-modal');
+            if (!modal) return;
+            let startY = 0;
+            modal.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
+            modal.addEventListener('touchend', e => {
+                if (e.changedTouches[0].clientY - startY > 80) toggleCalculator();
+            }, { passive: true });
+        })();
+
+        // Swipe down to close export modal
+        (function() {
+            const modal = document.getElementById('export-options-modal');
+            if (!modal) return;
+            let startY = 0;
+            modal.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
+            modal.addEventListener('touchend', e => {
+                if (e.changedTouches[0].clientY - startY > 80) {
+                    modal.classList.add('hidden');
+                }
+            }, { passive: true });
+        })();
+
+        // Haptic feedback on accordion open
+        document.addEventListener('click', e => {
+            const accordion = e.target.closest('[onclick*="toggle"]');
+            if (accordion && navigator.vibrate) navigator.vibrate(10);
+        });
+
     </script>
+
+<!-- FAB -->
+<a href="cashew.html" class="kt-fab" title="Add Expense" aria-label="Add Expense">
+    <i class="fa-solid fa-plus"></i>
+</a>
+
 </body>
 
 </html>
