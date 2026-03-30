@@ -148,31 +148,6 @@
             z-index: 2;
         }
 
-        /* New Progress Bar Styles */
-        .progress-bar-container {
-            width: 80%;
-            max-width: 300px;
-            height: 8px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--accent));
-            border-radius: 4px;
-            animation: progress-indeterminate 2s infinite ease-in-out;
-            transform-origin: left;
-        }
-
-        @keyframes progress-indeterminate {
-            0% { transform: translateX(-100%) scaleX(0.5); }
-            50% { transform: translateX(0) scaleX(0.3); }
-            100% { transform: translateX(100%) scaleX(0.5); }
-        }
-
         /* Popup Styles */
         .popup-overlay {
             position: fixed;
@@ -217,23 +192,7 @@
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px;
-            font-size: 24px;
-        }
-
-        .popup-success .popup-icon {
-            background: rgba(16, 185, 129, 0.2);
-            color: #34d399;
-        }
-
-        .popup-error .popup-icon {
-            background: rgba(239, 68, 68, 0.2);
-            color: #f87171;
-        }
-    </style>
+            display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 24px; } .popup-success .popup-icon { background: rgba(16, 185, 129, 0.2); color: #34d399; } .popup-error .popup-icon { background: rgba(239, 68, 68, 0.2); color: #f87171; } </style>
 </head>
 
 <body class="min-h-screen pb-40 relative overflow-x-hidden">
@@ -368,18 +327,12 @@
     </div>
 
     <!-- Loader -->
-    <div id="loader" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-all">
-        <div class="glass-panel p-8 rounded-3xl flex flex-col items-center gap-6 shadow-2xl w-[90%] max-w-sm">
-            <div class="flex items-center justify-center gap-3 w-full">
-                <i class="fa-solid fa-cloud-arrow-up text-indigo-400 text-2xl"></i>
-                <div class="text-center">
-                    <h3 id="loader-title" class="text-white font-bold text-lg" data-translate-key="savingData">Saving Data</h3>
-                    <p id="loader-message" class="text-gray-400 text-sm mt-1" data-translate-key="syncingWithGoogleSheets">Syncing with Google Sheets...</p>
-                </div>
+    <div id="loader" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all">
+        <div class="flex flex-col items-center gap-4">
+            <div class="animate-spin">
+                <i class="fa-solid fa-circle-notch text-5xl text-emerald-400"></i>
             </div>
-            <div class="progress-bar-container">
-                <div class="progress-bar"></div>
-            </div>
+            <p id="loader-text" class="text-white font-medium tracking-wide text-lg"></p>
         </div>
     </div>
 
@@ -511,6 +464,7 @@
     <script>
         let isEditMode = false;
         let originalDate = null;
+        let popupTimer = null;
 
         /**
          * Reliably parses a date string from formats like 'YYYY-MM-DD' or 'dd/MMM/yyyy'.
@@ -600,11 +554,9 @@
 
         function fetchDataForDate(dateString) {
             const loader = document.getElementById('loader');
-            const loaderTitle = document.getElementById('loader-title');
-            const loaderMessage = document.getElementById('loader-message');
+            const loaderText = document.getElementById('loader-text');
 
-            loaderTitle.textContent = 'Fetching Data';
-            loaderMessage.textContent = 'Please wait...';
+            loaderText.textContent = (typeof translations !== 'undefined' && translations['fetchingData']) || 'Fetching Data';
             loader.classList.remove('hidden');
 
             const formattedDate = formatDateToDDMMMYYYY(dateString);
@@ -847,6 +799,8 @@
 
         // Popup Functions
         function showPopup(title, message, type = 'success') {
+            if (popupTimer) clearTimeout(popupTimer);
+
             const popup = document.getElementById('custom-popup');
             const titleEl = document.getElementById('popup-title');
             const messageEl = document.getElementById('popup-message');
@@ -861,6 +815,8 @@
             if (type === 'success') {
                 popup.classList.add('popup-success');
                 iconContainer.innerHTML = '<i class="fa-solid fa-check"></i>';
+                // Auto-dismiss after 5 seconds for success popups
+                popupTimer = setTimeout(closePopup, 5000);
             } else {
                 popup.classList.add('popup-error');
                 iconContainer.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
@@ -870,30 +826,28 @@
         }
 
         function closePopup() {
+            if (popupTimer) {
+                clearTimeout(popupTimer);
+                popupTimer = null;
+            }
+
             const popup = document.getElementById('custom-popup');
             popup.classList.remove('active');
 
-            // If we were updating, redirect after closing
-            if (window.pendingRedirect) {
-                window.location.href = window.pendingRedirect;
-                window.pendingRedirect = null;
-            }
-
-            // If we were clearing, do it now
+            // If we were updating or saving, clear and advance
             if (window.pendingClear) {
                 clearAll();
                 window.pendingClear = false;
+                changeDate(1); // Move to next day
             }
         }
 
         function saveData() {
             const loader = document.getElementById('loader');
-            const loaderTitle = document.getElementById('loader-title');
-            const loaderMessage = document.getElementById('loader-message');
+            const loaderText = document.getElementById('loader-text');
             const saveBtn = document.getElementById('save-btn');
 
-            loaderTitle.textContent = 'Saving Data';
-            loaderMessage.textContent = 'Syncing with Google Sheets...';
+            loaderText.textContent = (typeof translations !== 'undefined' && translations['savingData']) || 'Saving Data';
             loader.classList.remove('hidden');
             saveBtn.disabled = true;
 
@@ -950,13 +904,11 @@
                 loader.classList.add('hidden');
                 saveBtn.disabled = false;
                 fetchLastEnteredDate();
-                if (isEditMode) {
-                    window.pendingRedirect = 'cashewreport.html';
-                    showPopup('Success', 'Expenses updated successfully!', 'success');
-                } else {
-                    window.pendingClear = true;
-                    showPopup('Success', 'Expenses saved successfully!', 'success');
-                }
+                initDateAccordion(dateInput.value); // Refresh calendar
+
+                window.pendingClear = true;
+                const msg = isEditMode ? 'Expenses updated successfully!' : 'Expenses saved successfully!';
+                showPopup('Success', msg, 'success');
             })
             .catch(error => {
                 console.error('Network error:', error);
