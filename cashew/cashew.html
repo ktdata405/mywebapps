@@ -219,11 +219,14 @@
                 <button onclick="toggleCalculator()" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Calculator">
                     <i class="fa-solid fa-calculator"></i>
                 </button>
-                <a href="cashewreport.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95">
+                <a href="cashewreport.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Report">
                     <i class="fa-solid fa-chart-pie"></i>
                 </a>
-                <a href="../index.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95">
+                <a href="../index.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Home">
                     <i class="fa-solid fa-house"></i>
+                </a>
+                <a href="javascript:void(0)" onclick="window.open(CONFIG.SHEET_URL_CASHEW, '_blank')" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Google Sheet">
+                    <i class="fa-solid fa-file-excel"></i>
                 </a>
             </div>
         </div>
@@ -853,8 +856,7 @@
 
             const dateInput = document.getElementById('date-input');
             const rows = document.querySelectorAll('.expense-row');
-            const expenses = [];
-            let grandTotal = 0;
+            const expenses = [];let grandTotal = 0;
 
             rows.forEach(row => {
                 const category = row.querySelector('.category-select').value;

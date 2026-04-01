@@ -23,6 +23,13 @@ const CONFIG = {
     GOOGLE_SHEET_URL_SCAN: 'https://script.google.com/macros/s/AKfycbx1omrMP9s6nzIkaUXj2XtKZL8G3bmCuq_Kmbhca0B808X__k7ZjQzZNNoLUJqKS3V5/exec',
 
 //Prod Link
-    GOOGLE_SHEET_URL_LOAN: 'https://script.google.com/macros/s/AKfycbwnRs1td_3N8I1LVjHfXRAgcKWCDW8mbrBHJ4hADlHmihWDOco_7kDiO_qxKbNK1pfx/exec'
+    GOOGLE_SHEET_URL_LOAN: 'https://script.google.com/macros/s/AKfycbwnRs1td_3N8I1LVjHfXRAgcKWCDW8mbrBHJ4hADlHmihWDOco_7kDiO_qxKbNK1pfx/exec',
 
+    // Google Sheets URLs
+    SHEET_URL_CASHEW: 'https://docs.google.com/spreadsheets/d/1mwCrrpMGc1jq07sPgg17EiYtSQTK27ntqMTlFH7ZHZg/edit', // Replace with actual ID
+    SHEET_URL_DENOMINATIONS: 'https://docs.google.com/spreadsheets/d/1KWaWFwBHCDws1qlhJaucETScpy6FwoptNiHHj-BUfsc/edit', // Replace with actual ID
+    SHEET_URL_MSI: 'https://docs.google.com/spreadsheets/d/1Xl200m1jF6B_A5-Y_mD9V2M1L8K-M10L/edit', // Replace with actual ID
+    SHEET_URL_RENT: 'https://docs.google.com/spreadsheets/d/1Xl200m1jF6B_A5-Y_mD9V2M1L8K-M10L/edit', // Replace with actual ID
+    SHEET_URL_SCAN: 'https://docs.google.com/spreadsheets/d/1Xl200m1jF6B_A5-Y_mD9V2M1L8K-M10L/edit', // Replace with actual ID
+    SHEET_URL_LOAN: 'https://docs.google.com/spreadsheets/d/1Xl200m1jF6B_A5-Y_mD9V2M1L8K-M10L/edit'  // Replace with actual ID
 };
