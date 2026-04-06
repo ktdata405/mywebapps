@@ -1,0 +1,21 @@
+{
+  "name": "KT Apps",
+  "short_name": "KT Apps",
+  "description": "A collection of utility web apps developed by Kalyan Thammineni",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#030305",
+  "theme_color": "#030305",
+  "icons": [
+    {
+      "src": "root/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "root/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
