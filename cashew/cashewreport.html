@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#0b0f19">
+    <meta name="theme-color" content="#020617">
     <title data-translate-key="cashewReportTitle">Cashew Report - Expense Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -16,10 +16,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
-            --bg-dark: #0b0f19;
-            --card-bg: #151a25;
+            --bg-dark: #020617;
+            --card-bg: #0f172a;
             --primary: #6366f1;
-            --accent: #ec4899;
+            --secondary: #a855f7;
+            --accent: #f43f5e;
+            --success: #10b981;
+            --surface: rgba(15, 23, 42, 0.7);
         }
 
         body {
@@ -27,662 +30,477 @@
             color: #f8fafc;
             font-family: 'Plus Jakarta Sans', sans-serif;
             min-height: 100vh;
-            position: relative;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Animated Background */
-        .bg-animation {
+        /* Abstract Background Elements */
+        .bg-glow {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: -1;
-            background: radial-gradient(circle at 50% 50%, #1e1b4b, #0b0f19);
-            overflow: hidden;
+            background:
+                radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(244, 63, 94, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.05) 0%, transparent 50%);
         }
 
-        .orb {
-            position: absolute;
-            border-radius: 50%;
+        .mesh-gradient {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.1) 0, transparent 50%),
+                radial-gradient(at 50% 0%, rgba(168, 85, 247, 0.1) 0, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(244, 63, 94, 0.1) 0, transparent 50%);
             filter: blur(80px);
-            opacity: 0.4;
-            animation: float 20s infinite ease-in-out;
+            opacity: 0.5;
+            z-index: -2;
+            animation: rotate 30s linear infinite;
         }
 
-        .orb-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px; animation-delay: 0s; }
-        .orb-2 { width: 300px; height: 300px; background: var(--accent); bottom: -50px; right: -50px; animation-delay: -5s; }
-        .orb-3 { width: 200px; height: 200px; background: #8b5cf6; top: 40%; left: 60%; animation-delay: -10s; }
-
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(30px, 50px); }
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
-        .glass-card {
-            background: rgba(21, 26, 37, 0.6);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+        .glass {
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
 
-        .input-field {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #f8fafc;
+        .bento-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .input-field:focus {
+        .bento-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(30, 41, 59, 0.8);
+        }
+
+        .input-glow:focus-within {
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
             border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-            background: rgba(0, 0, 0, 0.5);
-        }
-
-        select.input-field option {
-            background-color: #151a25;
-            color: #f8fafc;
         }
 
         /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
 
-        footer {
-            text-align: center;
-            padding: 24px;
-            padding-bottom: calc(24px + env(safe-area-inset-bottom));
-            border-top: 1px solid rgba(255,255,255,0.05);
-            color: #94a3b8;
-            font-size: 0.875rem;
+        /* Animation for numbers */
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-value { animation: countUp 0.5s ease-out forwards; }
+
+        /* Tabs Styling */
+        .tab-active {
+            color: white;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
         }
 
-        footer b {
-            color: #f8fafc;
+        /* Category progress bar */
+        .progress-bar {
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 1s cubic-bezier(0.65, 0, 0.35, 1);
         }
 
-        /* ===== MOBILE RESPONSIVE IMPROVEMENTS ===== */
-
-        /* Safe area padding for notched devices */
-        body {
-            padding-top: env(safe-area-inset-top);
-            padding-left: env(safe-area-inset-left);
-            padding-right: env(safe-area-inset-right);
-        }
-
-        /* Touch-friendly tap targets - minimum 44px */
-        button, a, [role="button"] {
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-        }
-
-        /* Sticky header on mobile - full width */
+        /* Mobile Adjustments */
         @media (max-width: 640px) {
-            .sticky.top-4 {
-                top: 0 !important;
-                border-radius: 0 !important;
-                margin-left: -1rem;
-                margin-right: -1rem;
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
-
-            /* Better font sizes on mobile */
-            h1.text-2xl { font-size: 1.25rem !important; }
-
-            /* Summary numbers more readable */
-            #total-expenses-display,
-            #available-balance-display {
-                font-size: 1rem !important;
-            }
-
-            /* Stack header actions properly */
-            .glass-card.rounded-3xl.p-6.mb-8 .flex.gap-3 {
-                gap: 0.5rem !important;
-            }
-
-            /* Make select dropdowns full-width on mobile */
-            select.input-field {
-                font-size: 16px !important; /* Prevents iOS zoom on focus */
-            }
-
-            input.input-field {
-                font-size: 16px !important; /* Prevents iOS zoom on focus */
-            }
-
-            /* Category grid - 2 columns on mobile */
-            #category-summary-grid {
-                grid-template-columns: 1fr 1fr !important;
-            }
-
-            /* Export modal - full height on mobile */
-            #export-options-modal .glass-card {
-                max-height: 90vh;
-                overflow-y: auto;
-            }
-
-            /* Calculator modal - full screen on mobile */
-            #calculator-modal .glass-card.p-6.rounded-2xl.w-80 {
-                width: 95vw !important;
-                max-width: 95vw !important;
-                margin: 0.5rem;
-            }
+            .mobile-padding { padding: 1rem; }
+            .mobile-grid { grid-template-columns: 1fr; }
+            .header-sticky { position: sticky; top: 0; z-index: 40; width: 100%; }
         }
 
-        /* Medium mobile (641px - 768px) */
-        @media (max-width: 768px) {
-            /* Reduce padding on mobile */
-            .p-4.md\\:p-8 {
-                padding: 0.75rem;
-            }
-
-            /* Make filter row stack nicely */
-            .grid.grid-cols-2.sm\\:flex {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            /* Accordion items touch-friendly */
-            #report-body > div {
-                border-radius: 1rem !important;
-            }
-
-            /* Loader modal responsive */
-            #loader .glass-card {
-                width: 90%;
-                max-width: 320px;
-            }
-        }
-
-        /* iOS momentum scrolling */
-        #report-body-container {
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* Prevent horizontal scroll */
-        .max-w-6xl {
-            max-width: 100%;
-            overflow-x: hidden;
-        }
-
-        /* Better touch scroll for category grid */
-        #category-summary-content {
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* Pull-to-refresh visual hint */
-        @supports (-webkit-touch-callout: none) {
-            /* iOS specific styles */
-            .glass-card.rounded-3xl.p-6.mb-8.flex.flex-col {
-                padding-top: max(1.5rem, env(safe-area-inset-top));
-            }
-        }
-
-        /* ===== MOBILE ENHANCEMENT STYLES ===== */
+        /* Pull to refresh */
         .ptr-indicator {
             position: fixed;
-            top: calc(env(safe-area-inset-top) + 0.5rem);
+            top: -60px;
             left: 50%;
-            transform: translateX(-50%) translateY(-80px);
-            background: rgba(21,26,37,0.97);
-            border: 1px solid rgba(255,255,255,0.08);
-            color: #94a3b8;
-            padding: 0.5rem 1rem;
-            border-radius: 50px;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--primary);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
             font-size: 0.75rem;
             font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            z-index: 200;
-            transition: transform 0.3s ease;
-            pointer-events: none;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            z-index: 100;
+            transition: top 0.3s;
         }
-        .ptr-indicator.visible { transform: translateX(-50%) translateY(0); }
-        .ptr-indicator.refreshing .ptr-icon { animation: ptr-spin 1s linear infinite; }
-        @keyframes ptr-spin { to { transform: rotate(360deg); } }
+        .ptr-indicator.active { top: 20px; }
 
-        .kt-toast {
+        /* FAB for mobile */
+        .mobile-fab {
             position: fixed;
             bottom: calc(1.5rem + env(safe-area-inset-bottom));
-            left: 50%;
-            transform: translateX(-50%) translateY(80px);
-            background: rgba(21,26,37,0.97);
-            border: 1px solid rgba(255,255,255,0.08);
-            color: #f8fafc;
-            padding: 0.75rem 1.25rem;
-            border-radius: 50px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-            z-index: 9999;
-            transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease;
-            opacity: 0;
-            white-space: nowrap;
-            max-width: 92vw;
-        }
-        .kt-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-        .kt-toast.success { border-color: rgba(16,185,129,0.5); }
-        .kt-toast.error { border-color: rgba(239,68,68,0.5); }
-
-        .kt-fab {
-            position: fixed;
-            bottom: calc(1.5rem + env(safe-area-inset-bottom));
-            right: max(1.25rem, env(safe-area-inset-right));
+            right: 1.5rem;
             width: 56px;
             height: 56px;
             border-radius: 16px;
-            background: linear-gradient(135deg, #ec4899, #f43f5e);
-            color: white;
-            border: none;
+            background: var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.25rem;
-            box-shadow: 0 8px 25px rgba(236,72,153,0.4);
-            cursor: pointer;
-            z-index: 40;
-            transition: transform 0.2s ease;
-            text-decoration: none;
+            color: white;
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+            z-index: 50;
+            transform: scale(1);
+            transition: transform 0.2s;
         }
-        .kt-fab:active { transform: scale(0.9); }
-        @media (min-width: 768px) { .kt-fab { display: none; } }
+        .mobile-fab:active { transform: scale(0.9); }
 
-        /* Touch feedback on accordion rows */
-        @media (hover: none) {
-            #report-body > div:active { opacity: 0.85; }
+        /* Transaction Item Polish */
+        .transaction-item {
+            position: relative;
+            overflow: hidden;
+        }
+        .transaction-item::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 25%;
+            height: 50%;
+            width: 3px;
+            background: currentColor;
+            opacity: 0;
+            transition: opacity 0.3s;
+            border-radius: 0 4px 4px 0;
+        }
+        .transaction-item:hover::after {
+            opacity: 1;
         }
     </style>
 </head>
 
-<body class="min-h-screen flex flex-col pb-safe">
+<body class="pb-20 md:pb-8">
+    <div class="bg-glow"></div>
+    <div class="mesh-gradient"></div>
 
-    <div class="bg-animation">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
+    <div id="ptr" class="ptr-indicator">
+        <i class="fa-solid fa-arrows-rotate animate-spin"></i>
+        <span>Refreshing...</span>
     </div>
 
-    <div class="flex-grow p-4 md:p-8">
-        <div class="max-w-6xl mx-auto">
+    <!-- Main Container -->
+    <div class="max-w-[1400px] mx-auto mobile-padding px-6 pt-4 md:pt-8">
 
-            <!-- Header Card -->
-            <div class="glass-card rounded-3xl p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-6 sticky top-4 z-30 backdrop-blur-xl bg-[#0b0f19]/80 border-b border-white/5">
+        <!-- Navbar / Header -->
+        <header class="header-sticky mb-8">
+            <div class="glass rounded-3xl p-4 md:p-6 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-lg shadow-pink-500/20 ring-4 ring-white/5">
-                        <i class="fa-solid fa-chart-pie text-white text-xl"></i>
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                        <i class="fa-solid fa-chart-line text-white text-xl"></i>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold tracking-tight text-white leading-tight" data-translate-key="cashewReport">Cashew Report</h1>
-                        <p class="text-xs text-gray-400 font-medium" data-translate-key="cashewReportAnalytics">Expense Analytics</p>
+                        <h1 class="text-xl md:text-2xl font-extrabold tracking-tight text-white leading-tight">Cashew Report</h1>
+                        <p class="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-widest">Financial Insights</p>
                     </div>
                 </div>
-                <div class="flex gap-3">
-                    <button onclick="toggleCalculator()" class="w-11 h-11 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Calculator">
+
+                <!-- Action Bar -->
+                <div class="flex items-center gap-2 md:gap-3">
+                    <button onclick="toggleCalculator()" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all hover:bg-white/10 active:scale-95">
                         <i class="fa-solid fa-calculator"></i>
                     </button>
-                    <button onclick="openExportOptions()" class="w-11 h-11 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Export Data">
-                        <i class="fa-solid fa-file-export"></i>
+                    <button onclick="openExportOptions()" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all hover:bg-white/10 active:scale-95">
+                        <i class="fa-solid fa-arrow-up-from-bracket"></i>
                     </button>
-                    <a href="cashew.html" class="w-11 h-11 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Add Expense">
+                    <div class="h-8 w-px bg-white/10 mx-1 hidden md:block"></div>
+                    <a href="cashew.html" class="hidden md:flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-indigo-600/20">
                         <i class="fa-solid fa-plus"></i>
+                        <span>New Expense</span>
                     </a>
-                    <a href="../index.html" class="w-11 h-11 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Dashboard">
+                    <a href="../index.html" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all hover:bg-white/10 active:scale-95">
                         <i class="fa-solid fa-house"></i>
                     </a>
-                    <a href="javascript:void(0)" onclick="window.open(CONFIG.SHEET_URL_CASHEW, '_blank')" class="w-11 h-11 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Google Sheet">
-                        <i class="fa-solid fa-file-excel"></i>
-                    </a>
                 </div>
             </div>
+        </header>
 
-            <!-- Controls & Summary Section -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+        <!-- Bento Grid Layout -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+
+            <!-- Left Column: Summary Stats -->
+            <div class="md:col-span-12 lg:col-span-4 space-y-6">
 
                 <!-- Filters Card -->
-                <div class="lg:col-span-12 glass-card rounded-3xl p-6">
-                    <div class="flex flex-col gap-6">
-                        <!-- Month/Year Selection -->
-                        <div class="flex flex-col sm:flex-row gap-4 items-end sm:items-center">
-                            <div class="flex-grow grid grid-cols-2 sm:flex gap-4 w-full">
-                                <div class="relative flex-grow sm:flex-grow-0 sm:w-48">
-                                    <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1 mb-1.5 block" data-translate-key="month">Month</label>
-                                    <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-indigo-400">
-                                            <i class="fa-regular fa-calendar text-sm"></i>
-                                        </div>
-                                        <select id="month-select" class="w-full pl-10 pr-8 py-3 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-semibold text-sm input-field" onchange="handleMonthChange()">
-                                            <option value="All" data-translate-key="displayAll">Display All</option>
-                                            <option value="Jan" data-translate-key="january">January</option>
-                                            <option value="Feb" data-translate-key="february">February</option>
-                                            <option value="Mar" data-translate-key="march">March</option>
-                                            <option value="Apr" data-translate-key="april">April</option>
-                                            <option value="May" data-translate-key="may">May</option>
-                                            <option value="Jun" data-translate-key="june">June</option>
-                                            <option value="Jul" data-translate-key="july">July</option>
-                                            <option value="Aug" data-translate-key="august">August</option>
-                                            <option value="Sep" data-translate-key="september">September</option>
-                                            <option value="Oct" data-translate-key="october">October</option>
-                                            <option value="Nov" data-translate-key="november">November</option>
-                                            <option value="Dec" data-translate-key="december">December</option>
-                                        </select>
-                                        <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-500">
-                                            <i class="fa-solid fa-chevron-down text-xs"></i>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div id="year-select-container" class="relative flex-grow sm:flex-grow-0 sm:w-36">
-                                    <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1 mb-1.5 block" data-translate-key="year">Year</label>
-                                    <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-indigo-400">
-                                            <i class="fa-solid fa-clock-rotate-left text-sm"></i>
-                                        </div>
-                                        <select id="year-select" class="w-full pl-10 pr-8 py-3 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-semibold text-sm input-field">
-                                            <!-- Years populated by script -->
-                                        </select>
-                                        <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-500">
-                                            <i class="fa-solid fa-chevron-down text-xs"></i>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-span-2 sm:col-span-1 sm:self-end">
-                                    <button onclick="fetchReport()" id="fetch-btn" class="w-full sm:w-auto h-[46px] bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-8 rounded-2xl font-bold flex items-center justify-center gap-2.5 transition-all shadow-lg shadow-indigo-600/25 active:scale-95 hover:shadow-indigo-600/40">
-                                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
-                                        <span data-translate-key="fetch">Fetch</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Search & Category Filter -->
-                        <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-white/5">
-                            <div class="relative flex-grow">
-                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
-                                    <i class="fa-solid fa-search text-sm"></i>
-                                </div>
-                                <input type="text" id="search-input" placeholder="Search expenses..." class="w-full pl-10 pr-10 py-3 rounded-2xl outline-none transition-all font-medium text-sm input-field placeholder-gray-600" onkeyup="filterData()" data-translate-key="searchExpenses">
-                                <button id="clear-search-btn" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-500 hover:text-white hidden transition-colors" onclick="clearSearch()">
-                                    <i class="fa-solid fa-times text-sm"></i>
-                                </button>
-                            </div>
-
-                            <div class="relative min-w-[220px]">
-                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
-                                    <i class="fa-solid fa-filter text-sm"></i>
-                                </div>
-                                <select id="category-filter" class="w-full pl-10 pr-8 py-3 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-medium text-sm input-field" onchange="filterData()">
-                                    <option value="" data-translate-key="allCategories">All Categories</option>
-                                    <!-- Categories populated dynamically -->
+                <div class="glass rounded-[2rem] p-6 bento-card">
+                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-filter text-indigo-400"></i> Period Selection
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] text-gray-400 font-bold ml-1 uppercase">Month</label>
+                            <div class="relative">
+                                <select id="month-select" class="w-full bg-slate-900/50 border border-white/10 rounded-xl py-2.5 pl-3 pr-8 text-sm font-semibold outline-none appearance-none focus:border-indigo-500 transition-all text-white" onchange="handleMonthChange()">
+                                    <option value="All">All Time</option>
+                                    <option value="Jan">January</option><option value="Feb">February</option><option value="Mar">March</option>
+                                    <option value="Apr">April</option><option value="May">May</option><option value="Jun">June</option>
+                                    <option value="Jul">July</option><option value="Aug">August</option><option value="Sep">September</option>
+                                    <option value="Oct">October</option><option value="Nov">November</option><option value="Dec">December</option>
                                 </select>
-                                <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-500">
-                                    <i class="fa-solid fa-chevron-down text-xs"></i>
-                                </div>
+                                <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-500 pointer-events-none"></i>
+                            </div>
+                        </div>
+                        <div id="year-select-container" class="space-y-1.5">
+                            <label class="text-[10px] text-gray-400 font-bold ml-1 uppercase">Year</label>
+                            <div class="relative">
+                                <select id="year-select" class="w-full bg-slate-900/50 border border-white/10 rounded-xl py-2.5 pl-3 pr-8 text-sm font-semibold outline-none appearance-none focus:border-indigo-500 transition-all text-white">
+                                    <!-- Years via JS -->
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-500 pointer-events-none"></i>
                             </div>
                         </div>
                     </div>
+                    <button onclick="fetchReport()" id="fetch-btn" class="w-full mt-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 group">
+                        <i class="fa-solid fa-rotate text-indigo-400 group-hover:rotate-180 transition-transform duration-500"></i>
+                        <span>Fetch Report</span>
+                    </button>
                 </div>
+
+                <!-- Main Stats Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+                    <!-- Total Expense -->
+                    <div class="glass rounded-3xl p-5 bento-card border-l-4 border-l-rose-500/50">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-400">
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-sm"></i>
+                                </div>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Total Spent</p>
+                            </div>
+                            <span class="text-[9px] font-bold text-rose-400 bg-rose-500/5 px-2 py-1 rounded-lg">Expenditure</span>
+                        </div>
+                        <h2 id="total-expenses-display" class="text-2xl font-black text-white font-mono">Rs. 0.00</h2>
+                        <div class="mt-3 flex items-center gap-2 text-[9px] text-gray-500">
+                            <span id="selected-period-label" class="bg-white/5 px-2 py-0.5 rounded text-gray-400">---</span>
+                        </div>
+                    </div>
+
+                    <!-- Available Balance -->
+                    <div id="available-balance-container" class="glass rounded-3xl p-5 bento-card border-l-4 border-l-emerald-500/50">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                                    <i class="fa-solid fa-wallet text-sm"></i>
+                                </div>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Available Balance</p>
+                            </div>
+                            <span class="text-[9px] font-bold text-emerald-400 bg-emerald-500/5 px-2 py-1 rounded-lg">Remaining</span>
+                        </div>
+                        <h2 id="available-balance-display" class="text-2xl font-black text-white font-mono">Rs. 0.00</h2>
+                        <p class="mt-3 text-[9px] text-gray-500 italic">Estimated from records</p>
+                    </div>
+                </div>
+
             </div>
 
-            <!-- Category Summary Section (Accordion) -->
-            <div id="category-summary-section" class="hidden mb-8 glass-card rounded-3xl overflow-hidden border border-white/10 shadow-2xl shadow-black/20">
-                <div class="p-6 border-b border-white/5 flex justify-between items-center cursor-pointer hover:bg-white/5 transition-colors group" onclick="toggleCategorySummary()">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20 group-hover:bg-indigo-500/20 transition-colors">
-                            <i class="fa-solid fa-chart-simple"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-white" data-translate-key="categoryBreakdown">Category Breakdown</h3>
-                    </div>
-                    <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
-                        <i id="category-summary-icon" class="fa-solid fa-chevron-right text-sm text-gray-400 transition-transform duration-300"></i>
-                    </div>
-                </div>
-                <div id="category-summary-content" class="p-6 bg-[#0b0f19]/40 hidden">
-                    <div id="category-summary-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        <!-- Category cards will go here -->
-                    </div>
-                </div>
-            </div>
+            <!-- Right Column: Details & Insights -->
+            <div class="md:col-span-12 lg:col-span-8 space-y-6">
 
-            <!-- Data Table (Accordion) -->
-            <div class="glass-card rounded-3xl overflow-hidden border border-white/10 shadow-2xl shadow-black/20">
-                <div class="p-6 border-b border-white/5 flex justify-between items-center cursor-pointer hover:bg-white/5 transition-colors group" onclick="toggleExpenseDetails()">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-2xl bg-pink-500/10 text-pink-400 flex items-center justify-center border border-pink-500/20 group-hover:bg-pink-500/20 transition-colors">
-                            <i class="fa-solid fa-list-ul text-xl"></i>
-                        </div>
-                        <div>
-                            <div class="flex flex-wrap items-center gap-3 mb-1">
-                                <h3 class="text-lg font-bold text-white" data-translate-key="expenseDetails">Expense Details</h3>
-                                <div class="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold text-gray-400 bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
-                                    <i class="fa-solid fa-calendar-check"></i>
-                                    <span id="selected-period-label">--</span>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-4 text-sm text-gray-400">
-                                <div class="flex items-center gap-2">
-                                    <span class="font-medium" data-translate-key="total">Total:</span>
-                                    <span id="total-expenses-display" class="font-bold text-pink-400 font-mono text-base sm:text-lg">Rs. 0.00</span>
-                                </div>
-                                <div class="w-px h-4 bg-white/10"></div>
-                                <div id="available-balance-container" class="flex items-center gap-2">
-                                    <span class="font-medium" data-translate-key="available">Available:</span>
-                                    <span id="available-balance-display" class="font-bold text-emerald-400 font-mono text-base sm:text-lg">Rs. 0.00</span>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Tabs and Search -->
+                <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                    <div class="flex p-1 bg-white/5 rounded-2xl border border-white/5 w-full sm:w-auto">
+                        <button onclick="switchView('transactions')" id="tab-transactions" class="flex-1 sm:flex-none px-6 py-2 rounded-xl text-sm font-bold transition-all text-gray-400 tab-active">Transactions</button>
+                        <button onclick="switchView('insights')" id="tab-insights" class="flex-1 sm:flex-none px-6 py-2 rounded-xl text-sm font-bold transition-all text-gray-400">Insights</button>
                     </div>
-                    <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
-                        <i id="expense-details-icon" class="fa-solid fa-chevron-right text-gray-400 transition-transform duration-300"></i>
+
+                    <div class="relative w-full sm:w-72">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+                        <input type="text" id="search-input" placeholder="Search description..." class="w-full bg-white/5 border border-white/10 rounded-2xl py-2.5 pl-11 pr-4 text-sm font-medium outline-none focus:border-indigo-500 transition-all text-white placeholder-gray-600" onkeyup="filterData()">
                     </div>
                 </div>
 
-                <div id="report-body-container" class="hidden bg-[#0b0f19]/20">
-                    <div id="report-body" class="p-4 space-y-3">
-                        <!-- Accordion items will be injected here -->
-                        <div class="py-16 text-center">
-                            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/5 mb-4">
-                                <i class="fa-solid fa-clipboard-list text-3xl text-gray-600"></i>
-                            </div>
-                            <p class="text-gray-400 font-medium" data-translate-key="selectMonthAndYear">Select a month and year to view expenses</p>
+                <!-- Transactions View -->
+                <div id="view-transactions" class="space-y-4">
+                    <div class="flex items-center justify-between px-2 mb-2">
+                        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest">Transaction History</h3>
+                        <div class="relative">
+                            <select id="category-filter" class="bg-transparent text-[10px] font-bold text-indigo-400 uppercase outline-none cursor-pointer" onchange="filterData()">
+                                <option value="">All Categories</option>
+                            </select>
                         </div>
                     </div>
+                    <div id="report-body" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
                 </div>
+
+                <!-- Insights View (Hidden by default) -->
+                <div id="view-insights" class="hidden space-y-6">
+                    <!-- Category Summary Grid -->
+                    <div id="category-summary-section" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
             </div>
 
         </div>
     </div>
 
-    <!-- Loader Overlay -->
-    <div id="loader" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md transition-all">
-        <div class="glass-card p-8 rounded-3xl flex flex-col items-center gap-6 shadow-2xl border border-white/10">
-            <div class="relative w-16 h-16">
-                <div class="absolute inset-0 border-4 border-indigo-500/20 rounded-full"></div>
+    <!-- Loader -->
+    <div id="loader" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/80 backdrop-blur-md transition-all">
+        <div class="flex flex-col items-center gap-6">
+            <div class="relative w-20 h-20">
+                <div class="absolute inset-0 border-4 border-indigo-500/10 rounded-full"></div>
                 <div class="absolute inset-0 border-4 border-indigo-500 rounded-full border-t-transparent animate-spin"></div>
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <i class="fa-solid fa-bolt text-indigo-500 text-xl"></i>
-                </div>
             </div>
             <div class="text-center">
-                <h3 class="text-white font-bold text-lg" data-translate-key="fetchingData">Fetching Data</h3>
-                <p class="text-gray-400 text-sm mt-1" data-translate-key="retrievingExpenses">Retrieving your expenses...</p>
+                <h3 class="text-white font-bold text-lg">Analyzing Data</h3>
+                <p class="text-gray-400 text-xs mt-1 uppercase tracking-widest">Please wait a moment</p>
             </div>
         </div>
     </div>
 
-    <!-- Calculator Modal -->
-    <div id="calculator-modal" class="hidden fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50" tabindex="-1">
-        <div class="glass-card p-6 rounded-2xl w-80 shadow-2xl border border-white/20 bg-slate-900/90">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-calculator text-emerald-400 mr-2"></i>Calculator</h3>
-                <button onclick="toggleCalculator()" class="text-white/60 hover:text-red-400 transition-colors">
-                    <i class="fa-solid fa-xmark text-xl"></i>
-                </button>
+    <!-- Calculator & Modals (Re-styled) -->
+    <div id="calculator-modal" class="hidden fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-[70] p-4">
+        <!-- Calculator content kept but with updated glass styling -->
+        <div class="glass p-6 rounded-[2rem] w-full max-w-[340px] shadow-2xl border border-white/20">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-calculator text-indigo-400"></i> Calculator</h3>
+                <button onclick="toggleCalculator()" class="text-gray-500 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
-
-            <div class="bg-white/10 p-4 rounded-xl mb-4 text-right flex flex-col justify-end h-24">
-                <div id="calc-history" class="text-sm text-white/50 font-mono mb-1 h-6 overflow-hidden"></div>
-                <div id="calc-display" class="text-3xl font-mono text-white tracking-wider overflow-x-auto min-h-[2.5rem]">0</div>
+            <div class="bg-slate-950/50 p-6 rounded-2xl mb-6 text-right flex flex-col justify-end h-28 border border-white/5">
+                <div id="calc-history" class="text-[10px] text-indigo-400/50 font-mono mb-1 truncate"></div>
+                <div id="calc-display" class="text-3xl font-mono text-white tracking-wider overflow-x-auto">0</div>
             </div>
-
             <div class="grid grid-cols-4 gap-3">
-                <button onclick="calcClear()" class="col-span-2 p-3 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 font-bold transition">AC</button>
-                <button onclick="calcDelete()" class="p-3 rounded-lg bg-white/10 text-white hover:bg-white/20 font-bold transition"><i class="fa-solid fa-delete-left"></i></button>
-                <button onclick="calcAppend('/')" class="p-3 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 font-bold transition">÷</button>
+                <button onclick="calcClear()" class="col-span-2 py-4 rounded-xl bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 font-bold transition">AC</button>
+                <button onclick="calcDelete()" class="py-4 rounded-xl bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 font-bold transition"><i class="fa-solid fa-delete-left"></i></button>
+                <button onclick="calcAppend('/')" class="py-4 rounded-xl bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 font-bold transition">÷</button>
 
-                <button onclick="calcAppend('7')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">7</button>
-                <button onclick="calcAppend('8')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">8</button>
-                <button onclick="calcAppend('9')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">9</button>
-                <button onclick="calcAppend('*')" class="p-3 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 font-bold transition">×</button>
+                <button onclick="calcAppend('7')" class="py-4 rounded-xl bg-white/5 text-white hover:bg-white/10 font-bold transition">7</button>
+                <button onclick="calcAppend('8')" class="py-4 rounded-xl bg-white/5 text-white hover:bg-white/10 font-bold transition">8</button>
+                <button onclick="calcAppend('9')" class="py-4 rounded-xl bg-white/5 text-white hover:bg-white/10 font-bold transition">9</button>
+                <button onclick="calcAppend('*')" class="py-4 rounded-xl bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 font-bold transition">×</button>
 
-                <button onclick="calcAppend('4')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">4</button>
-                <button onclick="calcAppend('5')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">5</button>
-                <button onclick="calcAppend('6')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">6</button>
-                <button onclick="calcAppend('-')" class="p-3 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 font-bold transition">−</button>
+                <button onclick="calcAppend('4')" class="py-4 rounded-xl bg-white/5 text-white hover:bg-white/10 font-bold transition">4</button>
+                <button onclick="calcAppend('5')" class="py-4 rounded-xl bg-white/5 text-white hover:bg-white/10 font-bold transition">5</button>
+                <button onclick="calcAppend('6')" class="py-4 rounded-xl bg-white/5 text-white hover:bg-white/10 font-bold transition">6</button>
+                <button onclick="calcAppend('-')" class="py-4 rounded-xl bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 font-bold transition">−</button>
 
-                <button onclick="calcAppend('1')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">1</button>
-                <button onclick="calcAppend('2')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">2</button>
-                <button onclick="calcAppend('3')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">3</button>
-                <button onclick="calcAppend('+')" class="p-3 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 font-bold transition">+</button>
+                <button onclick="calcAppend('1')" class="py-4 rounded-xl bg-white/5 text-white hover:bg-white/10 font-bold transition">1</button>
+                <button onclick="calcAppend('2')" class="py-4 rounded-xl bg-white/5 text-white hover:bg-white/10 font-bold transition">2</button>
+                <button onclick="calcAppend('3')" class="py-4 rounded-xl bg-white/5 text-white hover:bg-white/10 font-bold transition">3</button>
+                <button onclick="calcAppend('+')" class="py-4 rounded-xl bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 font-bold transition">+</button>
 
-                <button onclick="calcAppend('0')" class="col-span-2 p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">0</button>
-                <button onclick="calcAppend('.')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">.</button>
-                <button onclick="calcResult()" class="p-3 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 font-bold transition">=</button>
+                <button onclick="calcAppend('0')" class="col-span-2 py-4 rounded-xl bg-white/5 text-white hover:bg-white/10 font-bold transition">0</button>
+                <button onclick="calcAppend('.')" class="py-4 rounded-xl bg-white/5 text-white hover:bg-white/10 font-bold transition">.</button>
+                <button onclick="calcResult()" class="py-4 rounded-xl bg-indigo-600 text-white hover:bg-indigo-500 font-bold transition shadow-lg shadow-indigo-600/20">=</button>
             </div>
         </div>
     </div>
 
-    <!-- Export Options Modal -->
-    <div id="export-options-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md transition-all p-4">
-        <div class="glass-card rounded-3xl w-full max-w-lg flex flex-col shadow-2xl border border-white/10">
+    <!-- Export Modal & Preview (Simplified and Restyled) -->
+    <div id="export-options-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+        <div class="glass rounded-[2rem] w-full max-w-lg overflow-hidden border border-white/10">
             <div class="p-6 border-b border-white/5 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20">
-                        <i class="fa-solid fa-file-export"></i>
-                    </div>
-                    <h3 class="text-lg font-bold text-white">Export Options</h3>
-                </div>
-                <button onclick="closeExportOptions()" class="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all flex items-center justify-center">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+                <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-file-export text-indigo-400"></i> Export Records</h3>
+                <button onclick="closeExportOptions()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-6 space-y-6">
-                <div>
-                    <label class="text-[10px] uppercase tracking-wider text-gray-400 font-bold ml-1 mb-1.5 block" data-translate-key="category">Category</label>
-                    <div class="relative">
-                        <select id="export-category-select" class="w-full py-3 px-4 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-semibold text-sm input-field"></select>
-                        <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-500">
-                            <i class="fa-solid fa-chevron-down text-xs"></i>
-                        </div>
-                    </div>
+                <div class="space-y-2">
+                    <label class="text-[10px] text-gray-400 font-bold uppercase ml-1">Category</label>
+                    <select id="export-category-select" class="w-full bg-slate-900/50 border border-white/10 rounded-xl p-3 text-sm font-semibold outline-none text-white"></select>
                 </div>
-
-                <div class="flex items-center gap-3 px-1">
-                    <div class="relative flex items-center">
-                        <input type="checkbox" id="export-current-month-only" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-white/10 bg-white/5 checked:border-indigo-500 checked:bg-indigo-500 transition-all" onchange="toggleExportCurrentMonth()">
-                        <i class="fa-solid fa-check absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-xs opacity-0 peer-checked:opacity-100 pointer-events-none"></i>
-                    </div>
-                    <label for="export-current-month-only" class="text-sm text-gray-300 font-medium cursor-pointer select-none">Export Current Month Only</label>
+                <div class="flex items-center gap-3 bg-white/5 p-4 rounded-2xl border border-white/5">
+                    <input type="checkbox" id="export-current-month-only" class="w-5 h-5 rounded border-white/10 bg-slate-900 accent-indigo-500" onchange="toggleExportCurrentMonth()">
+                    <label for="export-current-month-only" class="text-sm text-gray-300 font-bold">Current Month Only</label>
                 </div>
-
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-[10px] uppercase tracking-wider text-gray-400 font-bold ml-1 mb-1.5 block">From Month</label>
-                        <div class="relative">
-                            <select id="export-from-month-select" class="w-full py-3 px-4 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-semibold text-sm input-field"></select>
-                            <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-500">
-                                <i class="fa-solid fa-chevron-down text-xs"></i>
-                            </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] text-gray-400 font-bold uppercase ml-1">From</label>
+                        <div class="flex gap-2">
+                            <select id="export-from-month-select" class="flex-1 bg-slate-900/50 border border-white/10 rounded-xl p-2.5 text-xs font-semibold text-white"></select>
+                            <select id="export-from-year-select" class="flex-1 bg-slate-900/50 border border-white/10 rounded-xl p-2.5 text-xs font-semibold text-white"></select>
                         </div>
                     </div>
-                    <div>
-                        <label class="text-[10px] uppercase tracking-wider text-gray-400 font-bold ml-1 mb-1.5 block">From Year</label>
-                        <div class="relative">
-                            <select id="export-from-year-select" class="w-full py-3 px-4 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-semibold text-sm input-field"></select>
-                            <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-500">
-                                <i class="fa-solid fa-chevron-down text-xs"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="text-[10px] uppercase tracking-wider text-gray-400 font-bold ml-1 mb-1.5 block">To Month</label>
-                        <div class="relative">
-                            <select id="export-to-month-select" class="w-full py-3 px-4 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-semibold text-sm input-field"></select>
-                            <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-500">
-                                <i class="fa-solid fa-chevron-down text-xs"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="text-[10px] uppercase tracking-wider text-gray-400 font-bold ml-1 mb-1.5 block">To Year</label>
-                        <div class="relative">
-                            <select id="export-to-year-select" class="w-full py-3 px-4 rounded-2xl outline-none appearance-none transition-all cursor-pointer font-semibold text-sm input-field"></select>
-                            <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-500">
-                                <i class="fa-solid fa-chevron-down text-xs"></i>
-                            </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] text-gray-400 font-bold uppercase ml-1">To</label>
+                        <div class="flex gap-2">
+                            <select id="export-to-month-select" class="flex-1 bg-slate-900/50 border border-white/10 rounded-xl p-2.5 text-xs font-semibold text-white"></select>
+                            <select id="export-to-year-select" class="flex-1 bg-slate-900/50 border border-white/10 rounded-xl p-2.5 text-xs font-semibold text-white"></select>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="p-6 border-t border-white/5 flex-shrink-0 flex justify-end items-center gap-4">
-                <button onclick="closeExportOptions()" class="h-11 px-6 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white font-bold transition-all">Cancel</button>
-                <button onclick="startExportProcess()" class="h-11 px-8 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold flex items-center gap-2.5 transition-all shadow-lg shadow-indigo-600/25 active:scale-95">
-                    <span data-translate-key="export">Export</span>
-                    <i class="fa-solid fa-file-export"></i>
-                </button>
+            <div class="p-6 border-t border-white/5 flex justify-end gap-3">
+                <button onclick="closeExportOptions()" class="px-6 py-2.5 rounded-xl text-sm font-bold text-gray-400 hover:text-white transition-all">Cancel</button>
+                <button onclick="startExportProcess()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-indigo-600/20">Generate Export</button>
             </div>
         </div>
     </div>
 
-    <!-- Export Preview Modal -->
-    <div id="export-preview-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md transition-all p-4">
-        <div class="glass-card rounded-3xl w-full max-w-4xl h-full max-h-[90vh] flex flex-col shadow-2xl border border-white/10">
-            <div class="p-6 border-b border-white/5 flex justify-between items-center flex-shrink-0">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20">
-                        <i class="fa-solid fa-file-lines"></i>
-                    </div>
-                    <h3 class="text-lg font-bold text-white">Export Preview</h3>
-                </div>
-                <button onclick="closeExportPreview()" class="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all flex items-center justify-center">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+    <!-- Export Preview -->
+    <div id="export-preview-modal" class="hidden fixed inset-0 z-[80] flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+        <div class="glass rounded-[2rem] w-full max-w-4xl max-h-[90vh] flex flex-col border border-white/10">
+            <div class="p-6 border-b border-white/5 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-white">Export Preview</h3>
+                <button onclick="closeExportPreview()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-6 flex-grow overflow-auto">
-                <pre id="export-content-preview" class="text-xs text-gray-300 font-mono whitespace-pre-wrap break-words"></pre>
+                <pre id="export-content-preview" class="text-[10px] md:text-xs text-indigo-300 font-mono whitespace-pre-wrap"></pre>
             </div>
-            <div class="p-6 border-t border-white/5 flex-shrink-0 flex justify-end items-center gap-4">
-                <button onclick="closeExportPreview()" class="h-11 px-6 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white font-bold transition-all">Close</button>
-                <button id="copy-report-btn" onclick="copyReportToClipboard()" class="h-11 px-8 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold flex items-center gap-2.5 transition-all shadow-lg shadow-emerald-600/25 active:scale-95">
-                    <i class="fa-solid fa-copy"></i>
-                    <span>Copy</span>
+            <div class="p-6 border-t border-white/5 flex flex-wrap justify-end gap-3">
+                <button onclick="closeExportPreview()" class="px-6 py-2.5 rounded-xl text-sm font-bold text-gray-400 hover:text-white">Close</button>
+                <button id="copy-report-btn" onclick="copyReportToClipboard()" class="bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-copy"></i> Copy
                 </button>
-                <button id="download-pdf-btn" class="h-11 px-8 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-bold flex items-center gap-2.5 transition-all shadow-lg shadow-pink-600/25 active:scale-95">
-                    <i class="fa-solid fa-file-pdf"></i>
-                    <span>Download PDF</span>
+                <button id="download-pdf-btn" class="bg-rose-600 hover:bg-rose-500 text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-file-pdf"></i> PDF
                 </button>
-                <button id="download-export-btn" class="h-11 px-8 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold flex items-center gap-2.5 transition-all shadow-lg shadow-indigo-600/25 active:scale-95">
-                    <i class="fa-solid fa-download"></i>
-                    <span>Download .txt</span>
+                <button id="download-export-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-download"></i> .TXT
                 </button>
             </div>
         </div>
     </div>
 
-    <footer>
-        <p data-translate-key="copyright_thammineni">&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
-    </footer>
+    <!-- Mobile FAB -->
+    <a href="cashew.html" class="mobile-fab md:hidden">
+        <i class="fa-solid fa-plus text-xl"></i>
+    </a>
 
     <script src="../localization.js"></script>
     <script>
-        let allData = []; // Store all fetched data
-        let monthlyBalances = {}; // Store monthly balances
+        let allData = [];
+        let monthlyBalances = {};
+        let currentView = 'transactions';
+
+        function switchView(view) {
+            currentView = view;
+            document.getElementById('view-insights').classList.toggle('hidden', view !== 'insights');
+            document.getElementById('view-transactions').classList.toggle('hidden', view !== 'transactions');
+
+            document.getElementById('tab-insights').classList.toggle('tab-active', view === 'insights');
+            document.getElementById('tab-transactions').classList.toggle('tab-active', view === 'transactions');
+
+            if (view === 'transactions') filterData();
+        }
 
         function handleMonthChange() {
             const monthSelect = document.getElementById('month-select');
@@ -690,10 +508,10 @@
             const yearContainer = document.getElementById('year-select-container');
             if (monthSelect.value === 'All') {
                 yearSelect.disabled = true;
-                yearContainer.classList.add('opacity-50', 'cursor-not-allowed');
+                yearContainer.style.opacity = '0.5';
             } else {
                 yearSelect.disabled = false;
-                yearContainer.classList.remove('opacity-50', 'cursor-not-allowed');
+                yearContainer.style.opacity = '1';
             }
         }
 
@@ -702,745 +520,248 @@
             const currentYear = new Date().getFullYear();
             for (let year = currentYear; year >= 2020; year--) {
                 const option = document.createElement('option');
-                option.value = year;
-                option.textContent = year;
+                option.value = year; option.textContent = year;
                 yearSelect.appendChild(option);
             }
             yearSelect.value = currentYear;
 
-            const monthSelect = document.getElementById('month-select');
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const currentMonthIndex = new Date().getMonth();
-            monthSelect.value = months[currentMonthIndex];
+            document.getElementById('month-select').value = months[new Date().getMonth()];
 
-            // Set initial label
-            updatePeriodLabel();
-
-            // Handle initial state of year select
             handleMonthChange();
-
-            // Automatically fetch report for current month/year
             fetchReport();
         }
 
-        function updatePeriodLabel() {
-            const monthSelect = document.getElementById('month-select');
-            const yearSelect = document.getElementById('year-select');
-            const monthValue = monthSelect.value;
-
-            let label;
-            if (monthValue === 'All') {
-                label = 'All Time';
-            } else {
-                const monthName = monthSelect.options[monthSelect.selectedIndex].text;
-                label = `${monthName} ${yearSelect.value}`;
-            }
-            document.getElementById('selected-period-label').textContent = label;
-        }
-
-        function formatDateToDDMMMYYYY(isoDate) {
-            if (!isoDate) return '';
-            // Handle YYYY-MM-DD format specifically to avoid timezone issues
-            if (typeof isoDate === 'string' && isoDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                const parts = isoDate.split('-');
-                const year = parts[0];
-                const month = parseInt(parts[1], 10);
-                const day = parts[2];
-                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                return `${day}/${months[month - 1]}/${year}`;
-            }
-
-            const d = new Date(isoDate);
-            if (isNaN(d.getTime())) {
-                return isoDate;
-            }
-            const day = String(d.getDate()).padStart(2, '0');
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const month = months[d.getMonth()];
-            const year = d.getFullYear();
-            return `${day}/${month}/${year}`;
-        }
-
         function getCategoryColor(category) {
-            let categoryColor = "bg-gray-500/10 text-gray-300 border-gray-500/20";
             const cat = (category || '').toLowerCase();
-            if(cat.includes('home')) categoryColor = "bg-blue-500/10 text-blue-300 border-blue-500/20";
-            else if(cat.includes('personal')) categoryColor = "bg-purple-500/10 text-purple-300 border-purple-500/20";
-            else if(cat.includes('family')) categoryColor = "bg-green-500/10 text-green-300 border-green-500/20";
-            else if(cat.includes('baby')) categoryColor = "bg-pink-500/10 text-pink-300 border-pink-500/20";
-            else if(cat.includes('credit')) categoryColor = "bg-yellow-500/10 text-yellow-300 border-yellow-500/20";
-            else if(cat.includes('emi')) categoryColor = "bg-red-500/10 text-red-300 border-red-500/20";
-            else if(cat.includes('food')) categoryColor = "bg-orange-500/10 text-orange-300 border-orange-500/20";
-            else if(cat.includes('travel')) categoryColor = "bg-teal-500/10 text-teal-300 border-teal-500/20";
-            else if(cat.includes('fuel')) categoryColor = "bg-indigo-500/10 text-indigo-300 border-indigo-500/20";
-            else if(cat.includes('medical')) categoryColor = "bg-rose-500/10 text-rose-300 border-rose-500/20";
-            else if(cat.includes('latha')) categoryColor = "bg-cyan-500/10 text-cyan-300 border-cyan-500/20";
-            else if(cat.includes('mutual') || cat.includes('investment')) categoryColor = "bg-emerald-500/10 text-emerald-300 border-emerald-500/20";
-            return categoryColor;
+            if(cat.includes('home')) return { main: '#6366f1', bg: 'rgba(99, 102, 241, 0.1)', icon: 'fa-house' };
+            if(cat.includes('personal')) return { main: '#a855f7', bg: 'rgba(168, 85, 247, 0.1)', icon: 'fa-user' };
+            if(cat.includes('family')) return { main: '#10b981', bg: 'rgba(16, 185, 129, 0.1)', icon: 'fa-users' };
+            if(cat.includes('baby')) return { main: '#f43f5e', bg: 'rgba(244, 63, 94, 0.1)', icon: 'fa-baby' };
+            if(cat.includes('credit')) return { main: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)', icon: 'fa-credit-card' };
+            if(cat.includes('emi')) return { main: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)', icon: 'fa-file-invoice-dollar' };
+            if(cat.includes('mutual') || cat.includes('invest')) return { main: '#06b6d4', bg: 'rgba(6, 182, 212, 0.1)', icon: 'fa-chart-line' };
+            if(cat.includes('latha')) return { main: '#ec4899', bg: 'rgba(236, 72, 153, 0.1)', icon: 'fa-heart' };
+            return { main: '#94a3b8', bg: 'rgba(148, 163, 184, 0.1)', icon: 'fa-tag' };
         }
 
         function fetchReport() {
             const loader = document.getElementById('loader');
-            const fetchBtn = document.getElementById('fetch-btn');
             loader.classList.remove('hidden');
-            fetchBtn.disabled = true;
 
             const month = document.getElementById('month-select').value;
             const year = document.getElementById('year-select').value;
-            const availableBalanceContainer = document.getElementById('available-balance-container');
-
-            let url;
-            if (month === 'All') {
-                url = `${CONFIG.GOOGLE_SHEET_URL_CASHEW}?fetchAll=true&t=${new Date().getTime()}`;
-                availableBalanceContainer.classList.remove('hidden');
-            } else {
-                const sheetName = `${month} ${year}`;
-                url = `${CONFIG.GOOGLE_SHEET_URL_CASHEW}?sheetName=${encodeURIComponent(sheetName)}&t=${new Date().getTime()}`;
-                availableBalanceContainer.classList.remove('hidden');
-            }
+            let url = month === 'All'
+                ? `${CONFIG.GOOGLE_SHEET_URL_CASHEW}?fetchAll=true&t=${Date.now()}`
+                : `${CONFIG.GOOGLE_SHEET_URL_CASHEW}?sheetName=${encodeURIComponent(month + ' ' + year)}&t=${Date.now()}`;
 
             fetch(url)
-                .then(response => response.json())
-                .then(response => {
-                    allData = response.data || [];
-                    let availableBalance = response.availableBalance || 0;
-                    monthlyBalances = response.monthlyBalances || {};
-
+                .then(r => r.json())
+                .then(res => {
+                    allData = res.data || [];
+                    monthlyBalances = res.monthlyBalances || {};
                     populateCategoryFilter(allData);
-                    populateCategorySummary(allData);
+                    updateStats(res.availableBalance || 0);
+                    populateInsights(allData);
                     filterData();
-                    updatePeriodLabel();
-
-                    document.getElementById('available-balance-display').textContent = `Rs. ${availableBalance.toLocaleString('en-IN')}`;
-
                     loader.classList.add('hidden');
-                    fetchBtn.disabled = false;
                 })
-                .catch(error => {
-                    console.error('Error fetching report:', error);
+                .catch(e => {
+                    console.error(e);
                     loader.classList.add('hidden');
-                    fetchBtn.disabled = false;
-                    alert('⚠ Error fetching report: ' + error.message);
+                    alert('Error loading data');
                 });
         }
 
-        function populateCategoryFilter(data) {
-            const categoryFilter = document.getElementById('category-filter');
-            categoryFilter.innerHTML = '<option value="">All Categories</option>';
+        function updateStats(balance) {
+            let total = allData.reduce((acc, row) => acc + (row.amount || 0), 0);
+            document.getElementById('total-expenses-display').textContent = `Rs. ${total.toLocaleString('en-IN')}`;
+            document.getElementById('available-balance-display').textContent = `Rs. ${balance.toLocaleString('en-IN')}`;
 
-            const categories = new Set();
-            data.forEach(row => {
-                if (row.category) {
-                    categories.add(row.category);
-                }
-            });
-
-            Array.from(categories).sort().forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat;
-                option.textContent = cat;
-                categoryFilter.appendChild(option);
-            });
+            const monthVal = document.getElementById('month-select').value;
+            document.getElementById('selected-period-label').textContent = monthVal === 'All' ? 'All Time Records' : `${monthVal} ${document.getElementById('year-select').value}`;
         }
 
-        function populateCategorySummary(data) {
-            const container = document.getElementById('category-summary-grid');
-            const section = document.getElementById('category-summary-section');
+        function populateInsights(data) {
+            const container = document.getElementById('category-summary-section');
             container.innerHTML = '';
 
-            if (!data || data.length === 0) {
-                section.classList.add('hidden');
-                return;
-            }
+            if(!data.length) return;
 
-            section.classList.remove('hidden');
+            const categoryTotals = data.reduce((acc, row) => {
+                acc[row.category] = (acc[row.category] || 0) + row.amount;
+                return acc;
+            }, {});
 
-            const categoryTotals = {};
-            let totalExpenses = 0;
-            data.forEach(row => {
-                const cat = row.category;
-                if (cat) {
-                    if (!categoryTotals[cat]) categoryTotals[cat] = 0;
-                    categoryTotals[cat] += row.amount;
-                    totalExpenses += row.amount;
-                }
-            });
+            const sorted = Object.entries(categoryTotals).sort((a,b) => b[1] - a[1]);
+            const grandTotal = sorted.reduce((a,b) => a + b[1], 0);
 
-            const sortedCategories = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]);
-
-            sortedCategories.forEach(([cat, amount]) => {
-                if (!cat || cat.trim() === '' || cat.toLowerCase() === 'uncategorized') return;
-
-                const colorClass = getCategoryColor(cat);
-                const bgClass = colorClass.split(' ')[0];
-                const textClass = colorClass.split(' ')[1];
-                const borderClass = colorClass.split(' ')[2];
-                const barColor = textClass.replace('text-', 'bg-');
-
-                const percentage = totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0;
-
-                let iconClass = "fa-tag";
-                const c = cat.toLowerCase();
-                if(c.includes('home')) iconClass = "fa-house";
-                else if(c.includes('personal')) iconClass = "fa-user";
-                else if(c.includes('family')) iconClass = "fa-users";
-                else if(c.includes('baby')) iconClass = "fa-baby";
-                else if(c.includes('credit')) iconClass = "fa-credit-card";
-                else if(c.includes('emi')) iconClass = "fa-file-invoice-dollar";
-                else if(c.includes('food')) iconClass = "fa-utensils";
-                else if(c.includes('travel')) iconClass = "fa-plane";
-                else if(c.includes('fuel')) iconClass = "fa-gas-pump";
-                else if(c.includes('medical')) iconClass = "fa-notes-medical";
-                else if(c.includes('latha')) iconClass = "fa-gift";
-                else if(c.includes('mutual') || c.includes('investment')) iconClass = "fa-chart-line";
+            sorted.forEach(([cat, amount]) => {
+                const color = getCategoryColor(cat);
+                const percent = (amount / grandTotal * 100).toFixed(1);
 
                 const card = document.createElement('div');
-                card.className = "glass-card p-5 rounded-2xl hover:bg-white/5 transition-all duration-300 flex flex-col gap-4 group border border-white/5 hover:border-white/10";
-
+                card.className = "glass p-5 rounded-[2rem] bento-card border border-white/5";
                 card.innerHTML = `
-                    <div class="flex justify-between items-start">
+                    <div class="flex justify-between items-start mb-4">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl ${bgClass} flex items-center justify-center ${textClass} border ${borderClass}">
-                                <i class="fa-solid ${iconClass}"></i>
+                            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:${color.bg};color:${color.main}">
+                                <i class="fa-solid ${color.icon}"></i>
                             </div>
                             <div>
-                                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider" data-translate-key="category">Category</p>
-                                <h4 class="font-bold text-white text-sm leading-tight mt-0.5">${cat}</h4>
+                                <h4 class="font-bold text-white text-sm">${cat}</h4>
+                                <p class="text-[10px] text-gray-500 font-bold uppercase">${percent}% of total</p>
                             </div>
                         </div>
-                        <span class="text-[10px] font-bold ${bgClass} ${textClass} px-2 py-1 rounded-lg border ${borderClass}">
-                            ${percentage.toFixed(1)}%
-                        </span>
+                        <div class="text-right">
+                            <p class="text-lg font-black text-white font-mono">Rs. ${amount.toLocaleString('en-IN')}</p>
+                        </div>
                     </div>
-
-                    <div>
-                        <h3 class="text-xl font-bold text-white font-mono">Rs. ${amount.toLocaleString('en-IN')}</h3>
-                    </div>
-
-                    <div class="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
-                        <div class="${barColor} h-1.5 rounded-full transition-all duration-1000 ease-out" style="width: ${percentage}%"></div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width:0;background:${color.main}"></div>
                     </div>
                 `;
                 container.appendChild(card);
+                setTimeout(() => {
+                    card.querySelector('.progress-fill').style.width = percent + '%';
+                }, 100);
             });
         }
 
-        function toggleCategorySummary() {
-            const content = document.getElementById('category-summary-content');
-            const icon = document.getElementById('category-summary-icon');
-
-            if (content.classList.contains('hidden')) {
-                content.classList.remove('hidden');
-                icon.classList.add('rotate-90');
-            } else {
-                content.classList.add('hidden');
-                icon.classList.remove('rotate-90');
-            }
-        }
-
-        function toggleExpenseDetails() {
-            const content = document.getElementById('report-body-container');
-            const icon = document.getElementById('expense-details-icon');
-
-            if (content.classList.contains('hidden')) {
-                content.classList.remove('hidden');
-                icon.classList.add('rotate-90');
-            } else {
-                content.classList.add('hidden');
-                icon.classList.remove('rotate-90');
-            }
+        function populateCategoryFilter(data) {
+            const filter = document.getElementById('category-filter');
+            filter.innerHTML = '<option value="">All Categories</option>';
+            const cats = [...new Set(data.map(r => r.category))].sort();
+            cats.forEach(c => {
+                const o = document.createElement('option');
+                o.value = c; o.textContent = c;
+                filter.appendChild(o);
+            });
         }
 
         function filterData() {
-            const searchInput = document.getElementById('search-input');
-            const clearBtn = document.getElementById('clear-search-btn');
-            const searchTerm = searchInput.value.toLowerCase();
-            const selectedCategory = document.getElementById('category-filter').value;
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const catFilter = document.getElementById('category-filter').value;
 
-            if (searchTerm.length > 0) {
-                clearBtn.classList.remove('hidden');
-            } else {
-                clearBtn.classList.add('hidden');
-            }
-
-            const filteredData = allData.filter(row => {
-                const matchesSearch = String(row.description || '').toLowerCase().includes(searchTerm);
-                const matchesCategory = selectedCategory === '' || row.category === selectedCategory;
-                return matchesSearch && matchesCategory;
+            const filtered = allData.filter(r => {
+                const mSearch = String(r.description || '').toLowerCase().includes(search);
+                const mCat = !catFilter || r.category === catFilter;
+                return mSearch && mCat;
             });
 
-            populateTable(filteredData);
+            renderTransactions(filtered);
         }
 
-        function clearSearch() {
-            const searchInput = document.getElementById('search-input');
-            searchInput.value = '';
-            filterData();
+        function formatDate(iso) {
+            const d = new Date(iso);
+            if(isNaN(d.getTime())) return iso;
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            return `${d.getDate().toString().padStart(2,'0')}/${months[d.getMonth()]}/${d.getFullYear()}`;
         }
 
-        function populateTable(data) {
-            const reportBody = document.getElementById('report-body');
-            reportBody.innerHTML = '';
-            let total = 0;
-            const isDisplayAll = document.getElementById('month-select').value === 'All';
+        function renderTransactions(data) {
+            const body = document.getElementById('report-body');
+            body.innerHTML = '';
 
-            if (data && data.length > 0) {
-                const groupedData = {};
+            if(!data.length) {
+                body.innerHTML = '<div class="py-12 text-center text-gray-500 text-xs uppercase tracking-widest">No matching records</div>';
+                return;
+            }
 
-                data.forEach(row => {
-                    let groupKey;
-                    let rawDateObj = new Date(row.date);
-                    const dateStr = formatDateToDDMMMYYYY(row.date);
+            // Group by date
+            const grouped = data.reduce((acc, r) => {
+                const date = formatDate(r.date);
+                if(!acc[date]) acc[date] = { items: [], total: 0 };
+                acc[date].items.push(r);
+                acc[date].total += r.amount;
+                return acc;
+            }, {});
 
-                    // Parse date if needed
-                    if (isNaN(rawDateObj.getTime())) {
-                        const parts = dateStr.split('/');
-                        if (parts.length === 3) {
-                            const day = parseInt(parts[0]);
-                            const monthStr = parts[1];
-                            const year = parseInt(parts[2]);
-                            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                            const monthIndex = months.indexOf(monthStr);
-                            if (monthIndex !== -1) {
-                                rawDateObj = new Date(year, monthIndex, day);
-                            }
-                        }
-                    }
+            Object.entries(grouped).sort((a,b) => new Date(b[0]) - new Date(a[0])).forEach(([date, group], idx) => {
+                const dateBlock = document.createElement('div');
+                dateBlock.className = "space-y-3";
 
-                    if (isDisplayAll) {
-                        // Group by Month Year (e.g., "Mar 2024")
-                        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                        if (!isNaN(rawDateObj.getTime())) {
-                            groupKey = `${monthNames[rawDateObj.getMonth()]} ${rawDateObj.getFullYear()}`;
-                        } else {
-                            groupKey = "Unknown Date";
-                        }
-                    } else {
-                        // Group by Date (e.g., "15/Mar/2024")
-                        groupKey = dateStr;
-                    }
-
-                    if (!groupedData[groupKey]) {
-                        groupedData[groupKey] = {
-                            total: 0,
-                            items: [],
-                            rawDate: rawDateObj,
-                            displayKey: groupKey
-                        };
-                    }
-
-                    if (isDisplayAll && groupedData[groupKey].items.length === 0) {
-                         if (!isNaN(rawDateObj.getTime())) {
-                             groupedData[groupKey].rawDate = new Date(rawDateObj.getFullYear(), rawDateObj.getMonth(), 1);
-                         }
-                    }
-
-                    groupedData[groupKey].items.push(row);
-                    groupedData[groupKey].total += row.amount;
-                    total += row.amount;
-                });
-
-                const sortedKeys = Object.keys(groupedData).sort((a, b) => groupedData[b].rawDate - groupedData[a].rawDate);
-
-                sortedKeys.forEach((key, index) => {
-                    const group = groupedData[key];
-
-                    let headerHtml = '';
-
-                    if (isDisplayAll) {
-                        // Month Year Header
-                        const [monthStr, yearStr] = key.split(' ');
-                        const monthBalance = monthlyBalances[key] || 0;
-
-                        headerHtml = `
-                            <div class="flex items-center gap-4">
-                                <div class="w-14 h-14 rounded-xl bg-[#0b0f19]/60 flex flex-col items-center justify-center font-bold border border-white/10 shadow-inner">
-                                    <span class="text-[10px] uppercase text-gray-500 tracking-wider">${yearStr || ''}</span>
-                                    <span class="text-xl text-white">${monthStr || ''}</span>
-                                </div>
-                                <div>
-                                    <div class="flex items-center gap-4">
-                                        <div>
-                                            <p class="text-[10px] text-gray-400 font-medium mb-0.5 uppercase tracking-wider">Expenses</p>
-                                            <h4 class="font-bold text-white text-base font-mono">Rs. ${group.total.toLocaleString('en-IN')}</h4>
-                                        </div>
-                                        <div class="w-px h-6 bg-white/10"></div>
-                                        <div>
-                                            <p class="text-[10px] text-gray-400 font-medium mb-0.5 uppercase tracking-wider">Available</p>
-                                            <h4 class="font-bold text-emerald-400 text-base font-mono">Rs. ${monthBalance.toLocaleString('en-IN')}</h4>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 flex items-center justify-center">
-                                    <i id="icon-${index}" class="fa-solid fa-chevron-right transition-transform duration-200 text-gray-500 text-sm"></i>
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        // Date Header (Existing Logic)
-                        let dayDisplay = "--";
-                        let monthDisplay = "---";
-                        let weekdayDisplay = "";
-
-                        if (group.displayKey) {
-                            const parts = group.displayKey.split('/');
-                            if (parts.length === 3) {
-                                dayDisplay = parts[0];
-                                monthDisplay = parts[1];
-
-                                if (!isNaN(group.rawDate.getTime())) {
-                                    weekdayDisplay = group.rawDate.toLocaleString('default', { weekday: 'long' });
-                                }
-                            }
-                        }
-
-                        headerHtml = `
-                            <div class="flex items-center gap-4">
-                                <div class="w-14 h-14 rounded-xl bg-[#0b0f19]/60 flex flex-col items-center justify-center font-bold border border-white/10 shadow-inner">
-                                    <span class="text-[10px] uppercase text-gray-500 tracking-wider">${monthDisplay}</span>
-                                    <span class="text-xl text-white">${dayDisplay}</span>
-                                </div>
-                                <div>
-                                    <p class="text-xs text-gray-400 font-medium mb-0.5">${weekdayDisplay}</p>
-                                    <h4 class="font-bold text-white text-base font-mono">Rs. ${group.total.toLocaleString('en-IN')}</h4>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <button onclick="event.stopPropagation(); editDateEntries('${key}')" class="w-9 h-9 rounded-full bg-white/5 hover:bg-indigo-500/20 text-gray-400 hover:text-indigo-400 transition-all flex items-center justify-center border border-white/5 hover:border-indigo-500/30" title="Edit Entries">
-                                    <i class="fa-solid fa-pen text-xs"></i>
-                                </button>
-                                <div class="w-8 h-8 flex items-center justify-center">
-                                    <i id="icon-${index}" class="fa-solid fa-chevron-right transition-transform duration-200 text-gray-500 text-sm"></i>
-                                </div>
-                            </div>
-                        `;
-                    }
-
-                    const accordionHeader = document.createElement('div');
-                    accordionHeader.className = "glass-card p-4 rounded-2xl flex justify-between items-center cursor-pointer hover:bg-white/5 transition-colors border border-white/5";
-                    accordionHeader.onclick = () => toggleDetails(index);
-                    accordionHeader.innerHTML = headerHtml;
-                    reportBody.appendChild(accordionHeader);
-
-                    const accordionContent = document.createElement('div');
-                    accordionContent.id = `details-${index}`;
-                    accordionContent.className = "hidden p-2 pl-4 sm:pl-20 space-y-2";
-
-                    if (isDisplayAll) {
-                        // For Display All, we need to group by date inside the month accordion
-                        const subGroupedData = {};
-                        group.items.forEach(item => {
-                            const dateKey = formatDateToDDMMMYYYY(item.date);
-                            if (!subGroupedData[dateKey]) {
-                                let rawDateObj = new Date(item.date);
-                                if (isNaN(rawDateObj.getTime())) {
-                                    const parts = dateKey.split('/');
-                                    if (parts.length === 3) {
-                                        const day = parseInt(parts[0]);
-                                        const monthStr = parts[1];
-                                        const year = parseInt(parts[2]);
-                                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                                        const monthIndex = months.indexOf(monthStr);
-                                        if (monthIndex !== -1) {
-                                            rawDateObj = new Date(year, monthIndex, day);
-                                        }
-                                    }
-                                }
-                                subGroupedData[dateKey] = { total: 0, items: [], rawDate: rawDateObj, displayKey: dateKey };
-                            }
-                            subGroupedData[dateKey].items.push(item);
-                            subGroupedData[dateKey].total += item.amount;
-                        });
-
-                        const sortedSubKeys = Object.keys(subGroupedData).sort((a, b) => subGroupedData[b].rawDate - subGroupedData[a].rawDate);
-
-                        sortedSubKeys.forEach((subKey, subIndex) => {
-                            const subGroup = subGroupedData[subKey];
-                            const uniqueSubId = `${index}-${subIndex}`;
-
-                            // Date Header for Subgroup
-                            let dayDisplay = "--";
-                            let monthDisplay = "---";
-                            let weekdayDisplay = "";
-
-                            if (subGroup.displayKey) {
-                                const parts = subGroup.displayKey.split('/');
-                                if (parts.length === 3) {
-                                    dayDisplay = parts[0];
-                                    monthDisplay = parts[1];
-
-                                    if (!isNaN(subGroup.rawDate.getTime())) {
-                                        weekdayDisplay = subGroup.rawDate.toLocaleString('default', { weekday: 'long' });
-                                    }
-                                }
-                            }
-
-                            const subHeader = document.createElement('div');
-                            subHeader.className = "glass-card p-3 rounded-xl flex justify-between items-center cursor-pointer hover:bg-white/5 transition-colors border border-white/5 mt-2";
-                            subHeader.onclick = (e) => {
-                                e.stopPropagation();
-                                toggleDetails(uniqueSubId);
-                            };
-                            subHeader.innerHTML = `
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-lg bg-[#0b0f19]/60 flex flex-col items-center justify-center font-bold border border-white/10 shadow-inner">
-                                        <span class="text-[8px] uppercase text-gray-500 tracking-wider">${monthDisplay}</span>
-                                        <span class="text-sm text-white">${dayDisplay}</span>
-                                    </div>
-                                    <div>
-                                        <p class="text-[10px] text-gray-400 font-medium mb-0.5">${weekdayDisplay}</p>
-                                        <h4 class="font-bold text-white text-sm font-mono">Rs. ${subGroup.total.toLocaleString('en-IN')}</h4>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <button onclick="event.stopPropagation(); editDateEntries('${subKey}')" class="w-7 h-7 rounded-full bg-white/5 hover:bg-indigo-500/20 text-gray-400 hover:text-indigo-400 transition-all flex items-center justify-center border border-white/5 hover:border-indigo-500/30" title="Edit Entries">
-                                        <i class="fa-solid fa-pen text-[10px]"></i>
-                                    </button>
-                                    <div class="w-6 h-6 flex items-center justify-center">
-                                        <i id="icon-${uniqueSubId}" class="fa-solid fa-chevron-right transition-transform duration-200 text-gray-500 text-xs"></i>
-                                    </div>
-                                </div>
-                            `;
-                            accordionContent.appendChild(subHeader);
-
-                            const subContent = document.createElement('div');
-                            subContent.id = `details-${uniqueSubId}`;
-                            subContent.className = "hidden p-2 pl-4 space-y-2";
-
-                            let subDetailsHtml = '';
-                            subGroup.items.forEach(item => {
-                                const categoryColor = getCategoryColor(item.category);
-                                const bgClass = categoryColor.split(' ')[0];
-                                const textClass = categoryColor.split(' ')[1];
-                                const borderClass = categoryColor.split(' ')[2];
-
-                                let iconClass = "fa-tag";
-                                const c = (item.category || '').toLowerCase();
-                                if(c.includes('home')) iconClass = "fa-house";
-                                else if(c.includes('personal')) iconClass = "fa-user";
-                                else if(c.includes('family')) iconClass = "fa-users";
-                                else if(c.includes('baby')) iconClass = "fa-baby";
-                                else if(c.includes('credit')) iconClass = "fa-credit-card";
-                                else if(c.includes('emi')) iconClass = "fa-file-invoice-dollar";
-                                else if(c.includes('food')) iconClass = "fa-utensils";
-                                else if(c.includes('travel')) iconClass = "fa-plane";
-                                else if(c.includes('fuel')) iconClass = "fa-gas-pump";
-                                else if(c.includes('medical')) iconClass = "fa-notes-medical";
-                                else if(c.includes('latha')) iconClass = "fa-gift";
-                                else if(c.includes('mutual') || c.includes('investment')) iconClass = "fa-chart-line";
-
-                                subDetailsHtml += `
-                                    <div class="glass-card p-3 rounded-lg border border-white/5 flex items-center justify-between hover:bg-white/5 transition-all group">
-                                        <div class="flex items-center gap-3 overflow-hidden">
-                                            <div class="w-8 h-8 rounded-full ${bgClass} flex items-center justify-center ${textClass} flex-shrink-0 border ${borderClass}">
-                                                <i class="fa-solid ${iconClass} text-xs"></i>
-                                            </div>
-                                            <div class="min-w-0">
-                                                <h4 class="font-semibold text-white text-xs truncate">${item.category}</h4>
-                                                <p class="text-[10px] text-gray-400 mt-0.5 truncate pr-2">${item.description}</p>
-                                            </div>
-                                        </div>
-                                        <span class="font-bold text-white text-xs whitespace-nowrap font-mono pl-2">Rs. ${item.amount.toLocaleString('en-IN')}</span>
-                                    </div>
-                                `;
-                            });
-                            subContent.innerHTML = subDetailsHtml;
-                            accordionContent.appendChild(subContent);
-                        });
-
-                    } else {
-                        // Regular view (single month)
-                        let detailsHtml = '';
-                        group.items.forEach(item => {
-                            const categoryColor = getCategoryColor(item.category);
-                            const bgClass = categoryColor.split(' ')[0];
-                            const textClass = categoryColor.split(' ')[1];
-                            const borderClass = categoryColor.split(' ')[2];
-
-                            let iconClass = "fa-tag";
-                            const c = (item.category || '').toLowerCase();
-                            if(c.includes('home')) iconClass = "fa-house";
-                            else if(c.includes('personal')) iconClass = "fa-user";
-                            else if(c.includes('family')) iconClass = "fa-users";
-                            else if(c.includes('baby')) iconClass = "fa-baby";
-                            else if(c.includes('credit')) iconClass = "fa-credit-card";
-                            else if(c.includes('emi')) iconClass = "fa-file-invoice-dollar";
-                            else if(c.includes('food')) iconClass = "fa-utensils";
-                            else if(c.includes('travel')) iconClass = "fa-plane";
-                            else if(c.includes('fuel')) iconClass = "fa-gas-pump";
-                            else if(c.includes('medical')) iconClass = "fa-notes-medical";
-                            else if(c.includes('latha')) iconClass = "fa-gift";
-                            else if(c.includes('mutual') || c.includes('investment')) iconClass = "fa-chart-line";
-
-                            detailsHtml += `
-                                <div class="glass-card p-4 rounded-xl border border-white/5 flex items-center justify-between hover:bg-white/5 transition-all group">
-                                    <div class="flex items-center gap-4 overflow-hidden">
-                                        <div class="w-10 h-10 rounded-full ${bgClass} flex items-center justify-center ${textClass} flex-shrink-0 border ${borderClass}">
-                                            <i class="fa-solid ${iconClass} text-sm"></i>
-                                        </div>
-                                        <div class="min-w-0">
-                                            <h4 class="font-semibold text-white text-sm truncate">${item.category}</h4>
-                                            <p class="text-xs text-gray-400 mt-0.5 truncate pr-2">${item.description}</p>
-                                        </div>
-                                    </div>
-                                    <span class="font-bold text-white text-sm whitespace-nowrap font-mono pl-2">Rs. ${item.amount.toLocaleString('en-IN')}</span>
-                                </div>
-                            `;
-                        });
-                        accordionContent.innerHTML = detailsHtml;
-                    }
-
-                    reportBody.appendChild(accordionContent);
-                });
-            } else {
-                const noData = document.createElement('div');
-                noData.className = "py-16 text-center";
-                noData.innerHTML = `
-                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/5 mb-4">
-                        <i class="fa-regular fa-folder-open text-3xl text-gray-600"></i>
-                    </div>
-                    <p class="text-gray-400 font-medium" data-translate-key="noRecordsFound">No expenses found matching your criteria.</p>
+                const header = document.createElement('div');
+                header.className = "flex justify-between items-center px-4 py-1.5";
+                header.innerHTML = `
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-day text-indigo-400/50"></i> ${date}
+                    </span>
+                    <span class="text-[10px] font-bold text-indigo-400 font-mono bg-indigo-500/10 px-2 py-0.5 rounded-lg border border-indigo-500/20">Rs. ${group.total.toLocaleString('en-IN')}</span>
                 `;
-                reportBody.appendChild(noData);
-            }
-            document.getElementById('total-expenses-display').textContent = `Rs. ${total.toLocaleString('en-IN')}`;
+                dateBlock.appendChild(header);
+
+                group.items.forEach(item => {
+                    const color = getCategoryColor(item.category);
+                    const row = document.createElement('div');
+                    row.className = "glass p-4 rounded-2xl flex items-center justify-between border border-white/5 hover:bg-white/10 transition-all cursor-pointer group/item transaction-item";
+                    row.style.color = color.main;
+                    row.onclick = () => editDateEntries(date);
+                    row.innerHTML = `
+                        <div class="flex items-center gap-4 overflow-hidden">
+                            <div class="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center text-base shadow-inner transition-transform group-hover/item:scale-110" style="background:${color.bg};color:${color.main}">
+                                <i class="fa-solid ${color.icon}"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <h4 class="text-xs font-bold text-white group-hover/item:text-indigo-400 transition-colors">${item.category}</h4>
+                                <p class="text-[10px] text-gray-500 truncate mt-0.5 group-hover/item:text-gray-400">${item.description || 'No description'}</p>
+                            </div>
+                        </div>
+                        <div class="text-right pl-4">
+                            <p class="text-sm font-bold text-white font-mono group-hover/item:scale-105 transition-transform">Rs. ${item.amount.toLocaleString('en-IN')}</p>
+                            <div class="flex items-center justify-end gap-1 mt-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                <span class="text-[8px] text-gray-500 uppercase font-bold">Edit</span>
+                                <i class="fa-solid fa-chevron-right text-[8px] text-gray-600"></i>
+                            </div>
+                        </div>
+                    `;
+                    dateBlock.appendChild(row);
+                });
+                body.appendChild(dateBlock);
+            });
         }
 
-        function toggleDetails(index) {
-            const detailsRow = document.getElementById(`details-${index}`);
-            const icon = document.getElementById(`icon-${index}`);
-            if (detailsRow.classList.contains('hidden')) {
-                detailsRow.classList.remove('hidden');
-                icon.classList.add('rotate-90');
-            } else {
-                detailsRow.classList.add('hidden');
-                icon.classList.remove('rotate-90');
-            }
-        }
-
-        function editDateEntries(dateKey) {
-            const entriesForDate = allData.filter(item => formatDateToDDMMMYYYY(item.date) === dateKey);
-            if (entriesForDate.length > 0) {
-                localStorage.setItem('cashewEditData', JSON.stringify(entriesForDate));
+        function editDateEntries(date) {
+            const entries = allData.filter(i => formatDate(i.date) === date);
+            if(entries.length) {
+                localStorage.setItem('cashewEditData', JSON.stringify(entries));
                 window.location.href = 'cashew.html';
-            } else {
-                alert('No data found for this date to edit.');
             }
         }
 
         // --- Export Logic ---
-        let exportableContent = '';
-        let exportableFilename = '';
-
         function openExportOptions() {
             const modal = document.getElementById('export-options-modal');
-
-            // Populate Categories and set default
-            const categorySelect = document.getElementById('export-category-select');
-            categorySelect.innerHTML = '<option value="All">All Categories</option>';
-            const categories = new Set();
-            const mainCategoryFilter = document.getElementById('category-filter');
-            for (let i = 1; i < mainCategoryFilter.options.length; i++) {
-                categories.add(mainCategoryFilter.options[i].value);
-            }
-            Array.from(categories).sort().forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat;
-                option.textContent = cat;
-                categorySelect.appendChild(option);
+            const catSelect = document.getElementById('export-category-select');
+            catSelect.innerHTML = '<option value="All">All Categories</option>';
+            [...new Set(allData.map(r => r.category))].sort().forEach(c => {
+                const o = document.createElement('option');
+                o.value = c; o.textContent = c;
+                catSelect.appendChild(o);
             });
-            categorySelect.value = 'Home'; // Default to Home
 
-            // Populate Month/Year selectors
+            // Populate dates
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const currentYear = new Date().getFullYear();
-            const currentMonthIndex = new Date().getMonth();
+            const yearSelects = [document.getElementById('export-from-year-select'), document.getElementById('export-to-year-select')];
+            const monthSelects = [document.getElementById('export-from-month-select'), document.getElementById('export-to-month-select')];
 
-            const populateMonthSelect = (selectElementId) => {
-                const select = document.getElementById(selectElementId);
-                if (select.options.length > 1) return;
-                select.innerHTML = '';
-                months.forEach(month => {
-                    const option = document.createElement('option');
-                    option.value = month;
-                    option.textContent = month;
-                    select.appendChild(option);
-                });
-            };
-
-            const populateYearSelect = (selectElementId) => {
-                const select = document.getElementById(selectElementId);
-                if (select.options.length > 1) return;
-                select.innerHTML = '';
-                for (let year = currentYear + 5; year >= 2020; year--) {
-                    const option = document.createElement('option');
-                    option.value = String(year);
-                    option.textContent = String(year);
-                    select.appendChild(option);
-                }
-            };
-
-            populateMonthSelect('export-from-month-select');
-            populateYearSelect('export-from-year-select');
-            populateMonthSelect('export-to-month-select');
-            populateYearSelect('export-to-year-select');
-
-            // Pre-fill with current month and year
-            document.getElementById('export-from-month-select').value = months[currentMonthIndex];
-            document.getElementById('export-from-year-select').value = String(currentYear);
-            document.getElementById('export-to-month-select').value = months[currentMonthIndex];
-            document.getElementById('export-to-year-select').value = String(currentYear);
-
-            // Set checkbox to unchecked by default
-            const currentMonthCheckbox = document.getElementById('export-current-month-only');
-            currentMonthCheckbox.checked = false;
-
-            // Update UI based on checkbox state
-            toggleExportCurrentMonth();
+            const curYear = new Date().getFullYear();
+            yearSelects.forEach(s => {
+                s.innerHTML = '';
+                for(let y=curYear; y>=2020; y--) { s.innerHTML += `<option value="${y}">${y}</option>`; }
+            });
+            monthSelects.forEach(s => {
+                s.innerHTML = months.map(m => `<option value="${m}">${m}</option>`).join('');
+            });
 
             modal.classList.remove('hidden');
-            modal.classList.add('flex');
         }
 
-
+        function closeExportOptions() { document.getElementById('export-options-modal').classList.add('hidden'); }
         function toggleExportCurrentMonth() {
-            const checkbox = document.getElementById('export-current-month-only');
-            const fromMonth = document.getElementById('export-from-month-select');
-            const fromYear = document.getElementById('export-from-year-select');
-            const toMonth = document.getElementById('export-to-month-select');
-            const toYear = document.getElementById('export-to-year-select');
-
-            const fields = [fromMonth, fromYear, toMonth, toYear];
-
-            if (checkbox.checked) {
-                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                const now = new Date();
-                const currentMonthName = months[now.getMonth()];
-                const currentYearStr = String(now.getFullYear());
-
-                fromMonth.value = currentMonthName;
-                fromYear.value = currentYearStr;
-                toMonth.value = currentMonthName;
-                toYear.value = currentYearStr;
-
-                fields.forEach(el => {
-                    el.disabled = true;
-                    el.parentElement.classList.add('opacity-50', 'cursor-not-allowed');
-                });
-            } else {
-                fields.forEach(el => {
-                    el.disabled = false;
-                    el.parentElement.classList.remove('opacity-50', 'cursor-not-allowed');
-                });
-            }
-        }
-
-        function closeExportOptions() {
-            const modal = document.getElementById('export-options-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+            const checked = document.getElementById('export-current-month-only').checked;
+            const fields = ['export-from-month-select', 'export-from-year-select', 'export-to-month-select', 'export-to-year-select'];
+            fields.forEach(id => document.getElementById(id).disabled = checked);
         }
 
         function startExportProcess() {
@@ -1449,420 +770,122 @@
             loader.classList.remove('hidden');
 
             const category = document.getElementById('export-category-select').value;
-            const fromMonth = document.getElementById('export-from-month-select').value;
-            const fromYear = document.getElementById('export-from-year-select').value;
-            const toMonth = document.getElementById('export-to-month-select').value;
-            const toYear = document.getElementById('export-to-year-select').value;
+            const fM = document.getElementById('export-from-month-select').value;
+            const fY = document.getElementById('export-from-year-select').value;
+            const tM = document.getElementById('export-to-month-select').value;
+            const tY = document.getElementById('export-to-year-select').value;
 
-            const url = `${CONFIG.GOOGLE_SHEET_URL_CASHEW}?fetchAll=true&t=${new Date().getTime()}`;
-
-            fetch(url)
-                .then(response => response.json())
-                .then(response => {
+            fetch(`${CONFIG.GOOGLE_SHEET_URL_CASHEW}?fetchAll=true&t=${Date.now()}`)
+                .then(r => r.json())
+                .then(res => {
                     loader.classList.add('hidden');
-                    generateExportContentAndPreview(response.data || [], category, fromMonth, fromYear, toMonth, toYear);
+                    generateExportContent(res.data || [], category, fM, fY, tM, tY);
                 })
-                .catch(error => {
-                    console.error('Error fetching export data:', error);
-                    loader.classList.add('hidden');
-                    alert('⚠ Error fetching data for export: ' + error.message);
-                });
+                .catch(e => { loader.classList.add('hidden'); alert('Export failed'); });
         }
 
-        function closeExportPreview() {
-            const modal = document.getElementById('export-preview-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            // Clear content to free up memory
-            document.getElementById('export-content-preview').textContent = '';
-            exportableContent = '';
-            exportableFilename = '';
-        }
+        function generateExportContent(data, category, fM, fY, tM, tY) {
+            // Re-using the logic from the previous version but simplified
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            const start = new Date(fY, months.indexOf(fM), 1);
+            const end = new Date(tY, months.indexOf(tM) + 1, 0);
 
-        function copyReportToClipboard() {
-            if (!exportableContent) {
-                alert('No report content to copy.');
-                return;
-            }
-
-            navigator.clipboard.writeText(exportableContent).then(() => {
-                const copyBtn = document.getElementById('copy-report-btn');
-                const originalContent = copyBtn.innerHTML;
-                copyBtn.innerHTML = `
-                    <i class="fa-solid fa-check"></i>
-                    <span>Copied!</span>
-                `;
-                copyBtn.disabled = true;
-
-                setTimeout(() => {
-                    copyBtn.innerHTML = originalContent;
-                    copyBtn.disabled = false;
-                }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy text: ', err);
-                alert('Failed to copy report. Please try again.');
+            let filtered = data.filter(i => {
+                const d = new Date(i.date);
+                const periodOk = d >= start && d <= end;
+                const catOk = category === 'All' || i.category === category;
+                return periodOk && catOk;
             });
+
+            if(!filtered.length) { alert('No data to export'); return; }
+
+            let text = `CASHEW REPORT\n${'='.repeat(30)}\n`;
+            text += `Period: ${fM} ${fY} - ${tM} ${tY}\n`;
+            text += `Category: ${category}\n${'='.repeat(30)}\n\n`;
+
+            let total = 0;
+            filtered.forEach(i => {
+                text += `${formatDate(i.date)} | ${i.category.padEnd(15)} | Rs. ${i.amount.toLocaleString('en-IN').padEnd(10)} | ${i.description}\n`;
+                total += i.amount;
+            });
+            text += `\n${'-'.repeat(30)}\nGRAND TOTAL: Rs. ${total.toLocaleString('en-IN')}\n${'='.repeat(30)}`;
+
+            document.getElementById('export-content-preview').textContent = text;
+            document.getElementById('export-preview-modal').classList.remove('hidden');
+
+            window._exportData = { text, filename: `Cashew_Report_${category}_${fM}${fY}.txt` };
+        }
+
+        function closeExportPreview() { document.getElementById('export-preview-modal').classList.add('hidden'); }
+        function copyReportToClipboard() {
+            navigator.clipboard.writeText(window._exportData.text).then(() => alert('Copied!'));
         }
 
         function triggerDownload() {
-            if (!exportableContent || !exportableFilename) {
-                alert('No data to download.');
-                return;
-            }
-
-            const blob = new Blob([exportableContent], { type: 'text/plain;charset=utf-8' });
-            const link = document.createElement('a');
+            const blob = new Blob([window._exportData.text], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', exportableFilename);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            const a = document.createElement('a');
+            a.href = url; a.download = window._exportData.filename;
+            a.click();
         }
 
         function triggerPdfDownload() {
-            if (!exportableContent || !exportableFilename) {
-                alert('No data to download.');
-                return;
-            }
-
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-
-            // Use Courier font to maintain the table-like alignment of the text report
-            doc.setFont("Courier");
+            doc.setFont("courier");
             doc.setFontSize(10);
-
-            const splitText = doc.splitTextToSize(exportableContent, 180);
-            let y = 10;
-            const pageHeight = doc.internal.pageSize.height;
-
-            splitText.forEach(line => {
-                if (y > pageHeight - 10) {
-                    doc.addPage();
-                    y = 10;
-                }
-                doc.text(line, 10, y);
-                y += 5;
-            });
-
-            const pdfFilename = exportableFilename.replace('.txt', '.pdf');
-            doc.save(pdfFilename);
+            const lines = doc.splitTextToSize(window._exportData.text, 180);
+            doc.text(lines, 10, 10);
+            doc.save(window._exportData.filename.replace('.txt', '.pdf'));
         }
 
-        function generateExportContentAndPreview(dataForExport, categoryName, fromMonth, fromYear, toMonth, toYear) {
-    if (!dataForExport || dataForExport.length === 0) {
-        alert('No data available to export for the selected criteria.');
-        return;
-    }
-
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const fromMonthIndex = months.indexOf(fromMonth);
-    const toMonthIndex = months.indexOf(toMonth);
-
-    const startDate = new Date(parseInt(fromYear), fromMonthIndex, 1);
-    const endDate = new Date(parseInt(toYear), toMonthIndex + 1, 0);
-
-    const filteredForPeriod = dataForExport.filter(item => {
-        const itemDate = new Date(item.date);
-        return itemDate >= startDate && itemDate <= endDate;
-    });
-
-    const expensesToExport = categoryName === 'All'
-        ? filteredForPeriod
-        : filteredForPeriod.filter(item => item.category && item.category.toLowerCase() === categoryName.toLowerCase());
-
-    if (expensesToExport.length === 0) {
-        alert(`No "${categoryName}" expenses found for the selected period.`);
-        return;
-    }
-
-    const groupedByMonthYear = expensesToExport.reduce((acc, item) => {
-        const itemDate = new Date(item.date);
-        const monthYearKey = `${months[itemDate.getMonth()]} ${itemDate.getFullYear()}`;
-        if (!acc[monthYearKey]) {
-            acc[monthYearKey] = {
-                items: [],
-                total: 0,
-                rawDate: new Date(itemDate.getFullYear(), itemDate.getMonth(), 1)
-            };
-        }
-        const amount = parseFloat(item.amount);
-        if (!isNaN(amount)) {
-            acc[monthYearKey].items.push(item);
-            acc[monthYearKey].total += amount;
-        }
-        return acc;
-    }, {});
-
-    const sortedMonthYearGroups = Object.keys(groupedByMonthYear).map(key => groupedByMonthYear[key])
-        .sort((a, b) => a.rawDate - b.rawDate);
-
-    const LINE_WIDTH = 70;
-    const lineSeparator = '='.repeat(LINE_WIDTH);
-    const subLineSeparator = '-'.repeat(LINE_WIDTH);
-
-    const periodLabel = `From ${fromMonth} ${fromYear} To ${toMonth} ${toYear}`;
-    const reportTitle = categoryName === 'All' ? 'ALL EXPENSES' : `${categoryName.toUpperCase()} EXPENSES`;
-
-    let grandTotal = 0;
-    sortedMonthYearGroups.forEach(monthGroup => grandTotal += monthGroup.total);
-
-    let textContent = '';
-    textContent += lineSeparator + '\n';
-    textContent += reportTitle.padStart(Math.floor((LINE_WIDTH + reportTitle.length) / 2)).padEnd(LINE_WIDTH) + '\n';
-    textContent += lineSeparator + '\n';
-    textContent += `Report for: ${periodLabel}`.padEnd(LINE_WIDTH) + '\n';
-    const grandTotalLabel = 'Grand Total: ';
-    const grandTotalValue = grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    textContent += `${grandTotalLabel}${grandTotalValue}\n`;
-    textContent += subLineSeparator + '\n';
-
-    sortedMonthYearGroups.forEach(monthGroup => {
-        const monthName = `${months[monthGroup.rawDate.getMonth()]} ${monthGroup.rawDate.getFullYear()}`;
-        const monthBalance = monthlyBalances[monthName] || 0; // Get monthly balance
-        const monthTotal = monthGroup.total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        const monthBalanceDisplay = monthBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-        textContent += `${monthName.padEnd(20)} Expenses: Rs. ${monthTotal.padEnd(15)} Available: Rs. ${monthBalanceDisplay}\n`;
-    });
-
-    textContent += subLineSeparator + '\n\n';
-
-    sortedMonthYearGroups.forEach(monthGroup => {
-        const monthYearHeader = `MONTH: ${months[monthGroup.rawDate.getMonth()]} ${monthGroup.rawDate.getFullYear()}`;
-        const monthTotalLabel = 'Monthly Total: ';
-        const monthTotalValue = monthGroup.total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-        textContent += monthYearHeader + '\n';
-        textContent += `${monthTotalLabel}${monthTotalValue}\n`;
-        textContent += subLineSeparator + '\n';
-
-        const groupedByDate = monthGroup.items.reduce((acc, item) => {
-            const dateKey = formatDateToDDMMMYYYY(item.date);
-            if (!acc[dateKey]) {
-                acc[dateKey] = {
-                    items: [],
-                    rawDate: new Date(item.date)
-                };
-            }
-            acc[dateKey].items.push(item);
-            return acc;
-        }, {});
-
-        const sortedDateGroups = Object.keys(groupedByDate).map(dateKey => groupedByDate[dateKey])
-            .sort((a, b) => a.rawDate - b.rawDate);
-
-        sortedDateGroups.forEach(dateGroup => {
-            const dateHeader = `  DATE: ${formatDateToDDMMMYYYY(dateGroup.rawDate)}`;
-            textContent += dateHeader + '\n';
-
-            dateGroup.items.forEach(item => {
-                const description = item.description || 'No description';
-                const amount = parseFloat(item.amount);
-                const amountDisplay = !isNaN(amount) ? amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A';
-                const category = item.category || 'N/A';
-
-                const categoryPart = `    Category: ${category}`;
-                const amountPart = `    Amount: Rs. ${amountDisplay}`;
-                const descPart = `    Description: ${description}`;
-
-                textContent += categoryPart + '\n';
-                textContent += amountPart + '\n';
-                textContent += descPart + '\n';
-                textContent += '\n';
-            });
-        });
-        textContent += lineSeparator + '\n\n';
-    });
-
-    textContent += lineSeparator + '\n';
-
-    exportableContent = textContent;
-
-    let filename = `${categoryName.replace(' ', '_')}_Expenses_${fromMonth}${fromYear}_to_${toMonth}${toYear}.txt`;
-    exportableFilename = filename;
-
-    document.getElementById('export-content-preview').textContent = exportableContent;
-    document.getElementById('download-export-btn').onclick = triggerDownload;
-    document.getElementById('download-pdf-btn').onclick = triggerPdfDownload;
-    const modal = document.getElementById('export-preview-modal');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-}
+        document.getElementById('download-export-btn').onclick = triggerDownload;
+        document.getElementById('download-pdf-btn').onclick = triggerPdfDownload;
 
         // Calculator Logic
         let calcExpression = "";
-
-        function toggleCalculator() {
-            const modal = document.getElementById('calculator-modal');
-            const isHidden = modal.classList.toggle('hidden');
-
-            if (!isHidden) {
-                modal.focus();
-            }
-        }
-
+        function toggleCalculator() { document.getElementById('calculator-modal').classList.toggle('hidden'); }
+        function calcAppend(v) { calcExpression += v; updateCalcUI(); }
+        function calcClear() { calcExpression = ""; updateCalcUI(); }
+        function calcDelete() { calcExpression = calcExpression.slice(0,-1); updateCalcUI(); }
         function updateCalcUI() {
-            const display = document.getElementById('calc-display');
-            const history = document.getElementById('calc-history');
-
-            const operators = ['+', '-', '*', '/'];
-            let splitIndex = -1;
-
-            // Find last operator
-            for (let i = calcExpression.length - 1; i >= 0; i--) {
-                if (operators.includes(calcExpression[i])) {
-                    splitIndex = i;
-                    break;
-                }
-            }
-
-            if (splitIndex !== -1) {
-                history.textContent = calcExpression.substring(0, splitIndex + 1);
-                display.textContent = calcExpression.substring(splitIndex + 1);
-            } else {
-                history.textContent = "";
-                display.textContent = calcExpression || "0";
-            }
+            const hist = document.getElementById('calc-history');
+            const disp = document.getElementById('calc-display');
+            const ops = ['+','-','*','/'];
+            let lastIdx = -1;
+            for(let i=calcExpression.length-1; i>=0; i--) if(ops.includes(calcExpression[i])) { lastIdx = i; break; }
+            if(lastIdx !== -1) {
+                hist.textContent = calcExpression.slice(0, lastIdx+1);
+                disp.textContent = calcExpression.slice(lastIdx+1);
+            } else { hist.textContent = ""; disp.textContent = calcExpression || "0"; }
         }
-
-        function calcAppend(val) {
-            if (calcExpression === "" && ["/", "*", "+"].includes(val)) return;
-            calcExpression += val;
-            updateCalcUI();
-        }
-
-        function calcClear() {
-            calcExpression = "";
-            document.getElementById('calc-history').textContent = "";
-            document.getElementById('calc-display').textContent = "0";
-        }
-
-        function calcDelete() {
-            calcExpression = calcExpression.slice(0, -1);
-            updateCalcUI();
-        }
-
         function calcResult() {
             try {
-                if (!calcExpression) return;
-
-                // Handle trailing operators by removing them
-                let expressionToEval = calcExpression;
-                const operators = ['+', '-', '*', '/'];
-                while (expressionToEval.length > 0 && operators.includes(expressionToEval.slice(-1))) {
-                    expressionToEval = expressionToEval.slice(0, -1);
-                }
-
-                if (!expressionToEval) return;
-
-                const result = eval(expressionToEval);
-                document.getElementById('calc-history').textContent = expressionToEval + " =";
-                document.getElementById('calc-display').textContent = result;
-                calcExpression = String(result);
-            } catch (e) {
-                document.getElementById('calc-display').textContent = "Error";
-                calcExpression = "";
-            }
+                let res = eval(calcExpression);
+                document.getElementById('calc-history').textContent = calcExpression + " =";
+                document.getElementById('calc-display').textContent = res;
+                calcExpression = String(res);
+            } catch(e) { document.getElementById('calc-display').textContent = "Error"; calcExpression = ""; }
         }
 
-        // Keyboard support for calculator
-        document.addEventListener('keydown', function(event) {
-            const modal = document.getElementById('calculator-modal');
-            if (!modal || modal.classList.contains('hidden')) return;
-            const key = event.key;
-            if (/[0-9]/.test(key)) { calcAppend(key); }
-            else if (['+', '-', '*', '/', '.'].includes(key)) { calcAppend(key); }
-            else if (key === 'Enter' || key === '=') { event.preventDefault(); calcResult(); }
-            else if (key === 'Backspace') { calcDelete(); }
-            else if (key === 'Escape') { toggleCalculator(); }
-            else if (key === 'c' || key === 'C') { calcClear(); }
+        // Pull to refresh logic
+        let touchStartY = 0;
+        document.addEventListener('touchstart', e => touchStartY = e.touches[0].clientY, {passive: true});
+        document.addEventListener('touchmove', e => {
+            const touchY = e.touches[0].clientY;
+            const diff = touchY - touchStartY;
+            if(window.scrollY === 0 && diff > 100) document.getElementById('ptr').classList.add('active');
+        }, {passive: true});
+        document.addEventListener('touchend', e => {
+            const ptr = document.getElementById('ptr');
+            if(ptr.classList.contains('active')) {
+                fetchReport();
+                setTimeout(() => ptr.classList.remove('active'), 1000);
+            }
         });
 
         init();
-
-        // ===== MOBILE ENHANCEMENTS =====
-        function showToast(msg, type = 'success', duration = 2800) {
-            let toast = document.getElementById('kt-toast');
-            if (!toast) {
-                toast = document.createElement('div');
-                toast.id = 'kt-toast';
-                document.body.appendChild(toast);
-            }
-            const icon = type === 'success' ? '✓' : '✕';
-            const color = type === 'success' ? '#34d399' : '#f87171';
-            toast.innerHTML = `<span style="color:${color};font-size:1rem;">${icon}</span> ${msg}`;
-            toast.className = `kt-toast ${type}`;
-            requestAnimationFrame(() => toast.classList.add('show'));
-            clearTimeout(toast._timer);
-            toast._timer = setTimeout(() => toast.classList.remove('show'), duration);
-        }
-
-        // Pull-to-refresh
-        (function() {
-            const ptr = document.createElement('div');
-            ptr.className = 'ptr-indicator';
-            ptr.innerHTML = '<i class="fa-solid fa-arrows-rotate ptr-icon"></i><span class="ptr-text">Pull to refresh</span>';
-            document.body.appendChild(ptr);
-            let startY = 0, pulling = false;
-            document.addEventListener('touchstart', e => { if (window.scrollY === 0) { startY = e.touches[0].clientY; pulling = true; } }, { passive: true });
-            document.addEventListener('touchmove', e => {
-                if (!pulling) return;
-                const dy = e.touches[0].clientY - startY;
-                if (dy > 30) { ptr.classList.add('visible'); ptr.querySelector('.ptr-text').textContent = dy > 80 ? 'Release to refresh' : 'Pull to refresh'; }
-            }, { passive: true });
-            document.addEventListener('touchend', e => {
-                if (!pulling) return; pulling = false;
-                const dy = e.changedTouches[0].clientY - startY;
-                if (dy > 80) {
-                    ptr.classList.add('refreshing'); ptr.querySelector('.ptr-text').textContent = 'Refreshing…';
-                    if (navigator.vibrate) navigator.vibrate(30);
-                    // trigger data refresh (call init or loadData equivalent)
-                    init();
-                    setTimeout(() => ptr.classList.remove('visible', 'refreshing'), 1200);
-                } else ptr.classList.remove('visible');
-            }, { passive: true });
-        })();
-
-        // Swipe down to close calculator modal
-        (function() {
-            const modal = document.getElementById('calculator-modal');
-            if (!modal) return;
-            let startY = 0;
-            modal.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
-            modal.addEventListener('touchend', e => {
-                if (e.changedTouches[0].clientY - startY > 80) toggleCalculator();
-            }, { passive: true });
-        })();
-
-        // Swipe down to close export modal
-        (function() {
-            const modal = document.getElementById('export-options-modal');
-            if (!modal) return;
-            let startY = 0;
-            modal.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
-            modal.addEventListener('touchend', e => {
-                if (e.changedTouches[0].clientY - startY > 80) {
-                    modal.classList.add('hidden');
-                }
-            }, { passive: true });
-        })();
-
-        // Haptic feedback on accordion open
-        document.addEventListener('click', e => {
-            const accordion = e.target.closest('[onclick*="toggle"]');
-            if (accordion && navigator.vibrate) navigator.vibrate(10);
-        });
-
     </script>
-
-<!-- FAB -->
-<a href="cashew.html" class="kt-fab" title="Add Expense" aria-label="Add Expense">
-    <i class="fa-solid fa-plus"></i>
-</a>
-
 </body>
 
 </html>
