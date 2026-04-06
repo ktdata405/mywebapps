@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="KT Apps">
     <link rel="apple-touch-icon" href="root/logo.png">
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#030305">
 
     <title data-translate-key="appTitle">KT Apps</title>
@@ -704,13 +704,13 @@
         <div class="spinner"></div>
     </div>
 
-    <script src="auth.js"></script>
-    <script src="localization.js"></script>
+    <script src="./auth.js"></script>
+    <script src="./localization.js"></script>
     <script>
         // Register Service Worker for PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').then(registration => {
+                navigator.serviceWorker.register('./sw.js').then(registration => {
                     console.log('SW registered: ', registration);
                 }).catch(registrationError => {
                     console.log('SW registration failed: ', registrationError);
