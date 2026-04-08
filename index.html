@@ -16,27 +16,24 @@
     <style>
         :root {
             --bg-color: #030305;
-            --card-bg: rgba(255, 255, 255, 0.02);
-            --card-border: rgba(255, 255, 255, 0.05);
-            --card-hover-border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(255,255,255,0.03);
+            --card-border: rgba(255,255,255,0.07);
+            --card-hover-border: rgba(255,255,255,0.15);
             --text-primary: #ffffff;
             --text-secondary: #a1a1aa;
-            --accent-glow: radial-gradient(circle at center, rgba(124, 58, 237, 0.15), transparent 50%);
-            --spotlight-color: rgba(255, 255, 255, 0.15);
+            --surface: rgba(15,23,42,0.6);
+            --radius-card: 20px;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Plus Jakarta Sans',sans-serif; -webkit-tap-highlight-color:transparent; }
+
+        html { scroll-behavior: smooth; }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-primary);
             min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
             flex-direction: column;
             position: relative;
@@ -45,664 +42,566 @@
             padding-bottom: env(safe-area-inset-bottom);
         }
 
-        /* Canvas Background */
-        #bg-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            opacity: 0.6;
-        }
+        /* ── Background ─────────────────────── */
+        #bg-canvas { position:fixed; inset:0; width:100%; height:100%; z-index:-1; opacity:0.5; }
 
-        /* Noise Overlay */
-        body::before {
-            content: "";
+        /* Ambient glow blobs */
+        .bg-blob {
             position: fixed;
-            inset: 0;
-            z-index: 0;
-            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.12;
             pointer-events: none;
+            z-index: 0;
+        }
+        .bg-blob-1 { width:500px; height:500px; background:#6366f1; top:-150px; left:-100px; }
+        .bg-blob-2 { width:400px; height:400px; background:#8b5cf6; bottom:-100px; right:-100px; }
+        .bg-blob-3 { width:300px; height:300px; background:#06b6d4; top:40%; left:50%; transform:translateX(-50%); opacity:0.07; }
+
+        body::before {
+            content:"";
+            position:fixed; inset:0; z-index:0;
+            background:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events:none;
         }
 
-        .visually-hidden {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
-        }
+        .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 
-        #app-content {
-            display: none;
-            position: relative;
-            z-index: 1;
-            width: 100%;
-        }
+        /* ── Auth Screen ─────────────────────── */
+        #app-content { display:none; position:relative; z-index:1; width:100%; flex:1; flex-direction:column; }
 
         #auth-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            z-index: 10;
-            padding: 2rem;
-            position: relative;
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            min-height:100vh; min-height:100dvh;
+            z-index:10; padding:2rem; position:relative;
+            gap:0;
         }
 
-        #auth-container p {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-bottom: 3rem;
-            text-align: center;
-            background: linear-gradient(to bottom, #fff, #a1a1aa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            position: relative;
-            z-index: 2;
-            letter-spacing: -0.02em;
+        .auth-logo {
+            width:72px; height:72px; border-radius:20px;
+            background:linear-gradient(135deg,rgba(99,102,241,0.3),rgba(139,92,246,0.2));
+            border:1px solid rgba(99,102,241,0.4);
+            display:flex; align-items:center; justify-content:center;
+            margin-bottom:1.5rem;
+            box-shadow:0 0 40px rgba(99,102,241,0.2);
+        }
+        .auth-logo img { width:48px; height:48px; border-radius:12px; object-fit:cover; }
+
+        #auth-container h2 {
+            font-size:1.8rem; font-weight:800; margin-bottom:0.4rem; text-align:center;
+            background:linear-gradient(to bottom,#fff,#a1a1aa);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+            letter-spacing:-0.02em;
+        }
+        #auth-container .auth-subtitle {
+            font-size:0.85rem; color:var(--text-secondary); margin-bottom:2.5rem; text-align:center;
         }
 
-        #pin-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 380px;
-            gap: 2rem;
-            position: relative;
-            z-index: 2;
+        #pin-container { display:flex; flex-direction:column; align-items:center; width:100%; max-width:340px; gap:1.5rem; position:relative; z-index:2; }
+
+        /* PIN dot indicators */
+        .pin-dots { display:flex; gap:16px; margin-bottom:0.5rem; }
+        .pin-dot {
+            width:14px; height:14px; border-radius:50%;
+            border:2px solid rgba(255,255,255,0.25);
+            background:transparent;
+            transition:all 0.2s ease;
         }
+        .pin-dot.filled { background:#6366f1; border-color:#6366f1; box-shadow:0 0 10px rgba(99,102,241,0.6); }
 
         #pin-input {
-            width: 100%;
-            padding: 1.5rem;
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(0, 0, 0, 0.3);
-            color: var(--text-primary);
-            font-size: 2rem;
-            letter-spacing: 1.5rem;
-            text-align: center;
-            outline: none;
-            font-weight: 700;
-            -webkit-text-security: disc;
-            transition: all 0.2s ease;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            width:100%; padding:1.2rem 1.5rem;
+            border-radius:16px;
+            border:1px solid rgba(255,255,255,0.1);
+            background:rgba(0,0,0,0.35);
+            color:var(--text-primary);
+            font-size:1.8rem; letter-spacing:1.2rem; text-align:center;
+            outline:none; font-weight:700;
+            -webkit-text-security:disc;
+            transition:all 0.2s ease;
+            backdrop-filter:blur(16px);
+            box-shadow:0 4px 30px rgba(0,0,0,0.15);
+            position:absolute; opacity:0; pointer-events:none; /* hidden, triggered by PIN pad */
         }
+        #pin-input:focus { border-color:rgba(99,102,241,0.5); box-shadow:0 0 0 4px rgba(99,102,241,0.1); }
 
-        #pin-input:focus {
-            border-color: rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.05);
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+        /* PIN Numpad */
+        .pin-pad {
+            display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+            width:100%; max-width:280px;
         }
+        .pin-key {
+            height:56px; border-radius:14px;
+            background:rgba(255,255,255,0.06);
+            border:1px solid rgba(255,255,255,0.08);
+            color:#fff; font-size:1.3rem; font-weight:600;
+            cursor:pointer;
+            display:flex; align-items:center; justify-content:center;
+            transition:all 0.15s ease;
+            -webkit-tap-highlight-color:transparent;
+            user-select:none;
+        }
+        .pin-key:active, .pin-key.pressed { background:rgba(99,102,241,0.3); border-color:rgba(99,102,241,0.5); transform:scale(0.93); }
+        .pin-key.del { background:rgba(255,255,255,0.04); }
+        .pin-key.zero { grid-column:2; }
 
         .auth-button {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-primary);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 1.1rem 3.2rem;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 1.05rem;
-            font-weight: 700;
-            transition: all 0.2s ease-in-out;
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            letter-spacing: 0.2px;
-            backdrop-filter: blur(10px);
+            background:rgba(255,255,255,0.08); color:var(--text-primary);
+            border:1px solid rgba(255,255,255,0.1);
+            padding:0.9rem 2.5rem; border-radius:12px;
+            cursor:pointer; font-size:0.95rem; font-weight:700;
+            transition:all 0.2s ease;
+            display:flex; align-items:center; gap:0.7rem;
+            backdrop-filter:blur(10px);
         }
+        .auth-button:hover { background:rgba(255,255,255,0.15); transform:translateY(-1px); }
+        .auth-button:active { transform:scale(0.96); }
 
-        .auth-button:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-1px);
-        }
-
-        .auth-button:active {
-            transform: scale(0.96);
-        }
-
-        /* Header */
+        /* ── App Shell ───────────────────────── */
         header {
-            padding: 2rem 6%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
+            padding:1.2rem 5%;
+            display:flex; justify-content:space-between; align-items:center;
+            position:sticky; top:0; z-index:20;
+            background:rgba(3,3,5,0.7);
+            backdrop-filter:blur(20px);
+            -webkit-backdrop-filter:blur(20px);
+            border-bottom:1px solid rgba(255,255,255,0.05);
         }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 1.2rem;
-        }
+        .brand { display:flex; align-items:center; gap:1rem; }
 
         .brand .logo-img {
-            height: 52px;
-            width: 52px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, #fff, #ccc);
-            padding: 2px; /* Border effect */
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            height:44px; width:44px; border-radius:12px;
+            object-fit:cover;
+            border:1px solid rgba(255,255,255,0.1);
         }
-        
+
         .brand-text h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            background: linear-gradient(to right, #fff 20%, #a1a1aa 40%, #a1a1aa 60%, #fff 80%);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: textShimmer 5s linear infinite;
-            line-height: 1.1;
-            letter-spacing: -0.02em;
+            font-size:1.5rem; font-weight:800;
+            background:linear-gradient(to right,#fff 20%,#a1a1aa 50%,#fff 80%);
+            background-size:200% auto;
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+            animation:textShimmer 5s linear infinite;
+            line-height:1.1; letter-spacing:-0.02em;
+        }
+        .brand-text .greeting {
+            font-size:0.72rem; color:var(--text-secondary); font-weight:500; margin-top:1px;
         }
 
-        @keyframes textShimmer {
-            0% { background-position: -200% center; }
-            100% { background-position: 200% center; }
+        @keyframes textShimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
+
+        .header-actions { display:flex; align-items:center; gap:0.6rem; }
+
+        .nav-btn {
+            width:40px; height:40px; border-radius:10px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:1rem;
+            background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.08);
+            color:var(--text-secondary);
+            text-decoration:none;
+            transition:all 0.2s ease;
+            cursor:pointer;
         }
+        .nav-btn:hover { background:rgba(255,255,255,0.1); color:#fff; border-color:rgba(255,255,255,0.15); }
+        .nav-btn:active { transform:scale(0.93); }
 
-        .brand-text p {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-            margin-top: 0.25rem;
-        }
-
-        .nav-link {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--card-border);
-            color: var(--text-primary);
-            text-decoration: none;
-            transition: all 0.2s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .nav-link:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-2px);
-            color: #fff;
-            border-color: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Main Container */
-        .container {
-            padding: 0 6% 4rem 6%;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 1rem;
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        /* Spotlight Cards */
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 16px;
-            padding: 1.5rem;
-            text-decoration: none;
-            color: var(--text-primary);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 1rem;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-            height: 100%;
-            min-height: 140px;
-            transition: transform 0.2s ease;
-            text-align: center;
-        }
-
-        /* Spotlight Effect Layer */
-        .card::before {
-            content: "";
-            position: absolute;
-            height: 100%;
-            width: 100%;
-            top: 0;
-            left: 0;
-            background: radial-gradient(
-                800px circle at var(--mouse-x) var(--mouse-y),
-                rgba(255, 255, 255, 0.06),
-                transparent 40%
-            );
-            opacity: 0;
-            transition: opacity 0.5s;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        /* Border Glow Layer */
-        .card::after {
-            content: "";
-            position: absolute;
-            height: 100%;
-            width: 100%;
-            top: 0;
-            left: 0;
-            background: radial-gradient(
-                600px circle at var(--mouse-x) var(--mouse-y),
-                rgba(255, 255, 255, 0.3),
-                transparent 40%
-            );
-            opacity: 0;
-            transition: opacity 0.5s;
-            z-index: 1;
-            pointer-events: none;
-            /* Mask to show only border */
-            -webkit-mask: 
-                linear-gradient(#fff 0 0) content-box, 
-                linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            padding: 1px; /* Border width */
-            border-radius: inherit;
-        }
-
-        .card:hover::before,
-        .card:hover::after {
-            opacity: 1;
-        }
-
-        .icon-box {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--card-border);
-            margin-bottom: 0.5rem;
-            z-index: 2;
-            transition: all 0.3s ease;
-        }
-
-        .icon-box i {
-            color: var(--accent-color);
-            transition: color 0.3s ease;
-        }
-
-        .card:hover .icon-box {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 20px var(--accent-color);
-            background: rgba(255, 255, 255, 0.1);
-            transform: scale(1.1);
-        }
-
-        .card:hover .icon-box i {
-            color: #fff;
-            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
-        }
-
-        .card-content {
-            z-index: 2;
-        }
-
-        .card h2 {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 0;
-            letter-spacing: -0.02em;
-        }
-
-        .btn-arrow {
-            position: absolute;
-            top: 2rem;
-            right: 2rem;
-            color: var(--text-secondary);
-            opacity: 0;
-            transform: translateX(-10px);
-            transition: all 0.3s ease;
-            z-index: 2;
-        }
-
-        .card:hover .btn-arrow {
-            opacity: 1;
-            transform: translateX(0);
-            color: var(--text-primary);
-        }
-
-        /* Specific Icon Colors (Subtle) */
-        .card-dash { --accent-color: #fbbf24; }
-        .card-cashew { --accent-color: #f472b6; }
-        .card-rent { --accent-color: #c084fc; }
-        .card-msi { --accent-color: #60a5fa; }
-        .card-debts { --accent-color: #f87171; }
-        .card-deno { --accent-color: #4ade80; }
-        .card-calc { --accent-color: #fb923c; }
-        .card-scan { --accent-color: #7c3aed; }
-        .card-loan { --accent-color: #6C63FF; }
-        .card-milk { --accent-color: #ffffff; }
-
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 3rem 2rem;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            margin-top: auto;
-        }
-
-        footer b {
-            color: var(--text-primary);
-            font-weight: 600;
-        }
-
-        /* Loader */
-        #loader {
-            position: fixed;
-            inset: 0;
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #030305;
-            backdrop-filter: blur(10px);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        #loader.visible {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            position: relative;
-        }
-
-        .spinner {
-            content: '';
-            position: absolute;
-            inset: 6px;
-            border: 3px solid transparent;
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        /* Search Bar */
+        /* ── Search ──────────────────────────── */
         .search-wrapper {
-            padding: 0 6% 1.5rem 6%;
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
-            position: relative;
-            z-index: 2;
+            padding:1rem 5% 0.5rem;
+            max-width:1400px; margin:0 auto; width:100%;
+            position:relative; z-index:2;
         }
 
-        .search-container {
-            position: relative;
-            width: 100%;
-            max-width: 400px;
-        }
+        .search-container { position:relative; width:100%; max-width:440px; }
 
         .search-input {
-            width: 100%;
-            padding: 1rem 3rem 1rem 3rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--card-border);
-            border-radius: 14px;
-            color: var(--text-primary);
-            font-size: 1rem;
-            outline: none;
-            backdrop-filter: blur(10px);
-            transition: all 0.2s ease;
+            width:100%;
+            padding:0.85rem 2.8rem 0.85rem 2.8rem;
+            background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.08);
+            border-radius:14px;
+            color:#fff; font-size:0.95rem;
+            outline:none;
+            backdrop-filter:blur(10px);
+            transition:all 0.2s ease;
         }
-
+        .search-input::placeholder { color:rgba(255,255,255,0.3); }
         .search-input:focus {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+            background:rgba(255,255,255,0.08);
+            border-color:rgba(99,102,241,0.4);
+            box-shadow:0 0 0 3px rgba(99,102,241,0.1);
+        }
+        .search-icon { position:absolute; left:1rem; top:50%; transform:translateY(-50%); color:rgba(255,255,255,0.3); font-size:0.9rem; pointer-events:none; }
+        .search-clear { position:absolute; right:1rem; top:50%; transform:translateY(-50%); color:rgba(255,255,255,0.3); cursor:pointer; font-size:0.9rem; display:none; }
+        .search-clear:hover { color:#fff; }
+
+        /* ── Section Label ───────────────────── */
+        .section-label {
+            padding:1.2rem 5% 0.6rem;
+            max-width:1400px; margin:0 auto; width:100%;
+            font-size:0.7rem; font-weight:700; color:rgba(255,255,255,0.25);
+            text-transform:uppercase; letter-spacing:0.12em;
+            position:relative; z-index:2;
         }
 
-        .search-icon {
-            position: absolute;
-            left: 1.2rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-secondary);
-            pointer-events: none;
-            font-size: 1rem;
+        /* ── Cards Grid ──────────────────────── */
+        .container {
+            padding:0.5rem 5% 5rem;
+            display:grid;
+            grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
+            gap:0.85rem;
+            max-width:1400px; margin:0 auto; width:100%;
+            position:relative; z-index:2;
         }
 
-        .search-clear {
-            position: absolute;
-            right: 1.2rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-size: 1rem;
-            display: none;
-            transition: color 0.2s ease;
+        /* Card */
+        .card {
+            background:var(--card-bg);
+            border:1px solid var(--card-border);
+            border-radius:var(--radius-card);
+            padding:1.4rem 1.2rem 1.2rem;
+            text-decoration:none; color:var(--text-primary);
+            position:relative; overflow:hidden;
+            display:flex; flex-direction:column;
+            align-items:flex-start;
+            gap:0.6rem;
+            cursor:pointer;
+            backdrop-filter:blur(12px);
+            min-height:130px;
+            transition:transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+            /* Entry animation */
+            opacity:0;
+            animation:cardIn 0.4s ease forwards;
         }
 
-        .search-clear:hover {
-            color: var(--text-primary);
+        @keyframes cardIn {
+            from { opacity:0; transform:translateY(16px); }
+            to   { opacity:1; transform:translateY(0); }
         }
 
-        .no-results {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 2rem;
-            color: var(--text-secondary);
-            display: none;
-            font-size: 1.1rem;
+        /* Colored top accent bar */
+        .card::before {
+            content:"";
+            position:absolute; top:0; left:0; right:0; height:3px;
+            background:var(--accent-color);
+            opacity:0.7;
+            border-radius:var(--radius-card) var(--radius-card) 0 0;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        /* Spotlight glow */
+        .card::after {
+            content:"";
+            position:absolute; inset:0;
+            background:radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.06) 0%, transparent 60%);
+            opacity:0;
+            transition:opacity 0.4s;
+            pointer-events:none;
+            border-radius:inherit;
         }
+        .card:hover::after { opacity:1; }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            header {
-                padding: 1rem 5%;
+        @media (hover:hover) {
+            .card:hover {
+                transform:translateY(-4px);
+                border-color:var(--card-hover-border);
+                box-shadow:0 12px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.05);
             }
+        }
+        .card:active { transform:scale(0.96); }
 
-            .brand .logo-img {
-                height: 40px;
-                width: 40px;
-            }
+        .card-icon {
+            width:44px; height:44px; border-radius:12px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:1.2rem;
+            background:rgba(255,255,255,0.06);
+            border:1px solid rgba(255,255,255,0.08);
+            position:relative; z-index:1;
+            transition:all 0.25s ease;
+            flex-shrink:0;
+        }
+        .card-icon i { color:var(--accent-color); }
+        .card:hover .card-icon {
+            background:rgba(255,255,255,0.1);
+            border-color:var(--accent-color);
+            box-shadow:0 0 18px var(--accent-color);
+            transform:scale(1.08);
+        }
+        .card:hover .card-icon i { color:#fff; }
 
-            .brand-text h1 {
-                font-size: 1.3rem;
-            }
+        .card-body { position:relative; z-index:1; flex:1; }
+        .card-body h2 { font-size:0.95rem; font-weight:700; letter-spacing:-0.01em; line-height:1.2; }
+        .card-body p { font-size:0.72rem; color:var(--text-secondary); margin-top:3px; line-height:1.3; }
+
+        .card-arrow {
+            position:absolute; bottom:1rem; right:1rem;
+            width:26px; height:26px; border-radius:8px;
+            background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.08);
+            display:flex; align-items:center; justify-content:center;
+            color:rgba(255,255,255,0.2); font-size:0.7rem;
+            transition:all 0.2s ease;
+            z-index:1;
+        }
+        .card:hover .card-arrow { background:var(--accent-color); border-color:transparent; color:#fff; transform:rotate(-45deg); box-shadow:0 0 12px var(--accent-color); }
+
+        /* Card accent colours */
+        .card-cashew { --accent-color:#f472b6; }
+        .card-milk   { --accent-color:#e2e8f0; }
+        .card-rent   { --accent-color:#c084fc; }
+        .card-msi    { --accent-color:#38bdf8; }
+        .card-debts  { --accent-color:#f87171; }
+        .card-deno   { --accent-color:#4ade80; }
+        .card-calc   { --accent-color:#fb923c; }
+        .card-loan   { --accent-color:#818cf8; }
+        .card-scan   { --accent-color:#a78bfa; }
+
+        /* Stagger animation delays */
+        .card:nth-child(1){animation-delay:0.05s}
+        .card:nth-child(2){animation-delay:0.10s}
+        .card:nth-child(3){animation-delay:0.15s}
+        .card:nth-child(4){animation-delay:0.20s}
+        .card:nth-child(5){animation-delay:0.25s}
+        .card:nth-child(6){animation-delay:0.30s}
+        .card:nth-child(7){animation-delay:0.35s}
+        .card:nth-child(8){animation-delay:0.40s}
+        .card:nth-child(9){animation-delay:0.45s}
+
+        .no-results { grid-column:1/-1; text-align:center; padding:3rem 2rem; color:var(--text-secondary); display:none; }
+
+        /* ── Footer ──────────────────────────── */
+        footer {
+            text-align:center; padding:2rem;
+            color:rgba(255,255,255,0.2); font-size:0.8rem;
+            border-top:1px solid rgba(255,255,255,0.04);
+            margin-top:auto; position:relative; z-index:1;
+        }
+        footer b { color:rgba(255,255,255,0.5); font-weight:600; }
+
+        /* ── Loader ──────────────────────────── */
+        #loader {
+            position:fixed; inset:0; z-index:9999;
+            display:flex; align-items:center; justify-content:center;
+            background:rgba(3,3,5,0.85); backdrop-filter:blur(16px);
+            opacity:0; pointer-events:none; transition:opacity 0.25s ease;
+        }
+        #loader.visible { opacity:1; pointer-events:auto; }
+        .spinner {
+            width:42px; height:42px;
+            border:3px solid rgba(255,255,255,0.1);
+            border-top-color:#6366f1;
+            border-radius:50%;
+            animation:spin 0.8s linear infinite;
+        }
+        @keyframes spin { to{transform:rotate(360deg)} }
+
+        /* ── Responsive ──────────────────────── */
+        @media (max-width:768px) {
+            header { padding:0.9rem 4%; }
+            .brand-text h1 { font-size:1.2rem; }
+            .brand .logo-img { height:38px; width:38px; border-radius:10px; }
+
+            .search-wrapper { padding:0.8rem 4% 0.4rem; }
+            .search-container { max-width:100%; }
+
+            .section-label { padding:1rem 4% 0.5rem; }
 
             .container {
-                padding: 2rem 5%;
-                gap: 1rem;
-                grid-template-columns: repeat(2, 1fr);
+                padding:0.5rem 4% 6rem;
+                grid-template-columns:repeat(3,1fr);
+                gap:0.65rem;
             }
 
             .card {
-                padding: 1rem;
-                min-height: 120px;
+                padding:1rem 0.9rem 2.2rem;
+                min-height:110px;
+                border-radius:16px;
+                align-items:center;
+                text-align:center;
             }
+            .card-icon { width:40px; height:40px; font-size:1.1rem; margin:0 auto; }
+            .card-body { text-align:center; width:100%; }
+            .card-body h2 { font-size:0.82rem; }
+            .card-body p  { display:none; } /* hide subtitles on small screens */
+            .card-arrow   { display:none; }
 
-            .icon-box {
-                width: 40px;
-                height: 40px;
-                font-size: 1.25rem;
-            }
+            /* Auth numpad is primary on mobile */
+            #pin-input { display:none; }
 
-            #auth-container p {
-                font-size: 2rem;
-                line-height: 1.2;
-            }
+            footer { padding:1.5rem; font-size:0.72rem; }
+        }
 
-            .card {
-                animation: none;
-                opacity: 1;
-            }
-            .search-wrapper {
-                padding: 0 5% 1.5rem 5%;
-            }
+        @media (max-width:380px) {
+            .container { grid-template-columns:repeat(2,1fr); }
+        }
+
+        @media (min-width:1200px) {
+            .container { grid-template-columns:repeat(5,1fr); gap:1rem; }
         }
     </style>
 </head>
 <body>
 
     <canvas id="bg-canvas"></canvas>
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+    <div class="bg-blob bg-blob-3"></div>
 
+    <!-- ── Auth Screen ── -->
     <div id="auth-container">
-        <p data-translate-key="verifyIdentity">Verify your Identity</p>
-        <div id="pin-container">
-            <label for="pin-input" class="visually-hidden" data-translate-key="enterPin">Enter PIN</label>
-            <input type="password" id="pin-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="PIN" autofocus data-translate-key="enterPin">
+        <div class="auth-logo">
+            <img src="root/logo.png" alt="KT Apps">
         </div>
-        <button id="face-id-btn" class="auth-button" style="margin-top: 15px;" hidden>
-            <i class="fa-solid fa-face-smile" aria-hidden="true"></i> <span data-translate-key="faceId">Face ID</span>
+        <h2 data-translate-key="verifyIdentity">Welcome Back</h2>
+        <p class="auth-subtitle">Enter your PIN to continue</p>
+
+        <div id="pin-container">
+            <div class="pin-dots">
+                <div class="pin-dot" id="dot-0"></div>
+                <div class="pin-dot" id="dot-1"></div>
+                <div class="pin-dot" id="dot-2"></div>
+                <div class="pin-dot" id="dot-3"></div>
+            </div>
+
+            <!-- Hidden real input (used for desktop / keyboard entry) -->
+            <label for="pin-input" class="visually-hidden">Enter PIN</label>
+            <input type="password" id="pin-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off">
+
+            <!-- Visual PIN pad (primary on mobile) -->
+            <div class="pin-pad" id="pin-pad">
+                <button class="pin-key" data-val="1">1</button>
+                <button class="pin-key" data-val="2">2</button>
+                <button class="pin-key" data-val="3">3</button>
+                <button class="pin-key" data-val="4">4</button>
+                <button class="pin-key" data-val="5">5</button>
+                <button class="pin-key" data-val="6">6</button>
+                <button class="pin-key" data-val="7">7</button>
+                <button class="pin-key" data-val="8">8</button>
+                <button class="pin-key" data-val="9">9</button>
+                <button class="pin-key del" data-val="del"><i class="fa-solid fa-delete-left"></i></button>
+                <button class="pin-key zero" data-val="0">0</button>
+            </div>
+        </div>
+
+        <button id="face-id-btn" class="auth-button" style="margin-top:1.5rem;" hidden>
+            <i class="fa-solid fa-face-smile"></i>
+            <span data-translate-key="faceId">Face ID</span>
         </button>
     </div>
 
+    <!-- ── App Content ── -->
     <div id="app-content">
         <header>
             <div class="brand">
                 <img src="root/logo.png" alt="Logo" class="logo-img">
                 <div class="brand-text">
-                    <h1 data-translate-key="holaKT">Hola KT</h1>
-                    <p data-translate-key="developedBy">Developed by Kalyan Thammineni</p>
+                    <h1 data-translate-key="holaKT">Hola KT 👋</h1>
+                    <p class="greeting" id="greeting-text">Good morning</p>
                 </div>
             </div>
-            <a href="dashboard.html" class="nav-link" aria-label="Dashboard">
-                <i class="fa-solid fa-chart-line"></i>
-            </a>
+            <div class="header-actions">
+                <a href="dashboard.html" class="nav-btn" aria-label="Dashboard" title="Dashboard">
+                    <i class="fa-solid fa-chart-line"></i>
+                </a>
+            </div>
         </header>
 
         <div class="search-wrapper">
             <div class="search-container">
                 <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" id="search-input" class="search-input" placeholder="Search apps..." data-translate-key="searchPlaceholder">
+                <input type="text" id="search-input" class="search-input" placeholder="Search apps…" data-translate-key="searchPlaceholder">
                 <i class="fa-solid fa-xmark search-clear" id="search-clear"></i>
             </div>
         </div>
 
+        <div class="section-label">All Apps</div>
+
         <main class="container" id="cards-container">
+
             <a href="cashew/cashew.html" class="card card-cashew">
-                <div class="icon-box">
-                    <i class="fa-solid fa-file-invoice-dollar" aria-hidden="true"></i>
-                </div>
-                <div class="card-content">
+                <div class="card-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                <div class="card-body">
                     <h2 data-translate-key="cashew">Cashew</h2>
+                    <p>Sales & billing</p>
                 </div>
-                <div class="btn-arrow"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></div>
+                <div class="card-arrow"><i class="fa-solid fa-arrow-right"></i></div>
             </a>
 
             <a href="milk/milk.html" class="card card-milk">
-                <div class="icon-box">
-                    <i class="fa-solid fa-cow" aria-hidden="true"></i>
-                </div>
-                <div class="card-content">
+                <div class="card-icon"><i class="fa-solid fa-cow"></i></div>
+                <div class="card-body">
                     <h2 data-translate-key="milkBill">Milk Bill</h2>
+                    <p>Daily collection</p>
                 </div>
-                <div class="btn-arrow"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></div>
+                <div class="card-arrow"><i class="fa-solid fa-arrow-right"></i></div>
             </a>
 
             <a href="rent/tenet.html" class="card card-rent">
-                <div class="icon-box">
-                    <i class="fa-solid fa-house" aria-hidden="true"></i>
+                <div class="card-icon"><i class="fa-solid fa-house"></i></div>
+                <div class="card-body">
+                    <h2 data-translate-key="rentDetails">Rent</h2>
+                    <p>Tenant records</p>
                 </div>
-                <div class="card-content">
-                    <h2 data-translate-key="rentDetails">Rent Details</h2>
-                </div>
-                <div class="btn-arrow"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></div>
+                <div class="card-arrow"><i class="fa-solid fa-arrow-right"></i></div>
             </a>
 
             <a href="msi/msi.html" class="card card-msi">
-                <div class="icon-box">
-                    <i class="fa-solid fa-wallet" aria-hidden="true"></i>
-                </div>
-                <div class="card-content">
+                <div class="card-icon"><i class="fa-solid fa-wallet"></i></div>
+                <div class="card-body">
                     <h2 data-translate-key="msi">MSI</h2>
+                    <p>Investments</p>
                 </div>
-                <div class="btn-arrow"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></div>
+                <div class="card-arrow"><i class="fa-solid fa-arrow-right"></i></div>
             </a>
 
             <a href="debts/debts.html" class="card card-debts">
-                <div class="icon-box">
-                    <i class="fa-solid fa-hand-holding-dollar" aria-hidden="true"></i>
-                </div>
-                <div class="card-content">
+                <div class="card-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                <div class="card-body">
                     <h2 data-translate-key="debts">Debts</h2>
+                    <p>Track dues</p>
                 </div>
-                <div class="btn-arrow"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></div>
+                <div class="card-arrow"><i class="fa-solid fa-arrow-right"></i></div>
             </a>
 
             <a href="denomination/denominations.html" class="card card-deno">
-                <div class="icon-box">
-                    <i class="fa-solid fa-calculator"></i>
-                </div>
-                <div class="card-content">
+                <div class="card-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+                <div class="card-body">
                     <h2 data-translate-key="denominations">Denoms</h2>
+                    <p>Cash counter</p>
                 </div>
-                <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                <div class="card-arrow"><i class="fa-solid fa-arrow-right"></i></div>
             </a>
 
             <a href="calculator/calculator.html" class="card card-calc">
-                <div class="icon-box">
-                    <i class="fa-solid fa-calculator"></i>
-                </div>
-                <div class="card-content">
+                <div class="card-icon"><i class="fa-solid fa-calculator"></i></div>
+                <div class="card-body">
                     <h2 data-translate-key="calculators">Calculators</h2>
+                    <p>Finance tools</p>
                 </div>
-                <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                <div class="card-arrow"><i class="fa-solid fa-arrow-right"></i></div>
             </a>
 
             <a href="loan/loan.html" class="card card-loan">
-                <div class="icon-box">
-                    <i class="fa-solid fa-hand-holding-usd"></i>
-                </div>
-                <div class="card-content">
+                <div class="card-icon"><i class="fa-solid fa-hand-holding-usd"></i></div>
+                <div class="card-body">
                     <h2 data-translate-key="loan">Loan</h2>
+                    <p>Loan manager</p>
                 </div>
-                <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                <div class="card-arrow"><i class="fa-solid fa-arrow-right"></i></div>
             </a>
 
-            <!-- <a href="scan/scan.html" class="card card-scan"> -->
-                <a href="temp.html" class="card card-scan">
-                <div class="icon-box">
-                    <i class="fa-solid fa-camera"></i>
-                </div>
-                <div class="card-content">
+            <a href="temp.html" class="card card-scan">
+                <div class="card-icon"><i class="fa-solid fa-camera"></i></div>
+                <div class="card-body">
                     <h2 data-translate-key="scan">Scan</h2>
+                    <p>Document scan</p>
                 </div>
-                <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                <div class="card-arrow"><i class="fa-solid fa-arrow-right"></i></div>
             </a>
+
             <div id="no-results" class="no-results">
-                <p data-translate-key="noResults">No apps found matching your search.</p>
+                <i class="fa-solid fa-magnifying-glass" style="font-size:2rem;opacity:0.2;display:block;margin-bottom:0.8rem;"></i>
+                <p data-translate-key="noResults">No apps found</p>
             </div>
         </main>
 
@@ -711,155 +610,181 @@
         </footer>
     </div>
 
-    <div id="loader">
-        <div class="spinner"></div>
-    </div>
+    <div id="loader"><div class="spinner"></div></div>
 
     <script src="./auth.js"></script>
     <script src="./localization.js"></script>
     <script>
-        // Register Service Worker for PWA
+        // ── Service Worker ──
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').then(registration => {
-                    console.log('SW registered: ', registration);
-                }).catch(registrationError => {
-                    console.log('SW registration failed: ', registrationError);
-                });
+                navigator.serviceWorker.register('./sw.js')
+                    .catch(e => console.log('SW failed:', e));
             });
         }
+
+        // ── Greeting ──
+        function setGreeting() {
+            const h = new Date().getHours();
+            const el = document.getElementById('greeting-text');
+            if (!el) return;
+            el.textContent = h < 12 ? 'Good morning ☀️' : h < 17 ? 'Good afternoon 🌤️' : h < 21 ? 'Good evening 🌙' : 'Good night 🌟';
+        }
+        setGreeting();
+
+        // ── PIN Pad Logic ──
+        (function () {
+            let pinValue = '';
+            const input = document.getElementById('pin-input');
+            const dots = [0,1,2,3].map(i => document.getElementById('dot-'+i));
+
+            function updateDots() {
+                dots.forEach((d, i) => d.classList.toggle('filled', i < pinValue.length));
+            }
+
+            function pushDigit(d) {
+                if (pinValue.length >= 4) return;
+                pinValue += d;
+                input.value = pinValue;
+                updateDots();
+                if (pinValue.length === 4) {
+                    setTimeout(() => { input.dispatchEvent(new Event('input')); }, 80);
+                }
+            }
+
+            function delDigit() {
+                if (!pinValue.length) return;
+                pinValue = pinValue.slice(0,-1);
+                input.value = pinValue;
+                updateDots();
+            }
+
+            // Listen to auth.js clearing the input (wrong PIN shake)
+            const observer = new MutationObserver(() => {});
+            input.addEventListener('input', () => {
+                // Sync back if auth.js changed value externally
+                if (input.value !== pinValue) {
+                    pinValue = input.value;
+                    updateDots();
+                }
+            });
+
+            // PIN pad buttons
+            document.getElementById('pin-pad').addEventListener('click', e => {
+                const btn = e.target.closest('.pin-key');
+                if (!btn) return;
+                const val = btn.dataset.val;
+                btn.classList.add('pressed');
+                setTimeout(() => btn.classList.remove('pressed'), 120);
+                if (val === 'del') delDigit();
+                else pushDigit(val);
+            });
+
+            // Keyboard support (desktop)
+            document.addEventListener('keydown', e => {
+                const authVisible = document.getElementById('auth-container').style.display !== 'none';
+                if (!authVisible) return;
+                if (e.key >= '0' && e.key <= '9') pushDigit(e.key);
+                else if (e.key === 'Backspace') delDigit();
+            });
+        })();
 
         document.addEventListener('DOMContentLoaded', () => {
             const cards = document.querySelectorAll('.card');
             const loader = document.getElementById('loader');
             const cardsContainer = document.getElementById('cards-container');
 
+            // ── Navigate with loader ──
             cards.forEach(card => {
-                card.addEventListener('click', (e) => {
+                card.addEventListener('click', e => {
                     const href = card.getAttribute('href');
                     if (href && href !== '#' && card.target !== '_blank') {
                         e.preventDefault();
                         loader.classList.add('visible');
-                        setTimeout(() => {
-                            window.location.href = href;
-                        }, 400);
+                        setTimeout(() => { window.location.href = href; }, 350);
                     }
                 });
             });
 
-            // Search Functionality
+            // ── Search ──
             const searchInput = document.getElementById('search-input');
             const searchClear = document.getElementById('search-clear');
-            const noResults = document.getElementById('no-results');
+            const noResults  = document.getElementById('no-results');
 
-            if (searchInput) {
-                const performSearch = () => {
-                    const searchTerm = searchInput.value.toLowerCase();
-                    let hasVisibleCards = false;
-
-                    if (searchClear) {
-                        searchClear.style.display = searchTerm.length > 0 ? 'block' : 'none';
-                    }
-
-                    cards.forEach(card => {
-                        const title = card.querySelector('h2').textContent.toLowerCase();
-                        const isVisible = title.includes(searchTerm);
-                        card.style.display = isVisible ? 'flex' : 'none';
-                        if (isVisible) hasVisibleCards = true;
-                    });
-
-                    if (noResults) noResults.style.display = hasVisibleCards ? 'none' : 'block';
-                };
-
-                searchInput.addEventListener('input', performSearch);
-
-                if (searchClear) {
-                    searchClear.addEventListener('click', () => {
-                        searchInput.value = '';
-                        searchInput.focus();
-                        performSearch();
-                    });
-                }
-            }
-
-            // Spotlight Effect Logic
-            cardsContainer.onmousemove = e => {
-                for(const card of document.getElementsByClassName('card')) {
-                    const rect = card.getBoundingClientRect(),
-                          x = e.clientX - rect.left,
-                          y = e.clientY - rect.top;
-                    
-                    card.style.setProperty('--mouse-x', `${x}px`);
-                    card.style.setProperty('--mouse-y', `${y}px`);
-                }
+            const performSearch = () => {
+                const term = searchInput.value.toLowerCase().trim();
+                searchClear.style.display = term ? 'block' : 'none';
+                let any = false;
+                cards.forEach(card => {
+                    const title = card.querySelector('h2')?.textContent.toLowerCase() || '';
+                    const show  = title.includes(term);
+                    card.style.display = show ? '' : 'none';
+                    if (show) any = true;
+                });
+                noResults.style.display = any ? 'none' : 'block';
             };
 
-            // Canvas Background Logic
+            searchInput.addEventListener('input', performSearch);
+            searchClear.addEventListener('click', () => { searchInput.value = ''; searchInput.focus(); performSearch(); });
+
+            // ── Spotlight (desktop) ──
+            cardsContainer.addEventListener('mousemove', e => {
+                cards.forEach(card => {
+                    const r = card.getBoundingClientRect();
+                    card.style.setProperty('--mx', `${e.clientX - r.left}px`);
+                    card.style.setProperty('--my', `${e.clientY - r.top}px`);
+                });
+            });
+
+            // ── Canvas particles ──
             const canvas = document.getElementById('bg-canvas');
-            const ctx = canvas.getContext('2d');
-            let width, height;
-            let particles = [];
+            const ctx    = canvas.getContext('2d');
+            let W, H, particles = [];
 
-            function resize() {
-                width = canvas.width = window.innerWidth;
-                height = canvas.height = window.innerHeight;
-            }
-            window.addEventListener('resize', resize);
-            resize();
+            const resize = () => { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; };
+            window.addEventListener('resize', resize); resize();
 
-            class Particle {
-                constructor() {
-                    this.x = Math.random() * width;
-                    this.y = Math.random() * height;
-                    this.vx = (Math.random() - 0.5) * 0.5;
-                    this.vy = (Math.random() - 0.5) * 0.5;
-                    this.size = Math.random() * 2;
+            class P {
+                constructor() { this.reset(); }
+                reset() {
+                    this.x  = Math.random() * W;
+                    this.y  = Math.random() * H;
+                    this.vx = (Math.random()-0.5)*0.4;
+                    this.vy = (Math.random()-0.5)*0.4;
+                    this.r  = Math.random() * 1.5 + 0.5;
                 }
-                update() {
-                    this.x += this.vx;
-                    this.y += this.vy;
-                    if (this.x < 0 || this.x > width) this.vx *= -1;
-                    if (this.y < 0 || this.y > height) this.vy *= -1;
+                move() {
+                    this.x += this.vx; this.y += this.vy;
+                    if (this.x < 0 || this.x > W) this.vx *= -1;
+                    if (this.y < 0 || this.y > H) this.vy *= -1;
                 }
                 draw() {
-                    ctx.fillStyle = 'rgba(255,255,255,0.2)';
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                    ctx.fill();
+                    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2); ctx.fill();
                 }
             }
 
-            for (let i = 0; i < 50; i++) particles.push(new Particle());
+            for (let i = 0; i < 55; i++) particles.push(new P());
 
-            function animate() {
-                ctx.clearRect(0, 0, width, height);
-                particles.forEach((p, index) => {
-                    p.update();
-                    p.draw();
-                    // Draw connections
-                    for (let j = index + 1; j < particles.length; j++) {
-                        const p2 = particles[j];
-                        const dx = p.x - p2.x;
-                        const dy = p.y - p2.y;
-                        const dist = Math.sqrt(dx * dx + dy * dy);
-                        if (dist < 150) {
-                            ctx.strokeStyle = `rgba(255,255,255,${0.1 - dist/1500})`;
-                            ctx.lineWidth = 1;
-                            ctx.beginPath();
-                            ctx.moveTo(p.x, p.y);
-                            ctx.lineTo(p2.x, p2.y);
-                            ctx.stroke();
+            (function loop() {
+                ctx.clearRect(0,0,W,H);
+                particles.forEach((p,i) => {
+                    p.move(); p.draw();
+                    for (let j = i+1; j < particles.length; j++) {
+                        const q = particles[j], dx = p.x-q.x, dy = p.y-q.y, d = Math.hypot(dx,dy);
+                        if (d < 140) {
+                            ctx.strokeStyle = `rgba(255,255,255,${0.08*(1-d/140)})`;
+                            ctx.lineWidth = 0.8;
+                            ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(q.x,q.y); ctx.stroke();
                         }
                     }
                 });
-                requestAnimationFrame(animate);
-            }
-            animate();
+                requestAnimationFrame(loop);
+            })();
         });
 
-        window.addEventListener('pageshow', (event) => {
-            const loader = document.getElementById('loader');
-            if (loader) loader.classList.remove('visible');
+        window.addEventListener('pageshow', () => {
+            document.getElementById('loader')?.classList.remove('visible');
         });
     </script>
 </body>
