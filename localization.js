@@ -85,6 +85,7 @@ const translations = {
     "calculatorsDesc": "Various financial and utility calculators.",
     "enterPin": "PIN",
     "scan": "Scan",
+    "milkBill": "Milk Bill",
 
     // =============================================================================
     // FILE: dashboard.html
@@ -97,6 +98,18 @@ const translations = {
     "rentReport": "Rent Report",
     "debtsReport": "Debts Report",
     "scanReport": "Scan Report",
+    "milkReport": "Milk Report",
+
+    // =============================================================================
+    // FILE: milk/milk.html
+    // =============================================================================
+    "milkBillTitle": "Milk Bill - KT Apps",
+    "morningCollection": "Morning (Liters)",
+    "eveningCollection": "Evening (Liters)",
+    "dailyTotal": "Daily Total",
+    "unitPrice": "Unit Price (₹)",
+    "dailyCost": "Daily Cost (₹)",
+    "milkSummary": "Milk Summary",
 
     // =============================================================================
     // FILE: denomination/denominations.html

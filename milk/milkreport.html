@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <title data-translate-key="milkReport">Milk Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="../config.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #020617;
+            --card-bg: #0f172a;
+            --primary: #6366f1;
+            --surface: rgba(15, 23, 42, 0.7);
+        }
+
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #f8fafc;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            /* iOS safe area padding */
+            padding-bottom: env(safe-area-inset-bottom, 80px);
+        }
+
+        .glass {
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .bento-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Only apply hover lift on non-touch devices */
+        @media (hover: hover) {
+            .bento-card:hover {
+                transform: translateY(-4px);
+                border-color: rgba(255, 255, 255, 0.15);
+                background: rgba(30, 41, 59, 0.8);
+            }
+        }
+
+        /* Active press feedback for mobile */
+        .tap-active:active {
+            transform: scale(0.97);
+            opacity: 0.85;
+        }
+
+        /* Bottom nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            z-index: 40;
+        }
+
+        /* Sticky header */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+        }
+
+        /* Mobile row cards */
+        .day-card {
+            border-radius: 1rem;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.07);
+            transition: background 0.2s;
+        }
+        .day-card:active { background: rgba(99,102,241,0.12); }
+
+        /* Filter panel collapse animation */
+        .filter-panel {
+            overflow: hidden;
+            transition: max-height 0.35s ease, opacity 0.3s ease;
+            max-height: 500px;
+            opacity: 1;
+        }
+        .filter-panel.collapsed {
+            max-height: 0;
+            opacity: 0;
+        }
+
+        /* Desktop table */
+        @media (min-width: 768px) {
+            .mobile-cards { display: none; }
+            .desktop-table { display: block; }
+        }
+        @media (max-width: 767px) {
+            .mobile-cards { display: block; }
+            .desktop-table { display: none; }
+        }
+
+        /* Smooth scroll */
+        html { scroll-behavior: smooth; }
+
+        /* Select styling for mobile */
+        select {
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236366f1' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 2rem !important;
+        }
+
+        /* Scrollable grid area on mobile */
+        .grid-scroll {
+            max-height: 60vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .grid-scroll::-webkit-scrollbar { display: none; }
+
+        /* Summary grid on mobile - 2 columns */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+        .summary-grid .full-width { grid-column: 1 / -1; }
+    </style>
+</head>
+
+<body>
+    <!-- Sticky Header -->
+    <div class="sticky-header pt-safe">
+        <div class="glass border-b border-white/5 px-4 py-3 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-9 h-9 flex-shrink-0 rounded-xl bg-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-cow text-white text-base"></i>
+                </div>
+                <div class="min-w-0">
+                    <h1 class="text-base font-extrabold tracking-tight text-white leading-tight truncate">Milk Report</h1>
+                    <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest hidden sm:block">Monthly Collection Records</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <!-- Toggle filter panel (mobile) -->
+                <button id="filter-toggle" onclick="toggleFilter()"
+                    class="md:hidden w-9 h-9 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 tap-active">
+                    <i class="fa-solid fa-sliders text-sm"></i>
+                </button>
+                <a href="milk.html" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-xl font-bold text-xs transition-all shadow-lg tap-active">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span>New Entry</span>
+                </a>
+                <a href="../index.html" class="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all tap-active">
+                    <i class="fa-solid fa-house text-sm"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-5xl mx-auto px-3 sm:px-6 pt-4 pb-28">
+
+        <!-- Filter Panel (collapsible on mobile) -->
+        <div id="filter-panel" class="filter-panel mb-4">
+            <div class="glass rounded-2xl p-4 bento-card">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                        <i class="fa-solid fa-filter text-indigo-400"></i> Period Selection
+                    </h3>
+                    <div class="flex gap-2">
+                        <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all tap-active">
+                            <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                        </button>
+                        <button onclick="changeMonth(1)" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all tap-active">
+                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-gray-400 font-bold ml-1 uppercase">Month</label>
+                        <select id="month-select" class="w-full bg-slate-900/80 border border-white/10 rounded-xl py-2.5 px-3 text-sm font-semibold outline-none text-white focus:border-indigo-500">
+                            <option value="Jan">January</option><option value="Feb">February</option><option value="Mar">March</option>
+                            <option value="Apr">April</option><option value="May">May</option><option value="Jun">June</option>
+                            <option value="Jul">July</option><option value="Aug">August</option><option value="Sep">September</option>
+                            <option value="Oct">October</option><option value="Nov">November</option><option value="Dec">December</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-gray-400 font-bold ml-1 uppercase">Year</label>
+                        <select id="year-select" class="w-full bg-slate-900/80 border border-white/10 rounded-xl py-2.5 px-3 text-sm font-semibold outline-none text-white focus:border-indigo-500"></select>
+                    </div>
+                </div>
+                <button onclick="fetchMilkReport()"
+                    class="w-full mt-3 bg-indigo-600/80 hover:bg-indigo-600 border border-indigo-500/40 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 group tap-active">
+                    <i id="fetch-icon" class="fa-solid fa-rotate text-white group-hover:rotate-180 transition-transform duration-500"></i>
+                    <span>Fetch Report</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Summary Strip (always visible) -->
+        <div id="monthly-summary" class="glass rounded-2xl p-4 bento-card mb-4">
+            <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-calculator text-emerald-400"></i> Monthly Summary
+            </h3>
+            <div class="summary-grid">
+                <!-- Morning -->
+                <div class="p-3 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
+                    <p class="text-[9px] text-indigo-400 font-bold uppercase tracking-wider mb-1">☀️ Morning</p>
+                    <p id="summary-morning-liters" class="text-base font-black text-white font-mono">0.0 L</p>
+                    <p id="summary-morning-amount" class="text-xs font-bold text-indigo-300 font-mono">₹0.00</p>
+                </div>
+                <!-- Evening -->
+                <div class="p-3 bg-blue-500/10 rounded-xl border border-blue-500/20">
+                    <p class="text-[9px] text-blue-400 font-bold uppercase tracking-wider mb-1">🌙 Evening</p>
+                    <p id="summary-evening-liters" class="text-base font-black text-white font-mono">0.0 L</p>
+                    <p id="summary-evening-amount" class="text-xs font-bold text-blue-300 font-mono">₹0.00</p>
+                </div>
+                <!-- Grand Total -->
+                <div class="full-width p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20 flex items-center justify-between">
+                    <div>
+                        <p class="text-[9px] text-emerald-400 font-bold uppercase tracking-wider mb-1">Grand Total</p>
+                        <p id="summary-total-liters" class="text-lg font-black text-white font-mono">0.0 L</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[9px] text-emerald-400 font-bold uppercase tracking-wider mb-1">Amount</p>
+                        <p id="summary-total-cost" class="text-2xl font-black text-emerald-400 font-mono">₹0.00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Collection -->
+        <div class="glass rounded-2xl p-4 bento-card">
+            <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">Detailed Collection Grid</h3>
+
+            <!-- MOBILE: Card list -->
+            <div id="mobile-cards" class="mobile-cards grid-scroll space-y-2">
+                <!-- Populated by JS -->
+            </div>
+
+            <!-- DESKTOP: Table -->
+            <div class="desktop-table overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="text-gray-500 border-b border-white/5 text-xs uppercase tracking-wider">
+                            <th class="py-3 px-3">Date</th>
+                            <th class="py-3 px-3">Morning</th>
+                            <th class="py-3 px-3">Evening</th>
+                            <th class="py-3 px-3">Daily Total</th>
+                            <th class="py-3 px-3 text-right">Daily Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-body" class="text-gray-300">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loader -->
+    <div id="loader" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+        <div class="flex flex-col items-center gap-4">
+            <div class="animate-spin">
+                <i class="fa-solid fa-circle-notch text-5xl text-indigo-400"></i>
+            </div>
+            <p class="text-white font-semibold text-sm">Fetching Data...</p>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../localization.js"></script>
+    <script>
+        // Collapse filter on mobile by default after first load
+        let filterVisible = true;
+
+        function toggleFilter() {
+            filterVisible = !filterVisible;
+            const panel = document.getElementById('filter-panel');
+            const icon = document.getElementById('filter-toggle');
+            panel.classList.toggle('collapsed', !filterVisible);
+            icon.classList.toggle('bg-indigo-600/50', filterVisible);
+        }
+
+        function changeMonth(offset) {
+            const monthSelect = document.getElementById('month-select');
+            const yearSelect = document.getElementById('year-select');
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+            let currentMonthIdx = months.indexOf(monthSelect.value);
+            let currentYear = parseInt(yearSelect.value);
+
+            currentMonthIdx += offset;
+
+            if (currentMonthIdx < 0) {
+                currentMonthIdx = 11;
+                currentYear--;
+            } else if (currentMonthIdx > 11) {
+                currentMonthIdx = 0;
+                currentYear++;
+            }
+
+            // Check if year is within range before applying
+            const minYear = 2020;
+            const maxYear = new Date().getFullYear();
+
+            if (currentYear >= minYear && currentYear <= maxYear) {
+                monthSelect.value = months[currentMonthIdx];
+                yearSelect.value = currentYear;
+                fetchMilkReport();
+            }
+        }
+
+        function init() {
+            const yearSelect = document.getElementById('year-select');
+            const currentYear = new Date().getFullYear();
+            for (let year = currentYear; year >= 2020; year--) {
+                const opt = document.createElement('option');
+                opt.value = year; opt.textContent = year;
+                yearSelect.appendChild(opt);
+            }
+            yearSelect.value = currentYear;
+
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            document.getElementById('month-select').value = months[new Date().getMonth()];
+
+            fetchMilkReport();
+        }
+
+        function fetchMilkReport() {
+            const month = document.getElementById('month-select').value;
+            const year = document.getElementById('year-select').value;
+            const loader = document.getElementById('loader');
+            loader.classList.remove('hidden');
+
+            // Auto-collapse filter after fetch on mobile (don't toggle if it was already closed)
+            if (window.innerWidth < 768 && filterVisible) {
+                //toggleFilter();
+                // Don't auto-collapse to allow easy successive clicks on prev/next arrows
+            }
+
+            const sheetName = `${month} ${year}`;
+            fetch(`${"https://script.google.com/macros/s/AKfycbxySvwYRG1G1uH8PBMNnUHaY8LIK8qoSqvjssVBOMAjos-nIu-JUUULaAZvPDJY1yXYbA/exec"}?sheetName=${encodeURIComponent(sheetName)}&t=${Date.now()}`)
+                .then(r => r.json())
+                .then(res => {
+                    renderReport(res.data || []);
+                    loader.classList.add('hidden');
+                })
+                .catch(e => {
+                    console.error(e);
+                    loader.classList.add('hidden');
+                    alert('Error loading data');
+                });
+        }
+
+        function renderReport(data) {
+            const body = document.getElementById('report-body');
+            const mobileCards = document.getElementById('mobile-cards');
+            body.innerHTML = '';
+            mobileCards.innerHTML = '';
+
+            let totalMorningLiters = 0, totalEveningLiters = 0;
+            let totalMorningAmount = 0, totalEveningAmount = 0;
+
+            const emptyMsg = `<div class="py-10 text-center text-gray-500 uppercase tracking-widest text-xs">No records found</div>`;
+            const emptyRow = `<tr><td colspan="5" class="py-10 text-center text-gray-500 uppercase tracking-widest text-xs">No records found</td></tr>`;
+
+            if (!data.length) {
+                mobileCards.innerHTML = emptyMsg;
+                body.innerHTML = emptyRow;
+                resetSummary();
+                return;
+            }
+
+            data.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach((row, index) => {
+                const morning = parseFloat(row.morning) || 0;
+                const evening = parseFloat(row.evening) || 0;
+                const unitPrice = parseFloat(row.unitprice) || parseFloat(row.unitPrice) || 80;
+                const dailyTotal = morning + evening;
+                const dailyCost = dailyTotal * unitPrice;
+
+                totalMorningLiters += morning;
+                totalEveningLiters += evening;
+                totalMorningAmount += (morning * unitPrice);
+                totalEveningAmount += (evening * unitPrice);
+
+                // --- DESKTOP TABLE ROW ---
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer";
+                tr.onclick = () => editEntry(row);
+                tr.innerHTML = `
+                    <td class="py-3.5 px-3 font-mono text-xs">${formatDate(row.date)}</td>
+                    <td class="py-3.5 px-3 text-sm">${morning.toFixed(1)} L</td>
+                    <td class="py-3.5 px-3 text-sm">${evening.toFixed(1)} L</td>
+                    <td class="py-3.5 px-3 font-bold text-white text-sm">${dailyTotal.toFixed(1)} L</td>
+                    <td class="py-3.5 px-3 text-right font-bold text-emerald-400 font-mono text-sm">₹${dailyCost.toFixed(2)}</td>
+                `;
+                body.appendChild(tr);
+
+                // --- MOBILE CARD ---
+                const isEven = index % 2 === 0;
+                const card = document.createElement('div');
+                card.className = "day-card p-3 cursor-pointer tap-active";
+                card.style.background = isEven
+                    ? 'rgba(99, 102, 241, 0.07)'
+                    : 'rgba(16, 185, 129, 0.06)';
+                card.style.borderColor = isEven
+                    ? 'rgba(99, 102, 241, 0.18)'
+                    : 'rgba(16, 185, 129, 0.18)';
+                card.onclick = () => editEntry(row);
+                const dateColor = isEven ? 'text-indigo-300' : 'text-emerald-300';
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold ${dateColor} font-mono">${formatDate(row.date)}</span>
+                        <span class="text-sm font-black text-emerald-400 font-mono">₹${dailyCost.toFixed(2)}</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-center">
+                        <div style="background:rgba(251,146,60,0.12);border:1px solid rgba(251,146,60,0.25);border-radius:0.5rem;padding:6px 4px;">
+                            <p style="font-size:9px;color:#fb923c;font-weight:700;text-transform:uppercase;margin-bottom:2px;">☀️ Morn</p>
+                            <p style="font-size:0.875rem;font-weight:900;color:#fff;">${morning.toFixed(1)}<span style="font-size:9px;color:#9ca3af;font-weight:400;"> L</span></p>
+                        </div>
+                        <div style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);border-radius:0.5rem;padding:6px 4px;">
+                            <p style="font-size:9px;color:#60a5fa;font-weight:700;text-transform:uppercase;margin-bottom:2px;">🌙 Eve</p>
+                            <p style="font-size:0.875rem;font-weight:900;color:#fff;">${evening.toFixed(1)}<span style="font-size:9px;color:#9ca3af;font-weight:400;"> L</span></p>
+                        </div>
+                        <div style="background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.25);border-radius:0.5rem;padding:6px 4px;">
+                            <p style="font-size:9px;color:#a78bfa;font-weight:700;text-transform:uppercase;margin-bottom:2px;">⚡ Total</p>
+                            <p style="font-size:0.875rem;font-weight:900;color:#fff;">${dailyTotal.toFixed(1)}<span style="font-size:9px;color:#9ca3af;font-weight:400;"> L</span></p>
+                        </div>
+                    </div>
+                `;
+                mobileCards.appendChild(card);
+            });
+
+            updateSummary(totalMorningLiters, totalMorningAmount, totalEveningLiters, totalEveningAmount);
+        }
+
+        function resetSummary() {
+            document.getElementById('summary-morning-liters').textContent = '0.0 L';
+            document.getElementById('summary-morning-amount').textContent = '₹0.00';
+            document.getElementById('summary-evening-liters').textContent = '0.0 L';
+            document.getElementById('summary-evening-amount').textContent = '₹0.00';
+            document.getElementById('summary-total-liters').textContent = '0.0 L';
+            document.getElementById('summary-total-cost').textContent = '₹0.00';
+        }
+
+        function updateSummary(mL, mA, eL, eA) {
+            const totalLiters = mL + eL;
+            const totalAmount = mA + eA;
+            document.getElementById('summary-morning-liters').textContent = `${mL.toFixed(1)} L`;
+            document.getElementById('summary-morning-amount').textContent = `₹${mA.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+            document.getElementById('summary-evening-liters').textContent = `${eL.toFixed(1)} L`;
+            document.getElementById('summary-evening-amount').textContent = `₹${eA.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+            document.getElementById('summary-total-liters').textContent = `${totalLiters.toFixed(1)} L`;
+            document.getElementById('summary-total-cost').textContent = `₹${totalAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+        }
+
+        function formatDate(iso) {
+            const d = new Date(iso);
+            if (isNaN(d.getTime())) return iso;
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            return `${d.getDate().toString().padStart(2,'0')} ${months[d.getMonth()]} ${d.getFullYear()}`;
+        }
+
+        function editEntry(row) {
+            localStorage.setItem('milkEditData', JSON.stringify(row));
+            window.location.href = 'milk.html';
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

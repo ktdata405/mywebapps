@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title data-translate-key="milkBillTitle">Milk Bill - KT Apps</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="../config.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #0b0f19;
+            --card-bg: #151a25;
+            --primary: #6366f1;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #f8fafc;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .glass-panel {
+            background: rgba(21, 26, 37, 0.6);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            opacity: 0.6;
+        }
+
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen pb-40 relative overflow-x-hidden">
+    <!-- Background Gradients -->
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+        <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[100px]"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-30 glass-panel border-b border-white/5 px-6 py-4 mb-8 backdrop-blur-xl bg-[#0b0f19]/80">
+        <div class="max-w-3xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 ring-4 ring-white/5">
+                    <i class="fa-solid fa-cow text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white leading-tight" data-translate-key="milkBill">Milk Bill</h1>
+                    <p class="text-xs text-gray-400 font-medium">Daily Tracker</p>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <a href="milkreport.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white" title="Report">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </a>
+                <a href="../index.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white" title="Home">
+                    <i class="fa-solid fa-house"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4">
+        <!-- Date Input -->
+        <div class="glass-panel rounded-3xl p-6 mb-6 shadow-2xl border border-white/10">
+            <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1 mb-2 block" data-translate-key="date">Date</label>
+            <div class="flex items-center gap-3">
+                <button onclick="changeDate(-1)" class="w-12 h-12 rounded-2xl bg-black/40 border border-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all active:scale-95 hover:bg-white/5">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <input type="date" id="date-input" class="flex-1 bg-black/40 border border-white/10 rounded-2xl px-4 py-3.5 text-white font-bold outline-none focus:border-indigo-500 transition-all" />
+                <button onclick="changeDate(1)" class="w-12 h-12 rounded-2xl bg-black/40 border border-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all active:scale-95 hover:bg-white/5">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Collection Inputs -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="glass-panel rounded-3xl p-6 border border-white/10">
+                <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1 mb-2 block" data-translate-key="morningCollection">Morning Collection (Liters)</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-indigo-400">
+                        <i class="fa-solid fa-sun text-sm"></i>
+                    </div>
+                    <input type="number" step="0.1" id="morning-input" placeholder="0.0" oninput="calculateDaily()" class="w-full bg-black/40 border border-white/10 rounded-2xl pl-10 pr-4 py-3.5 text-white font-mono text-lg font-bold outline-none focus:border-indigo-500 transition-all">
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-3xl p-6 border border-white/10">
+                <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1 mb-2 block" data-translate-key="eveningCollection">Evening Collection (Liters)</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-indigo-400">
+                        <i class="fa-solid fa-moon text-sm"></i>
+                    </div>
+                    <input type="number" step="0.1" id="evening-input" placeholder="0.0" oninput="calculateDaily()" class="w-full bg-black/40 border border-white/10 rounded-2xl pl-10 pr-4 py-3.5 text-white font-mono text-lg font-bold outline-none focus:border-indigo-500 transition-all">
+                </div>
+            </div>
+        </div>
+
+        <!-- Totals Card -->
+        <div class="glass-panel rounded-3xl p-6 mb-6 border border-indigo-500/30 bg-indigo-500/5">
+            <div class="grid grid-cols-3 gap-4 text-center">
+                <div>
+                    <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1" data-translate-key="dailyTotal">Daily Total</p>
+                    <p id="daily-total" class="text-xl font-black text-white font-mono">0.0 L</p>
+                </div>
+                <div>
+                    <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1" data-translate-key="unitPrice">Unit Price</p>
+                    <p class="text-xl font-black text-white font-mono">₹80</p>
+                </div>
+                <div>
+                    <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1" data-translate-key="dailyCost">Daily Cost</p>
+                    <p id="daily-cost" class="text-xl font-black text-emerald-400 font-mono">₹0</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Action Bar -->
+    <div class="fixed bottom-0 left-0 w-full glass-panel border-t border-white/10 z-40 pb-safe bg-[#0b0f19]/90 backdrop-blur-xl">
+        <div class="max-w-3xl mx-auto px-6 py-4 flex items-center justify-end gap-3">
+            <button onclick="clearInputs()" class="w-12 h-12 rounded-2xl bg-white/5 hover:bg-red-500/10 border border-white/5 text-gray-400 hover:text-red-400 flex items-center justify-center transition-all active:scale-95">
+                <i class="fa-solid fa-trash-can"></i>
+            </button>
+            <button onclick="saveMilkData()" id="save-btn" class="h-12 px-8 rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-bold shadow-lg flex items-center gap-2.5 transition-all active:scale-95">
+                <i class="fa-solid fa-check"></i>
+                <span data-translate-key="save">Save</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="loader" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div class="flex flex-col items-center gap-4">
+            <div class="animate-spin">
+                <i class="fa-solid fa-circle-notch text-5xl text-indigo-400"></i>
+            </div>
+            <p id="loader-text" class="text-white font-medium">Saving...</p>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../localization.js"></script>
+    <script>
+        const UNIT_PRICE = 80;
+
+        function changeDate(offset) {
+            const dateInput = document.getElementById('date-input');
+            const currentDate = new Date(dateInput.value);
+            if (!isNaN(currentDate.getTime())) {
+                currentDate.setDate(currentDate.getDate() + offset);
+                dateInput.value = currentDate.toISOString().split('T')[0];
+            }
+        }
+
+        function init() {
+            const dateInput = document.getElementById('date-input');
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.value = today;
+
+            // Check for edit data
+            const editData = localStorage.getItem('milkEditData');
+            if (editData) {
+                const data = JSON.parse(editData);
+                localStorage.removeItem('milkEditData');
+                dateInput.value = data.date;
+                document.getElementById('morning-input').value = data.morning;
+                document.getElementById('evening-input').value = data.evening;
+                calculateDaily();
+            }
+        }
+
+        function calculateDaily() {
+            const morning = parseFloat(document.getElementById('morning-input').value) || 0;
+            const evening = parseFloat(document.getElementById('evening-input').value) || 0;
+            const total = morning + evening;
+            const cost = total * UNIT_PRICE;
+
+            document.getElementById('daily-total').textContent = `${total.toFixed(1)} L`;
+            document.getElementById('daily-cost').textContent = `₹${cost.toFixed(2)}`;
+        }
+
+        function clearInputs() {
+            document.getElementById('morning-input').value = '';
+            document.getElementById('evening-input').value = '';
+            calculateDaily();
+        }
+
+        function saveMilkData() {
+            const date = document.getElementById('date-input').value;
+            const morning = parseFloat(document.getElementById('morning-input').value) || 0;
+            const evening = parseFloat(document.getElementById('evening-input').value) || 0;
+
+            if (!date) {
+                alert('Please select a date');
+                return;
+            }
+
+            const loader = document.getElementById('loader');
+            loader.classList.remove('hidden');
+
+            const payload = {
+                type: 'milk',
+                action: 'add',
+                date: date,
+                morning: morning,
+                evening: evening,
+                unitPrice: UNIT_PRICE
+            };
+
+            //fetch(CONFIG.GOOGLE_SHEET_URL_MILK, {
+                fetch("https://script.google.com/macros/s/AKfycbxySvwYRG1G1uH8PBMNnUHaY8LIK8qoSqvjssVBOMAjos-nIu-JUUULaAZvPDJY1yXYbA/exec", {
+
+                method: 'POST',
+                body: JSON.stringify(payload),
+                mode: 'no-cors'
+            })
+            .then(() => {
+                loader.classList.add('hidden');
+                alert('Data saved successfully!');
+                clearInputs();
+                // Move to next day
+                const d = new Date(date);
+                d.setDate(d.getDate() + 1);
+                document.getElementById('date-input').value = d.toISOString().split('T')[0];
+            })
+            .catch(error => {
+                loader.classList.add('hidden');
+                console.error('Error:', error);
+                alert('Error saving data');
+            });
+        }
+
+        init();
+    </script>
+</body>
+
+</html>
