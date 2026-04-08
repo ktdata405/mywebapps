@@ -413,31 +413,40 @@
                 const isEven = index % 2 === 0;
                 const card = document.createElement('div');
                 card.className = "day-card p-3 cursor-pointer tap-active";
+                // Alternating card backgrounds: deep indigo-navy vs deep teal-navy
                 card.style.background = isEven
-                    ? 'rgba(99, 102, 241, 0.07)'
-                    : 'rgba(16, 185, 129, 0.06)';
+                    ? 'linear-gradient(135deg, rgba(49,46,129,0.45) 0%, rgba(15,23,42,0.6) 100%)'
+                    : 'linear-gradient(135deg, rgba(6,78,59,0.45) 0%, rgba(15,23,42,0.6) 100%)';
                 card.style.borderColor = isEven
-                    ? 'rgba(99, 102, 241, 0.18)'
-                    : 'rgba(16, 185, 129, 0.18)';
+                    ? 'rgba(129,140,248,0.30)'
+                    : 'rgba(52,211,153,0.30)';
                 card.onclick = () => editEntry(row);
-                const dateColor = isEven ? 'text-indigo-300' : 'text-emerald-300';
+                // Date label color matches card theme
+                const dateLabelColor = isEven ? '#818cf8' : '#34d399';
+                const costColor = '#fbbf24'; // gold for rupee amount
                 card.innerHTML = `
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs font-bold ${dateColor} font-mono">${formatDate(row.date)}</span>
-                        <span class="text-sm font-black text-emerald-400 font-mono">₹${dailyCost.toFixed(2)}</span>
+                    <div class="flex items-center justify-between mb-2.5">
+                        <span style="font-size:11px;font-weight:800;color:${dateLabelColor};font-family:monospace;letter-spacing:0.03em;">${formatDate(row.date)}</span>
+                        <span style="font-size:13px;font-weight:900;color:${costColor};font-family:monospace;">₹${dailyCost.toFixed(2)}</span>
                     </div>
-                    <div class="grid grid-cols-3 gap-2 text-center">
-                        <div style="background:rgba(251,146,60,0.12);border:1px solid rgba(251,146,60,0.25);border-radius:0.5rem;padding:6px 4px;">
-                            <p style="font-size:9px;color:#fb923c;font-weight:700;text-transform:uppercase;margin-bottom:2px;">☀️ Morn</p>
-                            <p style="font-size:0.875rem;font-weight:900;color:#fff;">${morning.toFixed(1)}<span style="font-size:9px;color:#9ca3af;font-weight:400;"> L</span></p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:center;">
+                        <!-- Morning: warm sunrise gradient -->
+                        <div style="background:linear-gradient(135deg,rgba(251,191,36,0.18),rgba(234,88,12,0.14));border:1px solid rgba(251,191,36,0.35);border-radius:10px;padding:7px 4px;">
+                            <p style="font-size:9px;color:#fbbf24;font-weight:700;text-transform:uppercase;margin-bottom:3px;letter-spacing:0.04em;">☀️ Morn</p>
+                            <p style="font-size:15px;font-weight:900;color:#fff;line-height:1;">${morning.toFixed(1)}</p>
+                            <p style="font-size:9px;color:#fcd34d;font-weight:600;margin-top:1px;">litres</p>
                         </div>
-                        <div style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);border-radius:0.5rem;padding:6px 4px;">
-                            <p style="font-size:9px;color:#60a5fa;font-weight:700;text-transform:uppercase;margin-bottom:2px;">🌙 Eve</p>
-                            <p style="font-size:0.875rem;font-weight:900;color:#fff;">${evening.toFixed(1)}<span style="font-size:9px;color:#9ca3af;font-weight:400;"> L</span></p>
+                        <!-- Evening: cool moonlit gradient -->
+                        <div style="background:linear-gradient(135deg,rgba(56,189,248,0.18),rgba(99,102,241,0.14));border:1px solid rgba(56,189,248,0.35);border-radius:10px;padding:7px 4px;">
+                            <p style="font-size:9px;color:#38bdf8;font-weight:700;text-transform:uppercase;margin-bottom:3px;letter-spacing:0.04em;">🌙 Eve</p>
+                            <p style="font-size:15px;font-weight:900;color:#fff;line-height:1;">${evening.toFixed(1)}</p>
+                            <p style="font-size:9px;color:#7dd3fc;font-weight:600;margin-top:1px;">litres</p>
                         </div>
-                        <div style="background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.25);border-radius:0.5rem;padding:6px 4px;">
-                            <p style="font-size:9px;color:#a78bfa;font-weight:700;text-transform:uppercase;margin-bottom:2px;">⚡ Total</p>
-                            <p style="font-size:0.875rem;font-weight:900;color:#fff;">${dailyTotal.toFixed(1)}<span style="font-size:9px;color:#9ca3af;font-weight:400;"> L</span></p>
+                        <!-- Total: emerald green gradient -->
+                        <div style="background:linear-gradient(135deg,rgba(52,211,153,0.18),rgba(16,185,129,0.12));border:1px solid rgba(52,211,153,0.35);border-radius:10px;padding:7px 4px;">
+                            <p style="font-size:9px;color:#34d399;font-weight:700;text-transform:uppercase;margin-bottom:3px;letter-spacing:0.04em;">⚡ Total</p>
+                            <p style="font-size:15px;font-weight:900;color:#fff;line-height:1;">${dailyTotal.toFixed(1)}</p>
+                            <p style="font-size:9px;color:#6ee7b7;font-weight:600;margin-top:1px;">litres</p>
                         </div>
                     </div>
                 `;
