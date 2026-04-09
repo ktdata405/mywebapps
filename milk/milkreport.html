@@ -1,24 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title data-translate-key="milkReport">Milk Report</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="../config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
         :root {
             --bg-dark: #020617;
             --card-bg: #0f172a;
             --primary: #6366f1;
-            --surface: rgba(15, 23, 42, 0.7);
+            --surface: rgba(15, 23, 42, 0.75);
+            /* Morning palette */
+            --morning-bg: linear-gradient(135deg, rgba(251,191,36,0.22) 0%, rgba(234,88,12,0.16) 100%);
+            --morning-border: rgba(251,191,36,0.40);
+            --morning-label: #fbbf24;
+            --morning-value: #fff;
+            --morning-sub: #fcd34d;
+            /* Evening palette */
+            --evening-bg: linear-gradient(135deg, rgba(99,102,241,0.28) 0%, rgba(56,189,248,0.18) 100%);
+            --evening-border: rgba(99,102,241,0.45);
+            --evening-label: #818cf8;
+            --evening-value: #fff;
+            --evening-sub: #a5b4fc;
+            /* Total palette */
+            --total-bg: linear-gradient(135deg, rgba(16,185,129,0.22) 0%, rgba(6,182,212,0.14) 100%);
+            --total-border: rgba(16,185,129,0.40);
+            --total-label: #34d399;
+            --total-value: #fff;
+            --total-sub: #6ee7b7;
         }
 
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
 
         body {
             background-color: var(--bg-dark);
@@ -27,469 +47,586 @@
             min-height: 100vh;
             min-height: 100dvh;
             overflow-x: hidden;
-            /* iOS safe area padding */
-            padding-bottom: env(safe-area-inset-bottom, 80px);
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
         }
+
+        /* Background ambient blobs */
+        .bg-blob {
+            position: fixed; border-radius: 50%;
+            filter: blur(110px); opacity: 0.10;
+            pointer-events: none; z-index: 0;
+        }
+        .bg-blob-1 { width:450px; height:450px; background:#6366f1; top:-120px; left:-80px; }
+        .bg-blob-2 { width:360px; height:360px; background:#0ea5e9; bottom:-80px; right:-80px; }
+        .bg-blob-3 { width:260px; height:260px; background:#10b981; top:50%; left:50%; transform:translate(-50%,-50%); opacity:0.06; }
 
         .glass {
             background: var(--surface);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+            position: relative; z-index: 1;
         }
 
-        .bento-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* Only apply hover lift on non-touch devices */
-        @media (hover: hover) {
+        .bento-card { transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
+        @media (hover:hover) {
             .bento-card:hover {
-                transform: translateY(-4px);
-                border-color: rgba(255, 255, 255, 0.15);
-                background: rgba(30, 41, 59, 0.8);
+                transform: translateY(-3px);
+                border-color: rgba(255,255,255,0.14);
+                background: rgba(30,41,59,0.85);
             }
         }
-
-        /* Active press feedback for mobile */
-        .tap-active:active {
-            transform: scale(0.97);
-            opacity: 0.85;
-        }
-
-        /* Bottom nav */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding-bottom: env(safe-area-inset-bottom, 0px);
-            z-index: 40;
-        }
+        .tap-active { -webkit-tap-highlight-color: transparent; }
+        .tap-active:active { transform: scale(0.96); opacity: 0.85; }
 
         /* Sticky header */
-        .sticky-header {
-            position: sticky;
-            top: 0;
-            z-index: 30;
-        }
+        .sticky-header { position: sticky; top: 0; z-index: 30; }
 
-        /* Mobile row cards */
-        .day-card {
-            border-radius: 1rem;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.07);
-            transition: background 0.2s;
-        }
-        .day-card:active { background: rgba(99,102,241,0.12); }
-
-        /* Filter panel collapse animation */
+        /* Filter panel collapse */
         .filter-panel {
             overflow: hidden;
-            transition: max-height 0.35s ease, opacity 0.3s ease;
-            max-height: 500px;
-            opacity: 1;
+            transition: max-height 0.38s ease, opacity 0.3s ease;
+            max-height: 600px; opacity: 1;
         }
-        .filter-panel.collapsed {
-            max-height: 0;
-            opacity: 0;
-        }
+        .filter-panel.collapsed { max-height: 0; opacity: 0; }
 
-        /* Desktop table */
+        /* Desktop table vs Mobile cards */
         @media (min-width: 768px) {
-            .mobile-cards { display: none; }
-            .desktop-table { display: block; }
+            .mobile-cards { display: none !important; }
+            .desktop-table { display: block !important; }
         }
         @media (max-width: 767px) {
-            .mobile-cards { display: block; }
-            .desktop-table { display: none; }
+            .mobile-cards { display: block !important; }
+            .desktop-table { display: none !important; }
         }
 
-        /* Smooth scroll */
-        html { scroll-behavior: smooth; }
-
-        /* Select styling for mobile */
-        select {
-            -webkit-appearance: none;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236366f1' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            padding-right: 2rem !important;
-        }
-
-        /* Scrollable grid area on mobile */
+        /* Mobile scroll area */
         .grid-scroll {
-            max-height: 60vh;
+            max-height: 65vh;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
+            padding-right: 2px;
         }
         .grid-scroll::-webkit-scrollbar { display: none; }
 
-        /* Summary grid on mobile - 2 columns */
+        /* Summary grid */
         .summary-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 0.75rem;
         }
         .summary-grid .full-width { grid-column: 1 / -1; }
+
+        /* Select custom arrow */
+        select {
+            -webkit-appearance: none; appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236366f1' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 2rem !important;
+        }
+
+        /* ── DAY CARD (Mobile) ── */
+        .day-card {
+            border-radius: 16px;
+            border: 1px solid transparent;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            overflow: hidden;
+            position: relative;
+        }
+        .day-card:active { transform: scale(0.97); }
+
+        /* Alternating card themes */
+        .day-card.theme-indigo {
+            background: linear-gradient(145deg, rgba(49,46,129,0.55) 0%, rgba(15,23,42,0.70) 100%);
+            border-color: rgba(129,140,248,0.30);
+            box-shadow: 0 4px 20px rgba(99,102,241,0.12);
+        }
+        .day-card.theme-teal {
+            background: linear-gradient(145deg, rgba(6,78,59,0.55) 0%, rgba(15,23,42,0.70) 100%);
+            border-color: rgba(52,211,153,0.28);
+            box-shadow: 0 4px 20px rgba(16,185,129,0.10);
+        }
+
+        /* Date label colors per theme */
+        .day-card.theme-indigo .date-label { color: #a5b4fc; }
+        .day-card.theme-teal   .date-label { color: #6ee7b7; }
+
+        /* Morning block */
+        .block-morning {
+            background: var(--morning-bg);
+            border: 1px solid var(--morning-border);
+            border-radius: 12px;
+            padding: 8px 5px;
+            text-align: center;
+        }
+        .block-morning .blk-label { color: var(--morning-label); }
+        .block-morning .blk-sub   { color: var(--morning-sub); }
+
+        /* Evening block */
+        .block-evening {
+            background: var(--evening-bg);
+            border: 1px solid var(--evening-border);
+            border-radius: 12px;
+            padding: 8px 5px;
+            text-align: center;
+        }
+        .block-evening .blk-label { color: var(--evening-label); }
+        .block-evening .blk-sub   { color: var(--evening-sub); }
+
+        /* Total block */
+        .block-total {
+            background: var(--total-bg);
+            border: 1px solid var(--total-border);
+            border-radius: 12px;
+            padding: 8px 5px;
+            text-align: center;
+        }
+        .block-total .blk-label { color: var(--total-label); }
+        .block-total .blk-sub   { color: var(--total-sub); }
+
+        .blk-label {
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+        .blk-value {
+            font-size: 17px;
+            font-weight: 900;
+            color: #fff;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+        }
+        .blk-sub {
+            font-size: 9px;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        /* Card cost badge */
+        .cost-badge {
+            background: linear-gradient(135deg, rgba(251,191,36,0.18), rgba(245,158,11,0.12));
+            border: 1px solid rgba(251,191,36,0.35);
+            border-radius: 8px;
+            padding: 2px 8px;
+            color: #fbbf24;
+            font-size: 13px;
+            font-weight: 900;
+            font-family: monospace;
+        }
+
+        /* Desktop table row alternating */
+        #report-body tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+        #report-body tr { transition: background 0.15s; }
+        #report-body tr:hover { background: rgba(99,102,241,0.08) !important; }
+
+        .td-morning { color: #fcd34d; font-weight: 700; text-align: center; }
+        .td-evening { color: #a5b4fc; font-weight: 700; text-align: center; }
+        .td-total   { color: #6ee7b7; font-weight: 800; text-align: center; }
+        .td-cost    { color: #fbbf24; font-weight: 800; font-family: monospace; text-align: center; }
+        .td-date    { font-family: monospace; font-size: 12px; color: #cbd5e1; text-align: center; }
+
+        #report-body td { text-align: center; }
+        #report-body td:first-child { text-align: center; }
+
+        thead th { text-align: center !important; }
+        thead th:first-child { text-align: center !important; }
+
+        /* Section accent line */
+        .section-accent {
+            display: flex; align-items: center; gap: 0.6rem;
+            margin-bottom: 0.75rem;
+        }
+        .section-accent-line {
+            flex: 1; height: 1px;
+            background: linear-gradient(90deg, rgba(99,102,241,0.4), transparent);
+        }
+
+        @media (max-width: 380px) {
+            .blk-value { font-size: 15px; }
+        }
     </style>
 </head>
 
 <body>
-    <!-- Sticky Header -->
-    <div class="sticky-header pt-safe">
-        <div class="glass border-b border-white/5 px-4 py-3 flex items-center justify-between gap-3">
-            <div class="flex items-center gap-3 min-w-0">
-                <div class="w-9 h-9 flex-shrink-0 rounded-xl bg-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                    <i class="fa-solid fa-cow text-white text-base"></i>
-                </div>
-                <div class="min-w-0">
-                    <h1 class="text-base font-extrabold tracking-tight text-white leading-tight truncate">Milk Report</h1>
-                    <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest hidden sm:block">Monthly Collection Records</p>
-                </div>
+<!-- Ambient blobs -->
+<div class="bg-blob bg-blob-1"></div>
+<div class="bg-blob bg-blob-2"></div>
+<div class="bg-blob bg-blob-3"></div>
+
+<!-- ── Sticky Header ── -->
+<div class="sticky-header" style="padding-top: env(safe-area-inset-top, 0px);">
+    <div class="glass border-b border-white/5 px-4 py-3 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 flex-shrink-0 rounded-2xl flex items-center justify-center shadow-lg"
+                 style="background: linear-gradient(135deg,#6366f1,#8b5cf6); box-shadow: 0 6px 20px rgba(99,102,241,0.35);">
+                <i class="fa-solid fa-cow text-white text-base"></i>
             </div>
-            <div class="flex items-center gap-2 flex-shrink-0">
-                <!-- Toggle filter panel (mobile) -->
-                <button id="filter-toggle" onclick="toggleFilter()"
-                    class="md:hidden w-9 h-9 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 tap-active">
-                    <i class="fa-solid fa-sliders text-sm"></i>
-                </button>
-                <a href="milk.html" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-xl font-bold text-xs transition-all shadow-lg tap-active">
-                    <i class="fa-solid fa-plus text-xs"></i>
-                    <span>New Entry</span>
-                </a>
-                <a href="../index.html" class="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all tap-active">
-                    <i class="fa-solid fa-house text-sm"></i>
-                </a>
+            <div class="min-w-0">
+                <h1 class="text-base font-extrabold tracking-tight text-white leading-tight truncate">Milk Report</h1>
+                <p class="text-[9px] text-indigo-400 font-bold uppercase tracking-widest hidden sm:block">Monthly Collection Records</p>
             </div>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+            <button id="filter-toggle" onclick="toggleFilter()"
+                    class="md:hidden w-9 h-9 rounded-xl border flex items-center justify-center tap-active transition-all"
+                    style="background:rgba(99,102,241,0.15); border-color:rgba(99,102,241,0.35); color:#818cf8;">
+                <i class="fa-solid fa-sliders text-sm"></i>
+            </button>
+            <a href="milk.html"
+               class="flex items-center gap-1.5 text-white px-3 py-2 rounded-xl font-bold text-xs transition-all tap-active shadow-lg"
+               style="background: linear-gradient(135deg,#6366f1,#8b5cf6); box-shadow: 0 4px 14px rgba(99,102,241,0.35);">
+                <i class="fa-solid fa-plus text-xs"></i>
+                <span>New Entry</span>
+            </a>
+            <a href="../index.html"
+               class="w-9 h-9 rounded-xl border flex items-center justify-center text-gray-400 hover:text-white transition-all tap-active"
+               style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.10);">
+                <i class="fa-solid fa-house text-sm"></i>
+            </a>
         </div>
     </div>
+</div>
 
-    <div class="max-w-5xl mx-auto px-3 sm:px-6 pt-4 pb-28">
+<div class="max-w-5xl mx-auto px-3 sm:px-6 pt-4 pb-10">
 
-        <!-- Filter Panel (collapsible on mobile) -->
-        <div id="filter-panel" class="filter-panel mb-4">
-            <div class="glass rounded-2xl p-4 bento-card">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
-                        <i class="fa-solid fa-filter text-indigo-400"></i> Period Selection
-                    </h3>
-                    <div class="flex gap-2">
-                        <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all tap-active">
-                            <i class="fa-solid fa-chevron-left text-[10px]"></i>
-                        </button>
-                        <button onclick="changeMonth(1)" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all tap-active">
-                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="space-y-1">
-                        <label class="text-[10px] text-gray-400 font-bold ml-1 uppercase">Month</label>
-                        <select id="month-select" class="w-full bg-slate-900/80 border border-white/10 rounded-xl py-2.5 px-3 text-sm font-semibold outline-none text-white focus:border-indigo-500">
-                            <option value="Jan">January</option><option value="Feb">February</option><option value="Mar">March</option>
-                            <option value="Apr">April</option><option value="May">May</option><option value="Jun">June</option>
-                            <option value="Jul">July</option><option value="Aug">August</option><option value="Sep">September</option>
-                            <option value="Oct">October</option><option value="Nov">November</option><option value="Dec">December</option>
-                        </select>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-[10px] text-gray-400 font-bold ml-1 uppercase">Year</label>
-                        <select id="year-select" class="w-full bg-slate-900/80 border border-white/10 rounded-xl py-2.5 px-3 text-sm font-semibold outline-none text-white focus:border-indigo-500"></select>
-                    </div>
-                </div>
-                <button onclick="fetchMilkReport()"
-                    class="w-full mt-3 bg-indigo-600/80 hover:bg-indigo-600 border border-indigo-500/40 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 group tap-active">
-                    <i id="fetch-icon" class="fa-solid fa-rotate text-white group-hover:rotate-180 transition-transform duration-500"></i>
-                    <span>Fetch Report</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Summary Strip (always visible) -->
-        <div id="monthly-summary" class="glass rounded-2xl p-4 bento-card mb-4">
-            <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                <i class="fa-solid fa-calculator text-emerald-400"></i> Monthly Summary
-            </h3>
-            <div class="summary-grid">
-                <!-- Morning -->
-                <div class="p-3 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
-                    <p class="text-[9px] text-indigo-400 font-bold uppercase tracking-wider mb-1">☀️ Morning</p>
-                    <p id="summary-morning-liters" class="text-base font-black text-white font-mono">0.0 L</p>
-                    <p id="summary-morning-amount" class="text-xs font-bold text-indigo-300 font-mono">₹0.00</p>
-                </div>
-                <!-- Evening -->
-                <div class="p-3 bg-blue-500/10 rounded-xl border border-blue-500/20">
-                    <p class="text-[9px] text-blue-400 font-bold uppercase tracking-wider mb-1">🌙 Evening</p>
-                    <p id="summary-evening-liters" class="text-base font-black text-white font-mono">0.0 L</p>
-                    <p id="summary-evening-amount" class="text-xs font-bold text-blue-300 font-mono">₹0.00</p>
-                </div>
-                <!-- Grand Total -->
-                <div class="full-width p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20 flex items-center justify-between">
-                    <div>
-                        <p class="text-[9px] text-emerald-400 font-bold uppercase tracking-wider mb-1">Grand Total</p>
-                        <p id="summary-total-liters" class="text-lg font-black text-white font-mono">0.0 L</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[9px] text-emerald-400 font-bold uppercase tracking-wider mb-1">Amount</p>
-                        <p id="summary-total-cost" class="text-2xl font-black text-emerald-400 font-mono">₹0.00</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Detailed Collection -->
+    <!-- ── Filter Panel ── -->
+    <div id="filter-panel" class="filter-panel mb-4">
         <div class="glass rounded-2xl p-4 bento-card">
-            <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">Detailed Collection Grid</h3>
-
-            <!-- MOBILE: Card list -->
-            <div id="mobile-cards" class="mobile-cards grid-scroll space-y-2">
-                <!-- Populated by JS -->
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                    <i class="fa-solid fa-filter text-indigo-400"></i> Period Selection
+                </h3>
+                <div class="flex gap-2">
+                    <button onclick="changeMonth(-1)"
+                            class="w-8 h-8 rounded-lg border flex items-center justify-center transition-all tap-active"
+                            style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.10); color:#9ca3af;">
+                        <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                    </button>
+                    <button onclick="changeMonth(1)"
+                            class="w-8 h-8 rounded-lg border flex items-center justify-center transition-all tap-active"
+                            style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.10); color:#9ca3af;">
+                        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    </button>
+                </div>
             </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1">
+                    <label class="text-[10px] text-gray-400 font-bold ml-1 uppercase tracking-wider">Month</label>
+                    <select id="month-select"
+                            class="w-full rounded-xl py-2.5 px-3 text-sm font-semibold outline-none text-white focus:border-indigo-500 transition-all"
+                            style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.10);">
+                        <option value="Jan">January</option><option value="Feb">February</option>
+                        <option value="Mar">March</option><option value="Apr">April</option>
+                        <option value="May">May</option><option value="Jun">June</option>
+                        <option value="Jul">July</option><option value="Aug">August</option>
+                        <option value="Sep">September</option><option value="Oct">October</option>
+                        <option value="Nov">November</option><option value="Dec">December</option>
+                    </select>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] text-gray-400 font-bold ml-1 uppercase tracking-wider">Year</label>
+                    <select id="year-select"
+                            class="w-full rounded-xl py-2.5 px-3 text-sm font-semibold outline-none text-white focus:border-indigo-500 transition-all"
+                            style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.10);"></select>
+                </div>
+            </div>
+            <button onclick="fetchMilkReport()"
+                    class="w-full mt-3 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 tap-active"
+                    style="background:linear-gradient(135deg,rgba(99,102,241,0.80),rgba(139,92,246,0.70)); border:1px solid rgba(99,102,241,0.40); box-shadow:0 4px 16px rgba(99,102,241,0.25);">
+                <i id="fetch-icon" class="fa-solid fa-rotate text-white transition-transform duration-500"></i>
+                <span>Fetch Report</span>
+            </button>
+        </div>
+    </div>
 
-            <!-- DESKTOP: Table -->
-            <div class="desktop-table overflow-x-auto">
-                <table class="w-full text-left text-sm">
+    <!-- ── Monthly Summary ── -->
+    <div id="monthly-summary" class="glass rounded-2xl p-4 bento-card mb-4">
+        <div class="section-accent">
+            <i class="fa-solid fa-chart-pie text-emerald-400 text-xs"></i>
+            <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Monthly Summary</span>
+            <div class="section-accent-line"></div>
+        </div>
+        <div class="summary-grid">
+            <!-- Morning -->
+            <div class="p-3 rounded-xl" style="background:linear-gradient(135deg,rgba(251,191,36,0.18),rgba(234,88,12,0.12)); border:1px solid rgba(251,191,36,0.35);">
+                <p class="text-[9px] font-bold uppercase tracking-wider mb-1" style="color:#fbbf24;">☀️ Morning</p>
+                <p id="summary-morning-liters" class="text-base font-black text-white font-mono">0.0 L</p>
+                <p id="summary-morning-amount" class="text-xs font-bold font-mono" style="color:#fcd34d;">₹0.00</p>
+            </div>
+            <!-- Evening -->
+            <div class="p-3 rounded-xl" style="background:linear-gradient(135deg,rgba(99,102,241,0.22),rgba(56,189,248,0.14)); border:1px solid rgba(99,102,241,0.38);">
+                <p class="text-[9px] font-bold uppercase tracking-wider mb-1" style="color:#818cf8;">🌙 Evening</p>
+                <p id="summary-evening-liters" class="text-base font-black text-white font-mono">0.0 L</p>
+                <p id="summary-evening-amount" class="text-xs font-bold font-mono" style="color:#a5b4fc;">₹0.00</p>
+            </div>
+            <!-- Grand Total -->
+            <div class="full-width p-3 rounded-xl flex items-center justify-between"
+                 style="background:linear-gradient(135deg,rgba(16,185,129,0.20),rgba(6,182,212,0.12)); border:1px solid rgba(16,185,129,0.35);">
+                <div>
+                    <p class="text-[9px] font-bold uppercase tracking-wider mb-1" style="color:#34d399;">⚡ Grand Total</p>
+                    <p id="summary-total-liters" class="text-lg font-black text-white font-mono">0.0 L</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-[9px] font-bold uppercase tracking-wider mb-1" style="color:#34d399;">Amount</p>
+                    <p id="summary-total-cost" class="text-2xl font-black font-mono" style="color:#34d399;">₹0.00</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Detailed Collection ── -->
+    <div class="glass rounded-2xl p-4 bento-card">
+        <div class="section-accent">
+            <i class="fa-solid fa-table-list text-indigo-400 text-xs"></i>
+            <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Detailed Collection</span>
+            <div class="section-accent-line"></div>
+            <span id="entry-count" class="text-[9px] font-bold px-2 py-0.5 rounded-full" style="background:rgba(99,102,241,0.20); color:#a5b4fc;">0 days</span>
+        </div>
+
+        <!-- MOBILE: Card list -->
+        <div id="mobile-cards" class="mobile-cards grid-scroll space-y-2.5">
+            <!-- JS populated -->
+        </div>
+
+        <!-- DESKTOP: Table -->
+        <div class="desktop-table overflow-x-auto">
+                <table class="w-full text-center text-sm">
                     <thead>
-                        <tr class="text-gray-500 border-b border-white/5 text-xs uppercase tracking-wider">
-                            <th class="py-3 px-3">Date</th>
-                            <th class="py-3 px-3">Morning</th>
-                            <th class="py-3 px-3">Evening</th>
-                            <th class="py-3 px-3">Daily Total</th>
-                            <th class="py-3 px-3 text-right">Daily Cost</th>
-                        </tr>
+                    <tr class="text-xs uppercase tracking-wider border-b border-white/5"
+                        style="color:rgba(148,163,184,0.7);">
+                        <th class="py-3 px-3 text-center">Date</th>
+                        <th class="py-3 px-3 text-center" style="color:#fcd34d;">☀️ Morning</th>
+                        <th class="py-3 px-3 text-center" style="color:#a5b4fc;">🌙 Evening</th>
+                        <th class="py-3 px-3 text-center" style="color:#6ee7b7;">⚡ Total</th>
+                        <th class="py-3 px-3 text-center" style="color:#fbbf24;">₹ Cost</th>
+                    </tr>
                     </thead>
-                    <tbody id="report-body" class="text-gray-300">
-                        <!-- Populated by JS -->
-                    </tbody>
-                </table>
-            </div>
+                <tbody id="report-body" class="text-gray-300">
+                <!-- JS populated -->
+                </tbody>
+            </table>
         </div>
     </div>
+</div>
 
-    <!-- Loader -->
-    <div id="loader" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-        <div class="flex flex-col items-center gap-4">
-            <div class="animate-spin">
-                <i class="fa-solid fa-circle-notch text-5xl text-indigo-400"></i>
+<!-- ── Loader ── -->
+<div id="loader" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(2,6,23,0.80); backdrop-filter:blur(12px);">
+    <div class="flex flex-col items-center gap-4">
+        <div class="relative w-14 h-14">
+            <div class="absolute inset-0 rounded-full border-4 border-indigo-500/20"></div>
+            <div class="absolute inset-0 rounded-full border-4 border-t-indigo-500 border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <i class="fa-solid fa-cow text-indigo-400 text-lg"></i>
             </div>
-            <p class="text-white font-semibold text-sm">Fetching Data...</p>
         </div>
+        <p class="text-white font-semibold text-sm tracking-wide">Fetching Data…</p>
     </div>
+</div>
 
-    <script src="../config.js"></script>
-    <script src="../localization.js"></script>
-    <script>
-        // Collapse filter on mobile by default after first load
-        let filterVisible = true;
+<script src="../config.js"></script>
+<script src="../localization.js"></script>
+<script>
+    let filterVisible = true;
 
-        function toggleFilter() {
-            filterVisible = !filterVisible;
-            const panel = document.getElementById('filter-panel');
-            const icon = document.getElementById('filter-toggle');
-            panel.classList.toggle('collapsed', !filterVisible);
-            icon.classList.toggle('bg-indigo-600/50', filterVisible);
-        }
+    function toggleFilter() {
+        filterVisible = !filterVisible;
+        document.getElementById('filter-panel').classList.toggle('collapsed', !filterVisible);
+        const btn = document.getElementById('filter-toggle');
+        btn.style.background = filterVisible ? 'rgba(99,102,241,0.25)' : 'rgba(99,102,241,0.10)';
+    }
 
-        function changeMonth(offset) {
-            const monthSelect = document.getElementById('month-select');
-            const yearSelect = document.getElementById('year-select');
-            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-            let currentMonthIdx = months.indexOf(monthSelect.value);
-            let currentYear = parseInt(yearSelect.value);
-
-            currentMonthIdx += offset;
-
-            if (currentMonthIdx < 0) {
-                currentMonthIdx = 11;
-                currentYear--;
-            } else if (currentMonthIdx > 11) {
-                currentMonthIdx = 0;
-                currentYear++;
-            }
-
-            // Check if year is within range before applying
-            const minYear = 2020;
-            const maxYear = new Date().getFullYear();
-
-            if (currentYear >= minYear && currentYear <= maxYear) {
-                monthSelect.value = months[currentMonthIdx];
-                yearSelect.value = currentYear;
-                fetchMilkReport();
-            }
-        }
-
-        function init() {
-            const yearSelect = document.getElementById('year-select');
-            const currentYear = new Date().getFullYear();
-            for (let year = currentYear; year >= 2020; year--) {
-                const opt = document.createElement('option');
-                opt.value = year; opt.textContent = year;
-                yearSelect.appendChild(opt);
-            }
-            yearSelect.value = currentYear;
-
-            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-            document.getElementById('month-select').value = months[new Date().getMonth()];
-
+    function changeMonth(offset) {
+        const ms = document.getElementById('month-select');
+        const ys = document.getElementById('year-select');
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        let mi = months.indexOf(ms.value);
+        let yr = parseInt(ys.value);
+        mi += offset;
+        if (mi < 0) { mi = 11; yr--; }
+        else if (mi > 11) { mi = 0; yr++; }
+        const min = 2020, max = new Date().getFullYear();
+        if (yr >= min && yr <= max) {
+            ms.value = months[mi];
+            ys.value = yr;
             fetchMilkReport();
         }
+    }
 
-        function fetchMilkReport() {
-            const month = document.getElementById('month-select').value;
-            const year = document.getElementById('year-select').value;
-            const loader = document.getElementById('loader');
-            loader.classList.remove('hidden');
-
-            // Auto-collapse filter after fetch on mobile (don't toggle if it was already closed)
-            if (window.innerWidth < 768 && filterVisible) {
-                //toggleFilter();
-                // Don't auto-collapse to allow easy successive clicks on prev/next arrows
-            }
-
-            const sheetName = `${month} ${year}`;
-            fetch(`${"https://script.google.com/macros/s/AKfycbxySvwYRG1G1uH8PBMNnUHaY8LIK8qoSqvjssVBOMAjos-nIu-JUUULaAZvPDJY1yXYbA/exec"}?sheetName=${encodeURIComponent(sheetName)}&t=${Date.now()}`)
-                .then(r => r.json())
-                .then(res => {
-                    renderReport(res.data || []);
-                    loader.classList.add('hidden');
-                })
-                .catch(e => {
-                    console.error(e);
-                    loader.classList.add('hidden');
-                    alert('Error loading data');
-                });
+    function init() {
+        const ys = document.getElementById('year-select');
+        const cur = new Date().getFullYear();
+        for (let y = cur; y >= 2020; y--) {
+            const o = document.createElement('option');
+            o.value = y; o.textContent = y;
+            ys.appendChild(o);
         }
+        ys.value = cur;
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        document.getElementById('month-select').value = months[new Date().getMonth()];
+        fetchMilkReport();
+    }
 
-        function renderReport(data) {
-            const body = document.getElementById('report-body');
-            const mobileCards = document.getElementById('mobile-cards');
-            body.innerHTML = '';
-            mobileCards.innerHTML = '';
+    function fetchMilkReport() {
+        const month = document.getElementById('month-select').value;
+        const year  = document.getElementById('year-select').value;
+        const loader = document.getElementById('loader');
+        const fetchIcon = document.getElementById('fetch-icon');
+        loader.classList.remove('hidden');
+        fetchIcon.classList.add('rotate-180');
 
-            let totalMorningLiters = 0, totalEveningLiters = 0;
-            let totalMorningAmount = 0, totalEveningAmount = 0;
-
-            const emptyMsg = `<div class="py-10 text-center text-gray-500 uppercase tracking-widest text-xs">No records found</div>`;
-            const emptyRow = `<tr><td colspan="5" class="py-10 text-center text-gray-500 uppercase tracking-widest text-xs">No records found</td></tr>`;
-
-            if (!data.length) {
-                mobileCards.innerHTML = emptyMsg;
-                body.innerHTML = emptyRow;
-                resetSummary();
-                return;
-            }
-
-            data.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach((row, index) => {
-                const morning = parseFloat(row.morning) || 0;
-                const evening = parseFloat(row.evening) || 0;
-                const unitPrice = parseFloat(row.unitprice) || parseFloat(row.unitPrice) || 80;
-                const dailyTotal = morning + evening;
-                const dailyCost = dailyTotal * unitPrice;
-
-                totalMorningLiters += morning;
-                totalEveningLiters += evening;
-                totalMorningAmount += (morning * unitPrice);
-                totalEveningAmount += (evening * unitPrice);
-
-                // --- DESKTOP TABLE ROW ---
-                const tr = document.createElement('tr');
-                tr.className = "border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer";
-                tr.onclick = () => editEntry(row);
-                tr.innerHTML = `
-                    <td class="py-3.5 px-3 font-mono text-xs">${formatDate(row.date)}</td>
-                    <td class="py-3.5 px-3 text-sm">${morning.toFixed(1)} L</td>
-                    <td class="py-3.5 px-3 text-sm">${evening.toFixed(1)} L</td>
-                    <td class="py-3.5 px-3 font-bold text-white text-sm">${dailyTotal.toFixed(1)} L</td>
-                    <td class="py-3.5 px-3 text-right font-bold text-emerald-400 font-mono text-sm">₹${dailyCost.toFixed(2)}</td>
-                `;
-                body.appendChild(tr);
-
-                // --- MOBILE CARD ---
-                const isEven = index % 2 === 0;
-                const card = document.createElement('div');
-                card.className = "day-card p-3 cursor-pointer tap-active";
-                // Alternating card backgrounds: deep indigo-navy vs deep teal-navy
-                card.style.background = isEven
-                    ? 'linear-gradient(135deg, rgba(49,46,129,0.45) 0%, rgba(15,23,42,0.6) 100%)'
-                    : 'linear-gradient(135deg, rgba(6,78,59,0.45) 0%, rgba(15,23,42,0.6) 100%)';
-                card.style.borderColor = isEven
-                    ? 'rgba(129,140,248,0.30)'
-                    : 'rgba(52,211,153,0.30)';
-                card.onclick = () => editEntry(row);
-                // Date label color matches card theme
-                const dateLabelColor = isEven ? '#818cf8' : '#34d399';
-                const costColor = '#fbbf24'; // gold for rupee amount
-                card.innerHTML = `
-                    <div class="flex items-center justify-between mb-2.5">
-                        <span style="font-size:11px;font-weight:800;color:${dateLabelColor};font-family:monospace;letter-spacing:0.03em;">${formatDate(row.date)}</span>
-                        <span style="font-size:13px;font-weight:900;color:${costColor};font-family:monospace;">₹${dailyCost.toFixed(2)}</span>
-                    </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:center;">
-                        <!-- Morning: warm sunrise gradient -->
-                        <div style="background:linear-gradient(135deg,rgba(251,191,36,0.18),rgba(234,88,12,0.14));border:1px solid rgba(251,191,36,0.35);border-radius:10px;padding:7px 4px;">
-                            <p style="font-size:9px;color:#fbbf24;font-weight:700;text-transform:uppercase;margin-bottom:3px;letter-spacing:0.04em;">☀️ Morn</p>
-                            <p style="font-size:15px;font-weight:900;color:#fff;line-height:1;">${morning.toFixed(1)}</p>
-                            <p style="font-size:9px;color:#fcd34d;font-weight:600;margin-top:1px;">litres</p>
-                        </div>
-                        <!-- Evening: cool moonlit gradient -->
-                        <div style="background:linear-gradient(135deg,rgba(56,189,248,0.18),rgba(99,102,241,0.14));border:1px solid rgba(56,189,248,0.35);border-radius:10px;padding:7px 4px;">
-                            <p style="font-size:9px;color:#38bdf8;font-weight:700;text-transform:uppercase;margin-bottom:3px;letter-spacing:0.04em;">🌙 Eve</p>
-                            <p style="font-size:15px;font-weight:900;color:#fff;line-height:1;">${evening.toFixed(1)}</p>
-                            <p style="font-size:9px;color:#7dd3fc;font-weight:600;margin-top:1px;">litres</p>
-                        </div>
-                        <!-- Total: emerald green gradient -->
-                        <div style="background:linear-gradient(135deg,rgba(52,211,153,0.18),rgba(16,185,129,0.12));border:1px solid rgba(52,211,153,0.35);border-radius:10px;padding:7px 4px;">
-                            <p style="font-size:9px;color:#34d399;font-weight:700;text-transform:uppercase;margin-bottom:3px;letter-spacing:0.04em;">⚡ Total</p>
-                            <p style="font-size:15px;font-weight:900;color:#fff;line-height:1;">${dailyTotal.toFixed(1)}</p>
-                            <p style="font-size:9px;color:#6ee7b7;font-weight:600;margin-top:1px;">litres</p>
-                        </div>
-                    </div>
-                `;
-                mobileCards.appendChild(card);
+        const sheetName = `${month} ${year}`;
+        fetch(`https://script.google.com/macros/s/AKfycbxySvwYRG1G1uH8PBMNnUHaY8LIK8qoSqvjssVBOMAjos-nIu-JUUULaAZvPDJY1yXYbA/exec?sheetName=${encodeURIComponent(sheetName)}&t=${Date.now()}`)
+            .then(r => r.json())
+            .then(res => {
+                renderReport(res.data || []);
+                loader.classList.add('hidden');
+                fetchIcon.classList.remove('rotate-180');
+            })
+            .catch(e => {
+                console.error(e);
+                loader.classList.add('hidden');
+                fetchIcon.classList.remove('rotate-180');
+                alert('Error loading data. Please try again.');
             });
+    }
 
-            updateSummary(totalMorningLiters, totalMorningAmount, totalEveningLiters, totalEveningAmount);
+    function renderReport(data) {
+        const body        = document.getElementById('report-body');
+        const mobileCards = document.getElementById('mobile-cards');
+        const countBadge  = document.getElementById('entry-count');
+        body.innerHTML = '';
+        mobileCards.innerHTML = '';
+
+        let totalMorningLiters = 0, totalEveningLiters = 0;
+        let totalMorningAmount = 0, totalEveningAmount = 0;
+
+        if (!data.length) {
+            countBadge.textContent = '0 days';
+            mobileCards.innerHTML = `
+                    <div class="py-12 text-center flex flex-col items-center gap-3">
+                        <i class="fa-solid fa-box-open text-4xl" style="color:rgba(99,102,241,0.25);"></i>
+                        <p class="text-xs text-gray-500 uppercase tracking-widest font-bold">No records found</p>
+                    </div>`;
+            body.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-gray-500 uppercase tracking-widest text-xs font-bold">No records found</td></tr>`;
+            resetSummary();
+            return;
         }
 
-        function resetSummary() {
-            document.getElementById('summary-morning-liters').textContent = '0.0 L';
-            document.getElementById('summary-morning-amount').textContent = '₹0.00';
-            document.getElementById('summary-evening-liters').textContent = '0.0 L';
-            document.getElementById('summary-evening-amount').textContent = '₹0.00';
-            document.getElementById('summary-total-liters').textContent = '0.0 L';
-            document.getElementById('summary-total-cost').textContent = '₹0.00';
-        }
+        // Sort high (newest) to low (oldest)
+        const sorted = [...data].sort((a, b) => new Date(b.date) - new Date(a.date));
+        countBadge.textContent = `${sorted.length} day${sorted.length !== 1 ? 's' : ''}`;
 
-        function updateSummary(mL, mA, eL, eA) {
-            const totalLiters = mL + eL;
-            const totalAmount = mA + eA;
-            document.getElementById('summary-morning-liters').textContent = `${mL.toFixed(1)} L`;
-            document.getElementById('summary-morning-amount').textContent = `₹${mA.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
-            document.getElementById('summary-evening-liters').textContent = `${eL.toFixed(1)} L`;
-            document.getElementById('summary-evening-amount').textContent = `₹${eA.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
-            document.getElementById('summary-total-liters').textContent = `${totalLiters.toFixed(1)} L`;
-            document.getElementById('summary-total-cost').textContent = `₹${totalAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
-        }
+        sorted.forEach((row, index) => {
+            const morning   = parseFloat(row.morning)   || 0;
+            const evening   = parseFloat(row.evening)   || 0;
+            const unitPrice = parseFloat(row.unitprice) || parseFloat(row.unitPrice) || 80;
+            const dailyTotal = morning + evening;
+            const dailyCost  = dailyTotal * unitPrice;
 
-        function formatDate(iso) {
-            const d = new Date(iso);
-            if (isNaN(d.getTime())) return iso;
-            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-            return `${d.getDate().toString().padStart(2,'0')} ${months[d.getMonth()]} ${d.getFullYear()}`;
-        }
+            totalMorningLiters += morning;
+            totalEveningLiters += evening;
+            totalMorningAmount += (morning * unitPrice);
+            totalEveningAmount += (evening * unitPrice);
 
-        function editEntry(row) {
-            localStorage.setItem('milkEditData', JSON.stringify(row));
-            window.location.href = 'milk.html';
-        }
+            // ── DESKTOP TABLE ROW ──
+            const tr = document.createElement('tr');
+            tr.className = "border-b border-white/5 cursor-pointer";
+            tr.onclick = () => editEntry(row);
+            tr.innerHTML = `
+                    <td class="py-3.5 px-3 td-date">${formatDate(row.date)}</td>
+                    <td class="py-3.5 px-3 td-morning">${morning.toFixed(1)} L</td>
+                    <td class="py-3.5 px-3 td-evening">${evening.toFixed(1)} L</td>
+                    <td class="py-3.5 px-3 td-total">${dailyTotal.toFixed(1)} L</td>
+                    <td class="py-3.5 px-3 td-cost">₹${dailyCost.toFixed(2)}</td>
+                `;
+            body.appendChild(tr);
 
-        init();
-    </script>
+            // ── MOBILE CARD ──
+            const theme = index % 2 === 0 ? 'theme-indigo' : 'theme-teal';
+            const card  = document.createElement('div');
+            card.className = `day-card ${theme} cursor-pointer tap-active`;
+            card.onclick = () => editEntry(row);
+
+            card.innerHTML = `
+                    <div style="padding:12px 12px 10px;">
+                        <!-- Header row: date + cost -->
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <div style="width:6px; height:6px; border-radius:50%; background:currentColor; opacity:0.6;" class="date-label"></div>
+                                <span class="date-label" style="font-size:12px; font-weight:800; font-family:monospace; letter-spacing:0.03em;">${formatDate(row.date)}</span>
+                            </div>
+                            <span class="cost-badge">₹${dailyCost.toFixed(2)}</span>
+                        </div>
+                        <!-- Three blocks -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px;">
+                            <!-- Morning -->
+                            <div class="block-morning">
+                                <div class="blk-label">☀️ Morn</div>
+                                <div class="blk-value">${morning.toFixed(1)}</div>
+                                <div class="blk-sub">litres</div>
+                            </div>
+                            <!-- Evening -->
+                            <div class="block-evening">
+                                <div class="blk-label">🌙 Eve</div>
+                                <div class="blk-value">${evening.toFixed(1)}</div>
+                                <div class="blk-sub">litres</div>
+                            </div>
+                            <!-- Total -->
+                            <div class="block-total">
+                                <div class="blk-label">⚡ Total</div>
+                                <div class="blk-value">${dailyTotal.toFixed(1)}</div>
+                                <div class="blk-sub">litres</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            mobileCards.appendChild(card);
+        });
+
+        updateSummary(totalMorningLiters, totalMorningAmount, totalEveningLiters, totalEveningAmount);
+    }
+
+    function resetSummary() {
+        ['summary-morning-liters','summary-morning-amount',
+            'summary-evening-liters','summary-evening-amount',
+            'summary-total-liters','summary-total-cost']
+            .forEach(id => {
+                const el = document.getElementById(id);
+                el.textContent = id.includes('amount') || id.includes('cost') ? '₹0.00' : '0.0 L';
+            });
+    }
+
+    function updateSummary(mL, mA, eL, eA) {
+        const tL = mL + eL, tA = mA + eA;
+        const fmt = n => n.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+        document.getElementById('summary-morning-liters').textContent = `${mL.toFixed(1)} L`;
+        document.getElementById('summary-morning-amount').textContent = `₹${fmt(mA)}`;
+        document.getElementById('summary-evening-liters').textContent = `${eL.toFixed(1)} L`;
+        document.getElementById('summary-evening-amount').textContent = `₹${fmt(eA)}`;
+        document.getElementById('summary-total-liters').textContent   = `${tL.toFixed(1)} L`;
+        document.getElementById('summary-total-cost').textContent     = `₹${fmt(tA)}`;
+    }
+
+    function formatDate(iso) {
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return iso;
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return `${d.getDate().toString().padStart(2,'0')} ${months[d.getMonth()]} ${d.getFullYear()}`;
+    }
+
+    function editEntry(row) {
+        localStorage.setItem('milkEditData', JSON.stringify(row));
+        window.location.href = 'milk.html';
+    }
+
+    init();
+</script>
 </body>
 
 </html>
