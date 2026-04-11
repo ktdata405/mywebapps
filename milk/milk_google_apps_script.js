@@ -1,31 +1,35 @@
 /**
  * Google Apps Script for Milk Bill Tracker
- * 
- * SETUP INSTRUCTIONS:
- * 1. Create a new Google Sheet.
- * 2. Go to Extensions > Apps Script.
- * 3. Replace the code in the editor with this script.
- * 4. Deploy as a Web App: 
- *    - Click 'Deploy' > 'New deployment'.
- *    - Select 'Web App'.
- *    - Set 'Execute as' to 'Me'.
- *    - Set 'Who has access' to 'Anyone'.
- * 5. Copy the 'Web App URL' and update CONFIG.GOOGLE_SHEET_URL_MILK in your config.js.
- * 6. Update CONFIG.SHEET_URL_MILK with your spreadsheet's URL.
  */
 
 function doGet(e) {
   const sheetName = e.parameter.sheetName;
+  const datesOnly = e.parameter.datesOnly === 'true';
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName(sheetName);
   
   if (!sheet) {
-    return ContentService.createTextOutput(JSON.stringify({ data: [], message: 'Sheet not found' }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify({ 
+      data: [], 
+      dates: [],
+      message: 'Sheet not found' 
+    })).setMimeType(ContentService.MimeType.JSON);
   }
   
   const data = sheet.getDataRange().getValues();
   const headers = data.shift(); // Remove headers
+  
+  if (datesOnly) {
+    const dates = data.map(row => {
+      const dateVal = row[0];
+      if (dateVal instanceof Date) {
+        return Utilities.formatDate(dateVal, ss.getSpreadsheetTimeZone(), "dd/MMM/yyyy");
+      }
+      return dateVal;
+    });
+    return ContentService.createTextOutput(JSON.stringify({ dates: dates }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
   
   const formattedData = data.map(row => {
     let obj = {};
@@ -50,9 +54,15 @@ function doPost(e) {
   let sheet = ss.getSheetByName(sheetName);
   if (!sheet) {
     sheet = ss.insertSheet(sheetName);
-    sheet.appendRow(["Date", "Morning", "Evening", "UnitPrice"]);
+    sheet.appendRow(["Date", "Morning", "Evening", "UnitPrice", "Remarks"]);
     // Format header
-    sheet.getRange(1, 1, 1, 4).setFontWeight("bold").setBackground("#f3f4f6");
+    sheet.getRange(1, 1, 1, 5).setFontWeight("bold").setBackground("#f3f4f6");
+  } else {
+    // Check if Remarks column exists, if not add it
+    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    if (headers.indexOf("Remarks") === -1) {
+      sheet.getRange(1, 5).setValue("Remarks").setFontWeight("bold").setBackground("#f3f4f6");
+    }
   }
   
   const data = sheet.getDataRange().getValues();
@@ -76,9 +86,10 @@ function doPost(e) {
     sheet.getRange(existingRowIndex, 2).setValue(payload.morning);
     sheet.getRange(existingRowIndex, 3).setValue(payload.evening);
     sheet.getRange(existingRowIndex, 4).setValue(payload.unitPrice);
+    sheet.getRange(existingRowIndex, 5).setValue(payload.remarks || "");
   } else {
     // Add new row
-    sheet.appendRow([payload.date, payload.morning, payload.evening, payload.unitPrice]);
+    sheet.appendRow([payload.date, payload.morning, payload.evening, payload.unitPrice, payload.remarks || ""]);
   }
   
   return ContentService.createTextOutput(JSON.stringify({ success: true }))

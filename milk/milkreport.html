@@ -231,7 +231,7 @@
         .td-cost    { color: #fbbf24; font-weight: 800; font-family: monospace; text-align: center; }
         .td-date    { font-family: monospace; font-size: 12px; color: #cbd5e1; text-align: center; }
 
-        #report-body td { text-align: center; }
+        #report-body td { text-align: center; vertical-align: middle; }
         #report-body td:first-child { text-align: center; }
 
         thead th { text-align: center !important; }
@@ -405,6 +405,7 @@
                         <th class="py-3 px-3 text-center" style="color:#a5b4fc;">🌙 Evening</th>
                         <th class="py-3 px-3 text-center" style="color:#6ee7b7;">⚡ Total</th>
                         <th class="py-3 px-3 text-center" style="color:#fbbf24;">₹ Cost</th>
+                        <th class="py-3 px-3 text-center">Edit</th>
                     </tr>
                     </thead>
                 <tbody id="report-body" class="text-gray-300">
@@ -481,7 +482,7 @@
         fetchIcon.classList.add('rotate-180');
 
         const sheetName = `${month} ${year}`;
-        fetch(`https://script.google.com/macros/s/AKfycbxySvwYRG1G1uH8PBMNnUHaY8LIK8qoSqvjssVBOMAjos-nIu-JUUULaAZvPDJY1yXYbA/exec?sheetName=${encodeURIComponent(sheetName)}&t=${Date.now()}`)
+        fetch(`https://script.google.com/macros/s/AKfycbziPFlV_L7fA99c-vrT027tHnc_a-mu_paFhTZWFbZYvN6g0GBmdP7uisivPXNY86bt8g/exec?sheetName=${encodeURIComponent(sheetName)}&t=${Date.now()}`)
             .then(r => r.json())
             .then(res => {
                 renderReport(res.data || []);
@@ -513,7 +514,7 @@
                         <i class="fa-solid fa-box-open text-4xl" style="color:rgba(99,102,241,0.25);"></i>
                         <p class="text-xs text-gray-500 uppercase tracking-widest font-bold">No records found</p>
                     </div>`;
-            body.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-gray-500 uppercase tracking-widest text-xs font-bold">No records found</td></tr>`;
+            body.innerHTML = `<tr><td colspan="6" class="py-12 text-center text-gray-500 uppercase tracking-widest text-xs font-bold">No records found</td></tr>`;
             resetSummary();
             return;
         }
@@ -544,6 +545,11 @@
                     <td class="py-3.5 px-3 td-evening">${evening.toFixed(1)} L</td>
                     <td class="py-3.5 px-3 td-total">${dailyTotal.toFixed(1)} L</td>
                     <td class="py-3.5 px-3 td-cost">₹${dailyCost.toFixed(2)}</td>
+                    <td class="py-3.5 px-3">
+                        <button class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 transition-all flex items-center justify-center mx-auto">
+                            <i class="fa-solid fa-pen-to-square text-xs"></i>
+                        </button>
+                    </td>
                 `;
             body.appendChild(tr);
 
@@ -561,7 +567,12 @@
                                 <div style="width:6px; height:6px; border-radius:50%; background:currentColor; opacity:0.6;" class="date-label"></div>
                                 <span class="date-label" style="font-size:12px; font-weight:800; font-family:monospace; letter-spacing:0.03em;">${formatDate(row.date)}</span>
                             </div>
-                            <span class="cost-badge">₹${dailyCost.toFixed(2)}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="cost-badge">₹${dailyCost.toFixed(2)}</span>
+                                <div class="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-indigo-400">
+                                    <i class="fa-solid fa-pen-to-square text-[10px]"></i>
+                                </div>
+                            </div>
                         </div>
                         <!-- Three blocks -->
                         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px;">
