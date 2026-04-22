@@ -2,7 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="../root/logo.png">
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#030305">
+
     <title>Denom's</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -27,6 +33,8 @@
             min-height: 100vh;
             margin: 0;
             overflow-x: hidden;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
         }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -506,6 +514,14 @@
 <footer><p>&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p></footer>
 
 <script>
+    // ── Service Worker ──
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('../sw.js')
+                .catch(e => console.log('SW failed:', e));
+        });
+    }
+
     var NOTES = [500, 200, 100, 50, 20, 10];
     var COINS = [5, 2, 1];
     var ALL   = NOTES.concat(COINS);

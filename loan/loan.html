@@ -2,11 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="../root/logo.png">
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#030305">
+
     <title>New Loan Entry - Loan Manager</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../auth.js"></script>
     <style>
         /* Reusing styles from style.css but adapting for Tailwind integration where needed */
         :root {
@@ -33,6 +40,8 @@
             color: var(--white);
             font-family: 'Poppins', sans-serif;
             -webkit-tap-highlight-color: transparent;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         .glass-panel {
@@ -122,51 +131,7 @@
             box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
             display: flex;
             justify-content: center;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(108, 99, 255, 0.4);
-        }
-
-        .btn-submit:active {
-            transform: translateY(0);
-        }
-
-        #message {
-            margin-top: 1.5rem;
-            padding: 1rem;
-            border-radius: 10px;
-            text-align: center;
-            font-weight: 500;
-            display: none;
-        }
-
-        #message.success {
-            display: block;
-            background: rgba(46, 204, 113, 0.2);
-            color: #2ecc71;
-            border: 1px solid rgba(46, 204, 113, 0.3);
-        }
-
-        #message.error {
-            display: block;
-            background: rgba(231, 76, 60, 0.2);
-            color: #e74c3c;
-            border: 1px solid rgba(231, 76, 60, 0.3);
-        }
-
-        /* Amount Text Styling */
-        #amountText {
-            font-size: 0.8rem;
-            color: var(--accent-color);
-            margin-top: 0.5rem;
-            font-style: italic;
-            min-height: 1.2em;
-        }
-    </style>
+            align-items: center; gap: 10px; } .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(108, 99, 255, 0.4); } .btn-submit:active { transform: translateY(0); } #message { margin-top: 1.5rem; padding: 1rem; border-radius: 10px; text-align: center; font-weight: 500; display: none; } #message.success { display: block; background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); } #message.error { display: block; background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid rgba(231, 76, 60, 0.3); } /* Amount Text Styling */ #amountText { font-size: 0.8rem; color: var(--accent-color); margin-top: 0.5rem; font-style: italic; min-height: 1.2em; } </style>
 </head>
 <body class="min-h-screen pb-20 relative overflow-x-hidden flex flex-col items-center justify-center">
 
@@ -295,6 +260,14 @@
     <script src="../config.js"></script>
     <script src="script.js"></script>
     <script>
+        // ── Service Worker ──
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('../sw.js')
+                    .catch(e => console.log('SW failed:', e));
+            });
+        }
+
         // Number to Text Conversion Logic
         const amountInput = document.getElementById('amount');
         const amountTextDisplay = document.getElementById('amountText');

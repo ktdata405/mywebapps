@@ -3,12 +3,19 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="../root/logo.png">
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#030305">
+
     <title data-translate-key="tenetDetailsTitle">Tenet Details</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="../config.js"></script>
+    <script src="../auth.js"></script>
     <style>
         :root {
             --bg-dark: #0b0f19;
@@ -22,6 +29,8 @@
             color: #f8fafc;
             font-family: 'Plus Jakarta Sans', sans-serif;
             -webkit-tap-highlight-color: transparent;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         /* Smooth scrolling */
@@ -121,7 +130,7 @@
                 <a href="tenetreport.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95">
                     <i class="fa-solid fa-chart-pie"></i>
                 </a>
-                <a href="../index.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95">
+                <a href="../index.html" class="home-btn w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95">
                     <i class="fa-solid fa-house"></i>
                 </a>
             </div>
@@ -223,7 +232,7 @@
                         <label class="text-[10px] uppercase tracking-wider text-emerald-500 font-bold ml-1" data-translate-key="totalPaid">Total Paid</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-emerald-500">
-                                <i class="fa-solid fa-sack-dollar text-sm"></i>
+                                <i class="fa-solid fa-indian-rupee-sign text-sm"></i>
                             </div>
                             <input type="text" id="totalPaid" name="totalPaid" placeholder="0.00" readonly class="w-full bg-emerald-500/10 border border-emerald-500/30 rounded-2xl pl-10 pr-4 py-3.5 text-sm font-mono font-bold text-emerald-400 outline-none transition-all">
                         </div>
@@ -298,5 +307,14 @@
 
     <script src="script.js"></script>
     <script src="../localization.js"></script>
+    <script>
+        // ── Service Worker ──
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('../sw.js')
+                    .catch(e => console.log('SW failed:', e));
+            });
+        }
+    </script>
 </body>
 </html>

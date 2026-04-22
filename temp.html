@@ -2,7 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="root/logo.png">
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#030305">
+
     <title>Scanner Options</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
@@ -29,6 +35,8 @@
             background-color: var(--bg-color);
             color: var(--text-primary);
             font-family: 'Plus Jakarta Sans', sans-serif;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         /* Canvas Background */
@@ -570,6 +578,14 @@
     </div>
 
     <script>
+        // ── Service Worker ──
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .catch(e => console.log('SW failed:', e));
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const cardsContainer = document.getElementById('cards-container');
 

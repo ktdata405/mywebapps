@@ -1,146 +1,79 @@
+// Global Authentication Logic
+(function() {
+    // Check if we are on the index page or already authenticated
+    const isIndex = window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('mywebapps/');
+    const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
+
+    if (!isAuthenticated && !isIndex) {
+        // Redirect to home if trying to access sub-pages without auth
+        const pathPrefix = window.location.pathname.includes('/mywebapps/') ? '/mywebapps/' : '/';
+        window.location.href = window.location.origin + pathPrefix + 'index.html';
+        return;
+    }
+})();
+
 function showContent() {
     sessionStorage.setItem('isAuthenticated', 'true');
-    document.getElementById('auth-container').style.display = 'none';
-    document.getElementById('app-content').style.display = 'block';
+    const authContainer = document.getElementById('auth-container');
+    const appContent = document.getElementById('app-content');
+    if (authContainer) authContainer.style.display = 'none';
+    if (appContent) appContent.style.display = 'block';
 }
 
 function showPinEntry() {
     const pinContainer = document.getElementById('pin-container');
     const pinInput = document.getElementById('pin-input');
-    const authContainer = document.getElementById('auth-container');
-
-    pinContainer.style.display = 'flex';
-    if (document.getElementById('try-pin-button')) {
-        document.getElementById('try-pin-button').style.display = 'none';
+    if (pinContainer) pinContainer.style.display = 'flex';
+    if (pinInput) {
+        setTimeout(() => {
+            pinInput.focus();
+            pinInput.click();
+        }, 100);
     }
-    // authContainer.querySelector('p').textContent = translations.verifyIdentity; // Handled by localization.js
-
-    // Force focus and open keyboard
-    setTimeout(() => {
-        pinInput.focus();
-        pinInput.click(); // Sometimes needed for mobile browsers
-    }, 100);
 }
 
 function verifyPin() {
     const pinInput = document.getElementById('pin-input');
-    if (pinInput.value === '0405') {
+    // Using a simple obfuscation for the PIN
+    const hash = btoa(pinInput.value);
+    if (hash === 'MDQwNQ==') { // '0405'
         showContent();
     } else {
         // Shake animation for incorrect PIN
         pinInput.style.borderColor = '#ef4444';
-        pinInput.style.transform = 'translateX(10px)';
-        setTimeout(() => { pinInput.style.transform = 'translateX(-10px)'; }, 100);
-        setTimeout(() => { pinInput.style.transform = 'translateX(10px)'; }, 200);
+        pinInput.classList.add('shake');
         setTimeout(() => { 
-            pinInput.style.transform = 'translateX(0)'; 
+            pinInput.classList.remove('shake');
             pinInput.style.borderColor = '';
-        }, 300);
-        pinInput.value = '';
-        pinInput.focus();
+            pinInput.value = '';
+            // Clear dots if in index.html
+            if (typeof updateDots === 'function') {
+                pinValue = '';
+                updateDots();
+            }
+        }, 400);
     }
 }
 
 async function verifyFaceId(isAuto = false) {
-    // WebAuthn requires a secure context (HTTPS or localhost)
-    if (!window.isSecureContext) {
-        if (!isAuto) alert(translations.faceIdSecureContext);
-        return false;
-    }
-
-    if (!window.PublicKeyCredential) {
-        if (!isAuto) alert(translations.faceIdNotSupported);
-        return false;
-    }
+    if (!window.isSecureContext || !window.PublicKeyCredential) return false;
 
     try {
-        // Check if we have a stored credential ID
         const storedCredentialId = localStorage.getItem('webauthn_credential_id');
-
         if (storedCredentialId) {
-            // Try to authenticate with existing credential
             const credentialId = Uint8Array.from(atob(storedCredentialId), c => c.charCodeAt(0));
-            
-            const publicKeyCredentialRequestOptions = {
+            const options = {
                 challenge: window.crypto.getRandomValues(new Uint8Array(32)),
-                allowCredentials: [{
-                    id: credentialId,
-                    type: 'public-key',
-                    transports: ['internal'],
-                }],
+                allowCredentials: [{ id: credentialId, type: 'public-key', transports: ['internal'] }],
                 userVerification: 'required',
                 timeout: 60000,
             };
-
-            await navigator.credentials.get({ publicKey: publicKeyCredentialRequestOptions });
-            showContent();
-            return true;
-        } else {
-            if (isAuto) return false; // Don't auto-register
-
-            // Check availability
-            const available = await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-            if (!available) {
-                alert(translations.faceIdNotSetup);
-                return false;
-            }
-
-            const challenge = new Uint8Array(32);
-            window.crypto.getRandomValues(challenge);
-
-            const publicKeyCredentialCreationOptions = {
-                challenge: challenge,
-                rp: {
-                    name: "Cash Counter App",
-                    // id: window.location.hostname // Optional, defaults to current domain
-                },
-                user: {
-                    id: window.crypto.getRandomValues(new Uint8Array(16)),
-                    name: "user@cashcounter.local",
-                    displayName: "App User",
-                },
-                pubKeyCredParams: [
-                    { alg: -7, type: "public-key" }, // ES256
-                    { alg: -257, type: "public-key" } // RS256
-                ],
-                authenticatorSelection: {
-                    authenticatorAttachment: "platform", // Forces FaceID/TouchID
-                    userVerification: "required",
-                    residentKey: "preferred",
-                    requireResidentKey: false
-                },
-                timeout: 60000,
-                attestation: "none"
-            };
-
-            const credential = await navigator.credentials.create({ publicKey: publicKeyCredentialCreationOptions });
-            
-            // Store credential ID for future logins
-            const rawId = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
-            localStorage.setItem('webauthn_credential_id', rawId);
-
+            await navigator.credentials.get({ publicKey: options });
             showContent();
             return true;
         }
-
     } catch (err) {
-        console.error("Face ID verification failed:", err);
-        if (isAuto) return false;
-
-        if (err.name === 'NotAllowedError') {
-             // User cancelled
-             return false;
-        }
-        
-        // If authentication failed (e.g. credential not found), offer to reset
-        if (localStorage.getItem('webauthn_credential_id')) {
-             if (confirm(translations.faceIdResetConfirm)) {
-                 localStorage.removeItem('webauthn_credential_id');
-                 return verifyFaceId(false); // Retry as registration
-             }
-        } else {
-             alert(translations.authFailed + err.message);
-        }
+        console.error("Face ID failed:", err);
         return false;
     }
 }
@@ -151,29 +84,24 @@ async function handleAuthentication() {
         return;
     }
     showPinEntry();
-    
-    // Auto-trigger Face ID if previously set up
-    // Add a small delay to ensure the DOM is fully ready and to avoid conflicts with page load
     if (localStorage.getItem('webauthn_credential_id')) {
-        setTimeout(() => {
-             verifyFaceId(true);
-        }, 500);
+        setTimeout(() => verifyFaceId(true), 500);
     }
 }
 
-// Wait for window load instead of just DOMContentLoaded to ensure all resources are ready
+// Initialize on load if elements exist (primarily for index.html)
 window.addEventListener('load', () => {
-    handleAuthentication();
-    
-    const faceIdBtn = document.getElementById('face-id-btn');
-    if (faceIdBtn) {
-        // Use click for better mobile compatibility
-        faceIdBtn.onclick = () => verifyFaceId(false);
+    if (document.getElementById('auth-container')) {
+        handleAuthentication();
+        const faceIdBtn = document.getElementById('face-id-btn');
+        if (faceIdBtn) faceIdBtn.onclick = () => verifyFaceId(false);
     }
 });
 
-document.getElementById('pin-input').addEventListener('input', (event) => {
-    if (event.target.value.length === 4) {
-        verifyPin();
-    }
-});
+// Event listener for the hidden input
+const pinInput = document.getElementById('pin-input');
+if (pinInput) {
+    pinInput.addEventListener('input', (e) => {
+        if (e.target.value.length === 4) verifyPin();
+    });
+}
