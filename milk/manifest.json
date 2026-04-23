@@ -1,8 +1,10 @@
 {
+  "id": "/milk-app/",
   "name": "Milk Bill - KT Apps",
   "short_name": "Milk Bill",
   "description": "Daily Milk Collection Tracker",
   "start_url": "./milk.html",
+  "scope": "/milk/",
   "display": "standalone",
   "background_color": "#030305",
   "theme_color": "#030305",

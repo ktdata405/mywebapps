@@ -1,8 +1,10 @@
 {
+  "id": "/rent-app/",
   "name": "Rent - KT Apps",
   "short_name": "Rent",
   "description": "Tenant Records Management",
   "start_url": "./tenet.html",
+  "scope": "/rent/",
   "display": "standalone",
   "background_color": "#030305",
   "theme_color": "#030305",

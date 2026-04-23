@@ -1,8 +1,10 @@
 {
+  "id": "/cashew-app/",
   "name": "Cashew - KT Apps",
   "short_name": "Cashew",
   "description": "Cashew Expense Tracker",
   "start_url": "./cashew.html",
+  "scope": "/cashew/",
   "display": "standalone",
   "background_color": "#030305",
   "theme_color": "#030305",
