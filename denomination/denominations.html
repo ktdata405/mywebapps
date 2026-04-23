@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="../root/logo.png">
-    <link rel="manifest" href="../manifest.json">
+    <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#030305">
 
     <title>Denom's</title>
@@ -685,7 +685,7 @@
         var r = '';
         r += fmt(Math.floor(num/10000000), ' Crore ');
         r += fmt(Math.floor((num/100000)%100), ' Lakh ');
-        r += fmt(Math.floor((num/1000)%100), ' Thousand ');
+        r += fmt(Math.floor((num/100)%100), ' Thousand ');
         r += fmt(Math.floor((num/100)%10), ' Hundred ');
         if (num > 100 && num % 100) r += 'and ';
         r += fmt(num%100, '');

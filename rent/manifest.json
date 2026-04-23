@@ -1,0 +1,21 @@
+{
+  "name": "Rent - KT Apps",
+  "short_name": "Rent",
+  "description": "Tenant Records Management",
+  "start_url": "./tenet.html",
+  "display": "standalone",
+  "background_color": "#030305",
+  "theme_color": "#030305",
+  "icons": [
+    {
+      "src": "../root/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "../root/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
