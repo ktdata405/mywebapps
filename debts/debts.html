@@ -11,6 +11,7 @@
 
     <title data-translate-key="debtsManager">Debts Manager - KT Apps</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../ktui.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -331,12 +332,12 @@
 
         // Delete Handler
         function deleteDebt(id) {
-            if(confirm('Are you sure you want to delete this record?')) {
+            KTui.confirm('Delete Record', 'Are you sure you want to delete this record?', function() {
                 debts = debts.filter(debt => debt.id !== id);
                 saveData();
                 renderDebts();
                 updateStats();
-            }
+            }, { confirmText: 'Delete', danger: true });
         }
 
         // Toggle Status Handler
@@ -352,12 +353,12 @@
 
         // Clear All Handler
         function clearAllData() {
-            if(confirm('This will delete all debt records. Are you sure?')) {
+            KTui.confirm('Clear All Data', 'This will delete all debt records. Are you sure?', function() {
                 debts = [];
                 saveData();
                 renderDebts();
                 updateStats();
-            }
+            }, { confirmText: 'Delete All', danger: true });
         }
 
         // Save to LocalStorage

@@ -408,6 +408,7 @@
             to { opacity: 1; }
         }
     </style>
+    <script src="../ktui.js"></script>
 </head>
 <body>
 
@@ -588,7 +589,7 @@
                 totalSqFt = L * W;
                 stepAreaText = `Area = ${L} × ${W} = <strong>${totalSqFt.toLocaleString()} Sq. Ft</strong>`;
             } else {
-                alert("Please enter valid numbers");
+                KTui.alert('Notice', "Please enter valid numbers", 'info');
                 return;
             }
         } else {
@@ -608,7 +609,7 @@
                     Area = ${avgL} × ${avgW} = <strong>${totalSqFt.toLocaleString()} Sq. Ft</strong>
                 `;
             } else {
-                alert("Please enter valid numbers for all sides");
+                KTui.alert('Notice', "Please enter valid numbers for all sides", 'info');
                 return;
             }
         }
@@ -713,11 +714,11 @@
     }
 
     function clearHistory() {
-        if(confirm('Clear all history?')) {
+        KTui.confirm('Clear History', 'Clear all history?', function() {
             historyData = [];
             localStorage.removeItem('landCalcHistory');
             renderHistory();
-        }
+        }, { confirmText: 'Clear', danger: true });
     }
 
     // Initialize History (but don't show it)

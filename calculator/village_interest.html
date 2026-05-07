@@ -329,6 +329,7 @@
             to { transform: translateY(0); opacity: 1; }
         }
     </style>
+    <script src="../ktui.js"></script>
 </head>
 <body>
 
@@ -467,7 +468,7 @@
         const R = parseFloat(document.getElementById('rate').value);
 
         if (!P || !R) {
-            alert("Please enter Principal and Rate");
+            KTui.alert('Notice', "Please enter Principal and Rate", 'info');
             return;
         }
 
@@ -479,12 +480,12 @@
             const endDate = new Date(document.getElementById('end-date').value);
 
             if (isNaN(startDate) || isNaN(endDate)) {
-                alert("Please select valid dates");
+                KTui.alert('Notice', "Please select valid dates", 'info');
                 return;
             }
 
             if (endDate < startDate) {
-                alert("End date cannot be before start date");
+                KTui.alert('Notice', "End date cannot be before start date", 'info');
                 return;
             }
 
@@ -516,7 +517,7 @@
             // Months mode
             const monthsInput = parseFloat(document.getElementById('duration-months').value);
             if (!monthsInput || monthsInput <= 0) {
-                alert("Please enter valid duration in months");
+                KTui.alert('Notice', "Please enter valid duration in months", 'info');
                 return;
             }
             totalMonths = monthsInput;

@@ -11,6 +11,7 @@
     <link rel="manifest" href="./manifest.json">
     <title data-translate-key="cashewReportTitle">Cashew Report - Expense Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../ktui.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="../config.js"></script>
@@ -570,7 +571,7 @@
                 .catch(e => {
                     console.error(e);
                     loader.classList.add('hidden');
-                    alert('Error loading data');
+                    KTui.alert('Notice', 'Error loading data', 'info');
                 });
         }
 
@@ -782,7 +783,7 @@
                     loader.classList.add('hidden');
                     generateExportContent(res.data || [], category, fM, fY, tM, tY);
                 })
-                .catch(e => { loader.classList.add('hidden'); alert('Export failed'); });
+                .catch(e => { loader.classList.add('hidden'); KTui.alert('Notice', 'Export failed', 'info'); });
         }
 
         function generateExportContent(data, category, fM, fY, tM, tY) {
@@ -798,7 +799,7 @@
                 return periodOk && catOk;
             });
 
-            if(!filtered.length) { alert('No data to export'); return; }
+            if(!filtered.length) { KTui.alert('Notice', 'No data to export', 'info'); return; }
 
             let text = `CASHEW REPORT\n${'='.repeat(30)}\n`;
             text += `Period: ${fM} ${fY} - ${tM} ${tY}\n`;
@@ -819,7 +820,7 @@
 
         function closeExportPreview() { document.getElementById('export-preview-modal').classList.add('hidden'); }
         function copyReportToClipboard() {
-            navigator.clipboard.writeText(window._exportData.text).then(() => alert('Copied!'));
+            navigator.clipboard.writeText(window._exportData.text).then(() => KTui.alert('Notice', 'Copied!', 'info'));
         }
 
         function triggerDownload() {

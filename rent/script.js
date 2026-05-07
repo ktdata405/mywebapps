@@ -143,12 +143,12 @@ form.addEventListener('submit', function(event) {
     };
 
     if (!rawDate) {
-        alert('Please select a Date.');
+        KTui.alert('Notice', 'Please select a Date.', 'info');
         return;
     }
     
     if (!formData.side) {
-        alert('Please select a Side.');
+        KTui.alert('Notice', 'Please select a Side.', 'info');
         return;
     }
 
@@ -165,7 +165,7 @@ form.addEventListener('submit', function(event) {
     .then(response => response.json())
     .then(res => {
         if (res.result === 'success') {
-            alert(isEditMode ? 'Record updated successfully!' : 'Record saved successfully!');
+            KTui.alert('Notice', isEditMode ? 'Record updated successfully!' : 'Record saved successfully!', 'info');
             
             if (isEditMode) {
                 window.location.href = 'tenetreport.html';
@@ -199,7 +199,7 @@ form.addEventListener('submit', function(event) {
     })
     .catch(error => {
         console.error('Error!', error.message);
-        alert('An error occurred: ' + error.message);
+        KTui.alert('Notice', 'An error occurred: ' + error.message, 'info');
     })
     .finally(() => {
         // Hide Loader

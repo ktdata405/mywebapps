@@ -64,7 +64,7 @@ window.showAlert = function(message, type = 'info') {
     const iconContainer = document.getElementById('alert-icon-container');
     
     if (!modal || !msgEl || !iconContainer) {
-        alert(message); // Fallback
+        KTui.alert('Notice', message, 'info'); // Fallback
         return;
     }
 
@@ -685,7 +685,7 @@ async function renameFile(doc) {
 }
 
 async function deleteFile(doc) {
-    if (confirm(`Are you sure you want to delete "${doc.name}"?`)) {
+    KTui.confirm('Delete File', `Are you sure you want to delete "${doc.name}"?`, async function() {
         const originalDocs = [...allDocuments];
         allDocuments = allDocuments.filter(d => d.id !== doc.id);
         renderBrowse(); // Optimistic update
@@ -694,7 +694,7 @@ async function deleteFile(doc) {
             allDocuments = originalDocs;
             renderBrowse();
         }
-    }
+    }, { confirmText: 'Delete', danger: true });
 }
 
 function triggerReplaceFile(doc) {
@@ -704,8 +704,7 @@ function triggerReplaceFile(doc) {
     input.onchange = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            if (!confirm(`This will replace the content of "${doc.name}" with the new file. Continue?`)) return;
-            
+            KTui.confirm('Replace File', `This will replace the content of "${doc.name}" with the new file. Continue?`, async function() {
             const loader = document.getElementById('loader');
             const loaderText = document.getElementById('loader-text');
             if(loader) {
@@ -736,6 +735,7 @@ function triggerReplaceFile(doc) {
                     loader.classList.remove('flex');
                 }
             }
+            }, { confirmText: 'Replace' });
         }
     };
     input.click();
@@ -1417,7 +1417,7 @@ async function renameFolder(oldName, oldPath) {
 }
 
 async function deleteFolder(folderPath) {
-    if (confirm(`Are you sure you want to delete the folder and all its contents? This cannot be undone.`)) {
+    KTui.confirm('Delete Folder', `Are you sure you want to delete the folder and all its contents? This cannot be undone.`, async function() {
         const originalDocs = [...allDocuments];
         allDocuments = allDocuments.filter(d => d.folder !== folderPath && (!d.folder || !d.folder.startsWith(folderPath + '/')));
         renderBrowse(); // Optimistic update
@@ -1426,7 +1426,7 @@ async function deleteFolder(folderPath) {
             allDocuments = originalDocs;
             renderBrowse();
         }
-    }
+    }, { confirmText: 'Delete Folder', danger: true });
 }
 
 function renderRecentActivity(data) {

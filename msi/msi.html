@@ -234,6 +234,7 @@
 
         .hidden { display: none; }
     </style>
+    <script src="../ktui.js"></script>
 </head>
 <body>
 
@@ -662,14 +663,14 @@
             .then(response => {
                 loader.style.display = 'none';
                 saveBtn.disabled = false;
-                alert('Investment details saved successfully for ' + monthSelect.value + ' ' + yearSelect.value + ' (' + user + ')!');
+                KTui.alert('Notice', 'Investment details saved successfully for ' + monthSelect.value + ' ' + yearSelect.value + ' (' + user + ', 'info')!');
                 window.location.href = 'msireport.html'; // Redirect back to report
             })
             .catch(error => {
                 console.error('Error:', error);
                 loader.style.display = 'none';
                 saveBtn.disabled = false;
-                alert('Failed to save data. Please try again.');
+                KTui.alert('Notice', 'Failed to save data. Please try again.', 'info');
             });
         });
     });

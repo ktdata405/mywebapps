@@ -314,6 +314,7 @@
             to { transform: translateY(0); opacity: 1; }
         }
     </style>
+    <script src="../ktui.js"></script>
 </head>
 <body>
 
@@ -462,7 +463,7 @@
         }
 
         if (!P || !R || !T) {
-            alert("Please enter Principal, Rate and Tenure");
+            KTui.alert('Notice', "Please enter Principal, Rate and Tenure", 'info');
             return;
         }
 

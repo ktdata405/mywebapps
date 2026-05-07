@@ -696,6 +696,7 @@
             outline: none;
         }
     </style>
+    <script src="../ktui.js"></script>
 </head>
 <body>
 
@@ -924,7 +925,7 @@
             processData(data);
         } catch (e) {
             console.error(e);
-            alert("Sync Failed: " + e.message);
+            KTui.alert('Notice', "Sync Failed: " + e.message, 'info');
         } finally {
             setTimeout(() => {
                 loader.style.display = 'none'; // Hide loader
