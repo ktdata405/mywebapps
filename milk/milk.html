@@ -322,6 +322,35 @@
             }
         }
 
+        // Convert DD/MMM/YYYY to YYYY-MM-DD for the date input
+        function formatToInputDate(dateStr) {
+            if (!dateStr) return '';
+            // Try DD/MMM/YYYY
+            const slashParts = dateStr.split('/');
+            if (slashParts.length === 3) {
+                const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+                const m = String(months.indexOf(slashParts[1]) + 1).padStart(2, '0');
+                return `${slashParts[2]}-${m}-${slashParts[0].padStart(2,'0')}`;
+            }
+            // Already YYYY-MM-DD
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+            // Try "01 Jan 2024" space-separated
+            const spaceParts = dateStr.split(' ');
+            if (spaceParts.length === 3) {
+                const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+                const m = String(months.indexOf(spaceParts[1]) + 1).padStart(2, '0');
+                return `${spaceParts[2]}-${m}-${spaceParts[0].padStart(2,'0')}`;
+            }
+            return new Date(dateStr).toISOString().split('T')[0];
+        }
+
+        // Convert YYYY-MM-DD to DD/MMM/YYYY for storage
+        function formatToDDMMMYYYY(inputVal) {
+            const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+            const [year, month, day] = inputVal.split('-');
+            return `${day}/${months[parseInt(month) - 1]}/${year}`;
+        }
+
         function init() {
             const dateInput = document.getElementById('date-input');
             const today = new Date().toISOString().split('T')[0];
@@ -337,16 +366,7 @@
                 const data = JSON.parse(editData);
                 localStorage.removeItem('milkEditData');
 
-                // Parse date string like "01 Jan 2024" to "YYYY-MM-DD"
-                const dateParts = data.date.split(' ');
-                if (dateParts.length === 3) {
-                    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                    const m = String(months.indexOf(dateParts[1]) + 1).padStart(2, '0');
-                    dateInput.value = `${dateParts[2]}-${m}-${dateParts[0].padStart(2, '0')}`;
-                } else {
-                    dateInput.value = new Date(data.date).toISOString().split('T')[0];
-                }
-
+                dateInput.value = formatToInputDate(data.date);
                 document.getElementById('morning-input').value = data.morning;
                 document.getElementById('evening-input').value = data.evening;
                 document.getElementById('remarks-input').value = data.remarks || '';
@@ -393,15 +413,18 @@
         }
 
         function saveMilkData() {
-            const date = document.getElementById('date-input').value;
+            const dateInputVal = document.getElementById('date-input').value;
             const morning = parseFloat(document.getElementById('morning-input').value) || 0;
             const evening = parseFloat(document.getElementById('evening-input').value) || 0;
             const remarks = document.getElementById('remarks-input').value;
 
-            if (!date) {
+            if (!dateInputVal) {
                 showPopup('Error', 'Please select a date', 'error');
                 return;
             }
+
+            // Format date as DD/MMM/YYYY for storage
+            const date = formatToDDMMMYYYY(dateInputVal);
 
             const loader = document.getElementById('loader');
             loader.classList.remove('hidden');
@@ -416,7 +439,7 @@
                 remarks: remarks
             };
 
-            fetch("https://script.google.com/macros/s/AKfycbziPFlV_L7fA99c-vrT027tHnc_a-mu_paFhTZWFbZYvN6g0GBmdP7uisivPXNY86bt8g/exec", {
+            fetch("https://script.google.com/macros/s/AKfycbw9HPgLQojIqypEKeaCpwdZtdXmM7gqANY8LFWLWUAe5CNexRLTyrrX6JLFmiZC03B4CQ/exec", {
                 method: 'POST',
                 body: JSON.stringify(payload),
                 mode: 'no-cors'
@@ -426,9 +449,9 @@
                 showPopup('Success', 'Data saved successfully!', 'success');
                 clearInputs();
                 // Refresh calendar
-                initDateAccordion(date);
+                initDateAccordion(dateInputVal);
                 // Move to next day
-                const d = new Date(date);
+                const d = new Date(dateInputVal);
                 d.setDate(d.getDate() + 1);
                 const nextDay = d.toISOString().split('T')[0];
                 document.getElementById('date-input').value = nextDay;
@@ -468,7 +491,7 @@
 
             let existingDates = [];
             try {
-                const response = await fetch(`https://script.google.com/macros/s/AKfycbxySvwYRG1G1uH8PBMNnUHaY8LIK8qoSqvjssVBOMAjos-nIu-JUUULaAZvPDJY1yXYbA/exec?sheetName=${encodeURIComponent(sheetName)}&datesOnly=true`);
+                const response = await fetch(`https://script.google.com/macros/s/AKfycbwzBexzxdakb4awxFr8opppqQUKwmGJoB-_5FTD9Uzaz0LWGSpANhHlSAulLiyAe_SMxA/exec?sheetName=${encodeURIComponent(sheetName)}&datesOnly=true`);
                 const result = await response.json();
                 if (result.dates) {
                     existingDates = result.dates;
