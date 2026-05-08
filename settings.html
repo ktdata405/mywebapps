@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="KT Apps">
+    <link rel="apple-touch-icon" href="root/logo.png">
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#030305">
+
+    <title data-translate-key="settingsTitle">Settings</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #030305;
+            --card-bg: rgba(255,255,255,0.03);
+            --card-border: rgba(255,255,255,0.07);
+            --card-hover-border: rgba(255,255,255,0.15);
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --surface: rgba(15,23,42,0.6);
+            --radius-card: 20px;
+        }
+
+        body.dark-mode {
+            --bg-color: #030305;
+            --card-bg: rgba(255,255,255,0.03);
+            --card-border: rgba(255,255,255,0.07);
+            --card-hover-border: rgba(255,255,255,0.15);
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --surface: rgba(15,23,42,0.6);
+        }
+
+        body.light-mode {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --card-border: rgba(0,0,0,0.1);
+            --card-hover-border: rgba(0,0,0,0.2);
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --surface: rgba(255,255,255,0.8);
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Plus Jakarta Sans',sans-serif; -webkit-tap-highlight-color:transparent; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* ── Background ─────────────────────── */
+        #bg-canvas { position:fixed; inset:0; width:100%; height:100%; z-index:-1; opacity:0.5; }
+
+        /* Ambient glow blobs */
+        .bg-blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.12;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .bg-blob-1 { width:500px; height:500px; background:#6366f1; top:-150px; left:-100px; }
+        .bg-blob-2 { width:400px; height:400px; background:#8b5cf6; bottom:-100px; right:-100px; }
+        .bg-blob-3 { width:300px; height:300px; background:#06b6d4; top:40%; left:50%; transform:translateX(-50%); opacity:0.07; }
+
+        body::before {
+            content:"";
+            position:fixed; inset:0; z-index:0;
+            background:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events:none;
+        }
+
+        header {
+            padding:1.2rem 5%;
+            display:flex; justify-content:space-between; align-items:center;
+            position:sticky; top:0; z-index:20;
+            background:rgba(3,3,5,0.7);
+            backdrop-filter:blur(20px);
+            -webkit-backdrop-filter:blur(20px);
+            border-bottom:1px solid rgba(255,255,255,0.05);
+        }
+
+        body.light-mode header {
+            background:rgba(255,255,255,0.7);
+            border-bottom:1px solid rgba(0,0,0,0.05);
+        }
+
+        body.light-mode .brand-text h1 {
+            background:linear-gradient(to right,#1a202c 20%,#4a5568 50%,#1a202c 80%);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+        }
+
+        body.light-mode .brand-text .greeting {
+            color: var(--text-secondary);
+        }
+
+        body.light-mode .nav-btn {
+            background:rgba(0,0,0,0.05);
+            border:1px solid rgba(0,0,0,0.08);
+            color:var(--text-secondary);
+        }
+        body.light-mode .nav-btn:hover {
+            background:rgba(0,0,0,0.1);
+            color:var(--text-primary);
+            border-color:rgba(0,0,0,0.15);
+        }
+
+
+        .brand { display:flex; align-items:center; gap:1rem; }
+
+        .brand .logo-img {
+            height:44px; width:44px; border-radius:12px;
+            object-fit:cover;
+            border:1px solid rgba(255,255,255,0.1);
+        }
+
+        .brand-text h1 {
+            font-size:1.5rem; font-weight:800;
+            background:linear-gradient(to right,#fff 20%,#a1a1aa 50%,#fff 80%);
+            background-size:200% auto;
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+            animation:textShimmer 5s linear infinite;
+            line-height:1.1; letter-spacing:-0.02em;
+        }
+        .brand-text .greeting {
+            font-size:0.72rem; color:var(--text-secondary); font-weight:500; margin-top:1px;
+        }
+
+        @keyframes textShimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
+
+        .header-actions { display:flex; align-items:center; gap:0.6rem; }
+
+        .nav-btn {
+            width:40px; height:40px; border-radius:10px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:1rem;
+            background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.08);
+            color:var(--text-secondary);
+            text-decoration:none;
+            transition:all 0.2s ease;
+            cursor:pointer;
+        }
+        .nav-btn:hover { background:rgba(255,255,255,0.1); color:#fff; border-color:rgba(255,255,255,0.15); }
+        .nav-btn:active { transform:scale(0.93); }
+
+        main {
+            flex: 1;
+            padding: 1.5rem 5%;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .settings-section {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-card);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .settings-section h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        body.light-mode .setting-item {
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-item label {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+
+        .setting-item span {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+
+        .setting-item .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 24px;
+        }
+
+        .setting-item .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .setting-item .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        body.light-mode .setting-item .slider {
+            background-color: #a0aec0;
+        }
+
+        .setting-item .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        .setting-item input:checked + .slider {
+            background-color: #6366f1;
+        }
+
+        .setting-item input:focus + .slider {
+            box-shadow: 0 0 1px #6366f1;
+        }
+
+        .setting-item input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+
+        .setting-item button {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .setting-item button:hover {
+            background-color: #dc2626;
+        }
+
+        /* ── Footer ──────────────────────────── */
+        footer {
+            text-align:center; padding:2rem;
+            color:rgba(255,255,255,0.2); font-size:0.8rem;
+            border-top:1px solid rgba(255,255,255,0.04);
+            margin-top:auto; position:relative; z-index:1;
+            transition: color 0.3s ease, border-top-color 0.3s ease;
+        }
+        body.light-mode footer {
+            color:rgba(0,0,0,0.4);
+            border-top:1px solid rgba(0,0,0,0.08);
+        }
+        footer b { color:rgba(255,255,255,0.5); font-weight:600; }
+        body.light-mode footer b { color:rgba(0,0,0,0.7); }
+
+
+        /* ── Loader ──────────────────────────── */
+        #loader {
+            position:fixed; inset:0; z-index:9999;
+            display:flex; align-items:center; justify-content:center;
+            background:rgba(3,3,5,0.85); backdrop-filter:blur(16px);
+            opacity:0; pointer-events:none; transition:opacity 0.25s ease;
+        }
+        body.light-mode #loader {
+            background:rgba(255,255,255,0.85);
+        }
+        #loader.visible { opacity:1; pointer-events:auto; }
+        .spinner {
+            width:42px; height:42px;
+            border:3px solid rgba(255,255,255,0.1);
+            border-top-color:#6366f1;
+            border-radius:50%;
+            animation:spin 0.8s linear infinite;
+        }
+        body.light-mode .spinner {
+            border:3px solid rgba(0,0,0,0.1);
+            border-top-color:#6366f1;
+        }
+        @keyframes spin { to{transform:rotate(360deg)} }
+
+        /* ── Responsive ──────────────────────── */
+        @media (max-width:768px) {
+            header { padding:0.9rem 4%; }
+            .brand-text h1 { font-size:1.2rem; }
+            .brand .logo-img { height:38px; width:38px; border-radius:10px; }
+            main { padding: 1rem 4%; }
+            h2 { font-size: 1.5rem; margin-bottom: 1rem; }
+            .settings-section { padding: 1rem; }
+            .settings-section h3 { font-size: 1rem; margin-bottom: 0.8rem; }
+            .setting-item label, .setting-item span { font-size: 0.85rem; }
+            footer { padding:1.5rem; font-size:0.72rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+    <div class="bg-blob bg-blob-3"></div>
+
+    <header>
+        <div class="brand">
+            <a href="index.html" class="nav-btn" aria-label="Back" title="Back">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <div class="brand-text">
+                <h1 data-translate-key="settingsTitle">Settings</h1>
+            </div>
+        </div>
+        <div class="header-actions">
+            <!-- Future settings actions can go here -->
+        </div>
+    </header>
+
+    <main>
+        <h2>App Settings</h2>
+
+        <div class="settings-section">
+            <h3>General</h3>
+            <div class="setting-item">
+                <label for="language-select">Language</label>
+                <select id="language-select">
+                    <option value="en">English</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label for="dark-mode-toggle">Dark Mode</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="dark-mode-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <label for="notifications-toggle">Enable Notifications</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="notifications-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3>Security</h3>
+            <div class="setting-item">
+                <label>Change PIN</label>
+                <span><a href="#" style="color:var(--text-secondary); text-decoration:none;">Edit</a></span>
+            </div>
+            <div class="setting-item">
+                <label for="fingerprint-toggle">Enable Fingerprint Unlock</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="fingerprint-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3>Data Management</h3>
+            <div class="setting-item">
+                <label>Clear Local Data</label>
+                <button id="clear-data-btn">Clear</button>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3>About</h3>
+            <div class="setting-item">
+                <label>Version</label>
+                <span>1.0.0</span>
+            </div>
+            <div class="setting-item">
+                <label>Privacy Policy</label>
+                <span><a href="#" style="color:var(--text-secondary); text-decoration:none;">View</a></span>
+            </div>
+            <div class="setting-item">
+                <label>Send Feedback</label>
+                <span><a href="mailto:support@example.com" style="color:var(--text-secondary); text-decoration:none;">Email Us</a></span>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p data-translate-key="copyright_thammineni">&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
+    </footer>
+
+    <div id="loader"><div class="spinner"></div></div>
+
+    <script src="./localization.js"></script>
+    <script>
+        // ── Service Worker ──
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .catch(e => console.log('SW failed:', e));
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const loader = document.getElementById('loader');
+
+            // ── Navigate with loader ──
+            document.querySelectorAll('a[href]').forEach(link => {
+                link.addEventListener('click', e => {
+                    const href = link.getAttribute('href');
+                    if (href && href !== '#' && link.target !== '_blank') {
+                        e.preventDefault();
+                        loader.classList.add('visible');
+                        setTimeout(() => { window.location.href = href; }, 350);
+                    }
+                });
+            });
+
+            // ── Canvas particles (from index.html) ──
+            const canvas = document.getElementById('bg-canvas');
+            const ctx    = canvas.getContext('2d');
+            let W, H, particles = [];
+
+            const resize = () => { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; };
+            window.addEventListener('resize', resize); resize();
+
+            class P {
+                constructor() { this.reset(); }
+                reset() {
+                    this.x  = Math.random() * W;
+                    this.y  = Math.random() * H;
+                    this.vx = (Math.random()-0.5)*0.4;
+                    this.vy = (Math.random()-0.5)*0.4;
+                    this.r  = Math.random() * 1.5 + 0.5;
+                }
+                move() {
+                    this.x += this.vx; this.y += this.vy;
+                    if (this.x < 0 || this.x > W) this.vx *= -1;
+                    if (this.y < 0 || this.y > H) this.vy *= -1;
+                }
+                draw() {
+                    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2); ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < 55; i++) particles.push(new P());
+
+            (function loop() {
+                ctx.clearRect(0,0,W,H);
+                particles.forEach((p,i) => {
+                    p.move(); p.draw();
+                    for (let j = i+1; j < particles.length; j++) {
+                        const q = particles[j], dx = p.x-q.x, dy = p.y-q.y, d = Math.hypot(dx,dy);
+                        if (d < 140) {
+                            ctx.strokeStyle = `rgba(255,255,255,${0.08*(1-d/140)})`;
+                            ctx.lineWidth = 0.8;
+                            ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(q.x,q.y); ctx.stroke();
+                        }
+                    }
+                });
+                requestAnimationFrame(loop);
+            })();
+
+            // Function to apply theme
+            function applyTheme(isDarkMode) {
+                document.body.classList.toggle('dark-mode', isDarkMode);
+                document.body.classList.toggle('light-mode', !isDarkMode);
+            }
+
+            // Load and apply theme on page load
+            const savedDarkMode = localStorage.getItem('darkMode');
+            if (savedDarkMode !== null) {
+                applyTheme(savedDarkMode === 'true');
+            } else {
+                // Default to dark mode if no preference is saved
+                applyTheme(true);
+            }
+
+            // Dark Mode Toggle functionality
+            const darkModeToggle = document.getElementById('dark-mode-toggle');
+            if (darkModeToggle) {
+                darkModeToggle.checked = localStorage.getItem('darkMode') === 'true';
+                darkModeToggle.addEventListener('change', () => {
+                    const isChecked = darkModeToggle.checked;
+                    applyTheme(isChecked);
+                    localStorage.setItem('darkMode', isChecked);
+                });
+            }
+
+            // Language Selection functionality
+            const languageSelect = document.getElementById('language-select');
+            if (languageSelect) {
+                const savedLanguage = localStorage.getItem('language') || 'en'; // Default to English
+                languageSelect.value = savedLanguage;
+                // Assuming localization.js has a function to set the language
+                // setLanguage(savedLanguage); // Uncomment if setLanguage exists in localization.js
+
+                languageSelect.addEventListener('change', () => {
+                    const selectedLanguage = languageSelect.value;
+                    localStorage.setItem('language', selectedLanguage);
+                    // setLanguage(selectedLanguage); // Uncomment if setLanguage exists in localization.js
+                    // Reload translations if necessary
+                    // updateContentLanguage(); // Assuming this function exists in localization.js
+                });
+            }
+
+            // Fingerprint Unlock Toggle functionality
+            const fingerprintToggle = document.getElementById('fingerprint-toggle');
+            if (fingerprintToggle) {
+                const savedFingerprint = localStorage.getItem('fingerprintUnlock') === 'true';
+                fingerprintToggle.checked = savedFingerprint;
+
+                fingerprintToggle.addEventListener('change', () => {
+                    const isChecked = fingerprintToggle.checked;
+                    localStorage.setItem('fingerprintUnlock', isChecked);
+                    // Add any logic here to actually enable/disable fingerprint unlock
+                    console.log('Fingerprint Unlock set to:', isChecked);
+                });
+            }
+
+            // Notifications Toggle functionality
+            const notificationsToggle = document.getElementById('notifications-toggle');
+            if (notificationsToggle) {
+                const savedNotifications = localStorage.getItem('notificationsEnabled') === 'true';
+                notificationsToggle.checked = savedNotifications;
+
+                notificationsToggle.addEventListener('change', () => {
+                    const isChecked = notificationsToggle.checked;
+                    localStorage.setItem('notificationsEnabled', isChecked);
+                    console.log('Notifications Enabled set to:', isChecked);
+                    // Here you would integrate with a notification API if available
+                });
+            }
+
+            // Clear Local Data functionality
+            const clearDataBtn = document.getElementById('clear-data-btn');
+            if (clearDataBtn) {
+                clearDataBtn.addEventListener('click', () => {
+                    if (confirm('Are you sure you want to clear all local settings and data? This action cannot be undone.')) {
+                        localStorage.clear();
+                        alert('All local data cleared. Please refresh the page to see changes.');
+                        window.location.reload();
+                    }
+                });
+            }
+        });
+
+        window.addEventListener('pageshow', () => {
+            document.getElementById('loader')?.classList.remove('visible');
+        });
+    </script>
+</body>
+</html>
