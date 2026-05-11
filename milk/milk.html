@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="../config.js"></script>
+    <script src="../ktcache.js"></script>
     <script src="../ktui.js"></script>
 
     <style>
@@ -437,13 +438,14 @@
                 remarks: remarks
             };
 
-            fetch("https://script.google.com/macros/s/AKfycbw9HPgLQojIqypEKeaCpwdZtdXmM7gqANY8LFWLWUAe5CNexRLTyrrX6JLFmiZC03B4CQ/exec", {
+            fetch(CONFIG.GOOGLE_SHEET_URL_MILK, {
                 method: 'POST',
                 body: JSON.stringify(payload),
                 mode: 'no-cors'
             })
             .then(() => {
                 loader.classList.add('hidden');
+                KTCache.invalidate(CONFIG.GOOGLE_SHEET_URL_MILK); // Invalidate cache after save
                 showPopup('Success', 'Data saved successfully!', 'success');
                 updateDateSaveStatus(true); // Mark as saved
                 clearInputs();
@@ -492,11 +494,9 @@
 
             let existingDates = [];
             try {
-                const response = await fetch(`https://script.google.com/macros/s/AKfycbwzBexzxdakb4awxFr8opppqQUKwmGJoB-_5FTD9Uzaz0LWGSpANhHlSAulLiyAe_SMxA/exec?sheetName=${encodeURIComponent(sheetName)}&datesOnly=true`);
-                const result = await response.json();
-                if (result.dates) {
-                    existingDates = result.dates;
-                }
+                const datesUrl = `${CONFIG.GOOGLE_SHEET_URL_MILK}?sheetName=${encodeURIComponent(sheetName)}&datesOnly=true`;
+                const result = await KTCache.fetchCached(datesUrl, { ttl: 5 * 60 * 1000 });
+                if (result.dates) existingDates = result.dates;
             } catch (e) {
                 console.error("Failed to fetch existing dates for accordion", e);
             }

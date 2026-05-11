@@ -6,6 +6,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title data-translate-key="milkReport">Milk Report</title>
+    <link rel="preconnect" href="https://script.google.com">
+    <link rel="dns-prefetch" href="https://script.google.com">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -614,6 +616,7 @@
 </div>
 
 <script src="../config.js"></script>
+<script src="../ktcache.js"></script>
 <script src="../localization.js"></script>
 <script>
     let filterVisible = true;
@@ -662,23 +665,37 @@
         const year  = document.getElementById('year-select').value;
         const loader = document.getElementById('loader');
         const fetchIcon = document.getElementById('fetch-icon');
-        loader.classList.remove('hidden');
         fetchIcon.classList.add('rotate-180');
 
         const sheetName = `${month} ${year}`;
-        fetch(`https://script.google.com/macros/s/AKfycbw9HPgLQojIqypEKeaCpwdZtdXmM7gqANY8LFWLWUAe5CNexRLTyrrX6JLFmiZC03B4CQ/exec?sheetName=${encodeURIComponent(sheetName)}&t=${Date.now()}`)
-            .then(r => r.json())
-            .then(res => {
-                renderReport(res.data || []);
+        const url = `${CONFIG.GOOGLE_SHEET_URL_MILK}?sheetName=${encodeURIComponent(sheetName)}`;
+
+        function applyData(res) {
+            renderReport(res.data || []);
+            fetchIcon.classList.remove('rotate-180');
+        }
+
+        KTCache.fetchCached(url, {
+            onCacheHit: (cached) => {
+                applyData(cached);
                 loader.classList.add('hidden');
-                fetchIcon.classList.remove('rotate-180');
-            })
-            .catch(e => {
-                console.error(e);
-                loader.classList.add('hidden');
-                fetchIcon.classList.remove('rotate-180');
-                KTui.alert('Error', 'Error loading data. Please try again.', 'error');
-            });
+            }
+        })
+        .then(res => {
+            applyData(res);
+            loader.classList.add('hidden');
+        })
+        .catch(e => {
+            console.error(e);
+            loader.classList.add('hidden');
+            fetchIcon.classList.remove('rotate-180');
+            KTui.alert('Error', 'Error loading data. Please try again.', 'error');
+        });
+
+        // Only show loader if no cache
+        if (!sessionStorage.getItem('ktcache_' + url)) {
+            loader.classList.remove('hidden');
+        }
     }
 
     function setMonthlyBadge(isPaid) {
@@ -873,12 +890,13 @@
             status: 'Paid'
         };
 
-        fetch("https://script.google.com/macros/s/AKfycbwzBexzxdakb4awxFr8opppqQUKwmGJoB-_5FTD9Uzaz0LWGSpANhHlSAulLiyAe_SMxA/exec", {
+        fetch(CONFIG.GOOGLE_SHEET_URL_MILK, {
             method: 'POST',
             body: JSON.stringify(payload),
             mode: 'no-cors'
         })
         .then(() => {
+            KTCache.invalidate(CONFIG.GOOGLE_SHEET_URL_MILK);
             setMonthlyBadge(true);
         })
         .catch(() => {

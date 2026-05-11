@@ -58,6 +58,7 @@ function handleFormSubmit(e) {
     .then(response => response.json())
     .then(result => {
         if (result.status === 'success') {
+            KTCache.invalidate(SCRIPT_URL); // Invalidate loan cache after save
             messageDiv.textContent = editId ? 'Loan updated successfully!' : 'Loan saved successfully!';
             messageDiv.className = 'success';
             messageDiv.style.display = 'block';
@@ -87,18 +88,14 @@ function fetchLoans() {
     const table = document.getElementById('loanTable');
     const tbody = document.getElementById('loanTableBody');
 
-    fetch(`${SCRIPT_URL}?action=getLoans`)
-    .then(response => response.json())
-    .then(result => {
+    function applyData(result) {
         if (result.status === 'success') {
             loadingDiv.style.display = 'none';
             table.style.display = 'table';
             tbody.innerHTML = '';
-
             result.data.forEach(loan => {
                 const row = document.createElement('tr');
                 const date = formatDisplayDate(loan.date);
-                
                 row.innerHTML = `
                     <td>${date}</td>
                     <td>${loan.name}</td>
@@ -113,7 +110,12 @@ function fetchLoans() {
         } else {
             throw new Error(result.message || 'Failed to fetch data');
         }
+    }
+
+    KTCache.fetchCached(`${SCRIPT_URL}?action=getLoans`, {
+        onCacheHit: (cached) => { try { applyData(cached); } catch(e) {} }
     })
+    .then(result => applyData(result))
     .catch(error => {
         console.error('Error:', error);
         loadingDiv.innerHTML = '<i class="fas fa-exclamation-circle fa-2x"></i><p>Error loading data: ' + error.message + '</p>';

@@ -9,11 +9,14 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0f172a">
     <title>Tenet Report</title>
+    <link rel="preconnect" href="https://script.google.com">
+    <link rel="dns-prefetch" href="https://script.google.com">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="../ktui.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="../config.js"></script>
+    <script src="../ktcache.js"></script>
     <style>
         :root {
             --primary: #6366f1;
@@ -617,62 +620,61 @@
         const totalValue = document.getElementById('total-collected-value');
         const sideFilter = document.getElementById('sideFilter').value;
 
-        loader.classList.remove('hidden');
-        container.classList.add('hidden');
-        emptyState.classList.add('hidden');
+        function applyData(responsePayload) {
+            loader.classList.add('hidden');
+            container.innerHTML = '';
+            container.classList.add('hidden');
+            emptyState.classList.add('hidden');
+            if(summaryBar) summaryBar.classList.add('translate-y-full');
 
-        // Hide summary bar initially
-        if(summaryBar) summaryBar.classList.add('translate-y-full');
+            allRecords = responsePayload.data || [];
+            let displayRecords = allRecords;
 
-        container.innerHTML = '';
+            if (sideFilter !== 'All') {
+                displayRecords = displayRecords.filter(r => r.side === sideFilter);
+            }
 
-        fetch(SCRIPT_URL)
-            .then(response => response.json())
-            .then(responsePayload => {
-                loader.classList.add('hidden');
+            if (displayRecords && displayRecords.length > 0) {
+                container.classList.remove('hidden');
+                displayRecords.sort((a, b) => parseDate(b.date) - parseDate(a.date));
 
-                allRecords = responsePayload.data || [];
-                let displayRecords = allRecords;
+                const total = displayRecords.reduce((sum, record) => {
+                    const val = parseFloat(record.totalPaid);
+                    return sum + (isNaN(val) ? 0 : val);
+                }, 0);
 
-                if (sideFilter !== 'All') {
-                    displayRecords = displayRecords.filter(r => r.side === sideFilter);
+                if (summaryBar && totalValue) {
+                    totalValue.textContent = formatCurrency(total);
+                    setTimeout(() => { summaryBar.classList.remove('translate-y-full'); }, 100);
                 }
 
-                if (displayRecords && displayRecords.length > 0) {
-                    container.classList.remove('hidden');
-
-                    // Sort by date descending
-                    displayRecords.sort((a, b) => parseDate(b.date) - parseDate(a.date));
-
-                    // Calculate Total
-                    const total = displayRecords.reduce((sum, record) => {
-                        const val = parseFloat(record.totalPaid);
-                        return sum + (isNaN(val) ? 0 : val);
-                    }, 0);
-
-                    if (summaryBar && totalValue) {
-                        totalValue.textContent = formatCurrency(total);
-                        // Show summary bar with animation
-                        setTimeout(() => {
-                            summaryBar.classList.remove('translate-y-full');
-                        }, 100);
-                    }
-
-                    displayRecords.forEach(item => container.appendChild(createListItem(item)));
-                } else {
-                    emptyState.classList.remove('hidden');
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-                loader.classList.add('hidden');
-                emptyState.innerHTML = `
-                        <i class="fa-solid fa-triangle-exclamation text-6xl mb-4 text-red-400"></i>
-                        <p class="text-xl text-red-300">Error loading reports</p>
-                        <p class="text-sm text-gray-400 mt-2">${error.message}</p>
-                    `;
+                displayRecords.forEach(item => container.appendChild(createListItem(item)));
+            } else {
                 emptyState.classList.remove('hidden');
-            });
+            }
+        }
+
+        KTCache.fetchCached(SCRIPT_URL, {
+            onCacheHit: (cached) => { applyData(cached); }
+        })
+        .then(res => applyData(res))
+        .catch(error => {
+            console.error('Error fetching data:', error);
+            loader.classList.add('hidden');
+            emptyState.innerHTML = `
+                    <i class="fa-solid fa-triangle-exclamation text-6xl mb-4 text-red-400"></i>
+                    <p class="text-xl text-red-300">Error loading reports</p>
+                    <p class="text-sm text-gray-400 mt-2">${error.message}</p>
+                `;
+            emptyState.classList.remove('hidden');
+        });
+
+        if (!sessionStorage.getItem('ktcache_' + SCRIPT_URL)) {
+            loader.classList.remove('hidden');
+            container.classList.add('hidden');
+            emptyState.classList.add('hidden');
+            if(summaryBar) summaryBar.classList.add('translate-y-full');
+        }
     }
 
     document.addEventListener('DOMContentLoaded', fetchData);

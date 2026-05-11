@@ -473,6 +473,7 @@
     </template>
 
     <script src="../config.js"></script>
+    <script src="../ktcache.js"></script>
     <script src="../localization.js"></script>
     <script>
         // ── Service Worker ──
@@ -897,6 +898,7 @@
             .then(response => {
                 loader.classList.add('hidden');
                 saveBtn.disabled = false;
+                KTCache.invalidate(CONFIG.GOOGLE_SHEET_URL_CASHEW); // Invalidate cache after save
                 initDateAccordion(dateInput.value); // Refresh calendar
                 updateDateSaveStatus(true); // Mark as saved
 
@@ -937,14 +939,12 @@
             const label = document.getElementById('accordion-month-label');
             if(label) label.textContent = sheetName;
 
-            // Fetch existing dates
+            // Fetch existing dates (cached per month - TTL 5 min)
             let existingDates = [];
             try {
-                const response = await fetch(`${CONFIG.GOOGLE_SHEET_URL_CASHEW}?sheetName=${encodeURIComponent(sheetName)}&datesOnly=true`);
-                const result = await response.json();
-                if (result.dates) {
-                    existingDates = result.dates;
-                }
+                const datesUrl = `${CONFIG.GOOGLE_SHEET_URL_CASHEW}?sheetName=${encodeURIComponent(sheetName)}&datesOnly=true`;
+                const result = await KTCache.fetchCached(datesUrl, { ttl: 5 * 60 * 1000 });
+                if (result.dates) existingDates = result.dates;
             } catch (e) {
                 console.error("Failed to fetch existing dates for accordion", e);
             }

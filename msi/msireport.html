@@ -8,6 +8,8 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#09090b">
     <title data-translate-key="msiReportTitle">MSI Report</title>
+    <link rel="preconnect" href="https://script.google.com">
+    <link rel="dns-prefetch" href="https://script.google.com">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -814,6 +816,7 @@
 </div>
 
 <script src="../config.js"></script>
+<script src="../ktcache.js"></script>
 <script src="../localization.js"></script>
 <script>
     // Configuration
@@ -901,35 +904,34 @@
     // Fetch
     async function fetchData() {
         const loader = document.getElementById('loader');
-        loader.style.display = 'flex'; // Show loader
-
         const user = document.getElementById('user-select').value;
 
-        // Update platforms based on user
-        if (user === 'Layan') {
-            CURRENT_PLATFORMS = PLATFORMS_LAYAN;
-        } else {
-            CURRENT_PLATFORMS = PLATFORMS_KALYAN;
-        }
+        if (user === 'Layan') CURRENT_PLATFORMS = PLATFORMS_LAYAN;
+        else CURRENT_PLATFORMS = PLATFORMS_KALYAN;
 
-        try {
-            const res = await fetch(`${SCRIPT_URL}?sheetName=${user}&v=${Date.now()}`);
-            let data = await res.json();
+        const url = `${SCRIPT_URL}?sheetName=${user}`;
 
+        function applyData(rawData) {
+            let data = rawData;
             if (data.data) data = data.data;
             else if (data.records) data = data.records;
             else if (data.result) data = data.result;
-
             if (!Array.isArray(data)) throw new Error("Invalid Data");
-
             processData(data);
+            setTimeout(() => { loader.style.display = 'none'; }, 300);
+        }
+
+        const cached = sessionStorage.getItem('ktcache_' + url);
+        if (!cached) loader.style.display = 'flex';
+
+        try {
+            await KTCache.fetchCached(url, {
+                onCacheHit: (c) => { try { applyData(c); } catch(e) {} }
+            }).then(res => applyData(res));
         } catch (e) {
             console.error(e);
+            loader.style.display = 'none';
             KTui.alert('Notice', "Sync Failed: " + e.message, 'info');
-        } finally {
-            setTimeout(() => {
-                loader.style.display = 'none'; // Hide loader
-            }, 600);
         }
     }
 

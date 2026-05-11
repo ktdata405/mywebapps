@@ -165,6 +165,7 @@ form.addEventListener('submit', function(event) {
     .then(response => response.json())
     .then(res => {
         if (res.result === 'success') {
+            KTCache.invalidate(scriptURL); // Invalidate rent report cache
             KTui.alert('Notice', isEditMode ? 'Record updated successfully!' : 'Record saved successfully!', 'info');
             
             if (isEditMode) {

@@ -10,11 +10,14 @@
     <meta name="theme-color" content="#020617">
     <link rel="manifest" href="./manifest.json">
     <title data-translate-key="cashewReportTitle">Cashew Report - Expense Tracker</title>
+    <link rel="preconnect" href="https://script.google.com">
+    <link rel="dns-prefetch" href="https://script.google.com">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="../ktui.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="../config.js"></script>
+    <script src="../ktcache.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
@@ -549,30 +552,40 @@
 
         function fetchReport() {
             const loader = document.getElementById('loader');
-            loader.classList.remove('hidden');
-
             const month = document.getElementById('month-select').value;
             const year = document.getElementById('year-select').value;
             let url = month === 'All'
-                ? `${CONFIG.GOOGLE_SHEET_URL_CASHEW}?fetchAll=true&t=${Date.now()}`
-                : `${CONFIG.GOOGLE_SHEET_URL_CASHEW}?sheetName=${encodeURIComponent(month + ' ' + year)}&t=${Date.now()}`;
+                ? `${CONFIG.GOOGLE_SHEET_URL_CASHEW}?fetchAll=true`
+                : `${CONFIG.GOOGLE_SHEET_URL_CASHEW}?sheetName=${encodeURIComponent(month + ' ' + year)}`;
 
-            fetch(url)
-                .then(r => r.json())
-                .then(res => {
-                    allData = res.data || [];
-                    monthlyBalances = res.monthlyBalances || {};
-                    populateCategoryFilter(allData);
-                    updateStats(res.availableBalance || 0);
-                    populateInsights(allData);
-                    filterData();
+            function applyData(res) {
+                allData = res.data || [];
+                monthlyBalances = res.monthlyBalances || {};
+                populateCategoryFilter(allData);
+                updateStats(res.availableBalance || 0);
+                populateInsights(allData);
+                filterData();
+            }
+
+            KTCache.fetchCached(url, {
+                onCacheHit: (cached) => {
+                    applyData(cached);
                     loader.classList.add('hidden');
-                })
-                .catch(e => {
-                    console.error(e);
-                    loader.classList.add('hidden');
-                    KTui.alert('Notice', 'Error loading data', 'info');
-                });
+                }
+            })
+            .then(res => {
+                applyData(res);
+                loader.classList.add('hidden');
+            })
+            .catch(e => {
+                console.error(e);
+                loader.classList.add('hidden');
+                if (!allData.length) KTui.alert('Notice', 'Error loading data', 'info');
+            });
+
+            if (!sessionStorage.getItem('ktcache_' + url)) {
+                loader.classList.remove('hidden');
+            }
         }
 
         function updateStats(balance) {
@@ -777,7 +790,7 @@
             const tM = document.getElementById('export-to-month-select').value;
             const tY = document.getElementById('export-to-year-select').value;
 
-            fetch(`${CONFIG.GOOGLE_SHEET_URL_CASHEW}?fetchAll=true&t=${Date.now()}`)
+            fetch(`${CONFIG.GOOGLE_SHEET_URL_CASHEW}?fetchAll=true`)
                 .then(r => r.json())
                 .then(res => {
                     loader.classList.add('hidden');

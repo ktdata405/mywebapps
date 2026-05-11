@@ -467,6 +467,7 @@
     <p data-translate-key="copyright_thammineni">&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
 </footer>
 <script src="../config.js"></script>
+<script src="../ktcache.js"></script>
 <script src="../localization.js"></script>
 <script>
     // ── Service Worker ──
@@ -655,16 +656,15 @@
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'text/plain'
-                },
+                headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify(data)
             })
             .then(response => {
                 loader.style.display = 'none';
                 saveBtn.disabled = false;
+                KTCache.invalidate(CONFIG.GOOGLE_SHEET_URL_MSI); // Invalidate MSI cache
                 KTui.alert('Notice', 'Investment details saved successfully for ' + monthSelect.value + ' ' + yearSelect.value + ' (' + user + ', 'info')!');
-                window.location.href = 'msireport.html'; // Redirect back to report
+                window.location.href = 'msireport.html';
             })
             .catch(error => {
                 console.error('Error:', error);

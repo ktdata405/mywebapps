@@ -599,6 +599,7 @@ async function uploadFiles(fileList, folderName) {
         const result = await response.json();
         if (result.status !== 'success') throw new Error(result.message);
         
+        KTCache.invalidate(CONFIG.GOOGLE_SHEET_URL_SCAN); // Invalidate scan report cache
         // Success handled by caller (loader removal etc)
     } catch (error) {
         console.error('Upload failed:', error);

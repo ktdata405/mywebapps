@@ -9,11 +9,14 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0f172a">
     <title>Loan Report - Loan Manager</title>
+    <link rel="preconnect" href="https://script.google.com">
+    <link rel="dns-prefetch" href="https://script.google.com">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="../ktui.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="../config.js"></script>
+    <script src="../ktcache.js"></script>
     <style>
         :root {
             --bg-dark: #0f172a;
@@ -649,25 +652,31 @@
 
         function fetchLoans() {
             const loader = document.getElementById('loader');
-            loader.classList.remove('hidden');
+            const url = `${SCRIPT_URL}?action=getLoans`;
 
-            fetch(`${SCRIPT_URL}?action=getLoans`)
-                .then(response => response.json())
-                .then(result => {
-                    if (result.status === 'success') {
-                        allData = result.data;
-                        renderUI(allData);
-                    } else {
-                        throw new Error(result.message || 'Failed to fetch data');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    document.getElementById('loan-cards-container').innerHTML = `<p class="text-red-400">Error: ${error.message}</p>`;
-                })
-                .finally(() => {
-                    loader.classList.add('hidden');
-                });
+            function applyData(result) {
+                if (result.status === 'success') {
+                    allData = result.data;
+                    renderUI(allData);
+                } else {
+                    throw new Error(result.message || 'Failed to fetch data');
+                }
+                loader.classList.add('hidden');
+            }
+
+            KTCache.fetchCached(url, {
+                onCacheHit: (cached) => { try { applyData(cached); } catch(e) {} }
+            })
+            .then(result => applyData(result))
+            .catch(error => {
+                console.error('Error:', error);
+                loader.classList.add('hidden');
+                document.getElementById('loan-cards-container').innerHTML = `<p class="text-red-400">Error: ${error.message}</p>`;
+            });
+
+            if (!sessionStorage.getItem('ktcache_' + url)) {
+                loader.classList.remove('hidden');
+            }
         }
 
         function renderUI(data) {
@@ -784,9 +793,8 @@
 
             modal.classList.remove('hidden');
 
-            // Fetch repayment status
-            fetch(`${SCRIPT_URL}?action=getRepaymentStatus&loanId=${loanId}`)
-                .then(response => response.json())
+            // Fetch repayment status (cached per loanId)
+            KTCache.fetchCached(`${SCRIPT_URL}?action=getRepaymentStatus&loanId=${loanId}`, { ttl: 2 * 60 * 1000 })
                 .then(result => {
                     if (result.status === 'success') {
                         renderRepaymentGrid(loan, result.data);
@@ -863,6 +871,7 @@
             .then(response => response.json())
             .then(result => {
                 if (result.status === 'success') {
+                    KTCache.invalidate(`${SCRIPT_URL}?action=getRepaymentStatus&loanId=${loanId}`);
                     // Refresh the grid
                     viewRepaymentHistory(loanId);
                     showPopup('Success', `Payment marked as ${newStatus}`, 'success');
@@ -920,6 +929,8 @@
                 if (result.status === 'success') {
                     showPopup('Success', 'Payment recorded successfully!', 'success');
                     closePaymentModal();
+                    KTCache.invalidate(`${SCRIPT_URL}?action=getLoans`); // Invalidate loans cache
+                    KTCache.invalidate(`${SCRIPT_URL}?action=getRepaymentStatus`);
                     fetchLoans(); // Refresh loan data
                 } else {
                     throw new Error(result.message || 'Unknown error occurred');

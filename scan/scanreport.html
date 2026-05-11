@@ -8,10 +8,13 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#030305">
     <title>Scan History - KT Apps</title>
+    <link rel="preconnect" href="https://script.google.com">
+    <link rel="dns-prefetch" href="https://script.google.com">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="../config.js"></script>
+    <script src="../ktcache.js"></script>
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #030305; color: #fff; }
         .glass { background: rgba(255,255,255,0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); }
@@ -351,9 +354,7 @@
 
             // ---- Fetch ----
             async function fetchScans() {
-                try {
-                    const response = await fetch(CONFIG.GOOGLE_SHEET_URL_SCAN);
-                    const result = await response.json();
+                function applyData(result) {
                     if (result.status === 'success') {
                         allScans = result.data;
                         filteredScans = allScans;
@@ -363,8 +364,22 @@
                     } else {
                         showError(result.message);
                     }
-                } catch (e) { showError('Failed to load data.'); }
-                finally { loader.classList.add('hidden'); scanGrid.classList.remove('hidden'); }
+                    loader.classList.add('hidden');
+                    scanGrid.classList.remove('hidden');
+                }
+
+                const hasCached = !!sessionStorage.getItem('ktcache_' + CONFIG.GOOGLE_SHEET_URL_SCAN);
+                if (!hasCached) loader.classList.remove('hidden');
+
+                try {
+                    await KTCache.fetchCached(CONFIG.GOOGLE_SHEET_URL_SCAN, {
+                        onCacheHit: (cached) => applyData(cached)
+                    }).then(result => applyData(result));
+                } catch (e) {
+                    showError('Failed to load data.');
+                    loader.classList.add('hidden');
+                    scanGrid.classList.remove('hidden');
+                }
             }
 
             function showError(msg) {

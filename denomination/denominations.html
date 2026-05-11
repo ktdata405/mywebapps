@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="../config.js"></script>
+    <script src="../ktcache.js"></script>
     <style>
         :root {
             --bg:      #080c14;
@@ -791,6 +792,7 @@
             saveBtn.disabled = false;
             if (saveBtnM) saveBtnM.disabled = false;
             localStorage.setItem('cashCounterData', JSON.stringify(data));
+            KTCache.invalidate(CONFIG.GOOGLE_SHEET_URL_DENOMINATIONS); // Invalidate report cache
             if (isUpdate) { window.pendingRedirect = 'denominationsreport.html'; showPopup('Success','Data updated successfully','success'); }
             else          { window.pendingClear = true; showPopup('Success','Data saved successfully','success'); }
         })
