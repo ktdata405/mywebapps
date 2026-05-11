@@ -250,23 +250,23 @@
             <div class="lg:col-span-4 lg:sticky lg:top-28 space-y-6 mb-8 lg:mb-0">
 
                 <!-- Date Navigator -->
-                <div class="glass-panel rounded-3xl p-1.5 flex items-center justify-between shadow-2xl shadow-black/20 border border-white/10">
-                    <button id="prev-day" class="w-12 h-12 rounded-2xl hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all active:scale-90">
-                        <i class="fa-solid fa-chevron-left"></i>
-                    </button>
-
-                    <div class="flex flex-col items-center cursor-pointer group" onclick="document.getElementById('date-input').showPicker()">
-                        <div class="relative px-4 py-1 rounded-xl group-hover:bg-white/5 transition-colors">
-                            <input type="date" id="date-input" class="bg-transparent text-white font-bold text-lg outline-none text-center cursor-pointer font-mono tracking-wide z-10 relative" />
-                        </div>
-                        <span class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mt-0.5">
-                            <span data-translate-key="lastSeenDate">Last seen date:</span> <span id="last-seen-date" class="text-indigo-400"></span>
+                <div class="glass-panel rounded-3xl p-6 shadow-2xl border border-white/10">
+                    <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1 mb-2 block" data-translate-key="date">Date</label>
+                    <div class="flex items-center gap-3">
+                        <button id="prev-day" class="w-12 h-12 rounded-2xl bg-black/40 border border-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all active:scale-95 hover:bg-white/5">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <input type="date" id="date-input" class="flex-1 bg-black/40 border border-white/10 rounded-2xl px-4 py-3.5 text-white font-bold outline-none focus:border-indigo-500 transition-all" />
+                        <button id="next-day" class="w-12 h-12 rounded-2xl bg-black/40 border border-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all active:scale-95 hover:bg-white/5">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="mt-3 flex justify-center">
+                        <span id="date-save-status" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all duration-300 bg-gray-500/20 text-gray-400 border border-gray-500/30">
+                            <span id="date-save-status-dot" class="w-2 h-2 rounded-full bg-gray-400 inline-block"></span>
+                            <span id="date-save-status-text">Checking...</span>
                         </span>
                     </div>
-
-                    <button id="next-day" class="w-12 h-12 rounded-2xl hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all active:scale-90">
-                        <i class="fa-solid fa-chevron-right"></i>
-                    </button>
                 </div>
 
                 <!-- Date Selection Accordion -->
@@ -517,51 +517,24 @@
             return !isNaN(d.getTime()) ? d : null;
         }
 
-        function fetchLastEnteredDate() {
-            const dateInput = document.getElementById('date-input');
-            // Safely get year and month from YYYY-MM-DD string
-            const dateParts = dateInput.value.split('-');
-            const year = parseInt(dateParts[0]);
-            const monthIndex = parseInt(dateParts[1]) - 1;
-
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const sheetName = `${months[monthIndex]} ${year}`;
-
-            const label = document.getElementById('last-seen-date');
-            if(label) label.textContent = '...';
-
-            fetch(`${CONFIG.GOOGLE_SHEET_URL_CASHEW}?sheetName=${encodeURIComponent(sheetName)}&t=${new Date().getTime()}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.data && data.data.length > 0) {
-                        let maxDate = null;
-                        let maxDateStr = '';
-
-                        data.data.forEach(entry => {
-                            if (entry.date) {
-                                const d = parseDate(entry.date); // Use robust parser
-                                if (d) { // Check if parsing was successful
-                                    if (!maxDate || d > maxDate) {
-                                        maxDate = d;
-                                        maxDateStr = entry.date;
-                                    }
-                                }
-                            }
-                        });
-
-                        if (maxDateStr) {
-                            label.textContent = formatDateToDDMMMYYYY(maxDateStr);
-                        } else {
-                            label.textContent = 'None';
-                        }
-                    } else {
-                        if(label) label.textContent = 'None';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching last date:', error);
-                    if(label) label.textContent = 'Error';
-                });
+        function updateDateSaveStatus(hasSavedData, loading = false) {
+            const badge = document.getElementById('date-save-status');
+            const dot = document.getElementById('date-save-status-dot');
+            const text = document.getElementById('date-save-status-text');
+            if (!badge) return;
+            if (loading) {
+                badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all duration-300 bg-gray-500/20 text-gray-400 border border-gray-500/30';
+                dot.className = 'w-2 h-2 rounded-full bg-gray-400 inline-block';
+                text.textContent = 'Checking...';
+            } else if (hasSavedData) {
+                badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all duration-300 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40';
+                dot.className = 'w-2 h-2 rounded-full bg-emerald-400 inline-block';
+                text.textContent = 'Saved';
+            } else {
+                badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all duration-300 bg-red-500/20 text-red-400 border border-red-500/40';
+                dot.className = 'w-2 h-2 rounded-full bg-red-400 inline-block';
+                text.textContent = 'No Data';
+            }
         }
 
         function getSheetNameFromDate(dateString) {
@@ -579,6 +552,7 @@
 
             loaderText.textContent = (typeof translations !== 'undefined' && translations['fetchingData']) || 'Fetching Data';
             loader.classList.remove('hidden');
+            updateDateSaveStatus(false, true); // Show "Checking..."
 
             const formattedDate = formatDateToDDMMMYYYY(dateString);
             const sheetName = getSheetNameFromDate(dateString);
@@ -602,6 +576,7 @@
                         expensesForDate.forEach(item => {
                             addRow(item.category, item.description, item.amount);
                         });
+                        updateDateSaveStatus(true);
                     } else {
                         isEditMode = false;
                         originalDate = null;
@@ -609,6 +584,7 @@
                         for (let i = 0; i < 3; i++) {
                             addRow(defaultCategories[i]);
                         }
+                        updateDateSaveStatus(false);
                     }
                     calculateTotal();
                     loader.classList.add('hidden');
@@ -621,6 +597,7 @@
                     originalDate = null;
                     calculateTotal();
                     loader.classList.add('hidden');
+                    updateDateSaveStatus(false);
                 });
         }
 
@@ -631,7 +608,6 @@
             document.getElementById('next-day').addEventListener('click', () => changeDate(1));
 
             dateInput.addEventListener('change', () => {
-                fetchLastEnteredDate();
                 fetchDataForDate(dateInput.value);
                 initDateAccordion(dateInput.value);
             });
@@ -662,13 +638,12 @@
                         addRow(item.category, item.description, item.amount);
                     });
                     calculateTotal();
-                    fetchLastEnteredDate();
+                    updateDateSaveStatus(true);
                 }
             } else {
                 const today = new Date().toISOString().split('T')[0];
                 dateInput.value = today;
                 fetchDataForDate(dateInput.value);
-                fetchLastEnteredDate();
                 initDateAccordion(today);
             }
         }
@@ -694,7 +669,6 @@
                 dateInput.value = newDate;
 
                 fetchDataForDate(newDate);
-                fetchLastEnteredDate();
                 initDateAccordion(newDate);
             }
         }
@@ -923,8 +897,8 @@
             .then(response => {
                 loader.classList.add('hidden');
                 saveBtn.disabled = false;
-                fetchLastEnteredDate();
                 initDateAccordion(dateInput.value); // Refresh calendar
+                updateDateSaveStatus(true); // Mark as saved
 
                 window.pendingClear = true;
                 const msg = isEditMode ? 'Expenses updated successfully!' : 'Expenses saved successfully!';
@@ -1026,7 +1000,6 @@
                     const newDate = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${dayStr}`;
                     document.getElementById('date-input').value = newDate;
                     fetchDataForDate(newDate);
-                    fetchLastEnteredDate();
                 };
 
                 const label = document.createElement('label');
