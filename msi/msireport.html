@@ -925,7 +925,7 @@
             processData(data);
         } catch (e) {
             console.error(e);
-            KTui.alert('Notice', "Sync Failed: " + e.message, 'info');
+            KTui.alert('Error', "Sync Failed: " + e.message, 'error');
         } finally {
             setTimeout(() => {
                 loader.style.display = 'none'; // Hide loader
@@ -1213,20 +1213,7 @@
 
     // ===== MOBILE ENHANCEMENTS =====
     function showToast(msg, type = 'success', duration = 2800) {
-        let toast = document.getElementById('kt-toast');
-        if (!toast) {
-            toast = document.createElement('div');
-            toast.id = 'kt-toast';
-            toast.className = 'kt-toast';
-            document.body.appendChild(toast);
-        }
-        const icon = type === 'success' ? '✓' : '✕';
-        const color = type === 'success' ? '#34d399' : '#f87171';
-        toast.innerHTML = `<span style="color:${color};font-size:1rem;">${icon}</span> ${msg}`;
-        toast.className = `kt-toast ${type}`;
-        requestAnimationFrame(() => toast.classList.add('show'));
-        clearTimeout(toast._timer);
-        toast._timer = setTimeout(() => toast.classList.remove('show'), duration);
+        KTui.toast(msg, type);
     }
 
     // Pull-to-refresh

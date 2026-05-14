@@ -59,43 +59,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Custom Alert
 window.showAlert = function(message, type = 'info') {
-    const modal = document.getElementById('custom-alert-modal');
-    const msgEl = document.getElementById('alert-message');
-    const iconContainer = document.getElementById('alert-icon-container');
-    
-    if (!modal || !msgEl || !iconContainer) {
-        KTui.alert('Notice', message, 'info'); // Fallback
-        return;
-    }
-
-    msgEl.textContent = message;
-    
-    let icon = '';
-    let colorClass = '';
-    if (type === 'error') {
-        icon = '<iconify-icon icon="solar:danger-circle-bold" class="text-red-500"></iconify-icon>';
-        colorClass = 'bg-red-500/10';
-    } else if (type === 'success') {
-        icon = '<iconify-icon icon="solar:check-circle-bold" class="text-green-500"></iconify-icon>';
-        colorClass = 'bg-green-500/10';
-    } else {
-        icon = '<iconify-icon icon="solar:info-circle-bold" class="text-indigo-500"></iconify-icon>';
-        colorClass = 'bg-indigo-500/10';
-    }
-    
-    iconContainer.innerHTML = icon;
-    iconContainer.className = `w-12 h-12 rounded-full flex items-center justify-center text-2xl ${colorClass}`;
-
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
+    const ktType = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+    KTui.alert('Notice', message, ktType);
 };
 
 window.closeCustomAlert = function() {
-    const modal = document.getElementById('custom-alert-modal');
-    if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-    }
+    KTui.close();
 };
 
 // Custom Confirm

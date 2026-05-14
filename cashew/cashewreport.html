@@ -571,7 +571,7 @@
                 .catch(e => {
                     console.error(e);
                     loader.classList.add('hidden');
-                    KTui.alert('Notice', 'Error loading data', 'info');
+                    KTui.alert('Error', 'Error loading data', 'error');
                 });
         }
 
@@ -783,7 +783,7 @@
                     loader.classList.add('hidden');
                     generateExportContent(res.data || [], category, fM, fY, tM, tY);
                 })
-                .catch(e => { loader.classList.add('hidden'); KTui.alert('Notice', 'Export failed', 'info'); });
+                .catch(e => { loader.classList.add('hidden'); KTui.alert('Error', 'Export failed', 'error'); });
         }
 
         function generateExportContent(data, category, fM, fY, tM, tY) {
@@ -820,7 +820,7 @@
 
         function closeExportPreview() { document.getElementById('export-preview-modal').classList.add('hidden'); }
         function copyReportToClipboard() {
-            navigator.clipboard.writeText(window._exportData.text).then(() => KTui.alert('Notice', 'Copied!', 'info'));
+            navigator.clipboard.writeText(window._exportData.text).then(() => KTui.alert('Success', 'Copied!', 'success'));
         }
 
         function triggerDownload() {

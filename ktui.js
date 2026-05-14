@@ -5,6 +5,11 @@
  * Usage:
  *   KTui.alert('Title', 'Message', 'success' | 'error' | 'warning' | 'info')
  *   KTui.confirm('Title', 'Message', onConfirm, { confirmText, cancelText, type })
+ *   KTui.toast('Message', 'success' | 'error' | 'warning' | 'info')
+ *
+ * Notification style is controlled by localStorage key 'notificationStyle':
+ *   'toast'  → show a toast banner (default if not set)
+ *   'popup'  → show the full overlay popup
  *
  * Include this file AFTER the page body, e.g.:
  *   <script src="../ktui.js"></script>
@@ -127,6 +132,40 @@
             box-shadow: 0 4px 16px rgba(239,68,68,0.35);
         }
         .ktui-btn-confirm.danger:hover { box-shadow: 0 6px 20px rgba(239,68,68,0.50); }
+
+        /* ── KTui Toast ── */
+        .ktui-toast {
+            position: fixed;
+            bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+            left: 50%;
+            transform: translateX(-50%) translateY(140px);
+            padding: 14px 22px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 999999;
+            opacity: 0;
+            transition: opacity 0.35s ease, transform 0.35s ease;
+            pointer-events: none;
+            max-width: 90vw;
+            white-space: normal;
+            word-break: break-word;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .ktui-toast.ktui-toast-show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+        .ktui-toast.ktui-toast-success { background: #166534; color: #bbf7d0; border: 1px solid rgba(34,197,94,0.27); }
+        .ktui-toast.ktui-toast-error   { background: #7f1d1d; color: #fecaca; border: 1px solid rgba(239,68,68,0.27); }
+        .ktui-toast.ktui-toast-warning { background: #78350f; color: #fde68a; border: 1px solid rgba(245,158,11,0.27); }
+        .ktui-toast.ktui-toast-info    { background: #1e1b4b; color: #c7d2fe; border: 1px solid rgba(99,102,241,0.27); }
         `;
         document.head.appendChild(style);
     }
@@ -164,10 +203,42 @@
         confirm: '<i class="fa-solid fa-shield-halved"></i>',
     };
 
+    const TOAST_ICONS = {
+        success: 'fa-circle-check',
+        error:   'fa-circle-xmark',
+        warning: 'fa-circle-exclamation',
+        info:    'fa-circle-info',
+    };
+
+    // ── Toast ───────────────────────────────────────────────────────────────
+    function ktuiToast(message, type = 'info') {
+        let toast = document.getElementById('__ktui_toast__');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = '__ktui_toast__';
+            document.body.appendChild(toast);
+        }
+        const icon = TOAST_ICONS[type] || TOAST_ICONS.info;
+        toast.className = `ktui-toast ktui-toast-${type}`;
+        toast.innerHTML = `<i class="fa-solid ${icon}"></i> ${message}`;
+        // force reflow so transition fires even if already shown
+        void toast.offsetWidth;
+        toast.classList.add('ktui-toast-show');
+        clearTimeout(toast._hideTimer);
+        toast._hideTimer = setTimeout(() => {
+            toast.classList.remove('ktui-toast-show');
+        }, 5000);
+    }
+
+    // ── Helper: should we use toast? ────────────────────────────────────────
+    function useToast() {
+        return (localStorage.getItem('notificationStyle') || 'toast') === 'toast';
+    }
+
     // ── Public API ──────────────────────────────────────────────────────────
 
     /**
-     * Show an alert popup (single OK button)
+     * Show an alert popup or toast depending on user's notification style setting.
      * @param {string} title
      * @param {string} message
      * @param {'success'|'error'|'warning'|'info'} type
@@ -175,6 +246,12 @@
      * @param {string} [badge] optional small badge text shown below title
      */
     function ktuiAlert(title, message, type = 'info', onClose, badge) {
+        if (useToast()) {
+            ktuiToast(message, type);
+            if (typeof onClose === 'function') setTimeout(onClose, 5500);
+            return;
+        }
+
         const overlay = getOrCreateOverlay();
         const box     = document.getElementById('__ktui_box__');
         const iconEl  = document.getElementById('__ktui_icon__');
@@ -263,7 +340,7 @@
     }
 
     // ── Expose globally ─────────────────────────────────────────────────────
-    window.KTui = { alert: ktuiAlert, confirm: ktuiConfirm, close: closeKtui };
+    window.KTui = { alert: ktuiAlert, confirm: ktuiConfirm, toast: ktuiToast, close: closeKtui };
 
     // Override native alert/confirm only if desired (opt-in via data attribute on <html>)
     // <html data-ktui-override="true">

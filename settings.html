@@ -392,6 +392,13 @@
                     <span class="slider"></span>
                 </label>
             </div>
+            <div class="setting-item">
+                <label for="notification-style-select">Notification Style</label>
+                <select id="notification-style-select" style="background:var(--card-bg);color:var(--text-primary);border:1px solid var(--card-border);border-radius:8px;padding:6px 10px;font-size:0.9rem;cursor:pointer;">
+                    <option value="toast">Toast (Banner)</option>
+                    <option value="popup">Popup (Dialog)</option>
+                </select>
+            </div>
         </div>
 
         <div class="settings-section">
@@ -441,6 +448,7 @@
     <div id="loader"><div class="spinner"></div></div>
 
     <script src="./localization.js"></script>
+    <script src="./ktui.js"></script>
     <script>
         // ── Service Worker ──
         if ('serviceWorker' in navigator) {
@@ -582,13 +590,22 @@
                 });
             }
 
+            // Notification Style (Toast / Popup)
+            const notificationStyleSelect = document.getElementById('notification-style-select');
+            if (notificationStyleSelect) {
+                notificationStyleSelect.value = localStorage.getItem('notificationStyle') || 'toast';
+                notificationStyleSelect.addEventListener('change', () => {
+                    localStorage.setItem('notificationStyle', notificationStyleSelect.value);
+                });
+            }
+
             // Clear Local Data functionality
             const clearDataBtn = document.getElementById('clear-data-btn');
             if (clearDataBtn) {
                 clearDataBtn.addEventListener('click', () => {
                     if (confirm('Are you sure you want to clear all local settings and data? This action cannot be undone.')) {
                         localStorage.clear();
-                        alert('All local data cleared. Please refresh the page to see changes.');
+                        KTui.alert('Done', 'All local data cleared. Please refresh the page to see changes.', 'success');
                         window.location.reload();
                     }
                 });

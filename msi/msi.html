@@ -663,14 +663,14 @@
             .then(response => {
                 loader.style.display = 'none';
                 saveBtn.disabled = false;
-                KTui.alert('Notice', 'Investment details saved successfully for ' + monthSelect.value + ' ' + yearSelect.value + ' (' + user + ', 'info')!');
+                KTui.alert('Success', 'Investment details saved successfully for ' + monthSelect.value + ' ' + yearSelect.value + ' (' + user + ')!', 'success');
                 window.location.href = 'msireport.html'; // Redirect back to report
             })
             .catch(error => {
                 console.error('Error:', error);
                 loader.style.display = 'none';
                 saveBtn.disabled = false;
-                KTui.alert('Notice', 'Failed to save data. Please try again.', 'info');
+                KTui.alert('Error', 'Failed to save data. Please try again.', 'error');
             });
         });
     });
