@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <script src="../theme.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -316,18 +317,36 @@
             const dot = document.getElementById('date-save-status-dot');
             const text = document.getElementById('date-save-status-text');
             if (!badge) return;
+
+            const saveBtn = document.getElementById('save-btn');
+            const applySaveButtonStatusStyle = (state) => {
+                if (!saveBtn) return;
+
+                const base = 'h-12 px-8 rounded-2xl text-white font-bold flex items-center gap-2.5 transition-all active:scale-95';
+                if (state === 'loading') {
+                    saveBtn.className = `${base} bg-gray-600/80 hover:bg-gray-500/90 border border-gray-400/30`;
+                } else if (state === 'saved') {
+                    saveBtn.className = `${base} bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/45`;
+                } else {
+                    saveBtn.className = `${base} bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-lg shadow-red-600/30 hover:shadow-red-600/45`;
+                }
+            };
+
             if (loading) {
                 badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all duration-300 bg-gray-500/20 text-gray-400 border border-gray-500/30';
                 dot.className = 'w-2 h-2 rounded-full bg-gray-400 inline-block';
                 text.textContent = 'Checking...';
+                applySaveButtonStatusStyle('loading');
             } else if (hasSavedData) {
                 badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all duration-300 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40';
                 dot.className = 'w-2 h-2 rounded-full bg-emerald-400 inline-block';
                 text.textContent = 'Saved';
+                applySaveButtonStatusStyle('saved');
             } else {
                 badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all duration-300 bg-red-500/20 text-red-400 border border-red-500/40';
                 dot.className = 'w-2 h-2 rounded-full bg-red-400 inline-block';
                 text.textContent = 'No Data';
+                applySaveButtonStatusStyle('no-data');
             }
         }
 
