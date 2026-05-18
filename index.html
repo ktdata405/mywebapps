@@ -88,7 +88,7 @@
 
         .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 
-        /* ── Auth Screen ─────────────────────── */
+        /* ── Auth Screen ── */
         #app-content { display:none; position:relative; z-index:1; width:100%; flex:1; flex-direction:column; }
 
         #auth-container {
@@ -567,7 +567,7 @@
     </div>
 
     <!-- ── App Content ── -->
-    <div id="app-content">
+    <div id="app-content" style="display: none;">
         <header>
             <div class="brand">
                 <img src="root/logo.png" alt="Logo" class="logo-img">
@@ -758,28 +758,26 @@
         })();
 
         // ── PIN Logic ──
-        (function () {
-            let pin = '';
-            const input   = document.getElementById('pin-input');
+        document.addEventListener('DOMContentLoaded', () => {
+            const pinEnabled = localStorage.getItem('pinEnabled') === 'true';
+            const appPin = localStorage.getItem('appPin');
+
+            const authContainer = document.getElementById('auth-container');
+            const appContent = document.getElementById('app-content');
+            const input = document.getElementById('pin-input');
             const dotsRow = document.getElementById('pin-dots-row');
-            const dots    = [0,1,2,3].map(i => document.getElementById('dot-'+i));
+            const dots = [0, 1, 2, 3].map(i => document.getElementById('dot-' + i));
             const errorEl = document.getElementById('pin-error-msg');
 
-            // Auto-focus input on load (opens keyboard on mobile)
-            window.addEventListener('load', () => {
-                if (input) {
-                    setTimeout(() => { input.focus({ preventScroll: true }); }, 300);
-                }
-            });
+            let currentPin = '';
 
-            // Tap anywhere on auth screen to re-focus input (mobile)
-            document.getElementById('auth-container').addEventListener('pointerdown', (e) => {
-                e.preventDefault();
-                if (input) input.focus({ preventScroll: true });
-            });
+            // Keep auth state for this browser session so protected sub-pages can open.
+            const setAuthenticatedSession = () => {
+                sessionStorage.setItem('isAuthenticated', 'true');
+            };
 
             function updateDots() {
-                dots.forEach((d,i) => { d.classList.toggle('filled', i < pin.length); d.classList.remove('error'); });
+                dots.forEach((d, i) => { d.classList.toggle('filled', i < currentPin.length); d.classList.remove('error'); });
             }
 
             function showError(msg) {
@@ -788,33 +786,48 @@
                 if (errorEl) { errorEl.textContent = msg; errorEl.style.display = 'block'; }
                 setTimeout(() => {
                     dotsRow.classList.remove('shake');
-                    dots.forEach(d => d.classList.remove('error','filled'));
+                    dots.forEach(d => d.classList.remove('error', 'filled'));
                     if (errorEl) errorEl.style.display = 'none';
-                    pin = ''; input.value = ''; updateDots();
+                    currentPin = ''; input.value = ''; updateDots();
                 }, 1400);
             }
 
-            // Single source of truth: only the native input event
+            if (pinEnabled && appPin) {
+                authContainer.style.display = 'flex';
+                appContent.style.display = 'none';
+                setTimeout(() => { input.focus({ preventScroll: true }); }, 300);
+            } else {
+                authContainer.style.display = 'none';
+                appContent.style.display = 'flex';
+                setAuthenticatedSession();
+            }
+
+            // Tap anywhere on auth screen to re-focus input (mobile)
+            authContainer.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                if (input) input.focus({ preventScroll: true });
+            });
+
             input.addEventListener('input', () => {
                 input.value = input.value.replace(/\D/g, '').slice(0, 4);
-                pin = input.value;
+                currentPin = input.value;
                 updateDots();
-                if (pin.length === 4) {
-                    // Trigger auth.js verifyPin via the existing input listener in auth.js
+
+                if (currentPin.length === 4) {
+                    if (currentPin === appPin) {
+                        authContainer.style.display = 'none';
+                        appContent.style.display = 'flex';
+                        setAuthenticatedSession();
+                        currentPin = '';
+                        input.value = '';
+                        updateDots();
+                    } else {
+                        showError('Incorrect PIN. Try again.');
+                    }
                 }
             });
 
-            // Detect auth.js clearing after wrong PIN
-            let lastVal = '';
-            setInterval(() => {
-                if (input.value !== lastVal) {
-                    if (!input.value && lastVal.length === 4) showError('Incorrect passcode. Try again.');
-                    lastVal = input.value; pin = input.value; updateDots();
-                }
-            }, 80);
-        })();
-
-        document.addEventListener('DOMContentLoaded', () => {
+            // The rest of your existing DOMContentLoaded logic
             const cards = document.querySelectorAll('.card');
             const loader = document.getElementById('loader');
             const cardsContainer = document.getElementById('cards-container');
@@ -834,7 +847,7 @@
             // ── Search ──
             const searchInput = document.getElementById('search-input');
             const searchClear = document.getElementById('search-clear');
-            const noResults  = document.getElementById('no-results');
+            const noResults = document.getElementById('no-results');
 
             const performSearch = () => {
                 const term = searchInput.value.toLowerCase().trim();
@@ -842,7 +855,7 @@
                 let any = false;
                 cards.forEach(card => {
                     const title = card.querySelector('h2')?.textContent.toLowerCase() || '';
-                    const show  = title.includes(term);
+                    const show = title.includes(term);
                     card.style.display = show ? '' : 'none';
                     if (show) any = true;
                 });
@@ -863,7 +876,7 @@
 
             // ── Canvas particles ──
             const canvas = document.getElementById('bg-canvas');
-            const ctx    = canvas.getContext('2d');
+            const ctx = canvas.getContext('2d');
             let W, H, particles = [];
 
             const resize = () => { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; };
@@ -872,11 +885,11 @@
             class P {
                 constructor() { this.reset(); }
                 reset() {
-                    this.x  = Math.random() * W;
-                    this.y  = Math.random() * H;
-                    this.vx = (Math.random()-0.5)*0.4;
-                    this.vy = (Math.random()-0.5)*0.4;
-                    this.r  = Math.random() * 1.5 + 0.5;
+                    this.x = Math.random() * W;
+                    this.y = Math.random() * H;
+                    this.vx = (Math.random() - 0.5) * 0.4;
+                    this.vy = (Math.random() - 0.5) * 0.4;
+                    this.r = Math.random() * 1.5 + 0.5;
                 }
                 move() {
                     this.x += this.vx; this.y += this.vy;
@@ -885,22 +898,22 @@
                 }
                 draw() {
                     ctx.fillStyle = 'rgba(255,255,255,0.18)';
-                    ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2); ctx.fill();
                 }
             }
 
             for (let i = 0; i < 55; i++) particles.push(new P());
 
             (function loop() {
-                ctx.clearRect(0,0,W,H);
-                particles.forEach((p,i) => {
+                ctx.clearRect(0, 0, W, H);
+                particles.forEach((p, i) => {
                     p.move(); p.draw();
-                    for (let j = i+1; j < particles.length; j++) {
-                        const q = particles[j], dx = p.x-q.x, dy = p.y-q.y, d = Math.hypot(dx,dy);
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const q = particles[j], dx = p.x - q.x, dy = p.y - q.y, d = Math.hypot(dx, dy);
                         if (d < 140) {
-                            ctx.strokeStyle = `rgba(255,255,255,${0.08*(1-d/140)})`;
+                            ctx.strokeStyle = `rgba(255,255,255,${0.08 * (1 - d / 140)})`;
                             ctx.lineWidth = 0.8;
-                            ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(q.x,q.y); ctx.stroke();
+                            ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke();
                         }
                     }
                 });

@@ -290,6 +290,51 @@
             background-color: #dc2626;
         }
 
+        /* New styles for PIN setup */
+        .pin-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .pin-input-group input[type="password"] {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            background-color: var(--surface);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .pin-input-group input[type="password"]:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        .pin-input-group button {
+            background-color: #6366f1;
+            color: white;
+            border: none;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+
+        .pin-input-group button:hover {
+            background-color: #4f46e5;
+        }
+
+        .hidden {
+            display: none;
+        }
+
         /* ── Footer ──────────────────────────── */
         footer {
             text-align:center; padding:2rem;
@@ -372,7 +417,7 @@
             <h3>General</h3>
             <div class="setting-item">
                 <label for="language-select">Language</label>
-                <select id="language-select">
+                <select id="language-select" style="background:var(--card-bg);color:var(--text-primary);border:1px solid var(--card-border);border-radius:8px;padding:6px 10px;font-size:0.9rem;cursor:pointer;">
                     <option value="en">English</option>
                     <option value="es">Spanish</option>
                     <option value="fr">French</option>
@@ -404,8 +449,20 @@
         <div class="settings-section">
             <h3>Security</h3>
             <div class="setting-item">
-                <label>Change PIN</label>
-                <span><a href="#" style="color:var(--text-secondary); text-decoration:none;">Edit</a></span>
+                <label for="pin-screen-toggle">Enable PIN Screen</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="pin-screen-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <label>Set/Change PIN</label>
+                <button id="change-pin-btn" style="background-color: #6366f1; color: white; border: none; padding: 0.6rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: background-color 0.2s ease;">Set PIN</button>
+            </div>
+            <div id="pin-setup-container" class="pin-input-group hidden">
+                <input type="password" id="new-pin" placeholder="Enter new PIN (4-6 digits)" maxlength="6">
+                <input type="password" id="confirm-pin" placeholder="Confirm new PIN" maxlength="6">
+                <button id="save-pin-btn">Save PIN</button>
             </div>
             <div class="setting-item">
                 <label for="fingerprint-toggle">Enable Fingerprint Unlock</label>
@@ -562,6 +619,61 @@
                 });
             }
 
+            // PIN Screen functionality
+            const pinScreenToggle = document.getElementById('pin-screen-toggle');
+            const changePinBtn = document.getElementById('change-pin-btn');
+            const pinSetupContainer = document.getElementById('pin-setup-container');
+            const newPinInput = document.getElementById('new-pin');
+            const confirmPinInput = document.getElementById('confirm-pin');
+            const savePinBtn = document.getElementById('save-pin-btn');
+
+            // Load initial PIN screen state
+            const pinEnabled = localStorage.getItem('pinEnabled') === 'true';
+            pinScreenToggle.checked = pinEnabled;
+            if (localStorage.getItem('appPin')) {
+                changePinBtn.textContent = 'Change PIN';
+            } else {
+                changePinBtn.textContent = 'Set PIN';
+            }
+
+
+            pinScreenToggle.addEventListener('change', () => {
+                localStorage.setItem('pinEnabled', pinScreenToggle.checked);
+                if (!pinScreenToggle.checked) {
+                    pinSetupContainer.classList.add('hidden'); // Hide setup if PIN screen is disabled
+                }
+            });
+
+            changePinBtn.addEventListener('click', () => {
+                pinSetupContainer.classList.toggle('hidden');
+                newPinInput.value = '';
+                confirmPinInput.value = '';
+            });
+
+            savePinBtn.addEventListener('click', () => {
+                const newPin = newPinInput.value;
+                const confirmPin = confirmPinInput.value;
+
+                if (!newPin || !confirmPin) {
+                    KTui.alert('Error', 'Please enter and confirm your PIN.', 'error');
+                    return;
+                }
+                if (newPin.length < 4 || newPin.length > 6 || !/^\d+$/.test(newPin)) {
+                    KTui.alert('Error', 'PIN must be 4-6 digits long and numeric.', 'error');
+                    return;
+                }
+                if (newPin !== confirmPin) {
+                    KTui.alert('Error', 'PINs do not match.', 'error');
+                    return;
+                }
+
+                localStorage.setItem('appPin', newPin);
+                KTui.alert('Success', 'PIN saved successfully!', 'success');
+                pinSetupContainer.classList.add('hidden');
+                changePinBtn.textContent = 'Change PIN'; // Update button text
+            });
+
+
             // Fingerprint Unlock Toggle functionality
             const fingerprintToggle = document.getElementById('fingerprint-toggle');
             if (fingerprintToggle) {
@@ -571,7 +683,6 @@
                 fingerprintToggle.addEventListener('change', () => {
                     const isChecked = fingerprintToggle.checked;
                     localStorage.setItem('fingerprintUnlock', isChecked);
-                    // Add any logic here to actually enable/disable fingerprint unlock
                     console.log('Fingerprint Unlock set to:', isChecked);
                 });
             }
@@ -586,7 +697,6 @@
                     const isChecked = notificationsToggle.checked;
                     localStorage.setItem('notificationsEnabled', isChecked);
                     console.log('Notifications Enabled set to:', isChecked);
-                    // Here you would integrate with a notification API if available
                 });
             }
 
