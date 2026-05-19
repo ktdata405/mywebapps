@@ -183,6 +183,9 @@
                 </div>
             </div>
             <div class="flex gap-3">
+                <button id="install-btn" onclick="installApp()" class="hidden w-10 h-10 rounded-full bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 flex items-center justify-center transition-all text-indigo-400 hover:text-indigo-300 hover:scale-105 active:scale-95" title="Install App">
+                    <i class="fa-solid fa-download"></i>
+                </button>
                 <button onclick="toggleCalculator()" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Calculator">
                     <i class="fa-solid fa-calculator"></i>
                 </button>
@@ -425,6 +428,32 @@
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js', { scope: './' })
                     .catch(e => console.log('SW failed:', e));
+            });
+        }
+
+        // ── PWA Install Prompt ──
+        let deferredInstallPrompt = null;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            const installBtn = document.getElementById('install-btn');
+            if (installBtn) installBtn.classList.remove('hidden');
+        });
+
+        window.addEventListener('appinstalled', () => {
+            deferredInstallPrompt = null;
+            const installBtn = document.getElementById('install-btn');
+            if (installBtn) installBtn.classList.add('hidden');
+        });
+
+        function installApp() {
+            if (!deferredInstallPrompt) return;
+            deferredInstallPrompt.prompt();
+            deferredInstallPrompt.userChoice.then((choiceResult) => {
+                deferredInstallPrompt = null;
+                const installBtn = document.getElementById('install-btn');
+                if (installBtn) installBtn.classList.add('hidden');
             });
         }
 
