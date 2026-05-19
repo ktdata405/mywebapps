@@ -3,7 +3,7 @@
   "name": "Cashew",
   "short_name": "Cashew",
   "description": "Cashew Expense Tracker",
-  "start_url": "./cashew.html",
+  "start_url": "./cashew.html?from=standalone",
   "scope": "./",
   "display": "standalone",
   "background_color": "#030305",

@@ -432,6 +432,13 @@
                 </label>
             </div>
             <div class="setting-item">
+                <label for="new-ui-toggle">Use New Home UI</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="new-ui-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
                 <label for="notifications-toggle">Enable Notifications</label>
                 <label class="toggle-switch">
                     <input type="checkbox" id="notifications-toggle">
@@ -605,6 +612,23 @@
                     const isChecked = darkModeToggle.checked;
                     applyTheme(isChecked);
                     localStorage.setItem('darkMode', isChecked);
+                });
+            }
+
+            // Home UI toggle (new infographic UI vs legacy UI)
+            const newUiToggle = document.getElementById('new-ui-toggle');
+            if (newUiToggle) {
+                const useNewHomeUI = localStorage.getItem('useNewHomeUI') !== 'false';
+                newUiToggle.checked = useNewHomeUI;
+
+                newUiToggle.addEventListener('change', () => {
+                    const enableNewUI = newUiToggle.checked;
+                    localStorage.setItem('useNewHomeUI', String(enableNewUI));
+
+                    loader.classList.add('visible');
+                    setTimeout(() => {
+                        window.location.href = enableNewUI ? 'index.html' : 'index_old.html';
+                    }, 250);
                 });
             }
 

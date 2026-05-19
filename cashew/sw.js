@@ -1,6 +1,7 @@
-const CACHE_NAME = 'cashew-app-v1';
+const CACHE_NAME = 'cashew-app-v2';
 const STATIC_ASSETS = [
   './cashew.html',
+  './cashew.html?from=standalone',
   './cashewreport.html',
   './manifest.json',
   '../root/logo.png',

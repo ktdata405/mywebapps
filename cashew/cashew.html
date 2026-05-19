@@ -22,6 +22,16 @@
     <script src="../ktui.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        // Allow direct standalone launch for installed Cashew app.
+        (function () {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+            const fromStandaloneStartUrl = new URLSearchParams(window.location.search).get('from') === 'standalone';
+            if (isStandalone || fromStandaloneStartUrl) {
+                sessionStorage.setItem('isAuthenticated', 'true');
+            }
+        })();
+    </script>
     <script src="../auth.js"></script>
 
     <style>

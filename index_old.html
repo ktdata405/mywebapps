@@ -3,9 +3,9 @@
 <head>
     <script src="./theme.js"></script>
     <script>
-        // Redirect to legacy home when the new-UI setting is disabled.
-        if (localStorage.getItem('useNewHomeUI') === 'false') {
-            window.location.replace('index_old.html');
+        // Redirect to new home by default unless user explicitly chooses legacy UI.
+        if (localStorage.getItem('useNewHomeUI') !== 'false') {
+            window.location.replace('index.html');
         }
     </script>
     <meta charset="UTF-8">
@@ -30,8 +30,6 @@
             --text-secondary: #a1a1aa;
             --surface: rgba(15,23,42,0.6);
             --radius-card: 20px;
-            --app-header-space: 86px;
-            --app-footer-space: 76px;
         }
 
         body.dark-mode {
@@ -457,324 +455,6 @@
 
         .no-results { grid-column:1/-1; text-align:center; padding:3rem 2rem; color:var(--text-secondary); display:none; }
 
-        /* ── Infographic Layout ──────────────────── */
-        :root {
-            --inf-color-1: #f472b6;
-            --inf-color-2: #e2e8f0;
-            --inf-color-3: #c084fc;
-            --inf-color-4: #38bdf8;
-            --inf-color-5: #f87171;
-            --inf-color-6: #4ade80;
-            --inf-color-7: #fb923c;
-            --inf-color-8: #818cf8;
-            --inf-color-9: #a78bfa;
-        }
-
-        .infographic-wrapper {
-            padding: clamp(1rem, 2.6vw, 2rem) max(4%, env(safe-area-inset-left)) calc(clamp(1rem, 2.6vw, 2rem) + env(safe-area-inset-bottom)) max(4%, env(safe-area-inset-right));
-            display: grid;
-            place-items: center;
-            position: relative;
-            z-index: 2;
-            flex: 1;
-            min-height: 0;
-            width: 100%;
-            min-height: calc(100dvh - var(--app-header-space) - var(--app-footer-space) - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-        }
-
-        .infographic-container {
-            display: grid;
-            grid-template-columns: minmax(250px, 1fr) minmax(220px, 300px) minmax(250px, 1fr);
-            align-items: center;
-            justify-content: center;
-            gap: clamp(18px, 2.6vw, 40px);
-            max-width: 1100px;
-            width: 100%;
-            margin: 0 auto;
-        }
-
-        .inf-center-circle {
-            width: clamp(220px, 24vw, 280px);
-            height: clamp(220px, 24vw, 280px);
-            border-radius: 50%;
-            background: var(--surface);
-            backdrop-filter: blur(20px);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 30px;
-            position: relative;
-            z-index: 10;
-            animation: centerFloat 5.6s ease-in-out infinite, centerGlow 3.2s ease-in-out infinite;
-        }
-
-        .inf-center-content {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .inf-center-logo {
-            width: clamp(72px, 8.5vw, 96px);
-            height: clamp(72px, 8.5vw, 96px);
-            border-radius: 24px;
-            object-fit: cover;
-            border: 1px solid rgba(255,255,255,0.2);
-            box-shadow: 0 12px 26px rgba(0,0,0,0.35), 0 0 18px rgba(99,102,241,0.35);
-            animation: logoPulse 2.8s ease-in-out infinite, logoSpinDrift 11s linear infinite;
-            will-change: transform;
-        }
-
-        .inf-center-circle::before {
-            content: '';
-            position: absolute;
-            top: -12px; left: -12px; right: -12px; bottom: -12px;
-            border-radius: 50%;
-            background: conic-gradient(
-                var(--inf-color-1) 0deg 40deg,
-                var(--inf-color-2) 40deg 80deg,
-                var(--inf-color-3) 80deg 120deg,
-                var(--inf-color-4) 120deg 160deg,
-                var(--inf-color-5) 160deg 200deg,
-                var(--inf-color-6) 200deg 240deg,
-                var(--inf-color-7) 240deg 280deg,
-                var(--inf-color-8) 280deg 320deg,
-                var(--inf-color-9) 320deg 360deg
-            );
-            z-index: -2;
-            opacity: 0.95;
-            filter: saturate(1.15);
-            animation: ringRotate 8.33s linear infinite, ringPulse 3s ease-in-out infinite;
-            transform-origin: center;
-        }
-
-        @keyframes ringRotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        @keyframes ringPulse {
-            0%, 100% { opacity: 0.82; filter: saturate(1.05) brightness(1); }
-            50% { opacity: 1; filter: saturate(1.35) brightness(1.15); }
-        }
-
-        @keyframes centerFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-6px); }
-        }
-
-        @keyframes centerGlow {
-            0%, 100% { box-shadow: 0 10px 40px rgba(0,0,0,0.3), 0 0 20px rgba(99,102,241,0.15); }
-            50% { box-shadow: 0 20px 52px rgba(0,0,0,0.36), 0 0 34px rgba(99,102,241,0.32); }
-        }
-
-        @keyframes logoPulse {
-            0%, 100% { transform: scale(1); filter: brightness(1); }
-            50% { transform: scale(1.06); filter: brightness(1.12); }
-        }
-
-        @keyframes logoSpinDrift {
-            from { rotate: 0deg; }
-            to { rotate: 360deg; }
-        }
-
-        @keyframes titleBreath {
-            0%, 100% { transform: translateY(0); opacity: 0.92; }
-            50% { transform: translateY(-2px); opacity: 1; }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .inf-center-circle,
-            .inf-center-circle::before,
-            .inf-center-logo,
-            .inf-center-title { animation: none; }
-        }
-
-        .inf-center-circle::after {
-            content: '';
-            position: absolute;
-            top: -4px; left: -4px; right: -4px; bottom: -4px;
-            border-radius: 50%;
-            background: var(--bg-color);
-            z-index: -1;
-        }
-
-        .inf-center-title {
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: clamp(8px, 1.8vw, 14px);
-            font-size: clamp(0.86rem, 1.8vw, 1rem);
-            font-weight: 800;
-            color: var(--text-primary);
-            line-height: 1.1;
-            letter-spacing: 0.01em;
-            text-align: center;
-            text-transform: uppercase;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.45);
-            animation: titleBreath 2.6s ease-in-out infinite;
-        }
-
-        .inf-column {
-            display: flex;
-            flex-direction: column;
-            gap: clamp(12px, 1.8vw, 20px);
-            width: 100%;
-        }
-
-        .inf-left-column { align-items: flex-end; }
-        .inf-right-column { align-items: flex-start; }
-
-        .inf-node {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            max-width: 360px;
-            background: var(--card-bg);
-            border: 2px solid var(--node-color);
-            border-radius: 50px;
-            padding: 8px 10px;
-            min-height: 60px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            position: relative;
-            text-decoration: none;
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-        }
-
-        .inf-node:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.25), 0 0 0 1px var(--node-color);
-        }
-
-        .inf-node:active { transform: scale(0.96); }
-
-        .inf-left-column .inf-node { flex-direction: row; padding-right: 6px; }
-        .inf-right-column .inf-node { flex-direction: row-reverse; padding-left: 6px; }
-
-        .inf-node-text {
-            flex: 1;
-            font-size: clamp(0.8rem, 1.8vw, 0.9rem);
-            font-weight: 700;
-            color: var(--text-primary);
-            padding: 0 clamp(10px, 1.8vw, 14px);
-            line-height: 1.3;
-        }
-
-        .inf-left-column .inf-node-text { text-align: right; }
-        .inf-right-column .inf-node-text { text-align: left; }
-
-        .inf-node-badge {
-            width: clamp(40px, 5vw, 50px);
-            height: clamp(40px, 5vw, 50px);
-            min-width: clamp(40px, 5vw, 50px);
-            border-radius: 50%;
-            background: var(--node-color);
-            color: #fff;
-            font-size: clamp(1rem, 2.2vw, 1.3rem);
-            font-weight: 800;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: inset 0 -3px 0 rgba(0,0,0,0.2), 0 0 14px var(--node-color);
-        }
-
-        @media (max-width: 1024px) {
-            .infographic-container {
-                grid-template-columns: minmax(220px, 1fr) minmax(210px, 250px) minmax(220px, 1fr);
-            }
-        }
-
-        @media (max-width: 900px) {
-            .infographic-container {
-                grid-template-columns: minmax(108px, 1fr) minmax(150px, 190px) minmax(108px, 1fr);
-                gap: 10px;
-                align-items: center;
-            }
-            .inf-left-column, .inf-right-column {
-                align-items: stretch;
-                width: 100%;
-            }
-            .inf-left-column, .inf-right-column { gap: 10px; }
-            .inf-node {
-                max-width: 100%;
-                min-height: 48px;
-                padding: 6px;
-                border-width: 1.5px;
-            }
-            .inf-node-text {
-                font-size: 0.74rem;
-                line-height: 1.2;
-                padding: 0 8px;
-                word-break: break-word;
-            }
-            .inf-node-badge {
-                width: 32px;
-                height: 32px;
-                min-width: 32px;
-                font-size: 0.9rem;
-            }
-            .inf-center-circle {
-                width: 170px;
-                height: 170px;
-                padding: 16px;
-            }
-            .inf-center-logo { width: 62px; height: 62px; border-radius: 18px; }
-            .inf-center-title { font-size: 0.74rem; bottom: 8px; }
-        }
-
-        @media (max-width: 600px) {
-            :root {
-                --app-header-space: 72px;
-                --app-footer-space: 62px;
-            }
-            header { padding: 0.9rem max(4%, env(safe-area-inset-left)) 0.9rem max(4%, env(safe-area-inset-right)); }
-            .brand { gap: 0.6rem; }
-            .brand .logo-img { height: 36px; width: 36px; }
-            .brand-text h1 { font-size: 1.05rem; }
-            .brand-text .greeting { font-size: 0.68rem; }
-            .header-actions { gap: 0.4rem; }
-            .nav-btn { width: 36px; height: 36px; border-radius: 9px; }
-            .infographic-wrapper { align-items: center; }
-        }
-
-        @media (max-width: 480px) {
-            .infographic-wrapper {
-                padding-top: 0.8rem;
-                padding-bottom: calc(0.8rem + env(safe-area-inset-bottom));
-            }
-            .infographic-container {
-                grid-template-columns: minmax(100px, 1fr) minmax(136px, 168px) minmax(100px, 1fr);
-                gap: 8px;
-            }
-            .inf-center-circle { width: 152px; height: 152px; padding: 12px; }
-            .inf-center-logo { width: 54px; height: 54px; border-radius: 15px; }
-            .inf-center-title { font-size: 0.66rem; bottom: 7px; }
-            .inf-node { border-radius: 999px; min-height: 44px; }
-            .inf-node-text { font-size: 0.68rem; padding: 0 6px; }
-            .inf-node-badge { width: 28px; height: 28px; min-width: 28px; font-size: 0.78rem; }
-        }
-
-        @media (max-width: 360px) {
-            .infographic-wrapper { padding-left: max(3.5%, env(safe-area-inset-left)); padding-right: max(3.5%, env(safe-area-inset-right)); }
-            .infographic-container {
-                grid-template-columns: minmax(92px, 1fr) minmax(126px, 150px) minmax(92px, 1fr);
-                gap: 6px;
-            }
-            .inf-node { min-height: 40px; }
-            .inf-node-text { padding: 0 5px; font-size: 0.62rem; }
-            .inf-node-badge { width: 24px; height: 24px; min-width: 24px; font-size: 0.68rem; }
-            .inf-center-circle { width: 136px; height: 136px; }
-            .inf-center-logo { width: 48px; height: 48px; border-radius: 13px; }
-            .inf-center-title { font-size: 0.58rem; bottom: 6px; }
-        }
-
         /* ── Footer ──────────────────────────── */
         footer {
             text-align:center; padding:2rem;
@@ -814,9 +494,45 @@
         }
         @keyframes spin { to{transform:rotate(360deg)} }
 
-        /* ── Footer responsive ─────────────────── */
-        @media (max-width: 768px) {
-            footer { padding: 1.5rem; font-size: 0.72rem; }
+        /* ── Responsive ──────────────────────── */
+        @media (max-width:768px) {
+            header { padding:0.9rem 4%; }
+            .brand-text h1 { font-size:1.2rem; }
+            .brand .logo-img { height:38px; width:38px; border-radius:10px; }
+
+            .search-wrapper { padding:0.8rem 4% 0.4rem; }
+            .search-container { max-width:100%; }
+
+            .section-label { padding:1rem 4% 0.5rem; }
+
+            .container {
+                padding:0.5rem 4% 6rem;
+                grid-template-columns:repeat(3,1fr);
+                gap:0.65rem;
+            }
+
+            .card {
+                padding:1rem 0.9rem 2.2rem;
+                min-height:110px;
+                border-radius:16px;
+                align-items:center;
+                text-align:center;
+            }
+            .card-icon { width:40px; height:40px; font-size:1.1rem; margin:0 auto; }
+            .card-body { text-align:center; width:100%; }
+            .card-body h2 { font-size:0.82rem; }
+            .card-body p  { display:none; } /* hide subtitles on small screens */
+            .card-arrow   { display:none; }
+
+            footer { padding:1.5rem; font-size:0.72rem; }
+        }
+
+        @media (max-width:380px) {
+            .container { grid-template-columns:repeat(2,1fr); }
+        }
+
+        @media (min-width:1200px) {
+            .container { grid-template-columns:repeat(5,1fr); gap:1rem; }
         }
     </style>
 </head>
@@ -877,21 +593,102 @@
             </div>
         </header>
 
-        <main class="infographic-wrapper" id="cards-container">
-            <div class="infographic-container">
-                <!-- Left column: nodes 1-5 -->
-                <div class="inf-column inf-left-column" id="inf-left"></div>
+        <div class="search-wrapper">
+            <div class="search-container">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="search-input" class="search-input" placeholder="Search apps…" data-translate-key="searchPlaceholder">
+                <i class="fa-solid fa-xmark search-clear" id="search-clear"></i>
+            </div>
+        </div>
 
-                <!-- Center circle -->
-                <div class="inf-center-circle">
-                    <div class="inf-center-content">
-                        <img src="root/logo.png" alt="KT Apps" class="inf-center-logo">
-                        <h1 class="inf-center-title">KT Apps</h1>
-                    </div>
+        <div class="section-label">All Apps</div>
+
+        <main class="container" id="cards-container">
+
+            <a href="cashew/cashew.html" class="card card-cashew">
+                <div class="card-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                <div class="card-body">
+                    <h2 data-translate-key="cashew">Cashew</h2>
+                    <p>Sales & billing</p>
                 </div>
+                <div class="card-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            </a>
 
-                <!-- Right column: nodes 6-9 -->
-                <div class="inf-column inf-right-column" id="inf-right"></div>
+            <a href="milk/milk.html" class="card card-milk">
+                <div class="card-icon"><i class="fa-solid fa-cow"></i></div>
+                <div class="card-body">
+                    <h2 data-translate-key="milkBill">Milk Bill</h2>
+                    <p>Daily collection</p>
+                </div>
+                <div class="card-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+
+            <a href="rent/tenet.html" class="card card-rent">
+                <div class="card-icon"><i class="fa-solid fa-house"></i></div>
+                <div class="card-body">
+                    <h2 data-translate-key="rentDetails">Rent</h2>
+                    <p>Tenant records</p>
+                </div>
+                <div class="card-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+
+            <a href="msi/msi.html" class="card card-msi">
+                <div class="card-icon"><i class="fa-solid fa-wallet"></i></div>
+                <div class="card-body">
+                    <h2 data-translate-key="msi">MSI</h2>
+                    <p>Investments</p>
+                </div>
+                <div class="card-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+
+            <a href="debts/debts.html" class="card card-debts">
+                <div class="card-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                <div class="card-body">
+                    <h2 data-translate-key="debts">Debts</h2>
+                    <p>Track dues</p>
+                </div>
+                <div class="card-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+
+            <a href="denomination/denominations.html" class="card card-deno">
+                <div class="card-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+                <div class="card-body">
+                    <h2 data-translate-key="denominations">Denoms</h2>
+                    <p>Cash counter</p>
+                </div>
+                <div class="card-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+
+            <a href="calculator/calculator.html" class="card card-calc">
+                <div class="card-icon"><i class="fa-solid fa-calculator"></i></div>
+                <div class="card-body">
+                    <h2 data-translate-key="calculators">Calculators</h2>
+                    <p>Finance tools</p>
+                </div>
+                <div class="card-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+
+            <a href="loan/loan.html" class="card card-loan">
+                <div class="card-icon"><i class="fa-solid fa-hand-holding-usd"></i></div>
+                <div class="card-body">
+                    <h2 data-translate-key="loan">Loan</h2>
+                    <p>Loan manager</p>
+                </div>
+                <div class="card-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+
+            <a href="temp.html" class="card card-scan">
+                <div class="card-icon"><i class="fa-solid fa-camera"></i></div>
+                <div class="card-body">
+                    <h2 data-translate-key="scan">Scan</h2>
+                    <p>Document scan</p>
+                </div>
+                <div class="card-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+
+            <div id="no-results" class="no-results">
+                <i class="fa-solid fa-magnifying-glass" style="font-size:2rem;opacity:0.2;display:block;margin-bottom:0.8rem;"></i>
+                <p data-translate-key="noResults">No apps found</p>
             </div>
         </main>
 
@@ -1042,45 +839,15 @@
             });
 
             // The rest of your existing DOMContentLoaded logic
+            const cards = document.querySelectorAll('.card');
             const loader = document.getElementById('loader');
-
-            // ── Build infographic nodes ──
-            const appData = [
-                { id: 1, text: "Cashew",      href: "cashew/cashew.html" },
-                { id: 2, text: "Milk Bill",   href: "milk/milk.html" },
-                { id: 3, text: "Rent",        href: "rent/tenet.html" },
-                { id: 4, text: "MSI",         href: "msi/msi.html" },
-                { id: 5, text: "Debts",       href: "debts/debts.html" },
-                { id: 6, text: "Denoms",      href: "denomination/denominations.html" },
-                { id: 7, text: "Calculators", href: "calculator/calculator.html" },
-                { id: 8, text: "Loan",        href: "loan/loan.html" },
-                { id: 9, text: "Scan",        href: "scan/scan.html" }
-            ];
-
-            const leftContainer  = document.getElementById('inf-left');
-            const rightContainer = document.getElementById('inf-right');
-
-            appData.forEach(item => {
-                const node = document.createElement('a');
-                node.className = 'inf-node';
-                node.href = item.href;
-                node.style.setProperty('--node-color', `var(--inf-color-${item.id})`);
-
-                if (item.id <= 5) {
-                    node.innerHTML = `<span class="inf-node-text">${item.text}</span><div class="inf-node-badge">${item.id}</div>`;
-                    leftContainer.appendChild(node);
-                } else {
-                    node.innerHTML = `<div class="inf-node-badge">${item.id}</div><span class="inf-node-text">${item.text}</span>`;
-                    rightContainer.appendChild(node);
-                }
-            });
+            const cardsContainer = document.getElementById('cards-container');
 
             // ── Navigate with loader ──
-            const nodes = document.querySelectorAll('.inf-node');
-            nodes.forEach(node => {
-                node.addEventListener('click', e => {
-                    const href = node.getAttribute('href');
-                    if (href && href !== '#') {
+            cards.forEach(card => {
+                card.addEventListener('click', e => {
+                    const href = card.getAttribute('href');
+                    if (href && href !== '#' && card.target !== '_blank') {
                         e.preventDefault();
                         loader.classList.add('visible');
                         setTimeout(() => { window.location.href = href; }, 350);
@@ -1088,6 +855,35 @@
                 });
             });
 
+            // ── Search ──
+            const searchInput = document.getElementById('search-input');
+            const searchClear = document.getElementById('search-clear');
+            const noResults = document.getElementById('no-results');
+
+            const performSearch = () => {
+                const term = searchInput.value.toLowerCase().trim();
+                searchClear.style.display = term ? 'block' : 'none';
+                let any = false;
+                cards.forEach(card => {
+                    const title = card.querySelector('h2')?.textContent.toLowerCase() || '';
+                    const show = title.includes(term);
+                    card.style.display = show ? '' : 'none';
+                    if (show) any = true;
+                });
+                noResults.style.display = any ? 'none' : 'block';
+            };
+
+            searchInput.addEventListener('input', performSearch);
+            searchClear.addEventListener('click', () => { searchInput.value = ''; searchInput.focus(); performSearch(); });
+
+            // ── Spotlight (desktop) ──
+            cardsContainer.addEventListener('mousemove', e => {
+                cards.forEach(card => {
+                    const r = card.getBoundingClientRect();
+                    card.style.setProperty('--mx', `${e.clientX - r.left}px`);
+                    card.style.setProperty('--my', `${e.clientY - r.top}px`);
+                });
+            });
 
             // ── Canvas particles ──
             const canvas = document.getElementById('bg-canvas');
