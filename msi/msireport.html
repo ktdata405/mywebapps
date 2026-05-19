@@ -720,6 +720,7 @@
         <a href="msi.html" class="icon-btn" title="Add New"><i class="fa-solid fa-plus"></i></a>
         <button class="icon-btn" onclick="fetchData()" title="Refresh"><i class="fa-solid fa-sync"></i></button>
         <a href="../index.html" class="icon-btn" title="Home"><i class="fa-solid fa-home"></i></a>
+        <a href="../settings.html" class="icon-btn" title="Settings" aria-label="Settings"><i class="fa-solid fa-gear"></i></a>
     </div>
 </nav>
 
@@ -925,7 +926,7 @@
 
             processData(data);
         } catch (e) {
-            console.error(e);
+p            console.error(e);
             KTui.alert('Error', "Sync Failed: " + e.message, 'error');
         } finally {
             setTimeout(() => {

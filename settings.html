@@ -439,6 +439,13 @@
                 </label>
             </div>
             <div class="setting-item">
+                <label for="new-dashboard-ui-toggle">Use New Dashboard UI</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="new-dashboard-ui-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
                 <label for="notifications-toggle">Enable Notifications</label>
                 <label class="toggle-switch">
                     <input type="checkbox" id="notifications-toggle">
@@ -628,6 +635,23 @@
                     loader.classList.add('visible');
                     setTimeout(() => {
                         window.location.href = enableNewUI ? 'index.html' : 'index_old.html';
+                    }, 250);
+                });
+            }
+
+            // Dashboard UI toggle (new dashboard UI vs legacy dashboard UI)
+            const newDashboardUiToggle = document.getElementById('new-dashboard-ui-toggle');
+            if (newDashboardUiToggle) {
+                const useNewDashboardUI = localStorage.getItem('useNewDashboardUI') !== 'false';
+                newDashboardUiToggle.checked = useNewDashboardUI;
+
+                newDashboardUiToggle.addEventListener('change', () => {
+                    const enableNewDashboardUI = newDashboardUiToggle.checked;
+                    localStorage.setItem('useNewDashboardUI', String(enableNewDashboardUI));
+
+                    loader.classList.add('visible');
+                    setTimeout(() => {
+                        window.location.href = enableNewDashboardUI ? 'dashboard.html' : 'dashboard_old.html';
                     }, 250);
                 });
             }

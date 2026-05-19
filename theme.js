@@ -1,6 +1,7 @@
 (function () {
     const STORAGE_KEY = 'darkMode';
     const STYLE_ID = '__kt_global_theme__';
+    const SETTINGS_STYLE_ID = '__kt_settings_shortcut__';
     const META_THEME_COLOR_SELECTOR = 'meta[name="theme-color"]';
 
     const THEME_MAP = {
@@ -209,6 +210,135 @@
         applyAppTheme(getSavedTheme());
     }
 
+    function getSettingsHref() {
+        const marker = '/mywebapps/';
+        const p = window.location.pathname || '/';
+        const idx = p.indexOf(marker);
+        const basePath = idx >= 0 ? p.slice(0, idx + marker.length) : '/';
+        return window.location.origin + basePath + 'settings.html';
+    }
+
+    function ensureSettingsShortcutStyles() {
+        if (document.getElementById(SETTINGS_STYLE_ID)) return;
+        const style = document.createElement('style');
+        style.id = SETTINGS_STYLE_ID;
+        style.textContent = `
+        .kt-settings-shortcut {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: var(--text-secondary, #a1a1aa);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .kt-settings-shortcut:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        body.light-mode .kt-settings-shortcut {
+            background: rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.08);
+            color: var(--text-secondary, #4a5568);
+        }
+
+        body.light-mode .kt-settings-shortcut:hover {
+            background: rgba(0,0,0,0.1);
+            color: var(--text-primary, #1a202c);
+            border-color: rgba(0,0,0,0.15);
+        }
+
+        .kt-settings-floating {
+            position: fixed;
+            top: calc(12px + env(safe-area-inset-top));
+            right: calc(12px + env(safe-area-inset-right));
+            z-index: 999;
+        }
+        `;
+        document.head.appendChild(style);
+    }
+
+    function createSettingsLink() {
+        const link = document.createElement('a');
+        link.className = 'kt-settings-shortcut';
+        link.href = getSettingsHref();
+        link.setAttribute('aria-label', 'Settings');
+        link.setAttribute('title', 'Settings');
+        link.innerHTML = '<i class="fa-solid fa-gear" aria-hidden="true"></i>';
+        return link;
+    }
+
+    function isHomeLink(anchor) {
+        const href = (anchor.getAttribute('href') || '').toLowerCase();
+        const aria = (anchor.getAttribute('aria-label') || '').toLowerCase();
+        const title = (anchor.getAttribute('title') || '').toLowerCase();
+        const text = (anchor.textContent || '').toLowerCase();
+        const hasHomeIcon = !!anchor.querySelector('.fa-house, .fa-home');
+
+        return href.includes('index.html') || aria.includes('home') || title.includes('home') || text.includes('home') || hasHomeIcon;
+    }
+
+    function findHomeLink() {
+        const anchors = Array.from(document.querySelectorAll('a[href]'));
+        return anchors.find(isHomeLink) || null;
+    }
+
+    function injectSettingsShortcut() {
+        if (!document.body) return;
+        if (window.location.pathname.endsWith('settings.html')) return;
+
+        ensureSettingsShortcutStyles();
+
+        let settingsLink = document.querySelector('a[href$="settings.html"], a[href*="/settings.html"], a[href*="settings.html"]');
+        if (!settingsLink) {
+            settingsLink = createSettingsLink();
+        } else {
+            settingsLink.classList.add('kt-settings-shortcut');
+            settingsLink.setAttribute('aria-label', settingsLink.getAttribute('aria-label') || 'Settings');
+            settingsLink.setAttribute('title', settingsLink.getAttribute('title') || 'Settings');
+            if (!settingsLink.querySelector('.fa-gear')) {
+                settingsLink.innerHTML = '<i class="fa-solid fa-gear" aria-hidden="true"></i>';
+            }
+        }
+
+        const homeLink = findHomeLink();
+        if (homeLink) {
+            homeLink.insertAdjacentElement('afterend', settingsLink);
+            return;
+        }
+
+        const existingActionHost = document.querySelector('.header-actions, .nav-actions, .top-actions, .action-buttons');
+        if (existingActionHost) {
+            existingActionHost.appendChild(settingsLink);
+            return;
+        }
+
+        const header = document.querySelector('header');
+        if (header) {
+            const host = document.createElement('div');
+            host.style.marginLeft = 'auto';
+            host.style.display = 'inline-flex';
+            host.style.gap = '0.6rem';
+            host.appendChild(settingsLink);
+            header.appendChild(host);
+            return;
+        }
+
+        settingsLink.classList.add('kt-settings-floating');
+        document.body.appendChild(settingsLink);
+    }
+
     window.applyAppTheme = applyAppTheme;
 
     window.addEventListener('storage', function (event) {
@@ -218,5 +348,10 @@
     });
 
     initTheme();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', injectSettingsShortcut, { once: true });
+    } else {
+        injectSettingsShortcut();
+    }
 })();
 
