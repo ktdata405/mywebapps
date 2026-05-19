@@ -432,16 +432,16 @@
                 </label>
             </div>
             <div class="setting-item">
-                <label for="new-ui-toggle">Use New Home UI</label>
+                <label for="new-main-ui-toggle">Use New Home + Dashboard UI</label>
                 <label class="toggle-switch">
-                    <input type="checkbox" id="new-ui-toggle">
+                    <input type="checkbox" id="new-main-ui-toggle">
                     <span class="slider"></span>
                 </label>
             </div>
             <div class="setting-item">
-                <label for="new-dashboard-ui-toggle">Use New Dashboard UI</label>
+                <label for="side-wheel-ui-toggle">Use Side Wheel UI (Home + Dashboard)</label>
                 <label class="toggle-switch">
-                    <input type="checkbox" id="new-dashboard-ui-toggle">
+                    <input type="checkbox" id="side-wheel-ui-toggle">
                     <span class="slider"></span>
                 </label>
             </div>
@@ -622,37 +622,39 @@
                 });
             }
 
-            // Home UI toggle (new infographic UI vs legacy UI)
-            const newUiToggle = document.getElementById('new-ui-toggle');
-            if (newUiToggle) {
-                const useNewHomeUI = localStorage.getItem('useNewHomeUI') !== 'false';
-                newUiToggle.checked = useNewHomeUI;
+            // Unified Home + Dashboard UI toggle.
+            const newMainUiToggle = document.getElementById('new-main-ui-toggle');
+            if (newMainUiToggle) {
+                const savedUnifiedUi = localStorage.getItem('useNewMainUI');
+                const legacyHomeUi = localStorage.getItem('useNewHomeUI');
+                const legacyDashboardUi = localStorage.getItem('useNewDashboardUI');
 
-                newUiToggle.addEventListener('change', () => {
-                    const enableNewUI = newUiToggle.checked;
-                    localStorage.setItem('useNewHomeUI', String(enableNewUI));
+                const useNewMainUI = savedUnifiedUi !== null
+                    ? savedUnifiedUi !== 'false'
+                    : !(legacyHomeUi === 'false' || legacyDashboardUi === 'false');
+
+                newMainUiToggle.checked = useNewMainUI;
+                localStorage.setItem('useNewMainUI', String(useNewMainUI));
+
+                newMainUiToggle.addEventListener('change', () => {
+                    const enableNewMainUI = newMainUiToggle.checked;
+                    localStorage.setItem('useNewMainUI', String(enableNewMainUI));
 
                     loader.classList.add('visible');
                     setTimeout(() => {
-                        window.location.href = enableNewUI ? 'index.html' : 'index_old.html';
+                        window.location.href = enableNewMainUI ? 'index.html' : 'index_old.html';
                     }, 250);
                 });
             }
 
-            // Dashboard UI toggle (new dashboard UI vs legacy dashboard UI)
-            const newDashboardUiToggle = document.getElementById('new-dashboard-ui-toggle');
-            if (newDashboardUiToggle) {
-                const useNewDashboardUI = localStorage.getItem('useNewDashboardUI') !== 'false';
-                newDashboardUiToggle.checked = useNewDashboardUI;
+            // Shared wheel-layout toggle for both home and dashboard new UI pages
+            const sideWheelUiToggle = document.getElementById('side-wheel-ui-toggle');
+            if (sideWheelUiToggle) {
+                const useSideWheelUI = localStorage.getItem('useSideWheelUI') === 'true';
+                sideWheelUiToggle.checked = useSideWheelUI;
 
-                newDashboardUiToggle.addEventListener('change', () => {
-                    const enableNewDashboardUI = newDashboardUiToggle.checked;
-                    localStorage.setItem('useNewDashboardUI', String(enableNewDashboardUI));
-
-                    loader.classList.add('visible');
-                    setTimeout(() => {
-                        window.location.href = enableNewDashboardUI ? 'dashboard.html' : 'dashboard_old.html';
-                    }, 250);
+                sideWheelUiToggle.addEventListener('change', () => {
+                    localStorage.setItem('useSideWheelUI', String(sideWheelUiToggle.checked));
                 });
             }
 

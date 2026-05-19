@@ -3,8 +3,12 @@
 <head>
     <script src="./theme.js"></script>
     <script>
-        // Redirect to new home by default unless user explicitly chooses legacy UI.
-        if (localStorage.getItem('useNewHomeUI') !== 'false') {
+        // Redirect to new home by default unless unified new-UI setting is disabled.
+        const useNewMainUI = localStorage.getItem('useNewMainUI');
+        const useNewHomeUI = localStorage.getItem('useNewHomeUI');
+        const shouldUseNewHomeUI = useNewMainUI !== null ? useNewMainUI !== 'false' : useNewHomeUI !== 'false';
+
+        if (shouldUseNewHomeUI) {
             window.location.replace('index.html');
         }
     </script>

@@ -3,8 +3,12 @@
 <head>
     <script src="./theme.js"></script>
     <script>
-        // Redirect to legacy dashboard when new-dashboard setting is disabled.
-        if (localStorage.getItem('useNewDashboardUI') === 'false') {
+        // Redirect to legacy dashboard when the unified new-UI setting is disabled.
+        const useNewMainUI = localStorage.getItem('useNewMainUI');
+        const useNewDashboardUI = localStorage.getItem('useNewDashboardUI');
+        const shouldUseNewDashboardUI = useNewMainUI !== null ? useNewMainUI !== 'false' : useNewDashboardUI !== 'false';
+
+        if (!shouldUseNewDashboardUI) {
             window.location.replace('dashboard_old.html');
         }
     </script>
@@ -294,6 +298,149 @@
             justify-content:center;
         }
 
+        .center-wheel-layout { width: 100%; }
+        .side-wheel-layout { display: none; }
+        body.side-wheel-ui .center-wheel-layout { display: none; }
+        body.side-wheel-ui .side-wheel-layout {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            max-width: 980px;
+            margin: 0 auto;
+        }
+
+        .side-main-wheel {
+            width: clamp(160px, 23vw, 230px);
+            height: clamp(160px, 23vw, 230px);
+            border-radius: 50%;
+            border: 9px solid transparent;
+            background:
+                radial-gradient(circle at 35% 30%, #1f2937 0%, #0f172a 52%, #020617 100%) padding-box,
+                conic-gradient(
+                    var(--inf-color-1) 0deg 45deg,
+                    var(--inf-color-2) 45deg 90deg,
+                    var(--inf-color-3) 90deg 135deg,
+                    var(--inf-color-4) 135deg 180deg,
+                    var(--inf-color-5) 180deg 225deg,
+                    var(--inf-color-6) 225deg 270deg,
+                    var(--inf-color-7) 270deg 315deg,
+                    var(--inf-color-8) 315deg 360deg
+                ) border-box;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+        }
+
+        .side-main-wheel::after {
+            content: '';
+            position: absolute;
+            inset: 9px;
+            border-radius: 50%;
+            border: 2px dashed rgba(167, 139, 250, 0.45);
+        }
+
+        .side-main-wheel-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .side-main-wheel-logo {
+            width: clamp(52px, 7.6vw, 84px);
+            height: clamp(52px, 7.6vw, 84px);
+            border-radius: 18px;
+            object-fit: cover;
+            border: 1px solid rgba(99, 102, 241, 0.28);
+            box-shadow: 0 8px 18px rgba(60,72,160,0.22);
+            animation: logoSpin 8.33s linear infinite;
+        }
+
+        .side-main-wheel-label {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 14px;
+            font-size: clamp(0.62rem, 1.2vw, 0.82rem);
+            font-weight: 800;
+            color: #f8fafc;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .side-nodes-column {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-grow: 1;
+            width: 100%;
+        }
+
+        .side-node-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: inherit;
+            --node-color: var(--inf-color-1);
+            transition: transform 0.2s ease;
+        }
+
+        .side-node-row:hover {
+            transform: translateY(-2px);
+        }
+
+        .side-arrow-pointer {
+            width: 14px;
+            height: 10px;
+            background-color: var(--node-color);
+            clip-path: polygon(0% 25%, 60% 25%, 60% 0%, 100% 50%, 60% 100%, 60% 75%, 0% 75%);
+            flex-shrink: 0;
+        }
+
+        .side-capsule-pill {
+            display: flex;
+            align-items: center;
+            border: 1px solid rgba(148, 163, 184, 0.32);
+            border-radius: 999px;
+            padding: 3px 10px 3px 3px;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.84), rgba(30, 41, 59, 0.76));
+            box-shadow: 0 6px 18px rgba(0,0,0,0.22);
+            width: 100%;
+        }
+
+        .side-icon-badge {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: var(--node-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-size: 0.68rem;
+            font-weight: 800;
+            flex-shrink: 0;
+            box-shadow: inset 0 -2px 0 rgba(0,0,0,0.22), 0 0 10px var(--node-color);
+        }
+
+        .side-capsule-text {
+            font-size: clamp(0.58rem, 1.2vw, 0.76rem);
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-left: 7px;
+            letter-spacing: 0.01em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         @keyframes ringRotate { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
         @keyframes logoSpin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
         @keyframes centerFloat { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-5px); } }
@@ -324,6 +471,16 @@
             .inf-node { min-height:40px; }
             .inf-node-badge { width:24px; height:24px; min-width:24px; font-size:0.68rem; }
             .inf-node-text { font-size:0.6rem; }
+
+            body.side-wheel-ui .side-wheel-layout { gap: 6px; }
+            body.side-wheel-ui .side-main-wheel { width: 128px; height: 128px; border-width: 7px; }
+            body.side-wheel-ui .side-main-wheel::after { inset: 6px; border-width: 1px; }
+            body.side-wheel-ui .side-main-wheel-logo { width: 40px; height: 40px; border-radius: 12px; }
+            body.side-wheel-ui .side-main-wheel-label { font-size: 0.54rem; bottom: 10px; }
+            body.side-wheel-ui .side-capsule-pill { padding: 2px 8px 2px 2px; }
+            body.side-wheel-ui .side-icon-badge { width: 24px; height: 24px; font-size: 0.56rem; }
+            body.side-wheel-ui .side-capsule-text { font-size: 0.52rem; margin-left: 6px; }
+            body.side-wheel-ui .side-arrow-pointer { width: 12px; height: 8px; }
         }
 
         footer {
@@ -384,7 +541,7 @@
     </header>
 
     <main class="infographic-wrapper" id="cards-container">
-        <div class="infographic-container">
+        <div class="infographic-container center-wheel-layout" id="center-wheel-layout">
             <div class="inf-column inf-left-column" id="inf-left"></div>
 
             <div class="inf-center-circle">
@@ -397,6 +554,16 @@
             </div>
 
             <div class="inf-column inf-right-column" id="inf-right"></div>
+        </div>
+
+        <div class="side-wheel-layout" id="side-wheel-layout">
+            <div class="side-main-wheel">
+                <div class="side-main-wheel-content">
+                    <img src="root/logo.png" alt="KT Dashboard" class="side-main-wheel-logo">
+                    <h2 class="side-main-wheel-label">Dashboard</h2>
+                </div>
+            </div>
+            <div class="side-nodes-column" id="side-nodes"></div>
         </div>
     </main>
 
@@ -426,6 +593,9 @@
                 setLanguage(savedLanguage);
                 if (typeof updateContentLanguage === 'function') updateContentLanguage();
             }
+
+            const useSideWheelUI = localStorage.getItem('useSideWheelUI') === 'true';
+            document.body.classList.toggle('side-wheel-ui', useSideWheelUI);
         }
 
         applyAllSettings();
@@ -434,6 +604,7 @@
             const loader = document.getElementById('loader');
             const leftContainer = document.getElementById('inf-left');
             const rightContainer = document.getElementById('inf-right');
+            const sideNodesContainer = document.getElementById('side-nodes');
 
             const reportData = [
                 { id: 1, text: 'Cashew Report', href: 'cashew/cashewreport.html' },
@@ -459,9 +630,22 @@
                     node.innerHTML = `<div class="inf-node-badge">${item.id}</div><span class="inf-node-text">${item.text}</span>`;
                     rightContainer.appendChild(node);
                 }
+
+                const sideNode = document.createElement('a');
+                sideNode.className = 'side-node-row';
+                sideNode.href = item.href;
+                sideNode.style.setProperty('--node-color', `var(--inf-color-${item.id})`);
+                sideNode.innerHTML = `
+                    <div class="side-arrow-pointer"></div>
+                    <div class="side-capsule-pill">
+                        <div class="side-icon-badge">${item.id}</div>
+                        <span class="side-capsule-text">${item.text}</span>
+                    </div>
+                `;
+                sideNodesContainer.appendChild(sideNode);
             });
 
-            document.querySelectorAll('.inf-node, .nav-link').forEach(link => {
+            document.querySelectorAll('.inf-node, .side-node-row, .nav-link').forEach(link => {
                 link.addEventListener('click', e => {
                     const href = link.getAttribute('href');
                     if (!href || href === '#' || link.target === '_blank') return;

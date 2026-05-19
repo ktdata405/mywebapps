@@ -3,8 +3,12 @@
 <head>
     <script src="./theme.js"></script>
     <script>
-        // Redirect to new dashboard by default unless user explicitly selects legacy dashboard.
-        if (localStorage.getItem('useNewDashboardUI') !== 'false') {
+        // Redirect to new dashboard by default unless unified new-UI setting is disabled.
+        const useNewMainUI = localStorage.getItem('useNewMainUI');
+        const useNewDashboardUI = localStorage.getItem('useNewDashboardUI');
+        const shouldUseNewDashboardUI = useNewMainUI !== null ? useNewMainUI !== 'false' : useNewDashboardUI !== 'false';
+
+        if (shouldUseNewDashboardUI) {
             window.location.replace('dashboard.html');
         }
     </script>
