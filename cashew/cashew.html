@@ -19,6 +19,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="../ktui.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -199,6 +200,9 @@
                 <button onclick="toggleCalculator()" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Calculator">
                     <i class="fa-solid fa-calculator"></i>
                 </button>
+                <a href="cashewimport.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-emerald-500/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-emerald-300 hover:scale-105 active:scale-95" title="Import Excel">
+                    <i class="fa-solid fa-file-import"></i>
+                </a>
                 <a href="cashewreport.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Report">
                     <i class="fa-solid fa-chart-pie"></i>
                 </a>
@@ -309,6 +313,8 @@
         </div>
     </div>
 
+    <input type="file" id="excel-upload-input" accept=".xlsx,.xls,.csv" class="hidden" />
+
     <!-- Loader -->
     <div id="loader" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all">
         <div class="flex flex-col items-center gap-4">
@@ -357,6 +363,162 @@
                 <button onclick="calcAppend('0')" class="col-span-2 p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">0</button>
                 <button onclick="calcAppend('.')" class="p-3 rounded-lg bg-white/5 text-white hover:bg-white/10 font-bold transition">.</button>
                 <button onclick="calcResult()" class="p-3 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 font-bold transition">=</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Preview Modal -->
+    <div id="import-date-modal" class="hidden fixed inset-0 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" tabindex="-1"
+         style="background:rgba(0,0,0,0.75);backdrop-filter:blur(8px)">
+        <div class="w-full max-w-5xl flex flex-col rounded-t-3xl sm:rounded-2xl border border-white/10 shadow-2xl overflow-hidden"
+             style="max-height:95vh;background:linear-gradient(160deg,#0f1623 0%,#111827 100%)">
+
+            <!-- ── TOP HEADER ── -->
+            <div class="flex-shrink-0 px-5 pt-5 pb-4 border-b border-white/10"
+                 style="background:linear-gradient(90deg,rgba(16,185,129,0.08),rgba(99,102,241,0.06))">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
+                             style="background:linear-gradient(135deg,#10b981,#6366f1)">
+                            <i class="fa-solid fa-file-import text-white text-sm"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <h3 class="text-base font-bold text-white">Import Preview</h3>
+                            <p id="import-modal-summary" class="text-[11px] text-gray-400 mt-0.5 truncate"></p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <!-- Re-import button -->
+                        <button onclick="triggerExcelImport()" title="Import another file"
+                            class="h-9 px-3 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10">
+                            <i class="fa-solid fa-rotate-right text-xs"></i>
+                            <span class="hidden sm:inline">Re-import</span>
+                        </button>
+                        <button onclick="closeImportDateModal()"
+                            class="w-9 h-9 rounded-full bg-white/5 hover:bg-red-500/15 border border-white/10 text-gray-400 hover:text-red-400 transition-all flex items-center justify-center">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ── STATS ROW ── -->
+                <div class="mt-4 grid grid-cols-4 gap-2" id="import-stats-row">
+                    <div class="rounded-xl p-2.5 border border-white/5 text-center" style="background:rgba(255,255,255,0.03)">
+                        <div class="text-[9px] uppercase tracking-widest text-gray-500 font-bold">Total Rows</div>
+                        <div id="stat-total-rows" class="text-lg font-bold text-white mt-0.5">0</div>
+                    </div>
+                    <div class="rounded-xl p-2.5 border border-white/5 text-center" style="background:rgba(255,255,255,0.03)">
+                        <div class="text-[9px] uppercase tracking-widest text-gray-500 font-bold">Dates</div>
+                        <div id="stat-total-dates" class="text-lg font-bold text-indigo-300 mt-0.5">0</div>
+                    </div>
+                    <div class="rounded-xl p-2.5 border border-white/5 text-center" style="background:rgba(255,255,255,0.03)">
+                        <div class="text-[9px] uppercase tracking-widest text-gray-500 font-bold">Grand Total</div>
+                        <div id="stat-grand-total" class="text-lg font-bold text-emerald-300 mt-0.5 font-mono">₹0</div>
+                    </div>
+                    <div class="rounded-xl p-2.5 border border-white/5 text-center" style="background:rgba(255,255,255,0.03)">
+                        <div class="text-[9px] uppercase tracking-widest text-gray-500 font-bold">Skipped</div>
+                        <div id="stat-skipped" class="text-lg font-bold text-amber-300 mt-0.5">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── TOOLBAR ── -->
+            <div class="flex-shrink-0 flex flex-wrap items-center gap-2 px-4 py-2.5 border-b border-white/10 bg-black/20">
+                <!-- Format input -->
+                <div class="flex items-center gap-1.5 flex-1 min-w-40">
+                    <i class="fa-solid fa-pen-to-square text-gray-500 text-xs flex-shrink-0"></i>
+                    <input type="text" id="import-data-format-input" value="{tag}-Amount({amount})" placeholder="{tag}-Amount({amount})"
+                        class="flex-1 bg-black/30 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-indigo-500 font-mono min-w-0" />
+                </div>
+                <!-- Format presets -->
+                <div class="flex gap-1 flex-shrink-0">
+                    <button onclick="setImportFormat('{tag}-Amount({amount})')" title="Tag format"
+                        class="import-fmt-btn h-7 px-2.5 rounded-lg text-[11px] font-semibold border border-white/10 text-gray-300 hover:bg-indigo-500/20 hover:text-indigo-300 transition-all">Tag</button>
+                    <button onclick="setImportFormat('{remarks}-Amount({amount})')" title="Remarks format"
+                        class="import-fmt-btn h-7 px-2.5 rounded-lg text-[11px] font-semibold border border-white/10 text-gray-300 hover:bg-indigo-500/20 hover:text-indigo-300 transition-all">Remarks</button>
+                    <button onclick="setImportFormat('{tag} | {remarks} | ₹{amount}')" title="Full format"
+                        class="import-fmt-btn h-7 px-2.5 rounded-lg text-[11px] font-semibold border border-white/10 text-gray-300 hover:bg-indigo-500/20 hover:text-indigo-300 transition-all">Full</button>
+                </div>
+                <!-- Search -->
+                <div class="relative flex-shrink-0">
+                    <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs pointer-events-none"></i>
+                    <input type="text" id="import-search-input" placeholder="Search entries…"
+                        class="bg-black/30 border border-white/10 rounded-lg pl-7 pr-3 py-1.5 text-xs text-white outline-none focus:border-indigo-500 w-40" />
+                </div>
+                <!-- Sort toggle -->
+                <button id="import-sort-btn" onclick="toggleImportSort()" title="Toggle sort order"
+                    class="h-7 px-2.5 rounded-lg text-[11px] font-semibold border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-arrow-down-wide-short text-xs"></i>
+                    <span id="import-sort-label">Amt ↓</span>
+                </button>
+            </div>
+
+            <!-- ── BODY: date sidebar + table ── -->
+            <div class="flex flex-1 min-h-0 overflow-hidden">
+
+                <!-- Left sidebar: dates -->
+                <div class="w-32 sm:w-44 flex-shrink-0 flex flex-col border-r border-white/10 overflow-y-auto" style="background:rgba(0,0,0,0.15)">
+                    <div class="p-2 flex-1">
+                        <p class="text-[9px] uppercase tracking-widest text-gray-500 font-bold px-2 pt-1 pb-2">By Date</p>
+                        <div id="import-date-list" class="space-y-1"></div>
+                    </div>
+                    <!-- Sidebar footer: grand total -->
+                    <div class="flex-shrink-0 border-t border-white/10 px-3 py-3" style="background:rgba(0,0,0,0.3)">
+                        <div class="text-[9px] uppercase tracking-widest text-gray-500 font-bold">All Dates</div>
+                        <div id="import-grand-total" class="text-sm font-bold text-emerald-300 font-mono mt-1">₹0.00</div>
+                        <div id="import-grand-rows" class="text-[10px] text-gray-500 mt-0.5"></div>
+                    </div>
+                </div>
+
+                <!-- Right: data table -->
+                <div class="flex-1 flex flex-col min-h-0 min-w-0">
+
+                    <!-- Date header bar -->
+                    <div class="flex-shrink-0 flex items-center justify-between px-4 py-2.5 border-b border-white/10"
+                         style="background:rgba(99,102,241,0.06)">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-regular fa-calendar-day text-indigo-400 text-xs"></i>
+                            <span id="import-selected-date-label" class="text-sm font-bold text-white"></span>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="flex items-center gap-1 text-gray-400">
+                                <i class="fa-solid fa-list-ul text-[10px]"></i>
+                                <span id="import-preview-row-count" class="text-white font-bold">0</span> rows
+                            </span>
+                            <span class="font-bold font-mono text-emerald-400" id="import-preview-total">₹0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="flex-1 overflow-y-auto">
+                        <table class="w-full text-sm">
+                            <thead style="background:rgba(0,0,0,0.4)" class="sticky top-0 z-10">
+                                <tr>
+                                    <th class="w-8 px-3 py-2.5 text-left text-[10px] uppercase tracking-wider text-gray-500 font-bold">#</th>
+                                    <th class="px-3 py-2.5 text-left text-[10px] uppercase tracking-wider text-gray-500 font-bold">Entry</th>
+                                    <th class="px-3 py-2.5 text-left text-[10px] uppercase tracking-wider text-gray-500 font-bold hidden sm:table-cell">Tag</th>
+                                    <th class="px-4 py-2.5 text-right text-[10px] uppercase tracking-wider text-gray-500 font-bold">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="import-preview-body" class="divide-y divide-white/5"></tbody>
+                        </table>
+                        <div id="import-empty-msg" class="hidden flex flex-col items-center justify-center py-14 text-gray-500 gap-2">
+                            <i class="fa-solid fa-magnifying-glass text-2xl opacity-40"></i>
+                            <span class="text-sm">No entries match your search.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── FOOTER ── -->
+            <div class="flex-shrink-0 flex items-center justify-between gap-3 px-5 py-3 border-t border-white/10 bg-black/20">
+                <p class="text-[11px] text-gray-500 hidden sm:block">
+                    Use tokens <span class="text-gray-400 font-mono">{tag}</span>, <span class="text-gray-400 font-mono">{remarks}</span>, <span class="text-gray-400 font-mono">{amount}</span> in the format field above.
+                </p>
+                <button onclick="closeImportDateModal()"
+                    class="h-10 px-6 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 text-sm font-semibold transition-all">
+                    Close
+                </button>
             </div>
         </div>
     </div>
@@ -469,6 +631,9 @@
 
         let isEditMode = false;
         let originalDate = null;
+        let importedEntriesByDate = null;
+        let importedMeta = null;
+        let importDataFormatPattern = '{tag}-Amount({amount})';
 
 
         /**
@@ -891,6 +1056,430 @@
             });
         }
 
+        function triggerExcelImport() {
+            const uploadInput = document.getElementById('excel-upload-input');
+            if (uploadInput) uploadInput.click();
+        }
+
+        function normalizeExcelHeader(value) {
+            return String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
+
+        function getExcelCellValue(row, aliases) {
+            const keys = Object.keys(row || {});
+            if (!keys.length) return '';
+
+            const normalizedAliases = aliases.map(alias => normalizeExcelHeader(alias));
+
+            // First pass: exact normalized match.
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i];
+                const normalizedKey = normalizeExcelHeader(key);
+                if (normalizedAliases.includes(normalizedKey)) {
+                    return row[key];
+                }
+            }
+
+            // Second pass: contains match for slightly different header naming.
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i];
+                const normalizedKey = normalizeExcelHeader(key);
+                if (normalizedAliases.some(alias => normalizedKey.includes(alias) || alias.includes(normalizedKey))) {
+                    return row[key];
+                }
+            }
+
+            return '';
+        }
+
+        function parseImportedDate(value) {
+            if (value === null || value === undefined || value === '') return null;
+
+            if (value instanceof Date && !isNaN(value.getTime())) {
+                return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+            }
+
+            // Excel sometimes stores dates as serial numbers.
+            if (typeof value === 'number') {
+                const parsed = XLSX.SSF.parse_date_code(value);
+                if (parsed) {
+                    return new Date(parsed.y, parsed.m - 1, parsed.d);
+                }
+            }
+
+            const raw = String(value).trim();
+
+            // Handle common dd-mm-yyyy / dd/mm/yyyy format explicitly.
+            let match = raw.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+            if (match) {
+                const day = parseInt(match[1], 10);
+                const month = parseInt(match[2], 10);
+                const year = parseInt(match[3], 10);
+                return new Date(year, month - 1, day);
+            }
+
+            const parsedDate = parseDate(raw);
+            return parsedDate && !isNaN(parsedDate.getTime()) ? parsedDate : null;
+        }
+
+        function formatToIsoDate(dateObj) {
+            if (!dateObj) return '';
+            const y = dateObj.getFullYear();
+            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const d = String(dateObj.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function parseImportedAmount(value) {
+            if (typeof value === 'number') return value;
+            if (value === null || value === undefined) return NaN;
+            const normalized = String(value)
+                .replace(/,/g, '')
+                .replace(/[^0-9.-]/g, '')
+                .trim();
+            return parseFloat(normalized);
+        }
+
+        function formatImportedAmountForRemark(amount) {
+            return Number.isInteger(amount) ? String(amount) : amount.toFixed(2).replace(/\.00$/, '');
+        }
+
+        function formatImportedEntryText(entry, pattern) {
+            const amountText = formatImportedAmountForRemark(parseFloat(entry.amount) || 0);
+            const template = (pattern || '').trim() || '{tag}-Amount({amount})';
+            const formatted = template
+                .replace(/\{tag}/gi, entry.tag || '')
+                .replace(/\{remarks}/gi, entry.remarks || '')
+                .replace(/\{amount}/gi, amountText)
+                .trim();
+
+            // Avoid blank output when one token is empty.
+            if (formatted) return formatted;
+            if (entry.tag) return `${entry.tag}-Amount(${amountText})`;
+            if (entry.remarks) return `${entry.remarks}-Amount(${amountText})`;
+            return `Imported-Amount(${amountText})`;
+        }
+
+        function buildImportedEntries(workbook) {
+            const allEntries = [];
+            let skippedSelfTag = 0;
+            let skippedMissingDate = 0;
+            let skippedMissingAmount = 0;
+
+            workbook.SheetNames.forEach((sheetName) => {
+                const sheet = workbook.Sheets[sheetName];
+                const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+                rows.forEach((row) => {
+                    const rawTag = getExcelCellValue(row, ['Tags', 'Tag', 'Category Label']);
+                    const normalizedTag = String(rawTag || '').trim().toLowerCase();
+                    if (normalizedTag === 'self' || normalizedTag === 'self transfer') {
+                        skippedSelfTag += 1;
+                        return;
+                    }
+
+                    const importedDate = parseImportedDate(getExcelCellValue(row, ['Date', 'Transaction Date', 'Txn Date', 'Entry Date']));
+                    if (!importedDate) {
+                        skippedMissingDate += 1;
+                        return;
+                    }
+
+                    const amount = parseImportedAmount(getExcelCellValue(row, ['Amount', 'Amt', 'Debit', 'Value']));
+                    if (isNaN(amount) || amount <= 0) {
+                        skippedMissingAmount += 1;
+                        return;
+                    }
+
+                    const remarks = String(getExcelCellValue(row, ['Remarks', 'Remark', 'Narration', 'Description', 'Details']) || '').trim();
+                    const safeRemark = remarks || 'Imported';
+                    const tag = String(rawTag || '').trim();
+                    const description = `${safeRemark}-Amount(${formatImportedAmountForRemark(amount)})`;
+
+                    allEntries.push({
+                        date: formatDateToDDMMMYYYY(formatToIsoDate(importedDate)),
+                        category: 'My Personal',
+                        tag,
+                        remarks: safeRemark,
+                        description,
+                        amount
+                    });
+                });
+            });
+
+            return {
+                allEntries,
+                skippedSelfTag,
+                skippedMissingDate,
+                skippedMissingAmount
+            };
+        }
+
+        function groupEntriesByDate(entries) {
+            const grouped = {};
+            entries.forEach((entry) => {
+                if (!grouped[entry.date]) grouped[entry.date] = [];
+                grouped[entry.date].push(entry);
+            });
+            return grouped;
+        }
+
+        function sortDateLabels(dateLabels) {
+            return [...dateLabels].sort((a, b) => {
+                const aDate = parseDate(a);
+                const bDate = parseDate(b);
+                return (aDate ? aDate.getTime() : 0) - (bDate ? bDate.getTime() : 0);
+            });
+        }
+
+        let importSelectedDate = null;
+        let importSortMode = 'amount-desc'; // 'amount-desc' | 'amount-asc' | 'default'
+
+        // Tag color palette (cycles)
+        const TAG_COLORS = [
+            'bg-indigo-500/20 text-indigo-300',
+            'bg-emerald-500/20 text-emerald-300',
+            'bg-pink-500/20 text-pink-300',
+            'bg-amber-500/20 text-amber-300',
+            'bg-sky-500/20 text-sky-300',
+            'bg-purple-500/20 text-purple-300',
+            'bg-rose-500/20 text-rose-300',
+            'bg-teal-500/20 text-teal-300',
+        ];
+        const tagColorMap = {};
+        let tagColorIndex = 0;
+        function getTagColor(tag) {
+            if (!tag) return 'bg-white/10 text-gray-400';
+            if (!tagColorMap[tag]) {
+                tagColorMap[tag] = TAG_COLORS[tagColorIndex % TAG_COLORS.length];
+                tagColorIndex++;
+            }
+            return tagColorMap[tag];
+        }
+
+        function setImportFormat(fmt) {
+            const input = document.getElementById('import-data-format-input');
+            if (input) { input.value = fmt; importDataFormatPattern = fmt; }
+            if (importSelectedDate) renderImportPreviewForDate(importSelectedDate);
+        }
+
+        function toggleImportSort() {
+            const modes = ['amount-desc', 'amount-asc', 'default'];
+            const labels = { 'amount-desc': 'Amt ↓', 'amount-asc': 'Amt ↑', 'default': 'Order' };
+            const cur = modes.indexOf(importSortMode);
+            importSortMode = modes[(cur + 1) % modes.length];
+            const btn = document.getElementById('import-sort-label');
+            if (btn) btn.textContent = labels[importSortMode];
+            if (importSelectedDate) renderImportPreviewForDate(importSelectedDate);
+        }
+
+        function renderImportPreviewForDate(dateLabel) {
+            importSelectedDate = dateLabel;
+            const previewBody = document.getElementById('import-preview-body');
+            const rowCount = document.getElementById('import-preview-row-count');
+            const totalEl = document.getElementById('import-preview-total');
+            const dateLabelEl = document.getElementById('import-selected-date-label');
+            const emptyMsg = document.getElementById('import-empty-msg');
+            const searchInput = document.getElementById('import-search-input');
+            const formatInput = document.getElementById('import-data-format-input');
+            if (formatInput) importDataFormatPattern = formatInput.value;
+
+            const searchQuery = (searchInput ? searchInput.value.toLowerCase().trim() : '');
+            let entries = [...((importedEntriesByDate && importedEntriesByDate[dateLabel]) || [])];
+
+            if (dateLabelEl) dateLabelEl.textContent = dateLabel || '';
+
+            // Update active state in date sidebar
+            document.querySelectorAll('.import-date-item').forEach(btn => {
+                const isActive = btn.dataset.date === dateLabel;
+                btn.style.background = isActive ? 'rgba(99,102,241,0.18)' : '';
+                btn.style.borderColor = isActive ? 'rgba(99,102,241,0.4)' : 'transparent';
+                btn.querySelector('.date-item-label')?.classList.toggle('text-indigo-300', isActive);
+                btn.querySelector('.date-item-label')?.classList.toggle('text-gray-200', !isActive);
+            });
+
+            // Filter by search
+            if (searchQuery) {
+                entries = entries.filter(e =>
+                    (e.remarks || '').toLowerCase().includes(searchQuery) ||
+                    (e.tag || '').toLowerCase().includes(searchQuery) ||
+                    String(e.amount).includes(searchQuery)
+                );
+            }
+
+            // Sort
+            if (importSortMode === 'amount-desc') {
+                entries.sort((a, b) => (parseFloat(b.amount) || 0) - (parseFloat(a.amount) || 0));
+            } else if (importSortMode === 'amount-asc') {
+                entries.sort((a, b) => (parseFloat(a.amount) || 0) - (parseFloat(b.amount) || 0));
+            }
+
+            previewBody.innerHTML = '';
+
+            if (!entries.length) {
+                if (emptyMsg) emptyMsg.classList.remove('hidden');
+                rowCount.textContent = '0';
+                totalEl.textContent = '₹0.00';
+                return;
+            }
+            if (emptyMsg) emptyMsg.classList.add('hidden');
+
+            let total = 0;
+            entries.forEach((entry, idx) => {
+                const amt = parseFloat(entry.amount) || 0;
+                total += amt;
+                const displayText = formatImportedEntryText(entry, importDataFormatPattern);
+                const tagClass = getTagColor(entry.tag);
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-white/5 transition-colors';
+                tr.innerHTML = `
+                    <td class="px-3 py-2.5 text-gray-500 text-xs w-8 font-mono">${idx + 1}</td>
+                    <td class="px-3 py-2.5 text-gray-200 break-all text-xs leading-relaxed">${displayText}</td>
+                    <td class="px-3 py-2.5 hidden sm:table-cell">
+                        ${entry.tag ? `<span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold ${tagClass}">${entry.tag}</span>` : '<span class="text-gray-600 text-[10px]">—</span>'}
+                    </td>
+                    <td class="px-4 py-2.5 text-right font-mono text-sm font-bold text-emerald-300 whitespace-nowrap">₹${amt.toFixed(2)}</td>
+                `;
+                previewBody.appendChild(tr);
+            });
+
+            rowCount.textContent = String(entries.length);
+            totalEl.textContent = `₹${total.toFixed(2)}`;
+        }
+
+        function openImportDateModal(groupedEntries, meta) {
+            importedEntriesByDate = groupedEntries;
+            importedMeta = meta;
+            // Reset tag color map on each new import
+            Object.keys(tagColorMap).forEach(k => delete tagColorMap[k]);
+            tagColorIndex = 0;
+
+            const modal = document.getElementById('import-date-modal');
+            const summary = document.getElementById('import-modal-summary');
+            const dateListEl = document.getElementById('import-date-list');
+            const grandTotalEl = document.getElementById('import-grand-total');
+            const grandRowsEl = document.getElementById('import-grand-rows');
+            const formatInput = document.getElementById('import-data-format-input');
+            const searchInput = document.getElementById('import-search-input');
+
+            const sortedDates = sortDateLabels(Object.keys(groupedEntries));
+
+            // Summary line
+            let metaText = `${meta.totalValidRows} valid rows · ${sortedDates.length} date(s) · ${meta.sheetCount} sheet(s)`;
+            if (meta.skippedSelfTag > 0) metaText += ` · ${meta.skippedSelfTag} Self skipped`;
+            summary.textContent = metaText;
+
+            // Stats row
+            let grandTotal = 0;
+            Object.values(groupedEntries).forEach(rows => rows.forEach(r => grandTotal += parseFloat(r.amount) || 0));
+            const skippedTotal = meta.skippedSelfTag + meta.skippedMissingDate + meta.skippedMissingAmount;
+            document.getElementById('stat-total-rows').textContent = meta.totalValidRows;
+            document.getElementById('stat-total-dates').textContent = sortedDates.length;
+            document.getElementById('stat-grand-total').textContent = `₹${grandTotal.toFixed(0)}`;
+            document.getElementById('stat-skipped').textContent = skippedTotal;
+            if (grandTotalEl) grandTotalEl.textContent = `₹${grandTotal.toFixed(2)}`;
+            if (grandRowsEl) grandRowsEl.textContent = `${meta.totalValidRows} rows`;
+
+            // Build date sidebar
+            dateListEl.innerHTML = '';
+            sortedDates.forEach(dateLabel => {
+                const rows = groupedEntries[dateLabel];
+                const rowTotal = rows.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'import-date-item w-full text-left px-2.5 py-2 rounded-xl transition-all border';
+                btn.style.borderColor = 'transparent';
+                btn.dataset.date = dateLabel;
+                btn.innerHTML = `
+                    <div class="date-item-label text-xs font-bold text-gray-200 leading-tight truncate">${dateLabel}</div>
+                    <div class="flex justify-between items-center mt-0.5 gap-1">
+                        <span class="text-[10px] text-gray-500">${rows.length} rows</span>
+                        <span class="text-[10px] font-mono text-emerald-400">₹${rowTotal.toFixed(0)}</span>
+                    </div>
+                `;
+                btn.onclick = () => renderImportPreviewForDate(dateLabel);
+                dateListEl.appendChild(btn);
+            });
+
+            // Format input wiring
+            if (formatInput) {
+                if (!formatInput.value) formatInput.value = importDataFormatPattern;
+                importDataFormatPattern = formatInput.value;
+                formatInput.oninput = () => {
+                    importDataFormatPattern = formatInput.value;
+                    if (importSelectedDate) renderImportPreviewForDate(importSelectedDate);
+                };
+            }
+
+            // Search wiring
+            if (searchInput) {
+                searchInput.value = '';
+                searchInput.oninput = () => { if (importSelectedDate) renderImportPreviewForDate(importSelectedDate); };
+            }
+
+            const selectedDate = sortedDates[0] || '';
+            renderImportPreviewForDate(selectedDate);
+
+            modal.classList.remove('hidden');
+            modal.focus();
+        }
+
+        function closeImportDateModal() {
+            const modal = document.getElementById('import-date-modal');
+            modal.classList.add('hidden');
+        }
+
+
+        function processExcelUpload(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            const loader = document.getElementById('loader');
+            const loaderText = document.getElementById('loader-text');
+            loaderText.textContent = 'Importing Excel Data';
+            loader.classList.remove('hidden');
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const workbook = XLSX.read(e.target.result, { type: 'array' });
+                    if (!workbook.SheetNames.length) {
+                        showPopup('Import Error', 'No sheet found in uploaded file.', 'error');
+                        return;
+                    }
+
+                    const { allEntries, skippedSelfTag, skippedMissingDate, skippedMissingAmount } = buildImportedEntries(workbook);
+                    if (!allEntries.length) {
+                        const details = `No valid rows found. Skipped: Date=${skippedMissingDate}, Amount=${skippedMissingAmount}, SelfTag=${skippedSelfTag}.`;
+                        showPopup('Import Error', details, 'error');
+                        return;
+                    }
+
+                    const groupedEntries = groupEntriesByDate(allEntries);
+                    openImportDateModal(groupedEntries, {
+                        totalValidRows: allEntries.length,
+                        skippedSelfTag,
+                        skippedMissingDate,
+                        skippedMissingAmount,
+                        sheetCount: workbook.SheetNames.length
+                    });
+                } catch (error) {
+                    console.error('Excel import error:', error);
+                    showPopup('Import Error', error.message || 'Could not import the uploaded file.', 'error');
+                } finally {
+                    loader.classList.add('hidden');
+                    event.target.value = '';
+                }
+            };
+
+            reader.onerror = () => {
+                loader.classList.add('hidden');
+                event.target.value = '';
+                showPopup('Import Error', 'Unable to read the selected file.', 'error');
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
         // --- Date Accordion Logic ---
         function toggleDateAccordion() {
             const content = document.getElementById('date-accordion-content');
@@ -1096,6 +1685,11 @@
                 calcClear();
             }
         });
+
+        const excelUploadInput = document.getElementById('excel-upload-input');
+        if (excelUploadInput) {
+            excelUploadInput.addEventListener('change', processExcelUpload);
+        }
 
         init();
     </script>
