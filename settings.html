@@ -432,7 +432,29 @@
                 </label>
             </div>
             <div class="setting-item">
-                <label for="new-main-ui-toggle">Use New Home + Dashboard UI</label>
+                <label for="notifications-toggle">Enable Notifications</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="notifications-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <label for="notification-style-select">Notification Style</label>
+                <select id="notification-style-select" style="background:var(--card-bg);color:var(--text-primary);border:1px solid var(--card-border);border-radius:8px;padding:6px 10px;font-size:0.9rem;cursor:pointer;">
+                    <option value="toast">Toast (Banner)</option>
+                    <option value="popup">Popup (Dialog)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3>Views</h3>
+            <div class="setting-item">
+                <span>Home + Dashboard UI Mode (Enable one)</span>
+                <span style="font-size:0.75rem;color:var(--text-secondary);">Only one toggle can be ON</span>
+            </div>
+            <div class="setting-item">
+                <label for="new-main-ui-toggle">Use Center Wheel UI Home + Dashboard UI</label>
                 <label class="toggle-switch">
                     <input type="checkbox" id="new-main-ui-toggle">
                     <span class="slider"></span>
@@ -446,18 +468,11 @@
                 </label>
             </div>
             <div class="setting-item">
-                <label for="notifications-toggle">Enable Notifications</label>
+                <label for="temp-wheel-ui-toggle">Use Temp Wheel UI (Home + Dashboard)</label>
                 <label class="toggle-switch">
-                    <input type="checkbox" id="notifications-toggle">
+                    <input type="checkbox" id="temp-wheel-ui-toggle">
                     <span class="slider"></span>
                 </label>
-            </div>
-            <div class="setting-item">
-                <label for="notification-style-select">Notification Style</label>
-                <select id="notification-style-select" style="background:var(--card-bg);color:var(--text-primary);border:1px solid var(--card-border);border-radius:8px;padding:6px 10px;font-size:0.9rem;cursor:pointer;">
-                    <option value="toast">Toast (Banner)</option>
-                    <option value="popup">Popup (Dialog)</option>
-                </select>
             </div>
         </div>
 
@@ -622,39 +637,59 @@
                 });
             }
 
-            // Unified Home + Dashboard UI toggle.
+            // Home + Dashboard UI mode toggles (mutually exclusive).
             const newMainUiToggle = document.getElementById('new-main-ui-toggle');
-            if (newMainUiToggle) {
+            const sideWheelUiToggle = document.getElementById('side-wheel-ui-toggle');
+            const tempWheelUiToggle = document.getElementById('temp-wheel-ui-toggle');
+            if (newMainUiToggle && sideWheelUiToggle && tempWheelUiToggle) {
                 const savedUnifiedUi = localStorage.getItem('useNewMainUI');
                 const legacyHomeUi = localStorage.getItem('useNewHomeUI');
                 const legacyDashboardUi = localStorage.getItem('useNewDashboardUI');
-
                 const useNewMainUI = savedUnifiedUi !== null
                     ? savedUnifiedUi !== 'false'
                     : !(legacyHomeUi === 'false' || legacyDashboardUi === 'false');
+                const useSideWheelUI = localStorage.getItem('useSideWheelUI') === 'true';
+                const useTempWheelUI = localStorage.getItem('useTempWheelUI') === 'true';
 
-                newMainUiToggle.checked = useNewMainUI;
-                localStorage.setItem('useNewMainUI', String(useNewMainUI));
+                const applyUiMode = (mode) => {
+                    const isCenter = mode === 'center';
+                    const isSide = mode === 'side';
+                    const isTemp = mode === 'temp';
+
+                    newMainUiToggle.checked = isCenter;
+                    sideWheelUiToggle.checked = isSide;
+                    tempWheelUiToggle.checked = isTemp;
+
+                    localStorage.setItem('useNewMainUI', String(isCenter || isSide || isTemp));
+                    localStorage.setItem('useSideWheelUI', String(isSide));
+                    localStorage.setItem('useTempWheelUI', String(isTemp));
+                };
+
+                const initialMode = useTempWheelUI ? 'temp' : useSideWheelUI ? 'side' : useNewMainUI ? 'center' : 'legacy';
+                applyUiMode(initialMode);
 
                 newMainUiToggle.addEventListener('change', () => {
-                    const enableNewMainUI = newMainUiToggle.checked;
-                    localStorage.setItem('useNewMainUI', String(enableNewMainUI));
-
-                    loader.classList.add('visible');
-                    setTimeout(() => {
-                        window.location.href = enableNewMainUI ? 'index.html' : 'index_old.html';
-                    }, 250);
+                    if (newMainUiToggle.checked) {
+                        applyUiMode('center');
+                    } else if (!sideWheelUiToggle.checked && !tempWheelUiToggle.checked) {
+                        applyUiMode('legacy');
+                    }
                 });
-            }
-
-            // Shared wheel-layout toggle for both home and dashboard new UI pages
-            const sideWheelUiToggle = document.getElementById('side-wheel-ui-toggle');
-            if (sideWheelUiToggle) {
-                const useSideWheelUI = localStorage.getItem('useSideWheelUI') === 'true';
-                sideWheelUiToggle.checked = useSideWheelUI;
 
                 sideWheelUiToggle.addEventListener('change', () => {
-                    localStorage.setItem('useSideWheelUI', String(sideWheelUiToggle.checked));
+                    if (sideWheelUiToggle.checked) {
+                        applyUiMode('side');
+                    } else if (!newMainUiToggle.checked && !tempWheelUiToggle.checked) {
+                        applyUiMode('legacy');
+                    }
+                });
+
+                tempWheelUiToggle.addEventListener('change', () => {
+                    if (tempWheelUiToggle.checked) {
+                        applyUiMode('temp');
+                    } else if (!newMainUiToggle.checked && !sideWheelUiToggle.checked) {
+                        applyUiMode('legacy');
+                    }
                 });
             }
 
