@@ -316,6 +316,10 @@
             </div>
         </div>
         <div class="flex items-center gap-1">
+            <button id="install-btn" onclick="installApp()" title="Install App"
+                class="hidden w-9 h-9 rounded-xl flex items-center justify-center transition-all text-slate-400 hover:text-white hover:bg-white/10">
+                <i class="fa-solid fa-download text-sm"></i>
+            </button>
             <button onclick="toggleCalculator()" title="Calculator"
                 class="w-9 h-9 rounded-xl flex items-center justify-center transition-all text-slate-400 hover:text-white hover:bg-white/10">
                 <i class="fa-solid fa-calculator text-sm"></i>
@@ -502,8 +506,34 @@
     // ── Service Worker ──
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('../sw.js')
+            navigator.serviceWorker.register('./sw.js', { scope: './' })
                 .catch(e => console.log('SW failed:', e));
+        });
+    }
+
+    // ── PWA Install Prompt ──
+    let deferredInstallPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        const installBtn = document.getElementById('install-btn');
+        if (installBtn) installBtn.classList.remove('hidden');
+    });
+
+    window.addEventListener('appinstalled', () => {
+        deferredInstallPrompt = null;
+        const installBtn = document.getElementById('install-btn');
+        if (installBtn) installBtn.classList.add('hidden');
+    });
+
+    function installApp() {
+        if (!deferredInstallPrompt) return;
+        deferredInstallPrompt.prompt();
+        deferredInstallPrompt.userChoice.then(() => {
+            deferredInstallPrompt = null;
+            const installBtn = document.getElementById('install-btn');
+            if (installBtn) installBtn.classList.add('hidden');
         });
     }
 

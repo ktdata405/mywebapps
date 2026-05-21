@@ -1,8 +1,10 @@
 {
+  "id": "denominations-app",
   "name": "Denominations - KT Apps",
   "short_name": "Denoms",
   "description": "Cash Counter and Denomination Manager",
-  "start_url": "./denominations.html",
+  "start_url": "./denominations.html?from=standalone",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#030305",
   "theme_color": "#030305",
@@ -10,12 +12,14 @@
     {
       "src": "../root/logo.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "../root/logo.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
