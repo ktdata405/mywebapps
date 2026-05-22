@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="../theme.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="../root/logo.png">
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#030305">
+    <title>Install – Denom's</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080c14;
+            --border: rgba(255,255,255,0.07);
+            --text: #f1f5f9;
+            --muted: #64748b;
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+        }
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Animated Background */
+        .bg-scene {
+            position: fixed; inset: 0; z-index: -1;
+            background: radial-gradient(ellipse at 30% 20%, #1e1b4b 0%, #080c14 60%);
+            overflow: hidden;
+        }
+        .orb {
+            position: absolute; border-radius: 50%;
+            filter: blur(90px); opacity: 0.35;
+            animation: drift 22s ease-in-out infinite;
+        }
+        .orb-1 { width:500px;height:500px; background:#6366f1; top:-150px; left:-150px; animation-delay:0s; }
+        .orb-2 { width:380px;height:380px; background:#ec4899; bottom:-80px; right:-80px; animation-delay:-7s; }
+        .orb-3 { width:280px;height:280px; background:#06b6d4; top:45%; left:55%; animation-delay:-14s; }
+        @keyframes drift {
+            0%,100% { transform: translate(0,0) scale(1); }
+            33%      { transform: translate(40px,60px) scale(1.05); }
+            66%      { transform: translate(-30px,20px) scale(0.97); }
+        }
+
+        .card {
+            background: rgba(15,20,35,0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px 32px 36px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .app-icon {
+            width: 88px; height: 88px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            box-shadow: 0 8px 32px rgba(99,102,241,0.45);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 2.4rem;
+            color: #fff;
+        }
+
+        .app-name {
+            font-size: 1.7rem;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            background: linear-gradient(135deg, #c7d2fe 0%, #a5b4fc 40%, #818cf8 80%, #6366f1 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 6px;
+        }
+        .app-subtitle {
+            font-size: 0.88rem;
+            color: var(--muted);
+            margin-bottom: 28px;
+        }
+
+        /* Status message */
+        #status-area {
+            margin-bottom: 24px;
+            min-height: 48px;
+        }
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 8px 18px;
+            border-radius: 99px;
+            font-size: 0.82rem; font-weight: 700;
+        }
+        .status-badge.ready {
+            background: rgba(99,102,241,0.12);
+            border: 1px solid rgba(99,102,241,0.25);
+            color: #a5b4fc;
+        }
+        .status-badge.installed {
+            background: rgba(52,211,153,0.12);
+            border: 1px solid rgba(52,211,153,0.25);
+            color: #34d399;
+        }
+        .status-badge.manual {
+            background: rgba(251,191,36,0.1);
+            border: 1px solid rgba(251,191,36,0.25);
+            color: #fbbf24;
+        }
+
+        /* Buttons */
+        .btn-install {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff; border: none; padding: 16px 32px; border-radius: 14px;
+            font-weight: 700; font-size: 1rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+            box-shadow: 0 4px 24px rgba(99,102,241,0.4);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            width: 100%; margin-bottom: 12px;
+        }
+        .btn-install:hover   { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 8px 32px rgba(99,102,241,0.5); }
+        .btn-install:active  { transform: scale(0.97); }
+        .btn-install:disabled{ opacity: 0.4; pointer-events: none; }
+
+        .btn-open {
+            background: rgba(99,102,241,0.08);
+            border: 1px solid rgba(99,102,241,0.25);
+            color: #a5b4fc; padding: 14px 32px; border-radius: 14px;
+            font-weight: 600; font-size: 0.95rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: all 0.15s; font-family: 'Plus Jakarta Sans', sans-serif;
+            width: 100%; margin-bottom: 12px; text-decoration: none;
+        }
+        .btn-open:hover { background: rgba(99,102,241,0.16); }
+
+        .btn-back {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--muted); padding: 12px 24px; border-radius: 12px;
+            font-weight: 600; font-size: 0.85rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: all 0.15s; font-family: 'Plus Jakarta Sans', sans-serif;
+            width: 100%; text-decoration: none; margin-top: 4px;
+        }
+        .btn-back:hover { border-color: rgba(255,255,255,0.15); color: var(--text); }
+
+        /* Manual steps */
+        #manual-steps {
+            text-align: left;
+            margin-top: 20px;
+            border-top: 1px solid var(--border);
+            padding-top: 20px;
+            display: none;
+        }
+        #manual-steps.show { display: block; }
+        .steps-title {
+            font-size: 0.78rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--muted); margin-bottom: 12px;
+        }
+        .step-item {
+            display: flex; gap: 12px; align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        .step-num {
+            min-width: 24px; height: 24px;
+            background: rgba(99,102,241,0.2);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.72rem; font-weight: 800; color: #a5b4fc;
+        }
+        .step-text {
+            font-size: 0.85rem; color: var(--muted); line-height: 1.5;
+            padding-top: 3px;
+        }
+        .step-text b { color: var(--text); }
+    </style>
+</head>
+<body>
+
+<!-- Animated Background -->
+<div class="bg-scene">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+</div>
+
+<div class="card">
+    <div class="app-icon">
+        <i class="fa-solid fa-indian-rupee-sign"></i>
+    </div>
+    <div class="app-name">Denom's</div>
+    <div class="app-subtitle">Denomination Manager · Cash Counter</div>
+
+    <div id="status-area">
+        <span id="status-badge" class="status-badge ready">
+            <i class="fa-solid fa-circle-dot"></i>
+            <span id="status-text">Checking install status…</span>
+        </span>
+    </div>
+
+    <!-- Install Button (shown when installable) -->
+    <button id="btn-install" class="btn-install" onclick="doInstall()" style="display:none">
+        <i class="fa-solid fa-download"></i> Install App
+    </button>
+
+    <!-- Open App (shown once installed) -->
+    <a id="btn-open" href="./denominations.html" class="btn-open" style="display:none">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> Open App
+    </a>
+
+    <!-- Manual instructions toggle (shown when browser doesn't support prompt) -->
+    <button id="btn-manual" class="btn-open" onclick="toggleManual()" style="display:none">
+        <i class="fa-solid fa-circle-info"></i> How to Install Manually
+    </button>
+
+    <a href="./denominations.html" class="btn-back">
+        <i class="fa-solid fa-arrow-left"></i> Go to App
+    </a>
+
+    <!-- Manual Steps -->
+    <div id="manual-steps">
+        <!-- Filled by JS -->
+    </div>
+</div>
+
+<script>
+    let deferredPrompt = null;
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isAndroidChrome = /android/i.test(navigator.userAgent) && /chrome/i.test(navigator.userAgent);
+    const isStandalone = () =>
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true;
+
+    function setStatus(text, type) {
+        const badge = document.getElementById('status-badge');
+        const label = document.getElementById('status-text');
+        label.textContent = text;
+        badge.className = 'status-badge ' + type;
+        if (type === 'ready')     badge.querySelector('i').className = 'fa-solid fa-circle-dot';
+        if (type === 'installed') badge.querySelector('i').className = 'fa-solid fa-circle-check';
+        if (type === 'manual')    badge.querySelector('i').className = 'fa-solid fa-circle-exclamation';
+    }
+
+    function show(id) { document.getElementById(id).style.display = 'flex'; }
+    function hide(id) { document.getElementById(id).style.display = 'none'; }
+
+    function showInstalledState() {
+        setStatus('App is already installed ✓', 'installed');
+        show('btn-open');
+        hide('btn-install');
+        hide('btn-manual');
+    }
+
+    function showInstallableState() {
+        setStatus('Ready to install', 'ready');
+        show('btn-install');
+        hide('btn-open');
+        hide('btn-manual');
+    }
+
+    function showManualState() {
+        setStatus('Manual install required', 'manual');
+        hide('btn-install');
+        hide('btn-open');
+        show('btn-manual');
+        buildManualSteps();
+    }
+
+    function buildManualSteps() {
+        const container = document.getElementById('manual-steps');
+        let steps = [];
+
+        if (isIOS) {
+            steps = [
+                { text: 'Open this page in <b>Safari</b> browser (not Chrome/Firefox).' },
+                { text: 'Tap the <b>Share</b> button <i class="fa-solid fa-arrow-up-from-bracket" style="color:#a5b4fc"></i> at the bottom of the screen.' },
+                { text: 'Scroll down and tap <b>"Add to Home Screen"</b>.' },
+                { text: 'Tap <b>Add</b> in the top-right corner.' },
+                { text: 'Done! Open <b>Denom\'s</b> from your Home Screen.' }
+            ];
+        } else {
+            steps = [
+                { text: 'Open this page in <b>Chrome</b> or <b>Edge</b> browser.' },
+                { text: 'Tap the browser <b>menu (⋮ three dots)</b> in the top-right corner.' },
+                { text: 'Tap <b>"Install app"</b> or <b>"Add to Home screen"</b>.' },
+                { text: 'Confirm by tapping <b>Install</b> or <b>Add</b>.' },
+                { text: 'Done! Open <b>Denom\'s</b> from your Home Screen or App Drawer.' }
+            ];
+        }
+
+        container.innerHTML =
+            '<div class="steps-title"><i class="fa-solid fa-list-ol mr-1"></i> Steps</div>' +
+            steps.map(function(s, i) {
+                return '<div class="step-item">' +
+                    '<div class="step-num">' + (i + 1) + '</div>' +
+                    '<div class="step-text">' + s.text + '</div>' +
+                    '</div>';
+            }).join('');
+    }
+
+    function toggleManual() {
+        const el = document.getElementById('manual-steps');
+        const isOpen = el.classList.toggle('show');
+        const btn = document.getElementById('btn-manual');
+        btn.innerHTML = isOpen
+            ? '<i class="fa-solid fa-chevron-up"></i> Hide Steps'
+            : '<i class="fa-solid fa-circle-info"></i> How to Install Manually';
+    }
+
+    function doInstall() {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function(choice) {
+            deferredPrompt = null;
+            if (choice.outcome === 'accepted') {
+                showInstalledState();
+            } else {
+                showManualState();
+            }
+        });
+    }
+
+    // ── Init ──
+    window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (!isStandalone()) showInstallableState();
+    });
+
+    window.addEventListener('appinstalled', function() {
+        deferredPrompt = null;
+        showInstalledState();
+    });
+
+    // Check on load
+    window.addEventListener('load', function() {
+        if (isStandalone()) {
+            showInstalledState();
+        } else {
+            // Wait briefly for beforeinstallprompt, then fallback to manual
+            if (!deferredPrompt) {
+                setTimeout(function() {
+                    if (!deferredPrompt) {
+                        showManualState();
+                        buildManualSteps();
+                    }
+                }, 1500);
+            }
+        }
+    });
+
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('./sw.js', { scope: './' })
+                .catch(function(e) { console.log('SW failed:', e); });
+        });
+    }
+</script>
+</body>
+</html>
+
