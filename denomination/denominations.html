@@ -316,10 +316,10 @@
             </div>
         </div>
         <div class="flex items-center gap-1">
-            <button id="install-btn" onclick="installApp()" title="Install App"
+            <a href="./install.html" id="install-btn" title="Install App"
                 class="w-9 h-9 rounded-xl flex items-center justify-center transition-all text-slate-400 hover:text-white hover:bg-white/10">
                 <i class="fa-solid fa-download text-sm"></i>
-            </button>
+            </a>
             <button onclick="toggleCalculator()" title="Calculator"
                 class="w-9 h-9 rounded-xl flex items-center justify-center transition-all text-slate-400 hover:text-white hover:bg-white/10">
                 <i class="fa-solid fa-calculator text-sm"></i>
@@ -511,59 +511,7 @@
         });
     }
 
-    // ── PWA Install Prompt ──
-    let deferredInstallPrompt = null;
-
-    function isStandaloneMode() {
-        return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    }
-
-    function showInstallFallbackHelp() {
-        var isIOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent || '');
-        var msg = isIOS
-            ? 'Safari lo Share icon click chesi "Add to Home Screen" select cheyyandi.'
-            : 'Browser menu (three dots) open chesi "Install app" or "Add to Home screen" select cheyyandi.';
-        showPopup('Install App', msg, 'success');
-    }
-
-    function updateInstallButtonVisibility() {
-        var installBtn = document.getElementById('install-btn');
-        if (!installBtn) return;
-
-        // Hide only when app is already running as installed standalone app.
-        if (isStandaloneMode()) {
-            installBtn.classList.add('hidden');
-            return;
-        }
-
-        installBtn.classList.remove('hidden');
-    }
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredInstallPrompt = e;
-        updateInstallButtonVisibility();
-    });
-
-    window.addEventListener('appinstalled', () => {
-        deferredInstallPrompt = null;
-        updateInstallButtonVisibility();
-    });
-
-    function installApp() {
-        if (isStandaloneMode()) return;
-
-        if (!deferredInstallPrompt) {
-            showInstallFallbackHelp();
-            return;
-        }
-
-        deferredInstallPrompt.prompt();
-        deferredInstallPrompt.userChoice.then(() => {
-            deferredInstallPrompt = null;
-            updateInstallButtonVisibility();
-        });
-    }
+    // ── Install button links to install.html (no JS prompt needed here) ──
 
     var NOTES = [500, 200, 100, 50, 20, 10];
     var COINS = [5, 2, 1];

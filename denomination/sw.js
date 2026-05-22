@@ -1,8 +1,9 @@
-const CACHE_NAME = 'denominations-app-v1';
+const CACHE_NAME = 'denominations-app-v3';
 const STATIC_ASSETS = [
   './denominations.html',
   './denominations.html?from=standalone',
   './denominationsreport.html',
+  './install.html',
   './manifest.json',
   '../root/logo.png',
   '../config.js',
