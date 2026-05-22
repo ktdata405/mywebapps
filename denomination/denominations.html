@@ -317,7 +317,7 @@
         </div>
         <div class="flex items-center gap-1">
             <button id="install-btn" onclick="installApp()" title="Install App"
-                class="hidden w-9 h-9 rounded-xl flex items-center justify-center transition-all text-slate-400 hover:text-white hover:bg-white/10">
+                class="w-9 h-9 rounded-xl flex items-center justify-center transition-all text-slate-400 hover:text-white hover:bg-white/10">
                 <i class="fa-solid fa-download text-sm"></i>
             </button>
             <button onclick="toggleCalculator()" title="Calculator"
@@ -514,26 +514,54 @@
     // ── PWA Install Prompt ──
     let deferredInstallPrompt = null;
 
+    function isStandaloneMode() {
+        return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    }
+
+    function showInstallFallbackHelp() {
+        var isIOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent || '');
+        var msg = isIOS
+            ? 'Safari lo Share icon click chesi "Add to Home Screen" select cheyyandi.'
+            : 'Browser menu (three dots) open chesi "Install app" or "Add to Home screen" select cheyyandi.';
+        showPopup('Install App', msg, 'success');
+    }
+
+    function updateInstallButtonVisibility() {
+        var installBtn = document.getElementById('install-btn');
+        if (!installBtn) return;
+
+        // Hide only when app is already running as installed standalone app.
+        if (isStandaloneMode()) {
+            installBtn.classList.add('hidden');
+            return;
+        }
+
+        installBtn.classList.remove('hidden');
+    }
+
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredInstallPrompt = e;
-        const installBtn = document.getElementById('install-btn');
-        if (installBtn) installBtn.classList.remove('hidden');
+        updateInstallButtonVisibility();
     });
 
     window.addEventListener('appinstalled', () => {
         deferredInstallPrompt = null;
-        const installBtn = document.getElementById('install-btn');
-        if (installBtn) installBtn.classList.add('hidden');
+        updateInstallButtonVisibility();
     });
 
     function installApp() {
-        if (!deferredInstallPrompt) return;
+        if (isStandaloneMode()) return;
+
+        if (!deferredInstallPrompt) {
+            showInstallFallbackHelp();
+            return;
+        }
+
         deferredInstallPrompt.prompt();
         deferredInstallPrompt.userChoice.then(() => {
             deferredInstallPrompt = null;
-            const installBtn = document.getElementById('install-btn');
-            if (installBtn) installBtn.classList.add('hidden');
+            updateInstallButtonVisibility();
         });
     }
 
@@ -848,6 +876,7 @@
     });
 
     function init() {
+        updateInstallButtonVisibility();
         initDate();
         renderDenominations();
         ['week-expenses-input','adjust-amount-input','atm-withdrawal-input'].forEach(function(id) {
