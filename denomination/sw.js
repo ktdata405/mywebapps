@@ -1,4 +1,4 @@
-const CACHE_NAME = 'denominations-app-v3';
+const CACHE_NAME = 'denominations-app-v4';
 const STATIC_ASSETS = [
   './denominations.html',
   './denominations.html?from=standalone',
@@ -6,6 +6,10 @@ const STATIC_ASSETS = [
   './install.html',
   './manifest.json',
   '../root/logo.png',
+  '../root/icon-192.png',
+  '../root/icon-512.png',
+  '../root/icon-192-maskable.png',
+  '../root/icon-512-maskable.png',
   '../config.js',
   '../ktui.js',
   '../theme.js',
@@ -56,4 +60,3 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
-
