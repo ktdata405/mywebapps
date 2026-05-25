@@ -229,6 +229,20 @@
         <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Denom's App
     </a>
 
+    <!-- Tip: shown when visiting from inside another installed PWA -->
+    <div id="pwa-tip" class="tip-box" style="display:none; margin-bottom:14px;">
+        <i class="fa-solid fa-circle-info" style="color:#67e8f9; margin-top:2px; flex-shrink:0"></i>
+        <div>
+            <strong style="color:#f1f5f9;">You're inside another installed app.</strong><br>
+            To install <strong>Denom's</strong> separately, open this URL in your <strong>browser</strong> (Chrome on Android, Safari on iPhone), then follow the steps below.
+            <br><br>
+            <a href="./install.html" id="open-in-browser-link" target="_blank" rel="noopener"
+               style="display:inline-flex;align-items:center;gap:6px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:#a5b4fc;border-radius:8px;padding:5px 12px;font-size:0.8rem;font-weight:700;text-decoration:none;">
+               <i class="fa-solid fa-arrow-up-right-from-square"></i> Open in Browser
+            </a>
+        </div>
+    </div>
+
     <!-- Manual steps divider (shown when native prompt unavailable) -->
     <div id="manual-section" style="display:none">
         <div class="divider"></div>
@@ -352,8 +366,27 @@
     const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
     let deferredPrompt = null;
 
-    function isStandalone() {
-        return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+    /**
+     * Returns true ONLY if THIS denominations app is running as an installed PWA.
+     * We detect this by checking if the page was launched from the app's own
+     * start_url (which appends ?from=standalone), OR if the referrer is empty
+     * AND display-mode is standalone (meaning opened directly from home screen).
+     *
+     * Simply checking display-mode: standalone is NOT enough because the user
+     * may be browsing inside another installed PWA (e.g. KT Apps) which also
+     * runs in standalone mode.
+     */
+    function isThisAppInstalled() {
+        const params = new URLSearchParams(window.location.search);
+        // Launched via our own start_url shortcut
+        if (params.get('from') === 'standalone' || params.get('from') === 'shortcut') {
+            return true;
+        }
+        // Fallback: no referrer + standalone display mode = opened from home screen icon
+        const inStandalone = window.matchMedia('(display-mode: standalone)').matches
+                          || navigator.standalone === true;
+        const noReferrer = !document.referrer || document.referrer === '';
+        return inStandalone && noReferrer;
     }
 
     function setStatus(text, cls, iconCls) {
@@ -380,10 +413,22 @@
     function showManual() {
         document.getElementById('btn-native').style.display = 'none';
         document.getElementById('btn-open').style.display = 'none';
+        document.getElementById('pwa-tip').style.display = 'none';
         document.getElementById('manual-section').style.display = 'block';
         setStatus('Follow steps below to install', 's-manual', 'fa-solid fa-circle-exclamation');
+        if (isIOS) {
+            switchTab('ios');
+        } else {
+            switchTab('android');
+        }
+    }
 
-        // Auto-select the right tab based on device
+    function showManualFromPWA() {
+        document.getElementById('btn-native').style.display = 'none';
+        document.getElementById('btn-open').style.display = 'none';
+        document.getElementById('pwa-tip').style.display = 'flex';
+        document.getElementById('manual-section').style.display = 'block';
+        setStatus('Open in browser to install', 's-manual', 'fa-solid fa-circle-exclamation');
         if (isIOS) {
             switchTab('ios');
         } else {
@@ -411,11 +456,12 @@
         document.getElementById('steps-ios').style.display = tab === 'ios' ? 'block' : 'none';
     }
 
-    // Listen for install prompt
+    // Listen for install prompt (fires when browser determines app is installable)
     window.addEventListener('beforeinstallprompt', function(e) {
         e.preventDefault();
         deferredPrompt = e;
-        if (!isStandalone()) showNativeInstall();
+        // Only show native install if we are NOT already running as THIS installed app
+        if (!isThisAppInstalled()) showNativeInstall();
     });
 
     window.addEventListener('appinstalled', function() {
@@ -423,18 +469,30 @@
         showAlreadyInstalled();
     });
 
-    // On load detect state
+    // On load: determine correct state
     window.addEventListener('load', function() {
-        if (isStandalone()) {
+        // Running as THIS installed app?
+        if (isThisAppInstalled()) {
             showAlreadyInstalled();
             return;
         }
-        // Wait a moment for beforeinstallprompt, then fall to manual
+
+        // If we're inside another installed PWA (e.g. KT Apps running standalone),
+        // the browser won't fire beforeinstallprompt for a sub-app.
+        // Show manual steps immediately with a helpful note.
+        const inStandalone = window.matchMedia('(display-mode: standalone)').matches
+                          || navigator.standalone === true;
+        if (inStandalone) {
+            showManualFromPWA();
+            return;
+        }
+
+        // Wait briefly for beforeinstallprompt, then fall back to manual steps
         setTimeout(function() {
             if (!deferredPrompt) {
                 showManual();
             }
-        }, 1200);
+        }, 1400);
     });
 
     // Register SW
