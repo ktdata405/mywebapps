@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kt-apps-v5';
+const CACHE_NAME = 'kt-apps-v8';
 const STATIC_ASSETS = [
   './',
   './index.html',

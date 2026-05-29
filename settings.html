@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="./theme.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -447,6 +448,35 @@
         </div>
 
         <div class="settings-section">
+            <h3>Views</h3>
+            <div class="setting-item">
+                <span>Home + Dashboard UI Mode (Enable one)</span>
+                <span style="font-size:0.75rem;color:var(--text-secondary);">Only one toggle can be ON</span>
+            </div>
+            <div class="setting-item">
+                <label for="new-main-ui-toggle">Use Center Wheel UI Home + Dashboard UI</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="new-main-ui-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <label for="side-wheel-ui-toggle">Use Side Wheel UI (Home + Dashboard)</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="side-wheel-ui-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <label for="temp-wheel-ui-toggle">Use Temp Wheel UI (Home + Dashboard)</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="temp-wheel-ui-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="settings-section">
             <h3>Security</h3>
             <div class="setting-item">
                 <label for="pin-screen-toggle">Enable PIN Screen</label>
@@ -578,6 +608,10 @@
 
             // Function to apply theme
             function applyTheme(isDarkMode) {
+                if (typeof window.applyAppTheme === 'function') {
+                    window.applyAppTheme(isDarkMode);
+                    return;
+                }
                 document.body.classList.toggle('dark-mode', isDarkMode);
                 document.body.classList.toggle('light-mode', !isDarkMode);
             }
@@ -594,11 +628,68 @@
             // Dark Mode Toggle functionality
             const darkModeToggle = document.getElementById('dark-mode-toggle');
             if (darkModeToggle) {
-                darkModeToggle.checked = localStorage.getItem('darkMode') === 'true';
+                const savedDarkMode = localStorage.getItem('darkMode');
+                darkModeToggle.checked = savedDarkMode === null ? true : savedDarkMode === 'true';
                 darkModeToggle.addEventListener('change', () => {
                     const isChecked = darkModeToggle.checked;
                     applyTheme(isChecked);
                     localStorage.setItem('darkMode', isChecked);
+                });
+            }
+
+            // Home + Dashboard UI mode toggles (mutually exclusive).
+            const newMainUiToggle = document.getElementById('new-main-ui-toggle');
+            const sideWheelUiToggle = document.getElementById('side-wheel-ui-toggle');
+            const tempWheelUiToggle = document.getElementById('temp-wheel-ui-toggle');
+            if (newMainUiToggle && sideWheelUiToggle && tempWheelUiToggle) {
+                const savedUnifiedUi = localStorage.getItem('useNewMainUI');
+                const legacyHomeUi = localStorage.getItem('useNewHomeUI');
+                const legacyDashboardUi = localStorage.getItem('useNewDashboardUI');
+                const useNewMainUI = savedUnifiedUi !== null
+                    ? savedUnifiedUi !== 'false'
+                    : !(legacyHomeUi === 'false' || legacyDashboardUi === 'false');
+                const useSideWheelUI = localStorage.getItem('useSideWheelUI') === 'true';
+                const useTempWheelUI = localStorage.getItem('useTempWheelUI') === 'true';
+
+                const applyUiMode = (mode) => {
+                    const isCenter = mode === 'center';
+                    const isSide = mode === 'side';
+                    const isTemp = mode === 'temp';
+
+                    newMainUiToggle.checked = isCenter;
+                    sideWheelUiToggle.checked = isSide;
+                    tempWheelUiToggle.checked = isTemp;
+
+                    localStorage.setItem('useNewMainUI', String(isCenter || isSide || isTemp));
+                    localStorage.setItem('useSideWheelUI', String(isSide));
+                    localStorage.setItem('useTempWheelUI', String(isTemp));
+                };
+
+                const initialMode = useTempWheelUI ? 'temp' : useSideWheelUI ? 'side' : useNewMainUI ? 'center' : 'legacy';
+                applyUiMode(initialMode);
+
+                newMainUiToggle.addEventListener('change', () => {
+                    if (newMainUiToggle.checked) {
+                        applyUiMode('center');
+                    } else if (!sideWheelUiToggle.checked && !tempWheelUiToggle.checked) {
+                        applyUiMode('legacy');
+                    }
+                });
+
+                sideWheelUiToggle.addEventListener('change', () => {
+                    if (sideWheelUiToggle.checked) {
+                        applyUiMode('side');
+                    } else if (!newMainUiToggle.checked && !tempWheelUiToggle.checked) {
+                        applyUiMode('legacy');
+                    }
+                });
+
+                tempWheelUiToggle.addEventListener('change', () => {
+                    if (tempWheelUiToggle.checked) {
+                        applyUiMode('temp');
+                    } else if (!newMainUiToggle.checked && !sideWheelUiToggle.checked) {
+                        applyUiMode('legacy');
+                    }
                 });
             }
 

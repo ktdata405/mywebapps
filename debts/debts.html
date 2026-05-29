@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="../theme.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -117,62 +118,34 @@
     </header>
 
     <main class="max-w-3xl mx-auto px-4">
-
-        <!-- Stats Row -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            <div class="glass-panel p-5 rounded-3xl border border-white/5 relative overflow-hidden group">
-                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <i class="fa-solid fa-hand-holding-dollar text-4xl text-emerald-500"></i>
-                </div>
-                <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1" data-translate-key="totalLent">Total Lent (You'll get)</p>
-                <h3 class="text-2xl font-bold text-emerald-400 font-mono" id="total-lent">₹0.00</h3>
-            </div>
-
-            <div class="glass-panel p-5 rounded-3xl border border-white/5 relative overflow-hidden group">
-                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <i class="fa-solid fa-hand-holding-hand text-4xl text-rose-500"></i>
-                </div>
-                <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1" data-translate-key="totalBorrowed">Total Borrowed (You owe)</p>
-                <h3 class="text-2xl font-bold text-rose-400 font-mono" id="total-borrowed">₹0.00</h3>
-            </div>
-
-            <div class="glass-panel p-5 rounded-3xl border border-white/5 relative overflow-hidden group">
-                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <i class="fa-solid fa-scale-balanced text-4xl text-indigo-500"></i>
-                </div>
-                <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1" data-translate-key="netBalance">Net Balance</p>
-                <h3 class="text-2xl font-bold text-indigo-400 font-mono" id="net-balance">₹0.00</h3>
-            </div>
-        </div>
-
         <!-- Add Transaction Form -->
         <div class="glass-panel rounded-3xl p-6 mb-8 border border-white/10 shadow-2xl shadow-black/20">
             <div class="flex items-center gap-3 mb-6">
                 <div class="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400">
                     <i class="fa-solid fa-plus text-sm"></i>
                 </div>
-                <h2 class="text-lg font-bold text-white" data-translate-key="addNewDebt">Add New Debt</h2>
+                <h2 class="text-lg font-bold text-white" id="form-title" data-translate-key="addNewDebt">Add New Debt</h2>
             </div>
 
             <form id="debt-form" class="space-y-5">
                 <!-- Type Selection -->
                 <div class="grid grid-cols-2 gap-4">
                     <label class="radio-label cursor-pointer relative">
-                        <input type="radio" name="type" value="lent" checked class="peer sr-only">
-                        <div class="p-4 rounded-2xl bg-black/20 border border-white/10 hover:bg-white/5 transition-all flex flex-col items-center gap-2 text-gray-400 peer-checked:text-emerald-400 peer-checked:border-emerald-500/50 peer-checked:bg-emerald-500/10">
-                            <i class="fa-solid fa-arrow-trend-up text-xl mb-1"></i>
-                            <span class="font-semibold text-sm" data-translate-key="lentGiven">Lent (Given)</span>
-                            <div class="check-icon absolute top-3 right-3 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs opacity-0 transform scale-50 transition-all duration-300">
+                        <input type="radio" name="type" value="given" checked class="peer sr-only">
+                        <div class="px-4 py-2 rounded-xl bg-black/20 border border-white/10 hover:bg-white/5 transition-all flex items-center justify-center gap-2 text-gray-400 peer-checked:text-emerald-400 peer-checked:border-emerald-500/50 peer-checked:bg-emerald-500/10">
+                            <i class="fa-solid fa-arrow-trend-up text-base"></i>
+                            <span class="font-semibold text-sm">Given</span>
+                            <div class="check-icon absolute top-1 right-1 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs opacity-0 transform scale-50 transition-all duration-300">
                                 <i class="fa-solid fa-check"></i>
                             </div>
                         </div>
                     </label>
                     <label class="radio-label cursor-pointer relative">
-                        <input type="radio" name="type" value="borrowed" class="peer sr-only">
-                        <div class="p-4 rounded-2xl bg-black/20 border border-white/10 hover:bg-white/5 transition-all flex flex-col items-center gap-2 text-gray-400 peer-checked:text-rose-400 peer-checked:border-rose-500/50 peer-checked:bg-rose-500/10">
-                            <i class="fa-solid fa-arrow-trend-down text-xl mb-1"></i>
-                            <span class="font-semibold text-sm" data-translate-key="borrowedTaken">Borrowed (Taken)</span>
-                            <div class="check-icon absolute top-3 right-3 w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs opacity-0 transform scale-50 transition-all duration-300">
+                        <input type="radio" name="type" value="taken" class="peer sr-only">
+                        <div class="px-4 py-2 rounded-xl bg-black/20 border border-white/10 hover:bg-white/5 transition-all flex items-center justify-center gap-2 text-gray-400 peer-checked:text-rose-400 peer-checked:border-rose-500/50 peer-checked:bg-rose-500/10">
+                            <i class="fa-solid fa-arrow-trend-down text-base"></i>
+                            <span class="font-semibold text-sm">Taken</span>
+                            <div class="check-icon absolute top-1 right-1 w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs opacity-0 transform scale-50 transition-all duration-300">
                                 <i class="fa-solid fa-check"></i>
                             </div>
                         </div>
@@ -198,7 +171,7 @@
                             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
                                 <i class="fa-solid fa-indian-rupee-sign text-sm"></i>
                             </div>
-                            <input type="number" id="amount" placeholder="0.00" required min="0" step="0.01"
+                            <input type="text" id="amount" inputmode="decimal" placeholder="0.00" required
                                 class="w-full bg-black/40 border border-white/10 rounded-2xl pl-10 pr-4 py-3.5 text-sm font-mono font-bold text-white outline-none focus:border-indigo-500 focus:bg-black/60 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-gray-700">
                         </div>
                     </div>
@@ -214,48 +187,38 @@
                 </div>
 
                 <div class="space-y-1.5">
-                    <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1" data-translate-key="notesOptional">Notes (Optional)</label>
-                    <textarea id="notes" placeholder="Description..." rows="2"
+                    <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1">Remarks</label>
+                    <textarea id="remarks" placeholder="Remarks..." rows="2"
                         class="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-3 text-sm text-gray-300 placeholder-gray-700 outline-none focus:border-indigo-500 focus:bg-black/60 focus:ring-1 focus:ring-indigo-500 transition-all resize-none" data-translate-key="notesPlaceholder"></textarea>
                 </div>
 
-                <button type="submit" class="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2.5 transition-all active:scale-95 hover:shadow-indigo-600/40 mt-2">
-                    <i class="fa-solid fa-plus"></i>
-                    <span data-translate-key="addRecord">Add Record</span>
-                </button>
+                <div class="grid grid-cols-2 gap-3 mt-2">
+                    <button type="button" id="clear-button" class="py-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-200 font-bold flex items-center justify-center gap-2 transition-all active:scale-95">
+                        <i class="fa-solid fa-eraser"></i>
+                        <span>Clear</span>
+                    </button>
+                    <button type="submit" id="submit-button" class="py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2.5 transition-all active:scale-95 hover:shadow-indigo-600/40">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span id="submit-label">Save Record</span>
+                    </button>
+                </div>
             </form>
         </div>
-
-        <!-- Transactions List -->
-        <div class="space-y-4">
-            <div class="flex items-center justify-between px-2">
-                <h2 class="text-lg font-bold text-white" data-translate-key="history">History</h2>
-                <button onclick="clearAllData()" class="text-xs font-bold text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-colors border border-red-500/20" data-translate-key="clearAll">
-                    Clear All
-                </button>
-            </div>
-
-            <!-- Filters -->
-            <div class="flex gap-2 overflow-x-auto pb-2 px-1 no-scrollbar">
-                <button class="filter-chip active px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-lg shadow-indigo-600/20 transition-all whitespace-nowrap border border-indigo-500" onclick="setFilter('all', this)" data-translate-key="all">All</button>
-                <button class="filter-chip px-4 py-2 rounded-xl bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 text-xs font-bold border border-white/5 transition-all whitespace-nowrap" onclick="setFilter('pending', this)" data-translate-key="pending">Pending</button>
-                <button class="filter-chip px-4 py-2 rounded-xl bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 text-xs font-bold border border-white/5 transition-all whitespace-nowrap" onclick="setFilter('settled', this)" data-translate-key="settled">Settled</button>
-            </div>
-            
-            <div id="debts-list" class="space-y-3">
-                <!-- Cards will be added here -->
-            </div>
-
-            <div id="empty-msg" class="hidden py-12 text-center">
-                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 mb-4">
-                    <i class="fa-regular fa-folder-open text-2xl text-gray-600"></i>
-                </div>
-                <p class="text-gray-500 font-medium" data-translate-key="noRecordsFound">No records found.</p>
-            </div>
-        </div>
-
     </main>
+
+    <!-- Loader -->
+    <div id="loader" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/75 backdrop-blur-sm">
+        <div class="glass-panel rounded-3xl p-6 border border-white/10 flex flex-col items-center gap-4">
+            <div class="relative w-14 h-14">
+                <div class="absolute inset-0 border-4 border-indigo-500/20 rounded-full"></div>
+                <div class="absolute inset-0 border-4 border-indigo-500 rounded-full border-t-transparent animate-spin"></div>
+            </div>
+            <p id="loader-text" class="text-xs uppercase tracking-widest text-gray-300 font-bold">Please wait...</p>
+        </div>
+    </div>
+
     <script src="../localization.js"></script>
+    <script src="../config.js"></script>
     <script>
         // ── Service Worker ──
         if ('serviceWorker' in navigator) {
@@ -265,206 +228,317 @@
             });
         }
 
-        // Initialize state
-        let debts = JSON.parse(localStorage.getItem('kt_debts_data')) || [];
-        let currentFilter = 'all';
+        // ── Init ──
+        const DEFAULT_DEBTS_SCRIPT_URL = (typeof CONFIG !== 'undefined' && CONFIG && CONFIG.GOOGLE_SHEET_URL_DEBTS)
+            ? String(CONFIG.GOOGLE_SHEET_URL_DEBTS).trim() : '';
+        const SCRIPT_URL = DEFAULT_DEBTS_SCRIPT_URL;
+
+        function isValidScriptUrl(url) {
+            if (!url) return false;
+            const trimmed = url.trim();
+            if (!trimmed || trimmed.includes('YOUR-') || trimmed.includes('SCRIPT-ID')) return false;
+            return trimmed.startsWith('https://script.google.com');
+        }
 
         // Set default date to today
         document.getElementById('date').valueAsDate = new Date();
 
         // DOM Elements
         const form = document.getElementById('debt-form');
-        const listContainer = document.getElementById('debts-list');
-        const emptyMsg = document.getElementById('empty-msg');
-        const totalLentEl = document.getElementById('total-lent');
-        const totalBorrowedEl = document.getElementById('total-borrowed');
-        const netBalanceEl = document.getElementById('net-balance');
+        const formTitle = document.getElementById('form-title');
+        const submitButton = document.getElementById('submit-button');
+        const submitLabel = document.getElementById('submit-label');
+        const clearButton = document.getElementById('clear-button');
+        const amountInput = document.getElementById('amount');
+        const loader = document.getElementById('loader');
+        const loaderText = document.getElementById('loader-text');
 
-        // Render initial data
-        renderDebts();
-        updateStats();
+        function formatIndianAmountString(value) {
+            const cleaned = String(value || '').replace(/[^\d.]/g, '');
+            if (!cleaned) return '';
+
+            const dotIndex = cleaned.indexOf('.');
+            const intRaw = dotIndex >= 0 ? cleaned.slice(0, dotIndex) : cleaned;
+            const decRaw = dotIndex >= 0 ? cleaned.slice(dotIndex + 1).replace(/\./g, '') : '';
+
+            const intPart = intRaw.replace(/^0+(?=\d)/, '') || '0';
+            const last3 = intPart.slice(-3);
+            const rest = intPart.slice(0, -3);
+            const grouped = rest ? rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + ',' + last3 : last3;
+            const decPart = decRaw.slice(0, 2);
+
+            return dotIndex >= 0 ? grouped + '.' + decPart : grouped;
+        }
+
+        function parseIndianAmount(value) {
+            const parsed = Number(String(value || '').replace(/,/g, ''));
+            return Number.isFinite(parsed) ? parsed : NaN;
+        }
+
+        let editingDebtId = null;
+        let editingDebtStatus = 'pending';
+        let editingDebtSettleRemarks = '';
+
+        function getUrlParameter(name) {
+            const params = new URLSearchParams(window.location.search);
+            return params.get(name) || '';
+        }
+
+        function setLoader(visible, text) {
+            loaderText.textContent = text || 'Please wait...';
+            loader.classList.toggle('hidden', !visible);
+        }
+
+        function setMode(isEdit) {
+            if (isEdit) {
+                formTitle.textContent = 'Edit Debt Record';
+                submitButton.classList.remove('from-indigo-600', 'to-purple-600');
+                submitButton.classList.add('from-emerald-600', 'to-teal-600');
+                submitLabel.textContent = 'Update Record';
+                return;
+            }
+            formTitle.textContent = 'Add New Debt';
+            submitButton.classList.remove('from-emerald-600', 'to-teal-600');
+            submitButton.classList.add('from-indigo-600', 'to-purple-600');
+            submitLabel.textContent = 'Save Record';
+        }
+
+        async function fetchDebtForEdit(id) {
+            if (!isValidScriptUrl(SCRIPT_URL)) {
+                KTui.toast('Debts script URL is missing/invalid in config.js', 'error');
+                return null;
+            }
+            try {
+                const url = new URL(SCRIPT_URL);
+                url.searchParams.set('action', 'getDebt');
+                url.searchParams.set('id', String(id));
+                url.searchParams.set('t', String(Date.now()));
+                const response = await fetch(url.toString(), { cache: 'no-store' });
+                const result = await response.json();
+                if (result && result.success && result.data) return normalizeDebt(result.data);
+                KTui.toast((result && result.message) || 'Could not load debt for edit', 'error');
+                return null;
+            } catch (error) {
+                console.error('Error fetching debt for edit:', error);
+                KTui.toast('Error fetching debt for edit: ' + error.message, 'error');
+                return null;
+            }
+        }
+
+        async function initPage() {
+            const id = getUrlParameter('id');
+            if (!id) { setMode(false); return; }
+            editingDebtId = id;
+            setLoader(true, 'Loading debt data...');
+            const debt = await fetchDebtForEdit(id);
+            setLoader(false);
+            if (!debt) {
+                editingDebtId = null;
+                editingDebtStatus = 'pending';
+                setMode(false);
+                KTui.toast('Debt record not found, switching to add mode.', 'warning');
+                return;
+            }
+            editingDebtStatus = debt.status || 'pending';
+            editingDebtSettleRemarks = debt.settleRemarks || '';
+            prefillForm(debt);
+        }
+
+        window.addEventListener('load', initPage);
+
+        function prefillForm(debt) {
+            // Map normalized type back to form values
+            const typeVal = (String(debt.type||'').toLowerCase() === 'borrowed' || String(debt.type||'').toLowerCase() === 'taken') ? 'taken' : 'given';
+            const radioEl = document.querySelector(`input[name="type"][value="${typeVal}"]`);
+            if (radioEl) radioEl.checked = true;
+            document.getElementById('person').value = debt.person || '';
+            amountInput.value = formatIndianAmountString(debt.amount || '');
+            document.getElementById('remarks').value = debt.remarks || '';
+            document.getElementById('date').value = formatDateForInput(debt.date);
+            setMode(true);
+        }
+
+        amountInput.addEventListener('input', function () {
+            this.value = formatIndianAmountString(this.value);
+        });
 
         // Form Submit Handler
-        form.addEventListener('submit', (e) => {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const type = document.querySelector('input[name="type"]:checked').value;
             const person = document.getElementById('person').value;
-            const amount = parseFloat(document.getElementById('amount').value);
+            const amount = parseIndianAmount(amountInput.value);
             const date = document.getElementById('date').value;
-            const notes = document.getElementById('notes').value;
+            const remarks = document.getElementById('remarks').value;
 
-            const newDebt = {
-                id: Date.now(),
+            if (!Number.isFinite(amount) || amount < 0) {
+                KTui.toast('Please enter a valid amount', 'error');
+                return;
+            }
+
+            const debtData = {
+                date: formatDateForStorage(date),
                 type,
                 person,
                 amount,
-                date,
-                notes,
-                status: 'pending'
+                remarks,
+                status: 'pending' // New debts are always pending initially
             };
 
-            debts.push(newDebt);
-            saveData();
-            renderDebts();
-            updateStats();
+            let success = false;
+            if (editingDebtId) {
+                debtData.id = editingDebtId;
+                debtData.status = editingDebtStatus; // preserve original status
+                debtData.settleRemarks = editingDebtSettleRemarks;
+                setLoader(true, 'Updating record...');
+                success = await updateDebtToServer(debtData);
+            } else {
+                debtData.settleRemarks = '';
+                setLoader(true, 'Saving record...');
+                success = await addDebtToServer(debtData);
+            }
+            setLoader(false);
+
+            if (!success) {
+                return;
+            }
+
             form.reset();
-            document.getElementById('date').valueAsDate = new Date(); // Reset date to today
-            // Reset radio to default
-            document.querySelector('input[name="type"][value="lent"]').checked = true;
+            document.getElementById('date').valueAsDate = new Date();
+            document.querySelector('input[name="type"][value="given"]').checked = true;
+
+            // Visual feedback on save
+            const originalHTML = submitButton.innerHTML;
+            const originalClasses = submitButton.className;
+
+            submitButton.innerHTML = '<i class="fa-solid fa-check"></i><span>Saved!</span>';
+            submitButton.classList.add('from-emerald-600', 'to-green-600');
+            submitButton.classList.remove('from-indigo-600', 'to-purple-600');
+            submitButton.disabled = true;
+
+            setTimeout(() => {
+                submitButton.innerHTML = originalHTML;
+                submitButton.className = originalClasses; // Revert all classes
+                submitButton.disabled = false;
+                if (editingDebtId) { // If it was an edit, redirect back to report
+                    window.location.href = 'debtsreport.html';
+                } else {
+                    setMode(false);
+                }
+            }, 1500);
         });
 
-        // Filter Handler
-        function setFilter(filter, btnElement) {
-            currentFilter = filter;
+        clearButton.addEventListener('click', function () {
+            form.reset();
+            document.getElementById('date').valueAsDate = new Date();
+            document.querySelector('input[name="type"][value="given"]').checked = true;
+        });
 
-            // Update active state of chips
-            document.querySelectorAll('.filter-chip').forEach(t => {
-                t.classList.remove('active', 'bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-600/20', 'border-indigo-500');
-                t.classList.add('bg-white/5', 'text-gray-400', 'border-white/5');
-            });
+        async function addDebtToServer(debtData) {
+            if (!isValidScriptUrl(SCRIPT_URL)) {
+                KTui.toast('Debts script URL is missing/invalid in config.js', 'error');
+                return false;
+            }
 
-            btnElement.classList.remove('bg-white/5', 'text-gray-400', 'border-white/5');
-            btnElement.classList.add('active', 'bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-600/20', 'border-indigo-500');
-
-            renderDebts();
-        }
-
-        // Delete Handler
-        function deleteDebt(id) {
-            KTui.confirm('Delete Record', 'Are you sure you want to delete this record?', function() {
-                debts = debts.filter(debt => debt.id !== id);
-                saveData();
-                renderDebts();
-                updateStats();
-            }, { confirmText: 'Delete', danger: true });
-        }
-
-        // Toggle Status Handler
-        function toggleStatus(id) {
-            const debt = debts.find(d => d.id === id);
-            if (debt) {
-                debt.status = (debt.status === 'settled') ? 'pending' : 'settled';
-                saveData();
-                renderDebts();
-                updateStats();
+            try {
+                const url = new URL(SCRIPT_URL);
+                url.searchParams.set('action', 'addDebt');
+                Object.keys(debtData).forEach((k) => {
+                    if (debtData[k] !== undefined && debtData[k] !== null) {
+                        url.searchParams.set(k, String(debtData[k]));
+                    }
+                });
+                url.searchParams.set('t', String(Date.now()));
+                const response = await fetch(url.toString(), { cache: 'no-store' });
+                const result = await response.json();
+                if (!result || !result.success) {
+                    KTui.toast((result && result.message) || 'Failed to add record', 'error');
+                    return false;
+                }
+                KTui.toast('Record added to Google Sheet', 'success');
+                return true;
+            } catch (error) {
+                console.warn('Failed to add debt to server:', error);
+                KTui.toast('Failed to add record. Check script deployment URL/access.', 'error');
+                return false;
             }
         }
 
-        // Clear All Handler
-        function clearAllData() {
-            KTui.confirm('Clear All Data', 'This will delete all debt records. Are you sure?', function() {
-                debts = [];
-                saveData();
-                renderDebts();
-                updateStats();
-            }, { confirmText: 'Delete All', danger: true });
-        }
-
-        // Save to LocalStorage
-        function saveData() {
-            localStorage.setItem('kt_debts_data', JSON.stringify(debts));
-        }
-
-        // Render List
-        function renderDebts() {
-            listContainer.innerHTML = '';
-            
-            // Filter based on selection
-            const filteredDebts = debts.filter(d => {
-                if (currentFilter === 'all') return true;
-                const status = d.status || 'pending';
-                return status === currentFilter;
-            });
-
-            if (filteredDebts.length === 0) {
-                emptyMsg.classList.remove('hidden');
-            } else {
-                emptyMsg.classList.add('hidden');
+        async function updateDebtToServer(debtData) {
+            if (!isValidScriptUrl(SCRIPT_URL)) {
+                KTui.toast('Debts script URL is missing/invalid in config.js', 'error');
+                return false;
             }
 
-            // Sort by date (newest first)
-            const sortedDebts = [...filteredDebts].sort((a, b) => new Date(b.date) - new Date(a.date));
-
-            sortedDebts.forEach(debt => {
-                const isSettled = debt.status === 'settled';
-                const isLent = debt.type === 'lent';
-
-                const amountColor = isLent ? 'text-emerald-400' : 'text-rose-400';
-                const iconBg = isLent ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20';
-                const icon = isLent ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
-                const typeLabel = isLent ? 'Lent' : 'Borrowed';
-
-                const card = document.createElement('div');
-                card.className = `glass-panel p-4 rounded-2xl border border-white/5 transition-all hover:bg-white/5 group ${isSettled ? 'opacity-60 grayscale-[0.5]' : ''}`;
-
-                card.innerHTML = `
-                    <div class="flex justify-between items-start gap-3">
-                        <div class="flex items-start gap-3 overflow-hidden">
-                            <div class="w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center border flex-shrink-0 mt-1">
-                                <i class="fa-solid ${icon} text-sm"></i>
-                            </div>
-                            <div class="min-w-0">
-                                <h4 class="font-bold text-white text-base truncate ${isSettled ? 'line-through text-gray-400' : ''}">${debt.person}</h4>
-                                <div class="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
-                                    <span>${formatDate(debt.date)}</span>
-                                    <span class="w-1 h-1 rounded-full bg-gray-600"></span>
-                                    <span class="uppercase tracking-wider font-bold text-[10px]">${typeLabel}</span>
-                                </div>
-                                ${debt.notes ? `<p class="text-xs text-gray-500 mt-1.5 line-clamp-1 italic">"${debt.notes}"</p>` : ''}
-                            </div>
-                        </div>
-
-                        <div class="flex flex-col items-end gap-2">
-                            <span class="font-bold text-lg font-mono ${isSettled ? 'text-gray-400 line-through' : amountColor}">₹${debt.amount.toFixed(2)}</span>
-
-                            <div class="flex items-center gap-2 mt-1">
-                                <button onclick="toggleStatus(${debt.id})" class="w-8 h-8 rounded-lg ${isSettled ? 'bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'} flex items-center justify-center transition-colors border border-white/5" title="${isSettled ? 'Mark as Pending' : 'Mark as Settled'}">
-                                    <i class="fa-solid ${isSettled ? 'fa-rotate-left' : 'fa-check'} text-xs"></i>
-                                </button>
-                                <button onclick="deleteDebt(${debt.id})" class="w-8 h-8 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 flex items-center justify-center transition-colors border border-white/5" title="Delete">
-                                    <i class="fa-solid fa-trash text-xs"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                listContainer.appendChild(card);
-            });
-        }
-
-        // Update Statistics
-        function updateStats() {
-            // Only count pending debts
-            const pendingDebts = debts.filter(d => (d.status || 'pending') !== 'settled');
-
-            const lent = pendingDebts
-                .filter(d => d.type === 'lent')
-                .reduce((sum, d) => sum + d.amount, 0);
-            
-            const borrowed = pendingDebts
-                .filter(d => d.type === 'borrowed')
-                .reduce((sum, d) => sum + d.amount, 0);
-
-            const net = lent - borrowed;
-
-            totalLentEl.textContent = `₹${lent.toFixed(2)}`;
-            totalBorrowedEl.textContent = `₹${borrowed.toFixed(2)}`;
-            
-            netBalanceEl.textContent = `₹${Math.abs(net).toFixed(2)}`;
-            if (net >= 0) {
-                netBalanceEl.className = 'text-2xl font-bold text-emerald-400 font-mono';
-                netBalanceEl.textContent = `+ ₹${net.toFixed(2)}`;
-            } else {
-                netBalanceEl.className = 'text-2xl font-bold text-rose-400 font-mono';
-                netBalanceEl.textContent = `- ₹${Math.abs(net).toFixed(2)}`;
+            try {
+                const url = new URL(SCRIPT_URL);
+                url.searchParams.set('action', 'updateDebt');
+                Object.keys(debtData).forEach((k) => {
+                    if (debtData[k] !== undefined && debtData[k] !== null) {
+                        url.searchParams.set(k, String(debtData[k]));
+                    }
+                });
+                url.searchParams.set('t', String(Date.now()));
+                const response = await fetch(url.toString(), { cache: 'no-store' });
+                const result = await response.json();
+                if (!result || !result.success) {
+                    KTui.toast((result && result.message) || 'Failed to update record', 'error');
+                    return false;
+                }
+                KTui.toast('Record updated on Google Sheet', 'success');
+                return true;
+            } catch (error) {
+                console.warn('Failed to update debt on server:', error);
+                KTui.toast('Failed to update record. Check script deployment URL/access.', 'error');
+                return false;
             }
         }
 
-        // Helper: Format Date
-        function formatDate(dateString) {
-            const options = { year: 'numeric', month: 'short', day: 'numeric' };
-            return new Date(dateString).toLocaleDateString('en-IN', options);
+        function formatDateForStorage(dateValue) {
+            if (!dateValue) return '';
+            const [year, month, day] = dateValue.split('-').map(Number);
+            if (!year || !month || !day) return '';
+            const dateObj = new Date(year, month - 1, day);
+            const monthShort = dateObj.toLocaleString('en-IN', { month: 'short' });
+            return `${String(day).padStart(2, '0')}/${monthShort}/${year}`;
+        }
+
+        function formatDateForInput(dateString) {
+            if (!dateString) return '';
+            const dateObj = parseDebtDate(dateString);
+            if (isNaN(dateObj.getTime())) return '';
+            return dateObj.toISOString().split('T')[0]; // YYYY-MM-DD
+        }
+
+        function parseDebtDate(value) {
+            if (!value) return new Date(0);
+            if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+                return new Date(value + 'T00:00:00');
+            }
+            const match = String(value).match(/^(\d{2})\/(\w{3})\/(\d{4})$/i);
+            if (match) {
+                const months = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+                const month = months[match[2].toLowerCase()];
+                return new Date(Number(match[3]), month, Number(match[1]));
+            }
+            const parsed = new Date(value);
+            return Number.isNaN(parsed.getTime()) ? new Date(0) : parsed;
+        }
+
+        function normalizeDebt(item) {
+            const typeRaw = String(item.type || '').toLowerCase();
+            const statusRaw = String(item.status || '').toLowerCase();
+            return {
+                id: Number(item.id) || null,
+                date: item.date ? String(item.date) : '',
+                type: (typeRaw === 'taken' || typeRaw === 'borrowed') ? 'taken' : 'given',
+                person: item.person || '',
+                amount: Number(item.amount) || 0,
+                remarks: item.remarks || item.notes || '',
+                status: (statusRaw === 'paid' || statusRaw === 'settled') ? 'settled' : 'pending',
+                settleRemarks: item.settleRemarks || ''
+            };
         }
     </script>
 </body>

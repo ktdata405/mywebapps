@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="./theme.js"></script>
+    <script>
+        // Redirect to new dashboard by default unless unified new-UI setting is disabled.
+        const useNewMainUI = localStorage.getItem('useNewMainUI');
+        const useNewDashboardUI = localStorage.getItem('useNewDashboardUI');
+        const shouldUseNewDashboardUI = useNewMainUI !== null ? useNewMainUI !== 'false' : useNewDashboardUI !== 'false';
+
+        if (shouldUseNewDashboardUI) {
+            window.location.replace('dashboard.html');
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-translate-key="dashboardTitle">Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #030305;
+            --card-bg: rgba(255, 255, 255, 0.02);
+            --card-border: rgba(255, 255, 255, 0.05);
+            --card-hover-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --accent-glow: radial-gradient(circle at center, rgba(124, 58, 237, 0.15), transparent 50%);
+            --spotlight-color: rgba(255, 255, 255, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Canvas Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.6;
+        }
+
+        /* Noise Overlay */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        /* Header */
+        header {
+            padding: 2rem 6%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            z-index: 2;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .brand-text h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff 20%, #a1a1aa 40%, #a1a1aa 60%, #fff 80%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: textShimmer 5s linear infinite;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        @keyframes textShimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+
+        .nav-link {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Main Container */
+        .container {
+            padding: 0 6% 4rem 6%;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            z-index: 2;
+        }
+
+        /* Spotlight Cards */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            height: 100%;
+            min-height: 140px;
+            transition: transform 0.2s ease;
+            text-align: center;
+        }
+
+        /* Spotlight Effect Layer */
+        .card::before {
+            content: "";
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            top: 0;
+            left: 0;
+            background: radial-gradient(
+                800px circle at var(--mouse-x) var(--mouse-y),
+                rgba(255, 255, 255, 0.06),
+                transparent 40%
+            );
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Border Glow Layer */
+        .card::after {
+            content: "";
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            top: 0;
+            left: 0;
+            background: radial-gradient(
+                600px circle at var(--mouse-x) var(--mouse-y),
+                rgba(255, 255, 255, 0.3),
+                transparent 40%
+            );
+            opacity: 0;
+            transition: opacity 0.5s;
+            z-index: 1;
+            pointer-events: none;
+            /* Mask to show only border */
+            -webkit-mask:
+                linear-gradient(#fff 0 0) content-box,
+                linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            padding: 1px; /* Border width */
+            border-radius: inherit;
+        }
+
+        .card:hover::before,
+        .card:hover::after {
+            opacity: 1;
+        }
+
+        .icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            margin-bottom: 0.5rem;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        .icon-box i {
+            color: var(--accent-color);
+            transition: color 0.3s ease;
+        }
+
+        .card:hover .icon-box {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 20px var(--accent-color);
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.1);
+        }
+
+        .card:hover .icon-box i {
+            color: #fff;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+        }
+
+        .card-content {
+            z-index: 2;
+        }
+
+        .card h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0;
+            letter-spacing: -0.02em;
+        }
+
+        .btn-arrow {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            color: var(--text-secondary);
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+
+        .card:hover .btn-arrow {
+            opacity: 1;
+            transform: translateX(0);
+            color: var(--text-primary);
+        }
+
+        /* Specific Icon Colors (Subtle) */
+        .card-deno { --accent-color: #4ade80; }
+        .card-cashew { --accent-color: #f472b6; }
+        .card-msi { --accent-color: #60a5fa; }
+        .card-rent { --accent-color: #c084fc; }
+        .card-debts { --accent-color: #f87171; }
+        .card-scan { --accent-color: #fbbf24; }
+        .card-loan { --accent-color: #6C63FF; }
+        .card-milk { --accent-color: #ffffff; }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: auto;
+            z-index: 2;
+        }
+
+        footer b {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Loader */
+        #loader {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #030305;
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        #loader.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            position: relative;
+        }
+
+        .spinner {
+            content: '';
+            position: absolute;
+            inset: 6px;
+            border: 3px solid transparent;
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Search Bar */
+        .search-wrapper {
+            padding: 0 6% 1.5rem 6%;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+        }
+
+        .search-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem 3rem 1rem 3rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            pointer-events: none;
+            font-size: 1rem;
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1rem;
+            display: none;
+            transition: color 0.2s ease;
+        }
+
+        .search-clear:hover {
+            color: var(--text-primary);
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+            display: none;
+            font-size: 1.1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem 5%;
+            }
+
+            .brand-text h1 {
+                font-size: 1.5rem;
+            }
+
+            .container {
+                padding: 2rem 5%;
+                gap: 1rem;
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .card {
+                padding: 1rem;
+                min-height: 120px;
+            }
+
+            .icon-box {
+                width: 40px;
+                height: 40px;
+                font-size: 1.25rem;
+            }
+            .search-wrapper {
+                padding: 0 5% 1.5rem 5%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <header>
+        <div class="brand">
+            <div class="brand-text">
+                <h1 data-translate-key="dashboardTitle">Dashboard</h1>
+            </div>
+        </div>
+        <a href="index.html" class="nav-link" aria-label="Back to Home">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+    </header>
+
+    <div class="search-wrapper">
+        <div class="search-container">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" id="search-input" class="search-input" placeholder="Search reports..." data-translate-key="searchPlaceholder">
+            <i class="fa-solid fa-xmark search-clear" id="search-clear"></i>
+        </div>
+    </div>
+
+    <main class="container" id="cards-container">
+        <a href="denomination/denominationsreport.html" class="card card-deno">
+            <div class="icon-box">
+                <i class="fa-solid fa-calculator"></i>
+            </div>
+            <div class="card-content">
+                <h2 data-translate-key="denominationsReport">Denominations Report</h2>
+            </div>
+            <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <a href="cashew/cashewreport.html" class="card card-cashew">
+            <div class="icon-box">
+                <i class="fa-solid fa-seedling"></i>
+            </div>
+            <div class="card-content">
+                <h2 data-translate-key="cashewReport">Cashew Report</h2>
+            </div>
+            <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <a href="milk/milkreport.html" class="card card-milk">
+            <div class="icon-box">
+                <i class="fa-solid fa-cow"></i>
+            </div>
+            <div class="card-content">
+                <h2 data-translate-key="milkReport">Milk Report</h2>
+            </div>
+            <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <a href="msi/msireport.html" class="card card-msi">
+            <div class="icon-box">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <div class="card-content">
+                <h2 data-translate-key="msiReport">MSI Report</h2>
+            </div>
+            <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <a href="rent/tenetreport.html" class="card card-rent">
+            <div class="icon-box">
+                <i class="fa-solid fa-house"></i>
+            </div>
+            <div class="card-content">
+                <h2 data-translate-key="rentReport">Rent Report</h2>
+            </div>
+            <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <a href="debts/debtsreport.html" class="card card-debts">
+            <div class="icon-box">
+                <i class="fa-solid fa-hand-holding-dollar"></i>
+            </div>
+            <div class="card-content">
+                <h2 data-translate-key="debtsReport">Debts Report</h2>
+            </div>
+            <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <a href="loan/loanreport.html" class="card card-loan">
+            <div class="icon-box">
+                <i class="fa-solid fa-hand-holding-usd"></i>
+            </div>
+            <div class="card-content">
+                <h2 data-translate-key="loanReport">Loan Report</h2>
+            </div>
+            <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <a href="scan/scanreport.html" class="card card-scan">
+            <div class="icon-box">
+                <i class="fa-solid fa-file-image"></i>
+            </div>
+            <div class="card-content">
+                <h2 data-translate-key="scanReport">Scan Report</h2>
+            </div>
+            <div class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <div id="no-results" class="no-results">
+            <p data-translate-key="noResults">No reports found matching your search.</p>
+        </div>
+    </main>
+
+    <footer>
+        <p data-translate-key="copyright_thammineni">&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
+    </footer>
+
+    <div id="loader">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="localization.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.card');
+            const loader = document.getElementById('loader');
+            const cardsContainer = document.getElementById('cards-container');
+
+            cards.forEach(card => {
+                card.addEventListener('click', (e) => {
+                    const href = card.getAttribute('href');
+                    if (href && href !== '#' && card.target !== '_blank') {
+                        e.preventDefault();
+                        loader.classList.add('visible');
+                        setTimeout(() => {
+                            window.location.href = href;
+                        }, 400);
+                    }
+                });
+            });
+
+            // Search Functionality
+            const searchInput = document.getElementById('search-input');
+            const searchClear = document.getElementById('search-clear');
+            const noResults = document.getElementById('no-results');
+
+            if (searchInput) {
+                const performSearch = () => {
+                    const searchTerm = searchInput.value.toLowerCase();
+                    let hasVisibleCards = false;
+
+                    if (searchClear) {
+                        searchClear.style.display = searchTerm.length > 0 ? 'block' : 'none';
+                    }
+
+                    cards.forEach(card => {
+                        const title = card.querySelector('h2').textContent.toLowerCase();
+                        const isVisible = title.includes(searchTerm);
+                        card.style.display = isVisible ? 'flex' : 'none';
+                        if (isVisible) hasVisibleCards = true;
+                    });
+
+                    if (noResults) noResults.style.display = hasVisibleCards ? 'none' : 'block';
+                };
+
+                searchInput.addEventListener('input', performSearch);
+
+                if (searchClear) {
+                    searchClear.addEventListener('click', () => {
+                        searchInput.value = '';
+                        searchInput.focus();
+                        performSearch();
+                    });
+                }
+            }
+
+            // Spotlight Effect Logic
+            cardsContainer.onmousemove = e => {
+                for(const card of document.getElementsByClassName('card')) {
+                    const rect = card.getBoundingClientRect(),
+                          x = e.clientX - rect.left,
+                          y = e.clientY - rect.top;
+
+                    card.style.setProperty('--mouse-x', `${x}px`);
+                    card.style.setProperty('--mouse-y', `${y}px`);
+                }
+            };
+
+            // Canvas Background Logic
+            const canvas = document.getElementById('bg-canvas');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let particles = [];
+
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.vy = (Math.random() - 0.5) * 0.5;
+                    this.size = Math.random() * 2;
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    if (this.x < 0 || this.x > width) this.vx *= -1;
+                    if (this.y < 0 || this.y > height) this.vy *= -1;
+                }
+                draw() {
+                    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < 50; i++) particles.push(new Particle());
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                particles.forEach((p, index) => {
+                    p.update();
+                    p.draw();
+                    // Draw connections
+                    for (let j = index + 1; j < particles.length; j++) {
+                        const p2 = particles[j];
+                        const dx = p.x - p2.x;
+                        const dy = p.y - p2.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 150) {
+                            ctx.strokeStyle = `rgba(255,255,255,${0.1 - dist/1500})`;
+                            ctx.lineWidth = 1;
+                            ctx.beginPath();
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.stroke();
+                        }
+                    }
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        });
+
+        window.addEventListener('pageshow', (event) => {
+            const loader = document.getElementById('loader');
+            if (loader) loader.classList.remove('visible');
+        });
+    </script>
+</body>
+
+</html>

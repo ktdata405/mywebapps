@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="../theme.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Denom's">
+    <link rel="apple-touch-icon" sizes="192x192" href="../root/icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="../root/icon-512.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="../root/icon-192.png">
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <title>Install – Denom's</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080c14;
+            --card: rgba(15,20,35,0.75);
+            --border: rgba(255,255,255,0.08);
+            --text: #f1f5f9;
+            --muted: #64748b;
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: calc(env(safe-area-inset-top) + 24px);
+            padding-bottom: 40px;
+        }
+
+        /* ── Animated bg ── */
+        .bg-scene { position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at 30% 20%,#1e1b4b 0%,#080c14 60%);overflow:hidden; }
+        .orb { position:absolute;border-radius:50%;filter:blur(90px);opacity:0.3;animation:drift 22s ease-in-out infinite; }
+        .orb-1 { width:460px;height:460px;background:#6366f1;top:-140px;left:-140px;animation-delay:0s; }
+        .orb-2 { width:340px;height:340px;background:#ec4899;bottom:-80px;right:-80px;animation-delay:-7s; }
+        .orb-3 { width:260px;height:260px;background:#06b6d4;top:50%;left:55%;animation-delay:-14s; }
+        @keyframes drift {
+            0%,100%{transform:translate(0,0) scale(1)}
+            33%{transform:translate(40px,60px) scale(1.05)}
+            66%{transform:translate(-30px,20px) scale(0.97)}
+        }
+
+        /* ── Card ── */
+        .card {
+            background: var(--card);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 36px 28px 32px;
+            width: 100%;
+            max-width: 440px;
+            text-align: center;
+        }
+
+        /* ── App icon ── */
+        .app-icon {
+            width: 84px; height: 84px;
+            border-radius: 22px;
+            background: linear-gradient(135deg,#6366f1,#8b5cf6);
+            box-shadow: 0 8px 32px rgba(99,102,241,0.45);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2.2rem; color: #fff;
+        }
+        .app-name {
+            font-size: 1.65rem; font-weight: 900; letter-spacing: -0.04em;
+            background: linear-gradient(135deg,#c7d2fe 0%,#a5b4fc 40%,#818cf8 80%,#6366f1 100%);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+            margin-bottom: 5px;
+        }
+        .app-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 24px; }
+
+        /* ── Status ── */
+        .status-pill {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 7px 16px; border-radius: 99px;
+            font-size: 0.8rem; font-weight: 700; margin-bottom: 22px;
+        }
+        .s-ready    { background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.28); color:#a5b4fc; }
+        .s-done     { background:rgba(52,211,153,0.12); border:1px solid rgba(52,211,153,0.28); color:#34d399; }
+        .s-manual   { background:rgba(251,191,36,0.10); border:1px solid rgba(251,191,36,0.28); color:#fbbf24; }
+        .s-checking { background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--muted); }
+
+        /* ── Buttons ── */
+        .btn {
+            width: 100%; border: none; border-radius: 14px;
+            padding: 15px 20px; font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.95rem; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 9px;
+            transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+            margin-bottom: 10px; text-decoration: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff;
+            box-shadow: 0 4px 24px rgba(99,102,241,0.4);
+        }
+        .btn-primary:hover { opacity:0.9; transform:translateY(-2px); box-shadow:0 8px 32px rgba(99,102,241,0.5); }
+        .btn-primary:active { transform:scale(0.97); }
+        .btn-primary:disabled { opacity:0.38; pointer-events:none; }
+        .btn-outline {
+            background: rgba(99,102,241,0.07);
+            border: 1px solid rgba(99,102,241,0.25);
+            color: #a5b4fc;
+        }
+        .btn-outline:hover { background:rgba(99,102,241,0.15); }
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--muted); font-size: 0.85rem; font-weight: 600;
+        }
+        .btn-ghost:hover { border-color:rgba(255,255,255,0.15); color:var(--text); }
+
+        /* ── Divider ── */
+        .divider { height:1px; background:var(--border); margin: 22px 0; }
+
+        /* ── Steps panel ── */
+        .steps-panel {
+            text-align: left;
+        }
+        .steps-header {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.72rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.12em;
+            color: var(--muted); margin-bottom: 16px;
+        }
+        .step-row {
+            display: flex; gap: 14px; align-items: flex-start;
+            margin-bottom: 14px;
+        }
+        .step-num {
+            min-width: 26px; height: 26px;
+            background: rgba(99,102,241,0.18);
+            border: 1px solid rgba(99,102,241,0.3);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.72rem; font-weight: 800; color: #a5b4fc;
+            flex-shrink: 0; margin-top: 1px;
+        }
+        .step-body { font-size: 0.875rem; color: #94a3b8; line-height: 1.55; }
+        .step-body strong { color: var(--text); font-weight: 700; }
+        .step-body .tag {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.2);
+            color: #a5b4fc; border-radius: 6px; padding: 1px 8px;
+            font-size: 0.78rem; font-weight: 700;
+        }
+        .step-body .img-hint {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+            border-radius: 8px; padding: 3px 10px;
+            font-size: 0.8rem; color: #cbd5e1; margin-top: 5px;
+        }
+
+        /* platform tabs */
+        .tab-bar {
+            display: flex; gap: 6px;
+            background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+            border-radius: 12px; padding: 4px;
+            margin-bottom: 18px;
+        }
+        .tab {
+            flex: 1; padding: 8px; border-radius: 9px;
+            font-size: 0.8rem; font-weight: 700; cursor: pointer;
+            border: none; background: transparent; color: var(--muted);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .tab.active { background: rgba(99,102,241,0.2); color: #a5b4fc; }
+
+        /* tip box */
+        .tip-box {
+            background: rgba(6,182,212,0.07);
+            border: 1px solid rgba(6,182,212,0.2);
+            border-radius: 12px; padding: 12px 14px;
+            font-size: 0.82rem; color: #67e8f9; text-align: left;
+            display: flex; gap: 10px; align-items: flex-start; margin-top: 4px;
+        }
+        .tip-box i { margin-top: 2px; flex-shrink: 0; }
+    </style>
+</head>
+<body>
+
+<div class="bg-scene">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+</div>
+
+<div class="card">
+
+    <!-- App Identity -->
+    <div class="app-icon">
+        <i class="fa-solid fa-indian-rupee-sign"></i>
+    </div>
+    <div class="app-name">Denom's</div>
+    <div class="app-sub">Denomination Manager · Cash Counter</div>
+
+    <!-- Status pill -->
+    <div>
+        <span id="status-pill" class="status-pill s-checking">
+            <i id="status-icon" class="fa-solid fa-circle-notch fa-spin"></i>
+            <span id="status-text">Checking…</span>
+        </span>
+    </div>
+
+    <!-- Native install button (shown when prompt is available) -->
+    <button id="btn-native" class="btn btn-primary" onclick="doInstall()" style="display:none">
+        <i class="fa-solid fa-download"></i> Install App on This Device
+    </button>
+
+    <!-- Open app (shown when already installed) -->
+    <a id="btn-open" href="./denominations.html" class="btn btn-outline" style="display:none">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Denom's App
+    </a>
+
+    <!-- Tip: shown when visiting from inside another installed PWA -->
+    <div id="pwa-tip" class="tip-box" style="display:none; margin-bottom:14px;">
+        <i class="fa-solid fa-circle-info" style="color:#67e8f9; margin-top:2px; flex-shrink:0"></i>
+        <div>
+            <strong style="color:#f1f5f9;">You're inside another installed app.</strong><br>
+            To install <strong>Denom's</strong> separately, open this URL in your <strong>browser</strong> (Chrome on Android, Safari on iPhone), then follow the steps below.
+            <br><br>
+            <a href="./install.html" id="open-in-browser-link" target="_blank" rel="noopener"
+               style="display:inline-flex;align-items:center;gap:6px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:#a5b4fc;border-radius:8px;padding:5px 12px;font-size:0.8rem;font-weight:700;text-decoration:none;">
+               <i class="fa-solid fa-arrow-up-right-from-square"></i> Open in Browser
+            </a>
+        </div>
+    </div>
+
+    <!-- Manual steps divider (shown when native prompt unavailable) -->
+    <div id="manual-section" style="display:none">
+        <div class="divider"></div>
+
+        <!-- Platform tabs -->
+        <div class="tab-bar">
+            <button class="tab active" id="tab-android" onclick="switchTab('android')">
+                <i class="fa-brands fa-android"></i> Android / PC
+            </button>
+            <button class="tab" id="tab-ios" onclick="switchTab('ios')">
+                <i class="fa-brands fa-apple"></i> iPhone / iPad
+            </button>
+        </div>
+
+        <!-- Android / Desktop steps -->
+        <div id="steps-android" class="steps-panel">
+            <div class="steps-header"><i class="fa-solid fa-list-check"></i> Install Steps</div>
+
+            <div class="step-row">
+                <div class="step-num">1</div>
+                <div class="step-body">
+                    Make sure you are using <strong>Chrome</strong> or <strong>Edge</strong> browser.
+                    <br><span class="img-hint"><i class="fa-brands fa-chrome" style="color:#fbbf24"></i> Chrome is recommended</span>
+                </div>
+            </div>
+
+            <div class="step-row">
+                <div class="step-num">2</div>
+                <div class="step-body">
+                    Tap the <strong>⋮ three-dot menu</strong> at the top-right of the browser.
+                    <br><span class="img-hint"><i class="fa-solid fa-ellipsis-vertical" style="color:#a5b4fc"></i> Top right corner</span>
+                </div>
+            </div>
+
+            <div class="step-row">
+                <div class="step-num">3</div>
+                <div class="step-body">
+                    Tap <span class="tag"><i class="fa-solid fa-download"></i> Install app</span>
+                    or <span class="tag"><i class="fa-solid fa-plus"></i> Add to Home screen</span>
+                </div>
+            </div>
+
+            <div class="step-row">
+                <div class="step-num">4</div>
+                <div class="step-body">
+                    A dialog will appear. Tap <strong>Install</strong> to confirm.
+                </div>
+            </div>
+
+            <div class="step-row">
+                <div class="step-num">5</div>
+                <div class="step-body">
+                    Done! 🎉 Open <strong>Denom's</strong> from your <strong>Home Screen</strong> or <strong>App Drawer</strong>.
+                </div>
+            </div>
+
+            <div class="tip-box">
+                <i class="fa-solid fa-circle-info"></i>
+                <div>If you don't see "Install app", the browser may have hidden it. Try visiting this page in a fresh Chrome tab or clearing browser cache.</div>
+            </div>
+        </div>
+
+        <!-- iOS steps -->
+        <div id="steps-ios" class="steps-panel" style="display:none">
+            <div class="steps-header"><i class="fa-solid fa-list-check"></i> Install Steps</div>
+
+            <div class="step-row">
+                <div class="step-num">1</div>
+                <div class="step-body">
+                    Open this page in <strong>Safari</strong> browser.
+                    <br><span class="img-hint"><i class="fa-brands fa-safari" style="color:#3b82f6"></i> Must be Safari — not Chrome or Firefox</span>
+                </div>
+            </div>
+
+            <div class="step-row">
+                <div class="step-num">2</div>
+                <div class="step-body">
+                    Tap the <strong>Share</strong> button at the bottom of the screen.
+                    <br><span class="img-hint"><i class="fa-solid fa-arrow-up-from-bracket" style="color:#a5b4fc"></i> Share icon (bottom center)</span>
+                </div>
+            </div>
+
+            <div class="step-row">
+                <div class="step-num">3</div>
+                <div class="step-body">
+                    Scroll down in the share sheet and tap
+                    <span class="tag"><i class="fa-solid fa-plus-square"></i> Add to Home Screen</span>
+                </div>
+            </div>
+
+            <div class="step-row">
+                <div class="step-num">4</div>
+                <div class="step-body">
+                    Optionally rename it, then tap <strong>Add</strong> in the top-right corner.
+                </div>
+            </div>
+
+            <div class="step-row">
+                <div class="step-num">5</div>
+                <div class="step-body">
+                    Done! 🎉 Open <strong>Denom's</strong> from your <strong>Home Screen</strong> like a native app.
+                </div>
+            </div>
+
+            <div class="tip-box">
+                <i class="fa-solid fa-circle-info"></i>
+                <div>On iPhone/iPad, only Safari supports Add to Home Screen. If you're in Chrome or Firefox, copy the URL and open it in Safari.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back button always visible -->
+    <div class="divider" style="margin-top:20px"></div>
+    <a href="./denominations.html" class="btn btn-ghost" style="margin-bottom:0">
+        <i class="fa-solid fa-arrow-left"></i> Back to App
+    </a>
+
+</div>
+
+<script>
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    let deferredPrompt = null;
+
+    /**
+     * Returns true ONLY if THIS denominations app is running as an installed PWA.
+     * We detect this by checking if the page was launched from the app's own
+     * start_url (which appends ?from=standalone), OR if the referrer is empty
+     * AND display-mode is standalone (meaning opened directly from home screen).
+     *
+     * Simply checking display-mode: standalone is NOT enough because the user
+     * may be browsing inside another installed PWA (e.g. KT Apps) which also
+     * runs in standalone mode.
+     */
+    function isThisAppInstalled() {
+        const params = new URLSearchParams(window.location.search);
+        // Launched via our own start_url shortcut
+        if (params.get('from') === 'standalone' || params.get('from') === 'shortcut') {
+            return true;
+        }
+        // Fallback: no referrer + standalone display mode = opened from home screen icon
+        const inStandalone = window.matchMedia('(display-mode: standalone)').matches
+                          || navigator.standalone === true;
+        const noReferrer = !document.referrer || document.referrer === '';
+        return inStandalone && noReferrer;
+    }
+
+    function setStatus(text, cls, iconCls) {
+        document.getElementById('status-text').textContent = text;
+        const pill = document.getElementById('status-pill');
+        pill.className = 'status-pill ' + cls;
+        document.getElementById('status-icon').className = iconCls;
+    }
+
+    function showNativeInstall() {
+        document.getElementById('btn-native').style.display = 'flex';
+        document.getElementById('btn-open').style.display = 'none';
+        document.getElementById('manual-section').style.display = 'none';
+        setStatus('Ready to install', 's-ready', 'fa-solid fa-circle-dot');
+    }
+
+    function showAlreadyInstalled() {
+        document.getElementById('btn-native').style.display = 'none';
+        document.getElementById('btn-open').style.display = 'flex';
+        document.getElementById('manual-section').style.display = 'none';
+        setStatus('Already installed on this device', 's-done', 'fa-solid fa-circle-check');
+    }
+
+    function showManual() {
+        document.getElementById('btn-native').style.display = 'none';
+        document.getElementById('btn-open').style.display = 'none';
+        document.getElementById('pwa-tip').style.display = 'none';
+        document.getElementById('manual-section').style.display = 'block';
+        setStatus('Follow steps below to install', 's-manual', 'fa-solid fa-circle-exclamation');
+        if (isIOS) {
+            switchTab('ios');
+        } else {
+            switchTab('android');
+        }
+    }
+
+    function showManualFromPWA() {
+        document.getElementById('btn-native').style.display = 'none';
+        document.getElementById('btn-open').style.display = 'none';
+        document.getElementById('pwa-tip').style.display = 'flex';
+        document.getElementById('manual-section').style.display = 'block';
+        setStatus('Open in browser to install', 's-manual', 'fa-solid fa-circle-exclamation');
+        if (isIOS) {
+            switchTab('ios');
+        } else {
+            switchTab('android');
+        }
+    }
+
+    function doInstall() {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function(result) {
+            deferredPrompt = null;
+            if (result.outcome === 'accepted') {
+                showAlreadyInstalled();
+            } else {
+                showManual();
+            }
+        });
+    }
+
+    function switchTab(tab) {
+        document.getElementById('tab-android').classList.toggle('active', tab === 'android');
+        document.getElementById('tab-ios').classList.toggle('active', tab === 'ios');
+        document.getElementById('steps-android').style.display = tab === 'android' ? 'block' : 'none';
+        document.getElementById('steps-ios').style.display = tab === 'ios' ? 'block' : 'none';
+    }
+
+    // Listen for install prompt (fires when browser determines app is installable)
+    window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        deferredPrompt = e;
+        // Only show native install if we are NOT already running as THIS installed app
+        if (!isThisAppInstalled()) showNativeInstall();
+    });
+
+    window.addEventListener('appinstalled', function() {
+        deferredPrompt = null;
+        showAlreadyInstalled();
+    });
+
+    // On load: determine correct state
+    window.addEventListener('load', function() {
+        // Running as THIS installed app?
+        if (isThisAppInstalled()) {
+            showAlreadyInstalled();
+            return;
+        }
+
+        // If we're inside another installed PWA (e.g. KT Apps running standalone),
+        // the browser won't fire beforeinstallprompt for a sub-app.
+        // Show manual steps immediately with a helpful note.
+        const inStandalone = window.matchMedia('(display-mode: standalone)').matches
+                          || navigator.standalone === true;
+        if (inStandalone) {
+            showManualFromPWA();
+            return;
+        }
+
+        // Wait briefly for beforeinstallprompt, then fall back to manual steps
+        setTimeout(function() {
+            if (!deferredPrompt) {
+                showManual();
+            }
+        }, 1400);
+    });
+
+    // Register SW
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(function() {});
+    }
+</script>
+</body>
+</html>
+
