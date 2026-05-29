@@ -28,6 +28,9 @@ const CONFIG = {
     //Prod Link
     GOOGLE_SHEET_URL_MILK: 'https://script.google.com/macros/s/AKfycbziPFlV_L7fA99c-vrT027tHnc_a-mu_paFhTZWFbZYvN6g0GBmdP7uisivPXNY86bt8g/exec',
 
+    //Prod Link
+    GOOGLE_SHEET_URL_DEBTS: 'https://script.google.com/macros/s/AKfycbwjxb42X5qIt9sFh1UTFLP_96wx5Gu4D0L6_F0Z25_M_H39nTHXF8y8ReJdSpn53kgz-Q/exec',
+
     // Google Sheets URLs
     SHEET_URL_CASHEW: 'https://docs.google.com/spreadsheets/d/1mwCrrpMGc1jq07sPgg17EiYtSQTK27ntqMTlFH7ZHZg/edit', // Replace with actual ID
     SHEET_URL_DENOMINATIONS: 'https://docs.google.com/spreadsheets/d/1KWaWFwBHCDws1qlhJaucETScpy6FwoptNiHHj-BUfsc/edit', // Replace with actual ID
@@ -35,5 +38,6 @@ const CONFIG = {
     SHEET_URL_RENT: 'https://docs.google.com/spreadsheets/d/1Xl200m1jF6B_A5-Y_mD9V2M1L8K-M10L/edit', // Replace with actual ID
     SHEET_URL_SCAN: 'https://docs.google.com/spreadsheets/d/1Xl200m1jF6B_A5-Y_mD9V2M1L8K-M10L/edit', // Replace with actual ID
     SHEET_URL_LOAN: 'https://docs.google.com/spreadsheets/d/1Xl200m1jF6B_A5-Y_mD9V2M1L8K-M10L/edit',  // Replace with actual ID
-    SHEET_URL_MILK: 'https://docs.google.com/spreadsheets/d/YOUR-ACTUAL-SHEET-ID-HERE/edit'
+    SHEET_URL_MILK: 'https://docs.google.com/spreadsheets/d/YOUR-ACTUAL-SHEET-ID-HERE/edit',
+    SHEET_URL_DEBTS: 'https://docs.google.com/spreadsheets/d/1hEO4TXi_yPWjT3-FK9kRuuOu8PHMY8rXi5mcYueywzo/edit'
 };
