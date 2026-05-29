@@ -29,7 +29,7 @@ const CONFIG = {
     GOOGLE_SHEET_URL_MILK: 'https://script.google.com/macros/s/AKfycbziPFlV_L7fA99c-vrT027tHnc_a-mu_paFhTZWFbZYvN6g0GBmdP7uisivPXNY86bt8g/exec',
 
     //Prod Link
-    GOOGLE_SHEET_URL_DEBTS: 'https://script.google.com/macros/s/AKfycbwjxb42X5qIt9sFh1UTFLP_96wx5Gu4D0L6_F0Z25_M_H39nTHXF8y8ReJdSpn53kgz-Q/exec',
+    GOOGLE_SHEET_URL_DEBTS: 'https://script.google.com/macros/s/AKfycbzXF14LayWcUqHi8IHAaPby3klVgLwg1joi18lX6RybVIFLEYFlqkT7HZwKofecLrUxEQ/exec',
 
     // Google Sheets URLs
     SHEET_URL_CASHEW: 'https://docs.google.com/spreadsheets/d/1mwCrrpMGc1jq07sPgg17EiYtSQTK27ntqMTlFH7ZHZg/edit', // Replace with actual ID

@@ -277,6 +277,7 @@
 
         let editingDebtId = null;
         let editingDebtStatus = 'pending';
+        let editingDebtSettleRemarks = '';
 
         function getUrlParameter(name) {
             const params = new URLSearchParams(window.location.search);
@@ -339,6 +340,7 @@
                 return;
             }
             editingDebtStatus = debt.status || 'pending';
+            editingDebtSettleRemarks = debt.settleRemarks || '';
             prefillForm(debt);
         }
 
@@ -388,9 +390,11 @@
             if (editingDebtId) {
                 debtData.id = editingDebtId;
                 debtData.status = editingDebtStatus; // preserve original status
+                debtData.settleRemarks = editingDebtSettleRemarks;
                 setLoader(true, 'Updating record...');
                 success = await updateDebtToServer(debtData);
             } else {
+                debtData.settleRemarks = '';
                 setLoader(true, 'Saving record...');
                 success = await addDebtToServer(debtData);
             }
@@ -532,7 +536,8 @@
                 person: item.person || '',
                 amount: Number(item.amount) || 0,
                 remarks: item.remarks || item.notes || '',
-                status: (statusRaw === 'paid' || statusRaw === 'settled') ? 'settled' : 'pending'
+                status: (statusRaw === 'paid' || statusRaw === 'settled') ? 'settled' : 'pending',
+                settleRemarks: item.settleRemarks || ''
             };
         }
     </script>

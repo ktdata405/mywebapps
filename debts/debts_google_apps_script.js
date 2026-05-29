@@ -1,5 +1,5 @@
 const SHEET_NAME = 'Debts';
-const HEADERS = ['ID', 'Date', 'Type', 'Person', 'Amount', 'Remarks', 'Status'];
+const HEADERS = ['ID', 'Date', 'Type', 'Person', 'Amount', 'Remarks', 'Status', 'Settle Remarks'];
 const MAX_ID = 100000;
 // Optional: set this if the script is deployed as a standalone project.
 const SPREADSHEET_ID = '';
@@ -28,7 +28,7 @@ function doGet(e) {
     }
 
     if (action === 'updateStatus') {
-      updateDebtStatus(e.parameter.id, e.parameter.status, e.parameter.remarks);
+      updateDebtStatus(e.parameter.id, e.parameter.status, e.parameter.settleRemarks || e.parameter.remarks);
       return jsonResponse({ success: true });
     }
 
@@ -62,7 +62,7 @@ function doPost(e) {
     }
 
     if (action === 'updateStatus') {
-      updateDebtStatus(payload.id, payload.status, payload.remarks);
+      updateDebtStatus(payload.id, payload.status, payload.settleRemarks || payload.remarks);
       return jsonResponse({ success: true });
     }
 
@@ -104,7 +104,8 @@ function getAllDebts() {
         person: String(row[3] || ''),
         amount: Number(row[4]) || 0,
         remarks: String(row[5] || ''),
-        status: normalizeStatus(row[6])
+        status: normalizeStatus(row[6]),
+        settleRemarks: String(row[7] || '')
       };
     })
     .filter(function(item) {
@@ -141,7 +142,8 @@ function syncAllDebts(debts) {
       debt.person,
       debt.amount,
       debt.remarks,
-      debt.status
+      debt.status,
+      debt.settleRemarks
     ];
   });
 
@@ -164,7 +166,8 @@ function addDebt(input) {
     debt.person,
     debt.amount,
     debt.remarks,
-    debt.status
+    debt.status,
+    debt.settleRemarks
   ]);
 
   applyColumnFormats(sheet, sheet.getLastRow());
@@ -184,7 +187,8 @@ function getDebtById(id) {
     person: String(row[3] || ''),
     amount: Number(row[4]) || 0,
     remarks: String(row[5] || ''),
-    status: normalizeStatus(row[6])
+    status: normalizeStatus(row[6]),
+    settleRemarks: String(row[7] || '')
   };
 }
 
@@ -196,7 +200,7 @@ function updateDebtStatus(id, status, remarks) {
   }
   sheet.getRange(rowIndex, 7).setValue(normalizeStatus(status));
   if (remarks !== undefined && remarks !== null && String(remarks).trim() !== '') {
-    sheet.getRange(rowIndex, 6).setValue(String(remarks).trim());
+    sheet.getRange(rowIndex, 8).setValue(String(remarks).trim());
   }
 }
 
@@ -208,7 +212,7 @@ function updateDebt(input) {
     throw new Error('Debt record not found for update');
   }
   sheet.getRange(rowIndex, 1, 1, HEADERS.length).setValues([[
-    debt.id, debt.date, debt.type, debt.person, debt.amount, debt.remarks, debt.status
+    debt.id, debt.date, debt.type, debt.person, debt.amount, debt.remarks, debt.status, debt.settleRemarks
   ]]);
   applyColumnFormats(sheet, rowIndex);
 }
@@ -251,7 +255,8 @@ function sanitizeDebt(input) {
     person: String(input.person || '').trim(),
     amount: Number(input.amount) || 0,
     remarks: String(input.remarks || input.notes || ''),
-    status: normalizeStatus(input.status)
+    status: normalizeStatus(input.status),
+    settleRemarks: String(input.settleRemarks || '').trim()
   };
 }
 
@@ -360,7 +365,8 @@ function migrateIfNeeded(sheet) {
         amount: row[3] || row[4],
         remarks: row[5],
         notes: row[5],
-        status: row[6]
+        status: row[6],
+        settleRemarks: row[7]
       });
       if (!converted.id) {
         converted.id = null;
@@ -382,7 +388,7 @@ function migrateIfNeeded(sheet) {
         nextId = item.id + 1;
       }
       usedIds[item.id] = true;
-      return [item.id, item.date, item.type, item.person, item.amount, item.remarks, item.status];
+      return [item.id, item.date, item.type, item.person, item.amount, item.remarks, item.status, item.settleRemarks];
     });
     sheet.getRange(2, 1, values.length, HEADERS.length).setValues(values);
   }

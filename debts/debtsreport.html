@@ -197,7 +197,7 @@ function formatDebtDate(v){
 function normalizeDebt(item,i){
     var t=String(item.type||'').toLowerCase(),s=String(item.status||'').toLowerCase();
     var parsedId = Number(item.id);
-    return{id:(isFinite(parsedId)&&parsedId>0)?parsedId:null,date:item.date?String(item.date):'',type:(t==='taken'||t==='borrowed')?'borrowed':'lent',person:item.person||'',amount:Number(item.amount)||0,remarks:item.remarks||item.notes||'',status:(s==='paid'||s==='settled')?'settled':'pending'};
+    return{id:(isFinite(parsedId)&&parsedId>0)?parsedId:null,date:item.date?String(item.date):'',type:(t==='taken'||t==='borrowed')?'borrowed':'lent',person:item.person||'',amount:Number(item.amount)||0,remarks:item.remarks||item.notes||'',status:(s==='paid'||s==='settled')?'settled':'pending',settleRemarks:item.settleRemarks||''};
 }
 async function fetchDebtsFromServer(){
     if(!DEBTS_SCRIPT_URL){KTui.toast('Debts script URL missing in config.js','error');return[];}
@@ -269,7 +269,7 @@ async function toggleDebtStatus(id, currentStatus) {
                 const loader=document.getElementById('loader');
                 loader.classList.remove('hidden');
                 const payload = {id:id, status:newStatus};
-                if(remarks) payload.remarks = remarks;
+                if(remarks) payload.settleRemarks = remarks;
                 const ok = await sendDebtAction('updateStatus', payload);
                 if(ok){ KTui.toast('Status updated','success'); await init(); }
                 else { loader.classList.add('hidden'); }
