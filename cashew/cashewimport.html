@@ -562,11 +562,17 @@
             const keys = Object.keys(row || {});
             const nAliases = aliases.map(normalizeExcelHeader);
             for (const key of keys) {
-                if (nAliases.includes(normalizeExcelHeader(key))) return row[key];
+                if (nAliases.includes(normalizeExcelHeader(key))) {
+                    const value = row[key];
+                    if (value !== '' && value !== null && value !== undefined) return value;
+                }
             }
             for (const key of keys) {
                 const nk = normalizeExcelHeader(key);
-                if (nAliases.some(a => nk.includes(a) || a.includes(nk))) return row[key];
+                if (nAliases.some(a => nk.includes(a) || a.includes(nk))) {
+                    const value = row[key];
+                    if (value !== '' && value !== null && value !== undefined) return value;
+                }
             }
             return '';
         }
@@ -596,6 +602,30 @@
             if (typeof value === 'number') return value;
             if (!value) return NaN;
             return parseFloat(String(value).replace(/,/g,'').replace(/[^0-9.-]/g,'').trim());
+        }
+        function resolveImportedAmount(row) {
+            const aliasGroups = [
+                ['Debit','Debit Amount','Withdrawal','Withdrawals','Dr','Paid Out'],
+                ['Amount','Txn Amount','Transaction Amount','Amt','Value'],
+                ['Credit','Credit Amount','Deposit','Deposits','Cr','Paid In']
+            ];
+
+            for (const aliases of aliasGroups) {
+                const parsed = parseImportedAmount(getExcelCellValue(row, aliases));
+                if (!isNaN(parsed) && parsed !== 0) return Math.abs(parsed);
+            }
+
+            // Fallback: scan numeric-looking columns when headers are unexpected.
+            const keys = Object.keys(row || {});
+            for (const key of keys) {
+                const nk = normalizeExcelHeader(key);
+                if (!nk || nk.includes('balance')) continue;
+                if (/(amount|amt|debit|credit|withdraw|deposit|\bdr\b|\bcr\b|value)/.test(nk)) {
+                    const parsed = parseImportedAmount(row[key]);
+                    if (!isNaN(parsed) && parsed !== 0) return Math.abs(parsed);
+                }
+            }
+            return NaN;
         }
         function fmtAmt(n) {
             return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.00$/,'');
@@ -756,7 +786,7 @@
                     const dateObj = parseImportedDate(getExcelCellValue(row, ['Date','Transaction Date','Txn Date','Entry Date']));
                     if (!dateObj) { skippedDate++; return; }
 
-                    const amount = parseImportedAmount(getExcelCellValue(row, ['Amount','Amt','Debit','Value']));
+                    const amount = resolveImportedAmount(row);
                     if (isNaN(amount) || amount <= 0) { skippedAmt++; return; }
 
                     const remarks = String(getExcelCellValue(row, ['Remarks','Remark','Narration','Description','Details'])||'').trim();
@@ -1160,8 +1190,11 @@
                     loader.classList.add('hidden');
 
                     if (!all.length) {
+                        const firstSheet = workbook.SheetNames[0];
+                        const firstRows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet], { defval: '' });
+                        const headerPreview = firstRows.length ? Object.keys(firstRows[0]).slice(0, 8).join(', ') : 'No headers detected';
                         KTui.alert('Import Error',
-                            `No valid rows found.\nSkipped — Date errors: ${skippedDate}, Amount errors: ${skippedAmt}, Self tag: ${skippedSelf}.`,
+                            `No valid rows found.\nSkipped — Date errors: ${skippedDate}, Amount errors: ${skippedAmt}, Self tag: ${skippedSelf}.\nHeaders: ${headerPreview}`,
                             'error');
                         return;
                     }

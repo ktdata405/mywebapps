@@ -519,6 +519,10 @@
                     class="h-10 px-6 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 text-sm font-semibold transition-all">
                     Close
                 </button>
+                <button onclick="importSelectedDateEntries()"
+                    class="h-10 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-all">
+                    Import
+                </button>
             </div>
         </div>
     </div>
@@ -1071,21 +1075,23 @@
 
             const normalizedAliases = aliases.map(alias => normalizeExcelHeader(alias));
 
-            // First pass: exact normalized match.
+            // First pass: exact normalized match, but skip empty cells.
             for (let i = 0; i < keys.length; i++) {
                 const key = keys[i];
                 const normalizedKey = normalizeExcelHeader(key);
                 if (normalizedAliases.includes(normalizedKey)) {
-                    return row[key];
+                    const value = row[key];
+                    if (value !== '' && value !== null && value !== undefined) return value;
                 }
             }
 
-            // Second pass: contains match for slightly different header naming.
+            // Second pass: contains match for slightly different header naming, but skip empty cells.
             for (let i = 0; i < keys.length; i++) {
                 const key = keys[i];
                 const normalizedKey = normalizeExcelHeader(key);
                 if (normalizedAliases.some(alias => normalizedKey.includes(alias) || alias.includes(normalizedKey))) {
-                    return row[key];
+                    const value = row[key];
+                    if (value !== '' && value !== null && value !== undefined) return value;
                 }
             }
 
@@ -1095,11 +1101,12 @@
         function parseImportedDate(value) {
             if (value === null || value === undefined || value === '') return null;
 
+            // 1. If it's already a valid Date object, return a new one (without time)
             if (value instanceof Date && !isNaN(value.getTime())) {
                 return new Date(value.getFullYear(), value.getMonth(), value.getDate());
             }
 
-            // Excel sometimes stores dates as serial numbers.
+            // 2. Excel sometimes stores dates as serial numbers. This is a very common Excel specific format.
             if (typeof value === 'number') {
                 const parsed = XLSX.SSF.parse_date_code(value);
                 if (parsed) {
@@ -1109,17 +1116,49 @@
 
             const raw = String(value).trim();
 
-            // Handle common dd-mm-yyyy / dd/mm/yyyy format explicitly.
-            let match = raw.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+            // 3. Try parsing YYYY-MM-DD (ISO format)
+            let match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
             if (match) {
-                const day = parseInt(match[1], 10);
-                const month = parseInt(match[2], 10);
-                const year = parseInt(match[3], 10);
-                return new Date(year, month - 1, day);
+                return new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3]));
             }
 
-            const parsedDate = parseDate(raw);
-            return parsedDate && !isNaN(parsedDate.getTime()) ? parsedDate : null;
+            // 4. Try parsing dd/MMM/yyyy (e.g., 01/Jan/2023)
+            match = raw.match(/^(\d{2})\/([A-Za-z]{3})\/(\d{4})$/);
+            if (match) {
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const monthIndex = months.findIndex(m => m.toLowerCase() === match[2].toLowerCase());
+                if (monthIndex !== -1) {
+                    return new Date(parseInt(match[3]), monthIndex, parseInt(match[1]));
+                }
+            }
+
+            // 5. Try parsing ambiguous D/M/Y or M/D/Y formats (e.g., 01/02/2023, 15-03-2023)
+            match = raw.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+            if (match) {
+                const part1 = parseInt(match[1], 10);
+                const part2 = parseInt(match[2], 10);
+                const year = parseInt(match[3], 10);
+
+                // If first part is > 12, it must be a day (DD/MM/YYYY)
+                if (part1 > 12 && part2 <= 12) {
+                    return new Date(year, part2 - 1, part1);
+                }
+                // If second part is > 12, it must be a day (MM/DD/YYYY)
+                if (part2 > 12 && part1 <= 12) {
+                    return new Date(year, part1 - 1, part2);
+                }
+                // If both are <= 12 (ambiguous, e.g., 01/02/2023), default to DD/MM/YYYY
+                // This aligns with the existing `parseDate` function's `dd/MMM/yyyy` format.
+                if (part1 <= 12 && part2 <= 12) {
+                    return new Date(year, part2 - 1, part1); // Assuming DD/MM/YYYY
+                }
+                // If one part is invalid, it's not a valid date in this format
+                return null;
+            }
+
+            // 6. Fallback to general Date constructor (less reliable for varied formats, but can catch some others)
+            const d = new Date(raw);
+            return !isNaN(d.getTime()) ? d : null;
         }
 
         function formatToIsoDate(dateObj) {
@@ -1131,33 +1170,76 @@
         }
 
         function parseImportedAmount(value) {
-            if (typeof value === 'number') return value;
-            if (value === null || value === undefined) return NaN;
-            const normalized = String(value)
-                .replace(/,/g, '')
-                .replace(/[^0-9.-]/g, '')
-                .trim();
-            return parseFloat(normalized);
+            if (typeof value === 'number') {
+                return value;
+            }
+            if (value === null || value === undefined || String(value).trim() === '') {
+                console.warn('parseImportedAmount: Skipping null, undefined, or empty value:', value);
+                return NaN; // Explicitly handle null, undefined, and empty strings
+            }
+
+            let rawString = String(value).trim();
+
+            // Handle common accounting negative number format: (100.00)
+            let isNegative = false;
+            if (rawString.startsWith('(') && rawString.endsWith(')')) {
+                isNegative = true;
+                rawString = rawString.substring(1, rawString.length - 1); // Remove parentheses
+            }
+
+            // Remove currency symbols, thousands separators, and any non-numeric characters except for the decimal point and a single leading hyphen
+            // This regex is more targeted: it keeps digits, one dot, and potentially a leading hyphen.
+            // It also removes common currency symbols like $, €, £, ₹
+            let normalized = rawString
+                .replace(/[$,€£₹]/g, '') // Remove common currency symbols
+                .replace(/,/g, '');      // Remove thousands separators
+
+            // Now, ensure it's a valid number string before parsing
+            // This step is crucial to avoid parseFloat returning NaN for strings like "abc" or "1.2.3"
+            // We want to allow only one decimal point and optional leading minus sign
+            const numericMatch = normalized.match(/^-?\d*\.?\d+$/);
+            if (!numericMatch) {
+                console.warn('parseImportedAmount: Value does not match numeric pattern after cleaning:', value, 'Normalized:', normalized);
+                return NaN; // If it doesn't match a standard number pattern, it's an error
+            }
+
+            let amount = parseFloat(normalized);
+
+            if (isNegative) {
+                amount = -Math.abs(amount); // Ensure it's negative if it was in parentheses
+            }
+
+            if (isNaN(amount)) {
+                console.warn('parseImportedAmount: parseFloat resulted in NaN for value:', value, 'Normalized:', normalized);
+            }
+
+            return amount;
         }
 
-        function formatImportedAmountForRemark(amount) {
-            return Number.isInteger(amount) ? String(amount) : amount.toFixed(2).replace(/\.00$/, '');
-        }
+        function resolveImportedAmount(row) {
+            const aliasGroups = [
+                ['Debit', 'Debit Amount', 'Withdrawal', 'Withdrawals', 'Dr', 'Paid Out'],
+                ['Amount', 'Txn Amount', 'Transaction Amount', 'Amt', 'Value'],
+                ['Credit', 'Credit Amount', 'Deposit', 'Deposits', 'Cr', 'Paid In']
+            ];
 
-        function formatImportedEntryText(entry, pattern) {
-            const amountText = formatImportedAmountForRemark(parseFloat(entry.amount) || 0);
-            const template = (pattern || '').trim() || '{tag}-Amount({amount})';
-            const formatted = template
-                .replace(/\{tag}/gi, entry.tag || '')
-                .replace(/\{remarks}/gi, entry.remarks || '')
-                .replace(/\{amount}/gi, amountText)
-                .trim();
+            for (const aliases of aliasGroups) {
+                const parsed = parseImportedAmount(getExcelCellValue(row, aliases));
+                if (!isNaN(parsed) && parsed !== 0) return Math.abs(parsed);
+            }
 
-            // Avoid blank output when one token is empty.
-            if (formatted) return formatted;
-            if (entry.tag) return `${entry.tag}-Amount(${amountText})`;
-            if (entry.remarks) return `${entry.remarks}-Amount(${amountText})`;
-            return `Imported-Amount(${amountText})`;
+            // Fallback for unknown headers from bank exports.
+            const keys = Object.keys(row || {});
+            for (const key of keys) {
+                const nk = normalizeExcelHeader(key);
+                if (!nk || nk.includes('balance')) continue;
+                if (/(amount|amt|debit|credit|withdraw|deposit|\bdr\b|\bcr\b|value)/.test(nk)) {
+                    const parsed = parseImportedAmount(row[key]);
+                    if (!isNaN(parsed) && parsed !== 0) return Math.abs(parsed);
+                }
+            }
+
+            return NaN;
         }
 
         function buildImportedEntries(workbook) {
@@ -1184,8 +1266,9 @@
                         return;
                     }
 
-                    const amount = parseImportedAmount(getExcelCellValue(row, ['Amount', 'Amt', 'Debit', 'Value']));
+                    const amount = resolveImportedAmount(row);
                     if (isNaN(amount) || amount <= 0) {
+                        console.warn('buildImportedEntries: Skipping row due to invalid amount:', row, 'Parsed amount:', amount);
                         skippedMissingAmount += 1;
                         return;
                     }
@@ -1428,6 +1511,39 @@
             modal.classList.add('hidden');
         }
 
+        function importSelectedDateEntries() {
+            if (!importSelectedDate || !importedEntriesByDate || !importedEntriesByDate[importSelectedDate]) {
+                showPopup('Import Error', 'No date selected or no entries for the selected date.', 'error');
+                return;
+            }
+
+            const entriesToImport = importedEntriesByDate[importSelectedDate];
+            const dateInput = document.getElementById('date-input');
+            const expensesContainer = document.getElementById('expenses-container');
+
+            // Clear existing rows
+            expensesContainer.innerHTML = '';
+
+            // Set the main date input to the imported date
+            const dateObj = parseDate(importSelectedDate);
+            if (dateObj) {
+                const y = dateObj.getFullYear();
+                const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const d = String(dateObj.getDate()).padStart(2, '0');
+                dateInput.value = `${y}-${m}-${d}`;
+            }
+
+            // Add imported entries to the main form
+            entriesToImport.forEach(entry => {
+                addRow(entry.category, entry.description, entry.amount);
+            });
+
+            calculateTotal();
+            updateDateSaveStatus(true); // Assuming imported data is ready to be saved
+            closeImportDateModal();
+            showPopup('Import Successful', `Imported ${entriesToImport.length} entries for ${importSelectedDate}. Click Save to finalize.`, 'success');
+        }
+
 
         function processExcelUpload(event) {
             const file = event.target.files && event.target.files[0];
@@ -1449,7 +1565,10 @@
 
                     const { allEntries, skippedSelfTag, skippedMissingDate, skippedMissingAmount } = buildImportedEntries(workbook);
                     if (!allEntries.length) {
-                        const details = `No valid rows found. Skipped: Date=${skippedMissingDate}, Amount=${skippedMissingAmount}, SelfTag=${skippedSelfTag}.`;
+                        const firstSheet = workbook.SheetNames[0];
+                        const firstRows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet], { defval: '' });
+                        const headerPreview = firstRows.length ? Object.keys(firstRows[0]).slice(0, 8).join(', ') : 'No headers detected';
+                        const details = `No valid rows found. Skipped: Date=${skippedMissingDate}, Amount=${skippedMissingAmount}, SelfTag=${skippedSelfTag}. Headers: ${headerPreview}`;
                         showPopup('Import Error', details, 'error');
                         return;
                     }
