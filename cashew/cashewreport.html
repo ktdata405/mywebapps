@@ -344,10 +344,13 @@
                 <div id="view-transactions" class="space-y-4">
                     <div class="flex items-center justify-between px-2 mb-2">
                         <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest">Transaction History</h3>
-                        <div class="relative">
-                            <select id="category-filter" class="bg-transparent text-[10px] font-bold text-indigo-400 uppercase outline-none cursor-pointer" onchange="filterData()">
-                                <option value="">All Categories</option>
-                            </select>
+                        <div class="flex items-center gap-3">
+                            <button id="entry-count" onclick="showMissedDatesPopup()" class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/20 hover:bg-indigo-500/25 transition-all">0 days</button>
+                            <div class="relative">
+                                <select id="category-filter" class="bg-transparent text-[10px] font-bold text-indigo-400 uppercase outline-none cursor-pointer" onchange="filterData()">
+                                    <option value="">All Categories</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div id="report-body" class="space-y-4">
@@ -486,6 +489,19 @@
         </div>
     </div>
 
+    <div id="missed-dates-modal" class="hidden fixed inset-0 z-[85] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+        <div class="glass rounded-[2rem] w-full max-w-md border border-white/10 overflow-hidden">
+            <div class="p-5 border-b border-white/5 flex items-center justify-between">
+                <h3 class="text-base font-bold text-white flex items-center gap-2"><i class="fa-solid fa-calendar-xmark text-rose-400"></i> Missed Dates</h3>
+                <button onclick="closeMissedDatesPopup()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5">
+                <p id="missed-dates-summary" class="text-xs text-gray-400 mb-4"></p>
+                <div id="missed-dates-list" class="max-h-72 overflow-y-auto space-y-2"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Mobile FAB -->
     <a href="cashew.html" class="mobile-fab md:hidden">
         <i class="fa-solid fa-plus text-xl"></i>
@@ -496,6 +512,7 @@
         let allData = [];
         let monthlyBalances = {};
         let currentView = 'transactions';
+        let currentFilteredData = [];
 
         function switchView(view) {
             currentView = view;
@@ -649,13 +666,108 @@
             const search = document.getElementById('search-input').value.toLowerCase();
             const catFilter = document.getElementById('category-filter').value;
 
-            const filtered = allData.filter(r => {
+            currentFilteredData = allData.filter(r => {
                 const mSearch = String(r.description || '').toLowerCase().includes(search);
                 const mCat = !catFilter || r.category === catFilter;
                 return mSearch && mCat;
             });
 
-            renderTransactions(filtered);
+            renderTransactions(currentFilteredData);
+        }
+
+        function parseRecordDate(value) {
+            if(!value) return null;
+            const parsed = new Date(value);
+            if(!isNaN(parsed.getTime())) return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+
+            const str = String(value).trim();
+            const ddmmyyyy = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+            if(ddmmyyyy) {
+                const d = Number(ddmmyyyy[1]);
+                const m = Number(ddmmyyyy[2]) - 1;
+                const y = Number(ddmmyyyy[3]);
+                const fallback = new Date(y, m, d);
+                if(!isNaN(fallback.getTime())) return fallback;
+            }
+
+            return null;
+        }
+
+        function toDateKey(dateObj) {
+            const y = dateObj.getFullYear();
+            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const d = String(dateObj.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function showMissedDatesPopup() {
+            if(!currentFilteredData.length) {
+                KTui.alert('Info', 'No entries available to calculate missed dates.', 'info');
+                return;
+            }
+
+            const validDates = currentFilteredData
+                .map(r => parseRecordDate(r.date))
+                .filter(Boolean)
+                .sort((a, b) => a - b);
+
+            if(!validDates.length) {
+                KTui.alert('Info', 'Could not parse dates for current entries.', 'info');
+                return;
+            }
+
+            const monthVal = document.getElementById('month-select').value;
+            const yearVal = Number(document.getElementById('year-select').value);
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+            let rangeStart = validDates[0];
+            let rangeEnd = validDates[validDates.length - 1];
+
+            if(monthVal !== 'All') {
+                const monthIdx = months.indexOf(monthVal);
+                rangeStart = new Date(yearVal, monthIdx, 1);
+                rangeEnd = new Date(yearVal, monthIdx + 1, 0);
+
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                if(yearVal === today.getFullYear() && monthIdx === today.getMonth() && rangeEnd > today) {
+                    rangeEnd = today;
+                }
+            }
+
+            const existing = new Set(validDates.map(toDateKey));
+            const missed = [];
+            const cursor = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), rangeStart.getDate());
+
+            while(cursor <= rangeEnd) {
+                const key = toDateKey(cursor);
+                if(!existing.has(key)) missed.push(formatDate(key));
+                cursor.setDate(cursor.getDate() + 1);
+            }
+
+            const summary = document.getElementById('missed-dates-summary');
+            const list = document.getElementById('missed-dates-list');
+            summary.textContent = missed.length
+                ? `${missed.length} missed day${missed.length !== 1 ? 's' : ''} found in selected range.`
+                : 'No missed days in the selected range.';
+
+            list.innerHTML = '';
+            if(!missed.length) {
+                list.innerHTML = '<div class="text-center text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-xl py-3 font-semibold">All dates have entries.</div>';
+            } else {
+                missed.forEach(dateText => {
+                    const item = document.createElement('div');
+                    item.className = 'text-xs text-rose-300 bg-rose-500/10 border border-rose-500/20 rounded-xl px-3 py-2 font-semibold';
+                    item.textContent = dateText;
+                    list.appendChild(item);
+                });
+            }
+
+            document.getElementById('missed-dates-modal').classList.remove('hidden');
+        }
+
+        function closeMissedDatesPopup() {
+            document.getElementById('missed-dates-modal').classList.add('hidden');
         }
 
         function formatDate(iso) {
@@ -667,9 +779,11 @@
 
         function renderTransactions(data) {
             const body = document.getElementById('report-body');
+            const countBadge = document.getElementById('entry-count');
             body.innerHTML = '';
 
             if(!data.length) {
+                countBadge.textContent = '0 days';
                 body.innerHTML = '<div class="py-12 text-center text-gray-500 text-xs uppercase tracking-widest">No matching records</div>';
                 return;
             }
@@ -682,6 +796,9 @@
                 acc[date].total += r.amount;
                 return acc;
             }, {});
+
+            const dayCount = Object.keys(grouped).length;
+            countBadge.textContent = `${dayCount} day${dayCount !== 1 ? 's' : ''}`;
 
             Object.entries(grouped).sort((a,b) => new Date(b[0]) - new Date(a[0])).forEach(([date, group], idx) => {
                 const dateBlock = document.createElement('div');

@@ -294,6 +294,11 @@
                 <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-0.5" data-translate-key="totalExpense">Total Expense</span>
                 <span id="total-amount" class="text-2xl font-bold text-white tracking-tight font-mono">Rs. 0.00</span>
             </div>
+            <!-- New: Number of Days -->
+            <div class="flex flex-col items-end">
+                <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-0.5">Days with Data</span>
+                <span id="entry-count" class="text-2xl font-bold text-white tracking-tight font-mono">0</span>
+            </div>
 
             <div class="flex items-center gap-3">
                 <!-- Add Another Expense Button -->
@@ -1568,7 +1573,7 @@
                         const firstSheet = workbook.SheetNames[0];
                         const firstRows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet], { defval: '' });
                         const headerPreview = firstRows.length ? Object.keys(firstRows[0]).slice(0, 8).join(', ') : 'No headers detected';
-                        const details = `No valid rows found. Skipped: Date=${skippedMissingDate}, Amount=${skippedMissingAmount}, SelfTag=${skippedSelfTag}. Headers: ${headerPreview}`;
+                        const details = `No valid rows found. Skipped: Date=${skippedMissingDate}, Amount=${skippedMissingAmount}. Headers: ${headerPreview}`;
                         showPopup('Import Error', details, 'error');
                         return;
                     }
@@ -1640,6 +1645,12 @@
             const monthName = months[monthIndex];
             const fullDateStr = `${dayStr}/${monthName}/${year}`;
             updateDateSaveStatus(existingDates.includes(fullDateStr));
+
+            // Update the "Days with Data" count
+            const entryCountSpan = document.getElementById('entry-count');
+            if (entryCountSpan) {
+                entryCountSpan.textContent = existingDates.length;
+            }
 
             renderDateRadios(year, monthIndex, existingDates, dateObj.getDate());
         }
