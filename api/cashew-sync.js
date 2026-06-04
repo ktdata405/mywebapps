@@ -99,7 +99,7 @@ async function syncToTurso(payload) {
         }
 
         // Turso/libsql handles atomicity for write batch.
-        await client.batch(statements, { mode: 'write' });
+        await client.batch(statements, 'write');
 
         const dateToVerify = String(payload.expenses[0].date || '');
         const verifyResult = await client.execute({

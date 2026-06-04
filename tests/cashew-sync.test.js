@@ -8,6 +8,7 @@ const source = fs.readFileSync(apiFile, 'utf8');
 assert(source.includes('ktapps_TURSO_DATABASE_URL'), 'API should use ktapps_TURSO_DATABASE_URL env var');
 assert(source.includes('ktapps_TURSO_AUTH_TOKEN'), 'API should use ktapps_TURSO_AUTH_TOKEN env var');
 assert(!source.includes('GOOGLE_SHEET_URL_CASHEW'), 'API should not use Google Sheets URL');
+assert(source.includes("client.batch(statements, 'write')"), 'API should use supported batch mode signature for current libsql client');
 
 const cashewFile = path.join(__dirname, '..', 'cashew', 'cashew.html');
 const cashewSource = fs.readFileSync(cashewFile, 'utf8');
