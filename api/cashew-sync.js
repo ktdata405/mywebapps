@@ -2,7 +2,6 @@ const { createClient } = require('@libsql/client');
 
 const TURSO_DATABASE_URL = process.env.ktapps_TURSO_DATABASE_URL;
 const TURSO_AUTH_TOKEN = process.env.ktapps_TURSO_AUTH_TOKEN;
-const GOOGLE_SHEET_URL_CASHEW = process.env.GOOGLE_SHEET_URL_CASHEW;
 
 function parseRequestBody(req) {
     if (!req || req.body === undefined || req.body === null) return null;
@@ -96,24 +95,6 @@ async function syncToTurso(payload) {
     }
 }
 
-async function syncToGoogleSheets(payload) {
-    if (!GOOGLE_SHEET_URL_CASHEW) {
-        throw new Error('Missing GOOGLE_SHEET_URL_CASHEW environment variable.');
-    }
-
-    const response = await fetch(GOOGLE_SHEET_URL_CASHEW, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-        throw new Error(`Google Sheets sync failed with status ${response.status}.`);
-    }
-
-    return { ok: true };
-}
-
 module.exports = async function handler(req, res) {
     if (req.method !== 'POST') {
         res.status(405).json({ ok: false, message: 'Method not allowed' });
@@ -128,29 +109,18 @@ module.exports = async function handler(req, res) {
         return;
     }
 
-    const [tursoResult, sheetsResult] = await Promise.allSettled([
-        syncToTurso(payload),
-        syncToGoogleSheets(payload)
-    ]);
-
-    const tursoOk = tursoResult.status === 'fulfilled';
-    const sheetsOk = sheetsResult.status === 'fulfilled';
-
-    if (tursoOk && sheetsOk) {
+    try {
+        const tursoResult = await syncToTurso(payload);
         res.status(200).json({
             ok: true,
-            message: 'Saved to Turso and Google Sheets.',
-            turso: tursoResult.value,
-            sheets: sheetsResult.value
+            message: 'Saved to Turso.',
+            turso: tursoResult
         });
-        return;
+    } catch (error) {
+        res.status(500).json({
+            ok: false,
+            message: error.message || 'Turso save failed.'
+        });
     }
-
-    res.status(500).json({
-        ok: false,
-        message: 'Save partially failed. Please retry.',
-        turso: tursoOk ? tursoResult.value : { ok: false, error: tursoResult.reason.message },
-        sheets: sheetsOk ? sheetsResult.value : { ok: false, error: sheetsResult.reason.message }
-    });
 };
 

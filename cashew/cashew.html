@@ -1041,14 +1041,19 @@
                 originalDate: originalDate
             };
 
-            fetch(CONFIG.CASHEW_SYNC_API_URL || '/api/cashew-sync', {
+            const saveToSheets = fetch(CONFIG.GOOGLE_SHEET_URL_CASHEW, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                mode: 'no-cors'
+            });
+
+            const saveToTurso = fetch(CONFIG.CASHEW_SYNC_API_URL || '/api/cashew-sync', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(data)
-            })
-            .then(async response => {
+            }).then(async response => {
                 let result = null;
                 try {
                     result = await response.json();
@@ -1057,10 +1062,13 @@
                 }
 
                 if (!response.ok || !result || !result.ok) {
-                    const message = (result && result.message) || `Save failed with status ${response.status}`;
+                    const message = (result && result.message) || `Turso save failed with status ${response.status}`;
                     throw new Error(message);
                 }
+            });
 
+            Promise.all([saveToSheets, saveToTurso])
+            .then(() => {
                 loader.classList.add('hidden');
                 saveBtn.disabled = false;
                 initDateAccordion(dateInput.value); // Refresh calendar
@@ -1068,8 +1076,8 @@
 
                 window.pendingClear = true;
                 const msg = isEditMode
-                    ? 'Expenses updated successfully in Turso and Google Sheets!'
-                    : 'Expenses saved successfully in Turso and Google Sheets!';
+                    ? 'Expenses updated successfully!'
+                    : 'Expenses saved successfully!';
                 showPopup('Success', msg, 'success');
             })
             .catch(error => {
