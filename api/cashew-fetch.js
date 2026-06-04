@@ -49,6 +49,68 @@ function buildResponseData(rows) {
     return { data, monthlyBalances };
 }
 
+function normalizeMonthKey(monthValue) {
+    const raw = String(monthValue || '').trim().toLowerCase();
+    if (!raw) return '';
+    // Supports Jan/January style values.
+    return raw.slice(0, 3);
+}
+
+function parseExpenseDate(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return null;
+
+    // dd/MMM/yyyy (e.g. 05/Jun/2026)
+    let match = raw.match(/^(\d{1,2})\/([A-Za-z]{3})\/(\d{4})$/);
+    if (match) {
+        return {
+            year: Number(match[3]),
+            monthKey: normalizeMonthKey(match[2])
+        };
+    }
+
+    // yyyy-MM-dd
+    match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (match) {
+        const monthIndex = Number(match[2]) - 1;
+        const jsDate = new Date(Number(match[1]), monthIndex, Number(match[3]));
+        if (!Number.isNaN(jsDate.getTime())) {
+            return {
+                year: jsDate.getFullYear(),
+                monthKey: normalizeMonthKey(jsDate.toLocaleString('en-US', { month: 'short' }))
+            };
+        }
+    }
+
+    // dd/MM/yyyy
+    match = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (match) {
+        const jsDate = new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+        if (!Number.isNaN(jsDate.getTime())) {
+            return {
+                year: jsDate.getFullYear(),
+                monthKey: normalizeMonthKey(jsDate.toLocaleString('en-US', { month: 'short' }))
+            };
+        }
+    }
+
+    const fallback = new Date(raw);
+    if (!Number.isNaN(fallback.getTime())) {
+        return {
+            year: fallback.getFullYear(),
+            monthKey: normalizeMonthKey(fallback.toLocaleString('en-US', { month: 'short' }))
+        };
+    }
+
+    return null;
+}
+
+function matchesMonthYear(dateValue, month, year) {
+    const parsed = parseExpenseDate(dateValue);
+    if (!parsed) return false;
+    return parsed.year === Number(year) && parsed.monthKey === normalizeMonthKey(month);
+}
+
 module.exports = async function handler(req, res) {
     if (req.method !== 'GET') {
         res.status(405).json({ ok: false, message: 'Method not allowed' });
@@ -77,20 +139,16 @@ module.exports = async function handler(req, res) {
         await ensureSchema(client);
 
         let rows;
+        const baseResult = await client.execute(
+            'SELECT expense_date, category, description, amount FROM cashew_expenses ORDER BY id ASC'
+        );
+        const allRows = baseResult.rows || [];
 
         if (fetchAll === 'true') {
-            const result = await client.execute(
-                'SELECT expense_date, category, description, amount FROM cashew_expenses ORDER BY expense_date ASC'
-            );
-            rows = result.rows;
+            rows = allRows;
         } else {
-            // expense_date stored as "dd/MMM/yyyy" e.g. "05/Jun/2026"
-            const pattern = `%/${month}/${year}`;
-            const result = await client.execute({
-                sql: 'SELECT expense_date, category, description, amount FROM cashew_expenses WHERE expense_date LIKE ? ORDER BY expense_date ASC',
-                args: [pattern]
-            });
-            rows = result.rows;
+            // Filter in JS to support mixed legacy date formats safely.
+            rows = allRows.filter(row => matchesMonthYear(row.expense_date || row[0], month, year));
         }
 
         const { data, monthlyBalances } = buildResponseData(rows);

@@ -15,6 +15,11 @@ const dedupeSource = fs.readFileSync(dedupeFile, 'utf8');
 assert(dedupeSource.includes('SELECT MAX(id)'), 'Dedupe endpoint must keep latest row per (expense_date, category)');
 assert(dedupeSource.includes('GROUP BY expense_date, category'), 'Dedupe endpoint must group by date and category');
 
+const fetchFile = path.join(__dirname, '..', 'api', 'cashew-fetch.js');
+const fetchSource = fs.readFileSync(fetchFile, 'utf8');
+assert(fetchSource.includes('matchesMonthYear'), 'Fetch API should filter by month/year via helper logic');
+assert(fetchSource.includes('parseExpenseDate'), 'Fetch API should parse mixed date formats safely');
+
 const cashewFile = path.join(__dirname, '..', 'cashew', 'cashew.html');
 const cashewSource = fs.readFileSync(cashewFile, 'utf8');
 assert(cashewSource.includes('CONFIG.GOOGLE_SHEET_URL_CASHEW'), 'Frontend should still post directly to Google Sheets');
