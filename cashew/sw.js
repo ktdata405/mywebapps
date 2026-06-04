@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cashew-app-v2';
+const CACHE_NAME = 'cashew-app-v3';
 const STATIC_ASSETS = [
   './cashew.html',
   './cashew.html?from=standalone',
@@ -30,6 +30,12 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+
+  // Never cache or rewrite API/non-GET requests.
+  if (event.request.method !== 'GET' || url.pathname.startsWith('/api/')) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
 
   // For Google Script API calls, try network first
   if (url.hostname === 'script.google.com') {

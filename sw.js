@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kt-apps-v8';
+const CACHE_NAME = 'kt-apps-v9';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -48,6 +48,12 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+
+  // Never cache or rewrite API/non-GET requests.
+  if (event.request.method !== 'GET' || url.pathname.startsWith('/api/')) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
 
   // For Google Script API calls, try network first, then fallback to cache
   if (url.hostname === 'script.google.com') {

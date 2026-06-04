@@ -34,6 +34,16 @@ function validatePayload(payload) {
     return '';
 }
 
+function toSafeErrorDetails(error) {
+    return {
+        name: error?.name || 'Error',
+        message: error?.message || 'Unknown error',
+        code: error?.code || '',
+        hasDbUrl: Boolean(TURSO_DATABASE_URL),
+        hasDbToken: Boolean(TURSO_AUTH_TOKEN)
+    };
+}
+
 async function ensureSchema(client) {
     await client.execute(`
         CREATE TABLE IF NOT EXISTS cashew_expenses (
@@ -142,7 +152,8 @@ module.exports = async function handler(req, res) {
     } catch (error) {
         res.status(500).json({
             ok: false,
-            message: error.message || 'Turso save failed.'
+            message: error.message || 'Turso save failed.',
+            error: toSafeErrorDetails(error)
         });
     }
 };
