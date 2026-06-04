@@ -62,42 +62,34 @@ async function syncToTurso(payload) {
 
     await ensureSchema(client);
 
-    try {
-        await client.execute('BEGIN');
+    const statements = [];
 
-        if (payload.action === 'update' && payload.originalDate) {
-            await client.execute({
-                sql: 'DELETE FROM cashew_expenses WHERE expense_date = ?',
-                args: [payload.originalDate]
-            });
-        }
-
-        for (const expense of payload.expenses) {
-            await client.execute({
-                sql: `
-                    INSERT INTO cashew_expenses (expense_date, category, description, amount, action_type)
-                    VALUES (?, ?, ?, ?, ?)
-                `,
-                args: [
-                    expense.date,
-                    String(expense.category || '').trim(),
-                    String(expense.description || '').trim(),
-                    Number(expense.amount),
-                    String(payload.action || 'add')
-                ]
-            });
-        }
-
-        await client.execute('COMMIT');
-        return { ok: true, rowsSaved: payload.expenses.length };
-    } catch (error) {
-        try {
-            await client.execute('ROLLBACK');
-        } catch (_) {
-            // Ignore rollback errors and preserve the original DB failure.
-        }
-        throw error;
+    if (payload.action === 'update' && payload.originalDate) {
+        statements.push({
+            sql: 'DELETE FROM cashew_expenses WHERE expense_date = ?',
+            args: [payload.originalDate]
+        });
     }
+
+    for (const expense of payload.expenses) {
+        statements.push({
+            sql: `
+                INSERT INTO cashew_expenses (expense_date, category, description, amount, action_type)
+                VALUES (?, ?, ?, ?, ?)
+            `,
+            args: [
+                expense.date,
+                String(expense.category || '').trim(),
+                String(expense.description || '').trim(),
+                Number(expense.amount),
+                String(payload.action || 'add')
+            ]
+        });
+    }
+
+    // Turso/libsql handles atomicity for write batch; avoids manual BEGIN/COMMIT issues.
+    await client.batch(statements, 'write');
+    return { ok: true, rowsSaved: payload.expenses.length };
 }
 
 module.exports = async function handler(req, res) {
