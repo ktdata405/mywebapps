@@ -60,36 +60,62 @@ async function syncToTurso(payload) {
         authToken: TURSO_AUTH_TOKEN
     });
 
-    await ensureSchema(client);
+    try {
+        await ensureSchema(client);
 
-    const statements = [];
+        const statements = [];
 
-    if (payload.action === 'update' && payload.originalDate) {
-        statements.push({
-            sql: 'DELETE FROM cashew_expenses WHERE expense_date = ?',
-            args: [payload.originalDate]
+        if (payload.action === 'update' && payload.originalDate) {
+            statements.push({
+                sql: 'DELETE FROM cashew_expenses WHERE expense_date = ?',
+                args: [payload.originalDate]
+            });
+        }
+
+        for (const expense of payload.expenses) {
+            statements.push({
+                sql: `
+                    INSERT INTO cashew_expenses (expense_date, category, description, amount, action_type)
+                    VALUES (?, ?, ?, ?, ?)
+                `,
+                args: [
+                    expense.date,
+                    String(expense.category || '').trim(),
+                    String(expense.description || '').trim(),
+                    Number(expense.amount),
+                    String(payload.action || 'add')
+                ]
+            });
+        }
+
+        // Turso/libsql handles atomicity for write batch.
+        await client.batch(statements, { mode: 'write' });
+
+        const dateToVerify = String(payload.expenses[0].date || '');
+        const verifyResult = await client.execute({
+            sql: 'SELECT COUNT(*) AS saved_count FROM cashew_expenses WHERE expense_date = ?',
+            args: [dateToVerify]
         });
-    }
 
-    for (const expense of payload.expenses) {
-        statements.push({
-            sql: `
-                INSERT INTO cashew_expenses (expense_date, category, description, amount, action_type)
-                VALUES (?, ?, ?, ?, ?)
-            `,
-            args: [
-                expense.date,
-                String(expense.category || '').trim(),
-                String(expense.description || '').trim(),
-                Number(expense.amount),
-                String(payload.action || 'add')
-            ]
-        });
-    }
+        const savedCountRaw = verifyResult.rows?.[0]?.saved_count;
+        const savedCount = Number(savedCountRaw || 0);
+        if (!savedCount) {
+            throw new Error('Turso write reported success but no rows were found after verification.');
+        }
 
-    // Turso/libsql handles atomicity for write batch; avoids manual BEGIN/COMMIT issues.
-    await client.batch(statements, 'write');
-    return { ok: true, rowsSaved: payload.expenses.length };
+        return {
+            ok: true,
+            rowsSaved: payload.expenses.length,
+            verifiedDate: dateToVerify,
+            verifiedRowsForDate: savedCount
+        };
+    } finally {
+        try {
+            client.close();
+        } catch (_) {
+            // Ignore close errors in serverless cleanup.
+        }
+    }
 }
 
 module.exports = async function handler(req, res) {
