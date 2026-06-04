@@ -11,7 +11,10 @@ const CONFIG = {
     //Prod Link
     GOOGLE_SHEET_URL_CASHEW: 'https://script.google.com/macros/s/AKfycbzb_8d1-3aXq97adxbpxCcVggdPRV2kIoLSwwoqbW67XvNusiUz5qeuQMf6PhK4TUqwwQ/exec',
     //QA Link
-    //GOOGLE_SHEET_URL_CASHEW: 'https://script.google.com/macros/s/AKfycbz7-TPG6goJrAXw-2TZSebXf8Y_iAgKReHsQNKHg2ts01ZfILc82mX1-u2SqeTukBayRQ/exec'
+    //GOOGLE_SHEET_URL_CASHEW: 'https://script.google.com/macros/s/AKfycbz7-TPG6goJrAXw-2TZSebXf8Y_iAgKReHsQNKHg2ts01ZfILc82mX1-u2SqeTukBayRQ/exec',
+
+    // Vercel serverless endpoint used by cashew.html to sync Turso + Google Sheets
+    CASHEW_SYNC_API_URL: '/api/cashew-sync',
 
     //Prod Link
     GOOGLE_SHEET_URL_MSI: 'https://script.google.com/macros/s/AKfycbymQCgffCJ_XCrKk1RjgZlVTfquqzHW_n3pPYNNrINeDsTjJy0Yx18ZfgOmr6qSsCcb/exec',

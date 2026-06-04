@@ -1,0 +1,12 @@
+{
+  "name": "mywebapps",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node tests/cashew-sync.test.js"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.15.15"
+  }
+}
+
