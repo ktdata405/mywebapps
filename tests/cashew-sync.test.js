@@ -13,6 +13,7 @@ const cashewFile = path.join(__dirname, '..', 'cashew', 'cashew.html');
 const cashewSource = fs.readFileSync(cashewFile, 'utf8');
 assert(cashewSource.includes('CONFIG.GOOGLE_SHEET_URL_CASHEW'), 'Frontend should still post directly to Google Sheets');
 assert(cashewSource.includes('CONFIG.CASHEW_SYNC_API_URL'), 'Frontend should post to Turso API endpoint');
+assert(cashewSource.includes('Promise.allSettled([saveToSheets, saveToTurso])'), 'Frontend should save Sheets and Turso independently');
 
 console.log('cashew-sync checks passed');
 

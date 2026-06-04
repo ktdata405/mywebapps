@@ -1067,25 +1067,45 @@
                 }
             });
 
-            Promise.all([saveToSheets, saveToTurso])
-            .then(() => {
-                loader.classList.add('hidden');
-                saveBtn.disabled = false;
-                initDateAccordion(dateInput.value); // Refresh calendar
-                updateDateSaveStatus(true); // Mark as saved
+            Promise.allSettled([saveToSheets, saveToTurso])
+            .then((results) => {
+                const sheetsOk = results[0].status === 'fulfilled';
+                const tursoOk = results[1].status === 'fulfilled';
 
-                window.pendingClear = true;
-                const msg = isEditMode
-                    ? 'Expenses updated successfully!'
-                    : 'Expenses saved successfully!';
-                showPopup('Success', msg, 'success');
-            })
-            .catch(error => {
-                console.error('Network error:', error);
                 loader.classList.add('hidden');
                 saveBtn.disabled = false;
+
+                if (sheetsOk && tursoOk) {
+                    initDateAccordion(dateInput.value); // Refresh calendar
+                    updateDateSaveStatus(true); // Mark as saved
+                    window.pendingClear = true;
+                    const msg = isEditMode
+                        ? 'Expenses updated successfully!'
+                        : 'Expenses saved successfully!';
+                    showPopup('Success', msg, 'success');
+                    return;
+                }
+
+                if (sheetsOk && !tursoOk) {
+                    initDateAccordion(dateInput.value);
+                    updateDateSaveStatus(true);
+                    window.pendingClear = true;
+                    const tursoError = results[1].reason?.message || 'Turso save failed.';
+                    showPopup('Partial Success', `Saved to Google Sheets. ${tursoError}`, 'error');
+                    return;
+                }
+
+                if (!sheetsOk && tursoOk) {
+                    updateDateSaveStatus(false);
+                    const sheetError = results[0].reason?.message || 'Google Sheets save failed.';
+                    showPopup('Partial Success', `Saved to Turso. ${sheetError}`, 'error');
+                    return;
+                }
+
                 updateDateSaveStatus(false);
-                showPopup('Error', 'Error sending data: ' + error.message, 'error');
+                const sheetError = results[0].reason?.message || 'Google Sheets save failed.';
+                const tursoError = results[1].reason?.message || 'Turso save failed.';
+                showPopup('Error', `${sheetError} ${tursoError}`, 'error');
             });
         }
 

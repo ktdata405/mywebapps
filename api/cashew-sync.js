@@ -62,8 +62,9 @@ async function syncToTurso(payload) {
 
     await ensureSchema(client);
 
-    await client.execute('BEGIN');
     try {
+        await client.execute('BEGIN');
+
         if (payload.action === 'update' && payload.originalDate) {
             await client.execute({
                 sql: 'DELETE FROM cashew_expenses WHERE expense_date = ?',
@@ -90,7 +91,11 @@ async function syncToTurso(payload) {
         await client.execute('COMMIT');
         return { ok: true, rowsSaved: payload.expenses.length };
     } catch (error) {
-        await client.execute('ROLLBACK');
+        try {
+            await client.execute('ROLLBACK');
+        } catch (_) {
+            // Ignore rollback errors and preserve the original DB failure.
+        }
         throw error;
     }
 }
