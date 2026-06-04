@@ -7,8 +7,13 @@ const source = fs.readFileSync(apiFile, 'utf8');
 
 assert(source.includes('ktapps_TURSO_DATABASE_URL'), 'API should use ktapps_TURSO_DATABASE_URL env var');
 assert(source.includes('ktapps_TURSO_AUTH_TOKEN'), 'API should use ktapps_TURSO_AUTH_TOKEN env var');
-assert(!source.includes('GOOGLE_SHEET_URL_CASHEW'), 'API should not use Google Sheets URL');
-assert(source.includes("client.batch(statements, 'write')"), 'API should use supported batch mode signature for current libsql client');
+assert(!source.includes('GOOGLE_SHEET_URL_CASHEW'), 'API should not use Google Sheets URL');assert(source.includes("client.batch(statements, 'write')"), 'API should use supported batch mode signature for current libsql client');
+assert(source.includes('uniqueDates'), 'API should always delete existing rows by date before inserting to prevent duplicates');
+
+const dedupeFile = path.join(__dirname, '..', 'api', 'cashew-dedupe.js');
+const dedupeSource = fs.readFileSync(dedupeFile, 'utf8');
+assert(dedupeSource.includes('SELECT MAX(id)'), 'Dedupe endpoint must keep latest row per (expense_date, category)');
+assert(dedupeSource.includes('GROUP BY expense_date, category'), 'Dedupe endpoint must group by date and category');
 
 const cashewFile = path.join(__dirname, '..', 'cashew', 'cashew.html');
 const cashewSource = fs.readFileSync(cashewFile, 'utf8');

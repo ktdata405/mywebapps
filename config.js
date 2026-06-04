@@ -13,8 +13,9 @@ const CONFIG = {
     //QA Link
     //GOOGLE_SHEET_URL_CASHEW: 'https://script.google.com/macros/s/AKfycbz7-TPG6goJrAXw-2TZSebXf8Y_iAgKReHsQNKHg2ts01ZfILc82mX1-u2SqeTukBayRQ/exec',
 
-    // Vercel serverless endpoint used by cashew.html for Turso sync only
+    // Vercel serverless endpoints for Cashew Turso operations
     CASHEW_SYNC_API_URL: '/api/cashew-sync',
+    CASHEW_FETCH_API_URL: '/api/cashew-fetch',
 
     //Prod Link
     GOOGLE_SHEET_URL_MSI: 'https://script.google.com/macros/s/AKfycbymQCgffCJ_XCrKk1RjgZlVTfquqzHW_n3pPYNNrINeDsTjJy0Yx18ZfgOmr6qSsCcb/exec',

@@ -257,6 +257,26 @@
                     <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-filter text-indigo-400"></i> Period Selection
                     </h3>
+
+                    <!-- Data Source Toggle -->
+                    <div class="mb-4">
+                        <label class="text-[10px] text-gray-400 font-bold ml-1 uppercase mb-1.5 block">Data Source</label>
+                        <div class="flex p-1 bg-black/30 rounded-xl border border-white/10 gap-1">
+                            <button id="src-db" onclick="setDataSource('database')"
+                                class="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all bg-indigo-600 text-white shadow-lg shadow-indigo-600/20">
+                                <i class="fa-solid fa-database text-[11px]"></i> Database
+                            </button>
+                            <button id="src-sheet" onclick="setDataSource('sheet')"
+                                class="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all text-gray-400 hover:text-white hover:bg-white/5">
+                                <i class="fa-solid fa-table text-[11px]"></i> Sheet
+                            </button>
+                        </div>
+                        <div id="data-source-badge" class="mt-2 flex items-center gap-1.5 text-[10px] font-semibold text-indigo-400">
+                            <span class="w-2 h-2 rounded-full bg-indigo-400 inline-block"></span>
+                            Fetching from Turso Database
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-2 gap-4">
                         <div class="space-y-1.5">
                             <label class="text-[10px] text-gray-400 font-bold ml-1 uppercase">Month</label>
@@ -513,6 +533,32 @@
         let monthlyBalances = {};
         let currentView = 'transactions';
         let currentFilteredData = [];
+        let activeDataSource = 'database'; // 'database' | 'sheet'
+
+        function setDataSource(source) {
+            activeDataSource = source;
+            const dbBtn    = document.getElementById('src-db');
+            const sheetBtn = document.getElementById('src-sheet');
+            const badge    = document.getElementById('data-source-badge');
+
+            const activeClass   = 'flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all bg-indigo-600 text-white shadow-lg shadow-indigo-600/20';
+            const inactiveClass = 'flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all text-gray-400 hover:text-white hover:bg-white/5';
+
+            if (source === 'database') {
+                dbBtn.className    = activeClass;
+                sheetBtn.className = inactiveClass;
+                badge.className    = 'mt-2 flex items-center gap-1.5 text-[10px] font-semibold text-indigo-400';
+                badge.innerHTML    = '<span class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse inline-block"></span> Loading from Turso Database…';
+            } else {
+                sheetBtn.className = activeClass;
+                dbBtn.className    = inactiveClass;
+                badge.className    = 'mt-2 flex items-center gap-1.5 text-[10px] font-semibold text-emerald-400';
+                badge.innerHTML    = '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block"></span> Loading from Google Sheets…';
+            }
+
+            // Fetch exclusively from the selected source
+            fetchReport();
+        }
 
         function switchView(view) {
             currentView = view;
@@ -552,7 +598,79 @@
             document.getElementById('month-select').value = months[new Date().getMonth()];
 
             handleMonthChange();
-            fetchReport();
+
+            // Default source is database — setDataSource applies UI + triggers first fetch
+            setDataSource('database');
+        }
+
+        function updateSourceBadgeDone() {
+            const badge = document.getElementById('data-source-badge');
+            if (!badge) return;
+            if (activeDataSource === 'database') {
+                badge.className = 'mt-2 flex items-center gap-1.5 text-[10px] font-semibold text-indigo-400';
+                badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-indigo-400 inline-block"></span> Turso Database';
+            } else {
+                badge.className = 'mt-2 flex items-center gap-1.5 text-[10px] font-semibold text-emerald-400';
+                badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span> Google Sheets';
+            }
+        }
+
+        function fetchReport() {
+            const loader = document.getElementById('loader');
+            loader.classList.remove('hidden');
+
+            const month = document.getElementById('month-select').value;
+            const year  = document.getElementById('year-select').value;
+
+            if (activeDataSource === 'database') {
+                // ── Turso Database ──────────────────────────────────────
+                const base = (CONFIG.CASHEW_FETCH_API_URL || '/api/cashew-fetch');
+                const url = month === 'All'
+                    ? `${base}?fetchAll=true&t=${Date.now()}`
+                    : `${base}?month=${encodeURIComponent(month)}&year=${encodeURIComponent(year)}&t=${Date.now()}`;
+
+                fetch(url)
+                    .then(r => r.json())
+                    .then(res => {
+                        if (!res.ok) throw new Error(res.message || 'Database fetch failed');
+                        allData = res.data || [];
+                        monthlyBalances = res.monthlyBalances || {};
+                        populateCategoryFilter(allData);
+                        updateStats(0);
+                        populateInsights(allData);
+                        filterData();
+                        loader.classList.add('hidden');
+                        updateSourceBadgeDone();
+                    })
+                    .catch(e => {
+                        console.error('DB fetch error:', e);
+                        loader.classList.add('hidden');
+                        KTui.alert('Error', 'Failed to load from Database: ' + e.message, 'error');
+                    });
+            } else {
+                // ── Google Sheets ────────────────────────────────────────
+                const url = month === 'All'
+                    ? `${CONFIG.GOOGLE_SHEET_URL_CASHEW}?fetchAll=true&t=${Date.now()}`
+                    : `${CONFIG.GOOGLE_SHEET_URL_CASHEW}?sheetName=${encodeURIComponent(month + ' ' + year)}&t=${Date.now()}`;
+
+                fetch(url)
+                    .then(r => r.json())
+                    .then(res => {
+                        allData = res.data || [];
+                        monthlyBalances = res.monthlyBalances || {};
+                        populateCategoryFilter(allData);
+                        updateStats(res.availableBalance || 0);
+                        populateInsights(allData);
+                        filterData();
+                        loader.classList.add('hidden');
+                        updateSourceBadgeDone();
+                    })
+                    .catch(e => {
+                        console.error('Sheets fetch error:', e);
+                        loader.classList.add('hidden');
+                        KTui.alert('Error', 'Failed to load from Google Sheets', 'error');
+                    });
+            }
         }
 
         function getCategoryColor(category) {
@@ -566,34 +684,6 @@
             if(cat.includes('mutual') || cat.includes('invest')) return { main: '#06b6d4', bg: 'rgba(6, 182, 212, 0.1)', icon: 'fa-chart-line' };
             if(cat.includes('latha')) return { main: '#ec4899', bg: 'rgba(236, 72, 153, 0.1)', icon: 'fa-heart' };
             return { main: '#94a3b8', bg: 'rgba(148, 163, 184, 0.1)', icon: 'fa-tag' };
-        }
-
-        function fetchReport() {
-            const loader = document.getElementById('loader');
-            loader.classList.remove('hidden');
-
-            const month = document.getElementById('month-select').value;
-            const year = document.getElementById('year-select').value;
-            let url = month === 'All'
-                ? `${CONFIG.GOOGLE_SHEET_URL_CASHEW}?fetchAll=true&t=${Date.now()}`
-                : `${CONFIG.GOOGLE_SHEET_URL_CASHEW}?sheetName=${encodeURIComponent(month + ' ' + year)}&t=${Date.now()}`;
-
-            fetch(url)
-                .then(r => r.json())
-                .then(res => {
-                    allData = res.data || [];
-                    monthlyBalances = res.monthlyBalances || {};
-                    populateCategoryFilter(allData);
-                    updateStats(res.availableBalance || 0);
-                    populateInsights(allData);
-                    filterData();
-                    loader.classList.add('hidden');
-                })
-                .catch(e => {
-                    console.error(e);
-                    loader.classList.add('hidden');
-                    KTui.alert('Error', 'Error loading data', 'error');
-                });
         }
 
         function updateStats(balance) {
@@ -898,7 +988,12 @@
             const tM = document.getElementById('export-to-month-select').value;
             const tY = document.getElementById('export-to-year-select').value;
 
-            fetch(`${CONFIG.GOOGLE_SHEET_URL_CASHEW}?fetchAll=true&t=${Date.now()}`)
+            // Use same source as currently selected for export
+            const exportUrl = activeDataSource === 'database'
+                ? `${CONFIG.CASHEW_FETCH_API_URL || '/api/cashew-fetch'}?fetchAll=true&t=${Date.now()}`
+                : `${CONFIG.GOOGLE_SHEET_URL_CASHEW}?fetchAll=true&t=${Date.now()}`;
+
+            fetch(exportUrl)
                 .then(r => r.json())
                 .then(res => {
                     loader.classList.add('hidden');

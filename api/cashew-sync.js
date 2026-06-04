@@ -75,10 +75,22 @@ async function syncToTurso(payload) {
 
         const statements = [];
 
-        if (payload.action === 'update' && payload.originalDate) {
+        // Always delete ALL existing rows for every unique date in this payload
+        // before inserting. This prevents duplicate accumulation regardless of
+        // whether action is 'add' or 'update'.
+        const uniqueDates = [...new Set(payload.expenses.map(e => String(e.date)))];
+        for (const date of uniqueDates) {
             statements.push({
                 sql: 'DELETE FROM cashew_expenses WHERE expense_date = ?',
-                args: [payload.originalDate]
+                args: [date]
+            });
+        }
+
+        // Also delete by originalDate when it differs (date was changed during edit)
+        if (payload.originalDate && !uniqueDates.includes(String(payload.originalDate))) {
+            statements.push({
+                sql: 'DELETE FROM cashew_expenses WHERE expense_date = ?',
+                args: [String(payload.originalDate)]
             });
         }
 

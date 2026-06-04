@@ -515,7 +515,7 @@
             <h3>About</h3>
             <div class="setting-item">
                 <label>Version</label>
-                <span>1.0.0</span>
+                <span id="app-version">Loading...</span>
             </div>
             <div class="setting-item">
                 <label>Privacy Policy</label>
@@ -811,6 +811,23 @@
                     }
                 });
             }
+
+            // Fetch and display app version
+            fetch('./version.json')
+                .then(response => response.json())
+                .then(data => {
+                    const appVersionSpan = document.getElementById('app-version');
+                    if (appVersionSpan) {
+                        appVersionSpan.textContent = data.version;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching version:', error);
+                    const appVersionSpan = document.getElementById('app-version');
+                    if (appVersionSpan) {
+                        appVersionSpan.textContent = 'N/A';
+                    }
+                });
         });
 
         window.addEventListener('pageshow', () => {
