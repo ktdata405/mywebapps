@@ -327,9 +327,13 @@
             </h5>
         </div>
 
-        <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-            <!-- Filter -->
-            <div class="relative flex-1 sm:flex-none">
+        <div class="flex flex-col gap-2 w-full sm:w-auto">
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                <div class="flex p-1 bg-black/30 rounded-xl border border-white/10 gap-1">
+                    <button id="src-db" onclick="setDataSource('database')" class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-indigo-600 text-white">DB</button>
+                    <button id="src-sheet" onclick="setDataSource('sheet')" class="px-3 py-1.5 rounded-lg text-[11px] font-bold text-gray-300">Sheet</button>
+                </div>
+                <div class="relative flex-1 sm:flex-none">
                 <select id="sideFilter" onchange="fetchData()" class="bg-white/10 border border-white/20 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 sm:p-2.5 outline-none appearance-none pr-8 cursor-pointer" style="font-size: 16px; min-height: 44px;">
                     <option value="All" class="bg-slate-800">All Sides</option>
                     <option value="Kalyan" class="bg-slate-800">Kalyan</option>
@@ -340,20 +344,29 @@
                 </div>
             </div>
 
-            <div class="flex gap-2">
-                <button onclick="fetchData()" class="bg-blue-500/20 hover:bg-blue-500/30 active:bg-blue-500/50 text-blue-300 border border-blue-500/30 w-11 h-11 rounded-full transition flex items-center justify-center shadow-sm" title="Refresh">
-                    <i class="fa-solid fa-sync"></i>
-                </button>
-                <a href="tenet.html" class="bg-white/10 hover:bg-white/20 active:bg-white/30 text-white w-11 h-11 rounded-full transition flex items-center justify-center" title="Add New">
-                    <i class="fa-solid fa-plus"></i>
-                </a>
-                <a href="../index.html" class="bg-white/10 hover:bg-white/20 active:bg-white/30 text-white w-11 h-11 rounded-full transition flex items-center justify-center" title="Home">
-                    <i class="fa-solid fa-house"></i>
-                </a>
-                <a href="../settings.html" class="bg-white/10 hover:bg-white/20 active:bg-white/30 text-white w-11 h-11 rounded-full transition flex items-center justify-center" title="Settings" aria-label="Settings">
-                    <i class="fa-solid fa-gear"></i>
-                </a>
+                <div class="flex gap-2">
+                    <button onclick="syncSheetToDatabase()" class="bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 w-11 h-11 rounded-full transition flex items-center justify-center" title="Sheet -> DB">
+                        <i class="fa-solid fa-table"></i>
+                    </button>
+                    <button onclick="syncDatabaseToSheet()" class="bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 w-11 h-11 rounded-full transition flex items-center justify-center" title="DB -> Sheet">
+                        <i class="fa-solid fa-database"></i>
+                    </button>
+                    <button onclick="fetchData()" class="bg-blue-500/20 hover:bg-blue-500/30 active:bg-blue-500/50 text-blue-300 border border-blue-500/30 w-11 h-11 rounded-full transition flex items-center justify-center shadow-sm" title="Refresh">
+                        <i class="fa-solid fa-sync"></i>
+                    </button>
+                    <a href="tenet.html" class="bg-white/10 hover:bg-white/20 active:bg-white/30 text-white w-11 h-11 rounded-full transition flex items-center justify-center" title="Add New">
+                        <i class="fa-solid fa-plus"></i>
+                    </a>
+                    <a href="../index.html" class="bg-white/10 hover:bg-white/20 active:bg-white/30 text-white w-11 h-11 rounded-full transition flex items-center justify-center" title="Home">
+                        <i class="fa-solid fa-house"></i>
+                    </a>
+                    <a href="../settings.html" class="bg-white/10 hover:bg-white/20 active:bg-white/30 text-white w-11 h-11 rounded-full transition flex items-center justify-center" title="Settings" aria-label="Settings">
+                        <i class="fa-solid fa-gear"></i>
+                    </a>
+                </div>
             </div>
+
+            <div id="data-source-badge" class="text-[11px] text-indigo-300 font-semibold">Loading from Database...</div>
         </div>
     </div>
 
@@ -398,7 +411,106 @@
 
 <script>
     const SCRIPT_URL = CONFIG.GOOGLE_SHEET_URL_RENT;
+    const RENT_FETCH_URL = CONFIG.RENT_FETCH_API_URL || '/api/rent-fetch';
+    const RENT_SYNC_BRIDGE_URL = CONFIG.RENT_SYNC_BRIDGE_API_URL || '/api/rent-sync-bridge';
+
     let allRecords = [];
+    let activeDataSource = 'database';
+
+    function setDataSource(source) {
+        activeDataSource = source;
+
+        const dbBtn = document.getElementById('src-db');
+        const sheetBtn = document.getElementById('src-sheet');
+
+        if (source === 'database') {
+            dbBtn.className = 'px-3 py-1.5 rounded-lg text-[11px] font-bold bg-indigo-600 text-white';
+            sheetBtn.className = 'px-3 py-1.5 rounded-lg text-[11px] font-bold text-gray-300';
+        } else {
+            sheetBtn.className = 'px-3 py-1.5 rounded-lg text-[11px] font-bold bg-indigo-600 text-white';
+            dbBtn.className = 'px-3 py-1.5 rounded-lg text-[11px] font-bold text-gray-300';
+        }
+
+        updateSourceBadgeLoading();
+        fetchData();
+    }
+
+    function updateSourceBadgeLoading() {
+        const badge = document.getElementById('data-source-badge');
+        if (!badge) return;
+        if (activeDataSource === 'database') {
+            badge.className = 'text-[11px] text-indigo-300 font-semibold';
+            badge.textContent = 'Loading from Neon Database...';
+        } else {
+            badge.className = 'text-[11px] text-emerald-300 font-semibold';
+            badge.textContent = 'Loading from Google Sheets...';
+        }
+    }
+
+    function updateSourceBadgeDone() {
+        const badge = document.getElementById('data-source-badge');
+        if (!badge) return;
+        if (activeDataSource === 'database') {
+            badge.className = 'text-[11px] text-indigo-300 font-semibold';
+            badge.textContent = 'Neon Database';
+        } else {
+            badge.className = 'text-[11px] text-emerald-300 font-semibold';
+            badge.textContent = 'Google Sheets';
+        }
+    }
+
+    function showConfirmPopup(title, message, onConfirm) {
+        KTui.confirm(title, message, onConfirm, {
+            confirmText: 'Sync Now',
+            cancelText: 'Cancel'
+        });
+    }
+
+    async function executeBidirectionalSync(direction) {
+        const loader = document.getElementById('loader');
+        loader.classList.remove('hidden');
+
+        try {
+            const response = await fetch(RENT_SYNC_BRIDGE_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    direction,
+                    fetchAll: true,
+                    sheetUrl: SCRIPT_URL
+                })
+            });
+
+            const result = await response.json();
+            if (!response.ok || !result.ok) {
+                throw new Error(result.message || `Sync failed with status ${response.status}`);
+            }
+
+            const summary = result.summary || {};
+            const rows = Number(summary.rowsSynced || 0);
+            const skipped = Number(summary.duplicatesSkipped || 0);
+            KTui.alert('Sync Completed', `Rows synced: ${rows}, Duplicates skipped: ${skipped}.`, 'success');
+            fetchData();
+        } catch (error) {
+            KTui.alert('Sync Error', error.message || 'Could not sync right now.', 'error');
+        } finally {
+            loader.classList.add('hidden');
+        }
+    }
+
+    function syncSheetToDatabase() {
+        showConfirmPopup('Confirm Sync', 'Sync all rows from Google Sheet to Neon DB?', () => {
+            executeBidirectionalSync('sheet-to-db');
+        });
+    }
+
+    function syncDatabaseToSheet() {
+        showConfirmPopup('Confirm Sync', 'Sync all rows from Neon DB to Google Sheet?', () => {
+            executeBidirectionalSync('db-to-sheet');
+        });
+    }
 
     function formatDate(dateString) {
         if (!dateString) return '';
@@ -613,6 +725,12 @@
         contentContainer.appendChild(innerPadding);
     }
 
+    function normalizePayloadData(payload) {
+        if (!payload) return [];
+        if (Array.isArray(payload.data)) return payload.data;
+        return [];
+    }
+
     function fetchData() {
         const loader = document.getElementById('loader');
         const container = document.getElementById('report-container');
@@ -630,12 +748,17 @@
 
         container.innerHTML = '';
 
-        fetch(SCRIPT_URL)
+        const sourceUrl = activeDataSource === 'database'
+            ? `${RENT_FETCH_URL}?fetchAll=true&t=${Date.now()}`
+            : `${SCRIPT_URL}?fetchAll=true&t=${Date.now()}`;
+
+        fetch(sourceUrl)
             .then(response => response.json())
             .then(responsePayload => {
                 loader.classList.add('hidden');
+                updateSourceBadgeDone();
 
-                allRecords = responsePayload.data || [];
+                allRecords = normalizePayloadData(responsePayload);
                 let displayRecords = allRecords;
 
                 if (sideFilter !== 'All') {
@@ -679,7 +802,7 @@
             });
     }
 
-    document.addEventListener('DOMContentLoaded', fetchData);
+    document.addEventListener('DOMContentLoaded', () => setDataSource('database'));
 
     // ===== MOBILE ENHANCEMENTS =====
     function showToast(msg, type = 'success', duration = 2800) {

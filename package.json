@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "test": "node tests/cashew-sync.test.js && node tests/milk-sync.test.js"
+    "test": "node tests/cashew-sync.test.js && node tests/milk-sync.test.js && node tests/rent-sync.test.js"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
     "@libsql/client": "^0.15.15"
   }
 }

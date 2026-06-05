@@ -23,6 +23,11 @@ const CONFIG = {
     MILK_FETCH_API_URL: '/api/milk-fetch',
     MILK_SYNC_BRIDGE_API_URL: '/api/milk-sync-bridge',
 
+    // Vercel serverless endpoints for Rent Neon operations
+    RENT_SYNC_API_URL: '/api/rent-sync',
+    RENT_FETCH_API_URL: '/api/rent-fetch',
+    RENT_SYNC_BRIDGE_API_URL: '/api/rent-sync-bridge',
+
     //Prod Link
     GOOGLE_SHEET_URL_MSI: 'https://script.google.com/macros/s/AKfycbymQCgffCJ_XCrKk1RjgZlVTfquqzHW_n3pPYNNrINeDsTjJy0Yx18ZfgOmr6qSsCcb/exec',
 
