@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "test": "node tests/cashew-sync.test.js"
+    "test": "node tests/cashew-sync.test.js && node tests/milk-sync.test.js"
   },
   "dependencies": {
     "@libsql/client": "^0.15.15"

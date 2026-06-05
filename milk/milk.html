@@ -151,6 +151,9 @@
                 <a href="milkreport.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white" title="Report">
                     <i class="fa-solid fa-chart-pie"></i>
                 </a>
+                <a href="javascript:void(0)" onclick="window.open(CONFIG.SHEET_URL_MILK, '_blank')" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white" title="Google Sheet">
+                    <i class="fa-solid fa-file-excel"></i>
+                </a>
                 <a href="../index.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white" title="Home">
                     <i class="fa-solid fa-house"></i>
                 </a>
@@ -307,7 +310,9 @@
         const UNIT_PRICE = 80;
         const DEFAULT_MORNING = 1.5;
         const DEFAULT_EVENING = 0.5;
-        const MILK_API_URL = 'https://script.google.com/macros/s/AKfycbw9HPgLQojIqypEKeaCpwdZtdXmM7gqANY8LFWLWUAe5CNexRLTyrrX6JLFmiZC03B4CQ/exec';
+        const MILK_API_URL = CONFIG.GOOGLE_SHEET_URL_MILK;
+        const MILK_SYNC_API_URL = CONFIG.MILK_SYNC_API_URL || '/api/milk-sync';
+        const MILK_FETCH_API_URL = CONFIG.MILK_FETCH_API_URL || '/api/milk-fetch';
         let isDailyCostManual = false;
 
         function getDisplayedDailyCost() {
@@ -546,30 +551,75 @@
                 remarks: remarks
             };
 
-            fetch(MILK_API_URL, {
+            const saveToSheets = fetch(MILK_API_URL, {
                 method: 'POST',
                 body: JSON.stringify(payload),
                 mode: 'no-cors'
-            })
-            .then(() => {
+            });
+
+            const saveToTurso = fetch(MILK_SYNC_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            }).then(async (response) => {
+                let result = null;
+                try {
+                    result = await response.json();
+                } catch (_) {
+                    result = null;
+                }
+
+                if (!response.ok || !result || !result.ok) {
+                    const msg = (result && result.message) || `Turso save failed with status ${response.status}`;
+                    throw new Error(msg);
+                }
+            });
+
+            Promise.allSettled([saveToSheets, saveToTurso]).then((results) => {
+                const sheetsOk = results[0].status === 'fulfilled';
+                const tursoOk = results[1].status === 'fulfilled';
+
                 loader.classList.add('hidden');
-                showPopup('Success', 'Data saved successfully!', 'success');
-                updateDateSaveStatus(true); // Mark as saved
+
+                if (sheetsOk && tursoOk) {
+                    showPopup('Success', 'Data saved to Google Sheets and Turso.', 'success');
+                    updateDateSaveStatus(true);
+                } else if (sheetsOk && !tursoOk) {
+                    const tursoError = results[1].reason?.message || 'Turso save failed.';
+                    showPopup('Partial Success', `Saved to Google Sheets. ${tursoError}`, 'error');
+                    updateDateSaveStatus(true);
+                } else if (!sheetsOk && tursoOk) {
+                    const sheetError = results[0].reason?.message || 'Google Sheets save failed.';
+                    showPopup('Partial Success', `Saved to Turso. ${sheetError}`, 'error');
+                    updateDateSaveStatus(false);
+                } else {
+                    const sheetError = results[0].reason?.message || 'Google Sheets save failed.';
+                    const tursoError = results[1].reason?.message || 'Turso save failed.';
+                    showPopup('Error', `${sheetError} ${tursoError}`, 'error');
+                    updateDateSaveStatus(false);
+                    return;
+                }
+
                 clearInputs();
-                // Refresh calendar
                 initDateAccordion(dateInputVal);
-                // Move to next day
                 const d = new Date(dateInputVal);
                 d.setDate(d.getDate() + 1);
                 const nextDay = d.toISOString().split('T')[0];
                 document.getElementById('date-input').value = nextDay;
                 initDateAccordion(nextDay);
-            })
-            .catch(error => {
-                loader.classList.add('hidden');
-                console.error('Error:', error);
-                showPopup('Error', 'Error saving data', 'error');
             });
+        }
+
+        async function fetchRowsFromDatabase(month, year) {
+            const url = `${MILK_FETCH_API_URL}?month=${encodeURIComponent(month)}&year=${encodeURIComponent(year)}&t=${Date.now()}`;
+            const response = await fetch(url);
+            const result = await response.json();
+            if (!response.ok || !result.ok) {
+                throw new Error((result && result.message) || 'Database fetch failed');
+            }
+            return Array.isArray(result.data) ? result.data : [];
         }
 
         // --- Date Accordion Logic ---
@@ -615,6 +665,19 @@
                 selectedRow = rows.find(row => normalizeSheetDate(row.date) === fullDateStr) || null;
             } catch (e) {
                 console.error("Failed to fetch existing dates for accordion", e);
+                try {
+                    const rows = await fetchRowsFromDatabase(months[monthIndex], year);
+                    if (rows.length) {
+                        existingDates = rows.map(row => normalizeSheetDate(row.date)).filter(Boolean);
+                    }
+
+                    const dayStr = String(dateObj.getDate()).padStart(2, '0');
+                    const monthName = months[monthIndex];
+                    const fullDateStr = `${dayStr}/${monthName}/${year}`;
+                    selectedRow = rows.find(row => normalizeSheetDate(row.date) === fullDateStr) || null;
+                } catch (dbError) {
+                    console.error('Failed to fetch milk data from Turso fallback', dbError);
+                }
             }
 
             setInputsForSelectedDate(selectedRow);

@@ -459,6 +459,16 @@
                     <i class="fa-solid fa-filter text-indigo-400"></i> Period Selection
                 </h3>
                 <div class="flex gap-2">
+                    <button onclick="syncSheetToDatabase()" title="Sheet to Database"
+                            class="w-8 h-8 rounded-lg border flex items-center justify-center transition-all tap-active"
+                            style="background:rgba(16,185,129,0.10); border-color:rgba(16,185,129,0.30); color:#34d399;">
+                        <i class="fa-solid fa-table text-[10px]"></i>
+                    </button>
+                    <button onclick="syncDatabaseToSheet()" title="Database to Sheet"
+                            class="w-8 h-8 rounded-lg border flex items-center justify-center transition-all tap-active"
+                            style="background:rgba(99,102,241,0.12); border-color:rgba(99,102,241,0.30); color:#818cf8;">
+                        <i class="fa-solid fa-database text-[10px]"></i>
+                    </button>
                     <button onclick="changeMonth(-1)"
                             class="w-8 h-8 rounded-lg border flex items-center justify-center transition-all tap-active"
                             style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.10); color:#9ca3af;">
@@ -469,6 +479,17 @@
                             style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.10); color:#9ca3af;">
                         <i class="fa-solid fa-chevron-right text-[10px]"></i>
                     </button>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="text-[10px] text-gray-400 font-bold ml-1 uppercase tracking-wider">Data Source</label>
+                <div class="flex p-1 rounded-xl gap-1 mt-1" style="background:rgba(15,23,42,0.7); border:1px solid rgba(255,255,255,0.10)">
+                    <button id="src-db" onclick="setDataSource('database')" class="flex-1 py-2 px-3 rounded-lg text-xs font-bold" style="background:rgba(99,102,241,0.9); color:#fff;">Database</button>
+                    <button id="src-sheet" onclick="setDataSource('sheet')" class="flex-1 py-2 px-3 rounded-lg text-xs font-bold" style="color:#94a3b8;">Sheet</button>
+                </div>
+                <div id="data-source-badge" class="mt-2 text-[10px] font-semibold" style="color:#818cf8;">
+                    <span style="display:inline-block;width:6px;height:6px;border-radius:999px;background:#818cf8;margin-right:6px;"></span>
+                    Loading from Turso Database...
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-3">
@@ -625,6 +646,44 @@
 <script>
     let filterVisible = true;
     let _reportRows = []; // stores sorted rows for index-based edit access
+    let activeDataSource = 'database';
+
+    function setDataSource(source) {
+        activeDataSource = source;
+        const dbBtn = document.getElementById('src-db');
+        const sheetBtn = document.getElementById('src-sheet');
+        const badge = document.getElementById('data-source-badge');
+
+        if (source === 'database') {
+            dbBtn.style.background = 'rgba(99,102,241,0.9)';
+            dbBtn.style.color = '#ffffff';
+            sheetBtn.style.background = 'transparent';
+            sheetBtn.style.color = '#94a3b8';
+            badge.style.color = '#818cf8';
+            badge.innerHTML = '<span style="display:inline-block;width:6px;height:6px;border-radius:999px;background:#818cf8;margin-right:6px;"></span>Loading from Turso Database...';
+        } else {
+            sheetBtn.style.background = 'rgba(16,185,129,0.9)';
+            sheetBtn.style.color = '#ffffff';
+            dbBtn.style.background = 'transparent';
+            dbBtn.style.color = '#94a3b8';
+            badge.style.color = '#34d399';
+            badge.innerHTML = '<span style="display:inline-block;width:6px;height:6px;border-radius:999px;background:#34d399;margin-right:6px;"></span>Loading from Google Sheets...';
+        }
+
+        fetchMilkReport();
+    }
+
+    function updateSourceBadgeDone() {
+        const badge = document.getElementById('data-source-badge');
+        if (!badge) return;
+        if (activeDataSource === 'database') {
+            badge.style.color = '#818cf8';
+            badge.innerHTML = '<span style="display:inline-block;width:6px;height:6px;border-radius:999px;background:#818cf8;margin-right:6px;"></span>Turso Database';
+        } else {
+            badge.style.color = '#34d399';
+            badge.innerHTML = '<span style="display:inline-block;width:6px;height:6px;border-radius:999px;background:#34d399;margin-right:6px;"></span>Google Sheets';
+        }
+    }
 
     function toggleFilter() {
         filterVisible = !filterVisible;
@@ -661,7 +720,7 @@
         ys.value = cur;
         const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         document.getElementById('month-select').value = months[new Date().getMonth()];
-        fetchMilkReport();
+        setDataSource('database');
     }
 
     function fetchMilkReport() {
@@ -672,13 +731,20 @@
         loader.classList.remove('hidden');
         fetchIcon.classList.add('rotate-180');
 
-        const sheetName = `${month} ${year}`;
-        fetch(`https://script.google.com/macros/s/AKfycbw9HPgLQojIqypEKeaCpwdZtdXmM7gqANY8LFWLWUAe5CNexRLTyrrX6JLFmiZC03B4CQ/exec?sheetName=${encodeURIComponent(sheetName)}&t=${Date.now()}`)
+        const url = activeDataSource === 'database'
+            ? `${CONFIG.MILK_FETCH_API_URL || '/api/milk-fetch'}?month=${encodeURIComponent(month)}&year=${encodeURIComponent(year)}&t=${Date.now()}`
+            : `${CONFIG.GOOGLE_SHEET_URL_MILK}?sheetName=${encodeURIComponent(`${month} ${year}`)}&t=${Date.now()}`;
+
+        fetch(url)
             .then(r => r.json())
             .then(res => {
+                if (activeDataSource === 'database' && !res.ok) {
+                    throw new Error(res.message || 'Database fetch failed');
+                }
                 renderReport(res.data || []);
                 loader.classList.add('hidden');
                 fetchIcon.classList.remove('rotate-180');
+                updateSourceBadgeDone();
             })
             .catch(e => {
                 console.error(e);
@@ -686,6 +752,74 @@
                 fetchIcon.classList.remove('rotate-180');
                 KTui.alert('Error', 'Error loading data. Please try again.', 'error');
             });
+    }
+
+    function getSyncScope() {
+        return {
+            month: document.getElementById('month-select').value,
+            year: document.getElementById('year-select').value,
+            fetchAll: false,
+            label: `${document.getElementById('month-select').value} ${document.getElementById('year-select').value}`
+        };
+    }
+
+    function executeBidirectionalSync(direction, scope) {
+        const loader = document.getElementById('loader');
+        loader.classList.remove('hidden');
+
+        fetch(CONFIG.MILK_SYNC_BRIDGE_API_URL || '/api/milk-sync-bridge', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                direction,
+                month: scope.month,
+                year: scope.year,
+                fetchAll: scope.fetchAll,
+                sheetUrl: CONFIG.GOOGLE_SHEET_URL_MILK
+            })
+        })
+        .then(async (response) => {
+            const result = await response.json();
+            if (!response.ok || !result.ok) {
+                throw new Error(result.message || `Sync failed with status ${response.status}`);
+            }
+
+            const summary = result.summary || {};
+            KTui.alert(
+                'Sync Completed',
+                `Dates: ${Number(summary.datesProcessed || 0)}, Rows: ${Number(summary.rowsSynced || 0)}, Duplicates skipped: ${Number(summary.duplicatesSkipped || 0)}.`,
+                'success'
+            );
+            fetchMilkReport();
+        })
+        .catch((error) => {
+            KTui.alert('Sync Error', error.message || 'Could not sync right now.', 'error');
+        })
+        .finally(() => {
+            loader.classList.add('hidden');
+        });
+    }
+
+    function syncSheetToDatabase() {
+        const scope = getSyncScope();
+        KTui.confirm(
+            'Confirm Sync',
+            `Run Google Sheet -> Turso DB sync for ${scope.label}? Existing rows for each date are replaced to prevent duplicates.`,
+            () => executeBidirectionalSync('sheet-to-db', scope),
+            { confirmText: 'Sync Now', cancelText: 'Cancel' }
+        );
+    }
+
+    function syncDatabaseToSheet() {
+        const scope = getSyncScope();
+        KTui.confirm(
+            'Confirm Sync',
+            `Run Turso DB -> Google Sheet sync for ${scope.label}? Existing rows for each date are replaced to prevent duplicates.`,
+            () => executeBidirectionalSync('db-to-sheet', scope),
+            { confirmText: 'Sync Now', cancelText: 'Cancel' }
+        );
     }
 
     function setMonthlyBadge(isPaid) {
@@ -880,20 +1014,43 @@
             status: 'Paid'
         };
 
-        fetch("https://script.google.com/macros/s/AKfycbwzBexzxdakb4awxFr8opppqQUKwmGJoB-_5FTD9Uzaz0LWGSpANhHlSAulLiyAe_SMxA/exec", {
+        const markInSheet = fetch(CONFIG.GOOGLE_SHEET_URL_MILK, {
             method: 'POST',
             body: JSON.stringify(payload),
             mode: 'no-cors'
-        })
-        .then(() => {
+        });
+
+        const markInTurso = fetch(CONFIG.MILK_SYNC_API_URL || '/api/milk-sync', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        }).then(async (response) => {
+            const result = await response.json();
+            if (!response.ok || !result.ok) {
+                throw new Error((result && result.message) || `Turso update failed (${response.status})`);
+            }
+        });
+
+        Promise.allSettled([markInSheet, markInTurso])
+        .then((results) => {
+            const sheetOk = results[0].status === 'fulfilled';
+            const tursoOk = results[1].status === 'fulfilled';
+            if (!sheetOk && !tursoOk) {
+                throw new Error('Failed to update paid status in both Google Sheets and Turso.');
+            }
             setMonthlyBadge(true);
+            if (!sheetOk || !tursoOk) {
+                KTui.alert('Partial Success', 'Monthly status updated in one source only. Please run sync.', 'info');
+            }
         })
-        .catch(() => {
+        .catch((err) => {
             if (element) {
                 element.disabled = false;
                 element.innerHTML = '<i class="fa-solid fa-check-circle"></i><span>Mark Paid</span>';
             }
-            KTui.alert('Error', 'Failed to update status. Please try again.', 'error');
+            KTui.alert('Error', err.message || 'Failed to update status. Please try again.', 'error');
         });
     }
 
