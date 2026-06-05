@@ -34,6 +34,24 @@ Duplicate prevention:
 - `ktapps_TURSO_DATABASE_URL`
 - `ktapps_TURSO_AUTH_TOKEN`
 
+Use this Turso DB URL value for `ktapps_TURSO_DATABASE_URL`:
+
+- `libsql://ktapps-database-vercel-icfg-lwmjz4tns514tgybfewlpsk9.aws-ap-south-1.turso.io`
+
+### Environment setup example
+
+```bash
+ktapps_TURSO_DATABASE_URL="libsql://ktapps-database-vercel-icfg-lwmjz4tns514tgybfewlpsk9.aws-ap-south-1.turso.io"
+ktapps_TURSO_AUTH_TOKEN="<your-turso-auth-token>"
+```
+
+### Vercel env commands
+
+```bash
+vercel env add ktapps_TURSO_DATABASE_URL
+vercel env add ktapps_TURSO_AUTH_TOKEN
+```
+
 ### Local check
 
 ```bash
