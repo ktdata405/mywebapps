@@ -305,6 +305,16 @@
                         <i class="fa-solid fa-rotate text-indigo-400 group-hover:rotate-180 transition-transform duration-500"></i>
                         <span>Fetch Report</span>
                     </button>
+                    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <button onclick="syncSheetToDatabase()" class="bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-300 font-bold py-2.5 rounded-xl transition-all text-xs flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-table text-[11px]"></i>
+                            <span>Sync Sheet -> DB</span>
+                        </button>
+                        <button onclick="syncDatabaseToSheet()" class="bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/25 text-indigo-300 font-bold py-2.5 rounded-xl transition-all text-xs flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-database text-[11px]"></i>
+                            <span>Sync DB -> Sheet</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Main Stats Cards -->
@@ -613,6 +623,97 @@
                 badge.className = 'mt-2 flex items-center gap-1.5 text-[10px] font-semibold text-emerald-400';
                 badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span> Google Sheets';
             }
+        }
+
+        function showPopup(title, message, type = 'success') {
+            KTui.alert(title, message, type === 'success' ? 'success' : 'error');
+        }
+
+        function showConfirmPopup(title, message, onConfirm) {
+            KTui.confirm(title, message, onConfirm, {
+                confirmText: 'Sync Now',
+                cancelText: 'Cancel'
+            });
+        }
+
+        function getSyncScopeFromFilters() {
+            const month = document.getElementById('month-select').value;
+            const year = document.getElementById('year-select').value;
+            if (month === 'All') {
+                return {
+                    month,
+                    year,
+                    fetchAll: true,
+                    label: 'all available dates'
+                };
+            }
+
+            return {
+                month,
+                year,
+                fetchAll: false,
+                label: `${month} ${year}`
+            };
+        }
+
+        async function executeBidirectionalSync(direction, scope) {
+            const syncText = direction === 'sheet-to-db' ? 'Google Sheet -> Turso DB' : 'Turso DB -> Google Sheet';
+            const loader = document.getElementById('loader');
+            loader.classList.remove('hidden');
+
+            try {
+                const response = await fetch(CONFIG.CASHEW_SYNC_BRIDGE_API_URL || '/api/cashew-sync-bridge', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        direction,
+                        month: scope.month,
+                        year: scope.year,
+                        fetchAll: scope.fetchAll,
+                        sheetUrl: CONFIG.GOOGLE_SHEET_URL_CASHEW
+                    })
+                });
+
+                const result = await response.json();
+                if (!response.ok || !result.ok) {
+                    throw new Error(result.message || `Sync failed with status ${response.status}`);
+                }
+
+                const summary = result.summary || {};
+                const dates = Number(summary.datesProcessed || 0);
+                const rows = Number(summary.rowsSynced || 0);
+                const skipped = Number(summary.duplicatesSkipped || 0);
+                showPopup(
+                    'Sync Completed',
+                    `${syncText} finished. Dates: ${dates}, Rows: ${rows}, Duplicates skipped: ${skipped}.`,
+                    'success'
+                );
+
+                fetchReport();
+            } catch (error) {
+                showPopup('Sync Error', error.message || 'Could not sync right now.', 'error');
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+
+        function runBidirectionalSync(direction) {
+            const scope = getSyncScopeFromFilters();
+            const syncText = direction === 'sheet-to-db' ? 'Google Sheet -> Turso DB' : 'Turso DB -> Google Sheet';
+            const confirmMessage = `Run ${syncText} sync for ${scope.label}? Existing rows for each date are replaced to prevent duplicates.`;
+            showConfirmPopup('Confirm Sync', confirmMessage, () => {
+                executeBidirectionalSync(direction, scope);
+            });
+        }
+
+        function syncSheetToDatabase() {
+            runBidirectionalSync('sheet-to-db');
+        }
+
+        function syncDatabaseToSheet() {
+            runBidirectionalSync('db-to-sheet');
         }
 
         function fetchReport() {

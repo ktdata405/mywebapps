@@ -24,11 +24,23 @@ assert(fetchSource.includes('parseExpenseDate'), 'Fetch API should parse mixed d
 assert(fetchSource.includes('WHERE expense_month = ? AND expense_year = ?'), 'Fetch API should query by month/year columns in Turso');
 assert(fetchSource.includes('backfillMonthYear'), 'Fetch API should backfill month/year for legacy rows');
 
+const bridgeFile = path.join(__dirname, '..', 'api', 'cashew-sync-bridge.js');
+const bridgeSource = fs.readFileSync(bridgeFile, 'utf8');
+assert(bridgeSource.includes('sheet-to-db'), 'Bridge API should support syncing from sheet to database');
+assert(bridgeSource.includes('db-to-sheet'), 'Bridge API should support syncing from database to sheet');
+assert(bridgeSource.includes('dedupeExpenses'), 'Bridge API should dedupe records during sync');
+
 const cashewFile = path.join(__dirname, '..', 'cashew', 'cashew.html');
 const cashewSource = fs.readFileSync(cashewFile, 'utf8');
 assert(cashewSource.includes('CONFIG.GOOGLE_SHEET_URL_CASHEW'), 'Frontend should still post directly to Google Sheets');
 assert(cashewSource.includes('CONFIG.CASHEW_SYNC_API_URL'), 'Frontend should post to Turso API endpoint');
 assert(cashewSource.includes('Promise.allSettled([saveToSheets, saveToTurso])'), 'Frontend should save Sheets and Turso independently');
+
+const reportFile = path.join(__dirname, '..', 'cashew', 'cashewreport.html');
+const reportSource = fs.readFileSync(reportFile, 'utf8');
+assert(reportSource.includes('syncSheetToDatabase'), 'Report page should expose Sheet to DB sync action');
+assert(reportSource.includes('syncDatabaseToSheet'), 'Report page should expose DB to Sheet sync action');
+assert(reportSource.includes('CONFIG.CASHEW_SYNC_BRIDGE_API_URL'), 'Report sync should use bridge sync API config');
 
 console.log('cashew-sync checks passed');
 

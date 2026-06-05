@@ -243,3 +243,6 @@ module.exports = async function handler(req, res) {
     }
 };
 
+// Expose core sync helper for internal API-to-API reuse (e.g., sheet<->db bridge sync).
+module.exports.syncToTurso = syncToTurso;
+
