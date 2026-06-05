@@ -254,9 +254,25 @@
 
                 <!-- Filters Card -->
                 <div class="glass rounded-[2rem] p-6 bento-card">
-                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-filter text-indigo-400"></i> Period Selection
-                    </h3>
+                    <div class="flex items-center justify-between gap-3 mb-4">
+                        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                            <i class="fa-solid fa-filter text-indigo-400"></i> Period Selection
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            <button onclick="syncSheetToDatabase()" title="Sheet to Database" aria-label="Sheet to Database"
+                                class="bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-300 font-bold px-2.5 py-1.5 rounded-lg transition-all text-xs inline-flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-table text-[11px]"></i>
+                                <i class="fa-solid fa-arrow-right text-[9px] opacity-80"></i>
+                                <i class="fa-solid fa-database text-[11px]"></i>
+                            </button>
+                            <button onclick="syncDatabaseToSheet()" title="Database to Sheet" aria-label="Database to Sheet"
+                                class="bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/25 text-indigo-300 font-bold px-2.5 py-1.5 rounded-lg transition-all text-xs inline-flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-database text-[11px]"></i>
+                                <i class="fa-solid fa-arrow-right text-[9px] opacity-80"></i>
+                                <i class="fa-solid fa-table text-[11px]"></i>
+                            </button>
+                        </div>
+                    </div>
 
                     <!-- Data Source Toggle -->
                     <div class="mb-4">
@@ -305,16 +321,6 @@
                         <i class="fa-solid fa-rotate text-indigo-400 group-hover:rotate-180 transition-transform duration-500"></i>
                         <span>Fetch Report</span>
                     </button>
-                    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <button onclick="syncSheetToDatabase()" class="bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-300 font-bold py-2.5 rounded-xl transition-all text-xs flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-table text-[11px]"></i>
-                            <span>Sync Sheet -> DB</span>
-                        </button>
-                        <button onclick="syncDatabaseToSheet()" class="bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/25 text-indigo-300 font-bold py-2.5 rounded-xl transition-all text-xs flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-database text-[11px]"></i>
-                            <span>Sync DB -> Sheet</span>
-                        </button>
-                    </div>
                 </div>
 
                 <!-- Main Stats Cards -->
@@ -819,7 +825,7 @@
                 card.innerHTML = `
                     <div class="flex justify-between items-start mb-4">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:${color.bg};color:${color.main}">
+                            <div class="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center" style="background:${color.bg};color:${color.main}">
                                 <i class="fa-solid ${color.icon}"></i>
                             </div>
                             <div>
