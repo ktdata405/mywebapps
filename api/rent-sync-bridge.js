@@ -1,7 +1,10 @@
 const { neon } = require('@neondatabase/serverless');
 const rentSyncModule = require('./rent-sync');
 
-const NEON_DATABASE_URL = process.env.ktapps_NEON_DATABASE_URL;
+const NEON_DATABASE_URL =
+    process.env.ktapps_NEON_DATABASE_URL ||
+    process.env.NEON_DATABASE_URL ||
+    process.env.DATABASE_URL;
 
 function parseRequestBody(req) {
     if (!req || req.body === undefined || req.body === null) return {};
