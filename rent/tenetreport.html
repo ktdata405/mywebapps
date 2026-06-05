@@ -753,7 +753,19 @@
             : `${SCRIPT_URL}?fetchAll=true&t=${Date.now()}`;
 
         fetch(sourceUrl)
-            .then(response => response.json())
+            .then(async (response) => {
+                const payload = await response.json();
+                if (!response.ok) {
+                    throw new Error((payload && (payload.message || payload.error)) || `Fetch failed with status ${response.status}`);
+                }
+                if (activeDataSource === 'database' && payload && payload.ok === false) {
+                    throw new Error(payload.message || 'Database fetch failed.');
+                }
+                if (activeDataSource === 'sheet' && payload && payload.result === 'error') {
+                    throw new Error(payload.error || 'Google Sheets fetch failed.');
+                }
+                return payload;
+            })
             .then(responsePayload => {
                 loader.classList.add('hidden');
                 updateSourceBadgeDone();

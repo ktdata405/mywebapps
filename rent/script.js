@@ -94,35 +94,12 @@ function getRecordPayload() {
     };
 }
 
-function showSuccessAndContinue(formData) {
-    KTui.alert('Success', isEditMode ? 'Record updated successfully!' : 'Record saved successfully!', 'success');
-
-    if (isEditMode) {
+function showSuccessAndContinue() {
+    KTui.alert('Success', isEditMode ? 'Record updated in Neon + Google Sheet.' : 'Record saved in Neon + Google Sheet.', 'success');
+    // Move to report so the list is always read back from backend sources.
+    setTimeout(() => {
         window.location.href = 'tenetreport.html';
-        return;
-    }
-
-    const recordsContainer = document.getElementById('recordsContainer');
-    if (recordsContainer.style.display === 'none' || recordsContainer.classList.contains('hidden')) {
-        recordsContainer.style.display = 'block';
-        recordsContainer.classList.remove('hidden');
-    }
-
-    const tableBody = document.getElementById('recordsTableBody');
-    const newRow = tableBody.insertRow(0);
-    newRow.innerHTML = `
-        <td>${formData.formattedDate}</td>
-        <td>${formData.side}</td>
-        <td>${formData.rentAmount.toFixed(2)}</td>
-        <td>${formData.paidAmount.toFixed(2)}</td>
-        <td>${formData.balanceAmount.toFixed(2)}</td>
-        <td>${formData.powerBill.toFixed(2)}</td>
-        <td>${formData.waterBill.toFixed(2)}</td>
-        <td>${formData.totalPaid.toFixed(2)}</td>
-        <td>${formData.remarks}</td>
-    `;
-
-    clearForm();
+    }, 250);
 }
 
 function initializeForm() {
@@ -261,18 +238,17 @@ form.addEventListener('submit', async function(event) {
     const neonOk = neonResult.status === 'fulfilled';
 
     if (sheetOk && neonOk) {
-        showSuccessAndContinue(formData);
+        showSuccessAndContinue();
         return;
     }
 
     if (sheetOk && !neonOk) {
-        KTui.alert('Partial Success', `Saved to Google Sheets. ${neonResult.reason?.message || 'Neon save failed.'}`, 'error');
-        showSuccessAndContinue(formData);
+        KTui.alert('Save Failed', `Saved to Google Sheets only. Neon save failed: ${neonResult.reason?.message || 'Unknown Neon error.'}`, 'error');
         return;
     }
 
     if (!sheetOk && neonOk) {
-        KTui.alert('Partial Success', `Saved to Neon DB. ${sheetResult.reason?.message || 'Google Sheets save failed.'}`, 'error');
+        KTui.alert('Save Failed', `Saved to Neon only. Google Sheets save failed: ${sheetResult.reason?.message || 'Unknown Google Sheets error.'}`, 'error');
         return;
     }
 
