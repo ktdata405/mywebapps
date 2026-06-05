@@ -44,11 +44,79 @@ function toSafeErrorDetails(error) {
     };
 }
 
+function normalizeMonthKey(monthValue) {
+    const raw = String(monthValue || '').trim();
+    if (!raw) return '';
+    return raw.slice(0, 3);
+}
+
+function parseExpenseDateParts(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return null;
+
+    // dd/MMM/yyyy (e.g. 05/Jun/2026)
+    let match = raw.match(/^(\d{1,2})\/([A-Za-z]{3})\/(\d{4})$/);
+    if (match) {
+        return {
+            month: normalizeMonthKey(match[2]),
+            year: Number(match[3])
+        };
+    }
+
+    // yyyy-MM-dd
+    match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (match) {
+        const jsDate = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+        if (!Number.isNaN(jsDate.getTime())) {
+            return {
+                month: jsDate.toLocaleString('en-US', { month: 'short' }),
+                year: jsDate.getFullYear()
+            };
+        }
+    }
+
+    // dd/MM/yyyy
+    match = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (match) {
+        const jsDate = new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+        if (!Number.isNaN(jsDate.getTime())) {
+            return {
+                month: jsDate.toLocaleString('en-US', { month: 'short' }),
+                year: jsDate.getFullYear()
+            };
+        }
+    }
+
+    const fallback = new Date(raw);
+    if (!Number.isNaN(fallback.getTime())) {
+        return {
+            month: fallback.toLocaleString('en-US', { month: 'short' }),
+            year: fallback.getFullYear()
+        };
+    }
+
+    return null;
+}
+
+async function ensureMonthYearColumns(client) {
+    const schema = await client.execute('PRAGMA table_info(cashew_expenses)');
+    const columns = new Set((schema.rows || []).map((row) => String(row.name || '').toLowerCase()));
+
+    if (!columns.has('expense_month')) {
+        await client.execute('ALTER TABLE cashew_expenses ADD COLUMN expense_month TEXT');
+    }
+    if (!columns.has('expense_year')) {
+        await client.execute('ALTER TABLE cashew_expenses ADD COLUMN expense_year INTEGER');
+    }
+}
+
 async function ensureSchema(client) {
     await client.execute(`
         CREATE TABLE IF NOT EXISTS cashew_expenses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             expense_date TEXT NOT NULL,
+            expense_month TEXT,
+            expense_year INTEGER,
             category TEXT NOT NULL,
             description TEXT NOT NULL DEFAULT '',
             amount REAL NOT NULL,
@@ -57,7 +125,9 @@ async function ensureSchema(client) {
         )
     `);
 
+    await ensureMonthYearColumns(client);
     await client.execute('CREATE INDEX IF NOT EXISTS idx_cashew_expenses_date ON cashew_expenses(expense_date)');
+    await client.execute('CREATE INDEX IF NOT EXISTS idx_cashew_expenses_month_year ON cashew_expenses(expense_month, expense_year)');
 }
 
 async function syncToTurso(payload) {
@@ -95,13 +165,16 @@ async function syncToTurso(payload) {
         }
 
         for (const expense of payload.expenses) {
+            const parsedDate = parseExpenseDateParts(expense.date);
             statements.push({
                 sql: `
-                    INSERT INTO cashew_expenses (expense_date, category, description, amount, action_type)
-                    VALUES (?, ?, ?, ?, ?)
+                    INSERT INTO cashew_expenses (expense_date, expense_month, expense_year, category, description, amount, action_type)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                 `,
                 args: [
                     expense.date,
+                    parsedDate ? String(parsedDate.month) : null,
+                    parsedDate ? Number(parsedDate.year) : null,
                     String(expense.category || '').trim(),
                     String(expense.description || '').trim(),
                     Number(expense.amount),
