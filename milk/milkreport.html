@@ -896,7 +896,7 @@
             totalMorningAmount += (morning * unitPrice);
             totalEveningAmount += (evening * unitPrice);
 
-            const dateDisplay = formatDate(row.date);
+            const dateDisplay = formatDateWithWeekday(row.date);
 
             // ── DESKTOP TABLE ROW ──
             const tr = document.createElement('tr');
@@ -1074,6 +1074,16 @@
         if (isNaN(d.getTime())) return dateStr;
         const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         return `${d.getDate().toString().padStart(2,'0')} ${months[d.getMonth()]} ${d.getFullYear()}`;
+    }
+
+    function formatDateWithWeekday(dateStr) {
+        const baseDate = formatDate(dateStr);
+        const ts = parseDateStr(dateStr);
+        if (!baseDate || !Number.isFinite(ts)) return baseDate;
+        const d = new Date(ts);
+        if (isNaN(d.getTime())) return baseDate;
+        const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        return `${baseDate} ${weekdays[d.getDay()]}`;
     }
 
     function editEntry(index) {

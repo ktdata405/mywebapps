@@ -974,6 +974,14 @@
             return `${d.getDate().toString().padStart(2,'0')}/${months[d.getMonth()]}/${d.getFullYear()}`;
         }
 
+        function formatDateWithWeekday(value) {
+            const baseDate = formatDate(value);
+            const parsed = parseRecordDate(value);
+            if(!parsed) return baseDate;
+            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            return `${baseDate} ${weekdays[parsed.getDay()]}`;
+        }
+
         function renderTransactions(data) {
             const body = document.getElementById('report-body');
             const countBadge = document.getElementById('entry-count');
@@ -1003,9 +1011,10 @@
 
                 const header = document.createElement('div');
                 header.className = "flex justify-between items-center px-4 py-1.5";
+                const dateLabel = formatDateWithWeekday(group.items[0]?.date || date);
                 header.innerHTML = `
                     <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                        <i class="fa-solid fa-calendar-day text-indigo-400/50"></i> ${date}
+                        <i class="fa-solid fa-calendar-day text-indigo-400/50"></i> ${dateLabel}
                     </span>
                     <span class="text-[10px] font-bold text-indigo-400 font-mono bg-indigo-500/10 px-2 py-0.5 rounded-lg border border-indigo-500/20">Rs. ${group.total.toLocaleString('en-IN')}</span>
                 `;

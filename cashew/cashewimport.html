@@ -121,6 +121,56 @@
             border-color: rgba(99, 102, 241, 0.75) !important;
             box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.25);
         }
+
+        /* Colorful text helpers for better readability */
+        .txt-title { color: #f8fafc; }
+        .txt-subtle { color: #94a3b8; }
+        .txt-date { color: #a5b4fc; }
+        .txt-amount { color: #6ee7b7; }
+        .txt-category { color: #93c5fd; }
+        .txt-remark { color: #f9a8d4; }
+        .txt-muted-label { color: #cbd5e1; }
+        .txt-alt-a { color: #6ee7b7; }
+        .txt-alt-b { color: #fcd34d; }
+        .value-remark-a { color: #fbcfe8; }
+        .value-remark-b { color: #bfdbfe; }
+        .value-amount-a { color: #6ee7b7; }
+        .value-amount-b { color: #fcd34d; }
+        .txt-gradient-highlight {
+            background: linear-gradient(90deg, #a5b4fc 0%, #67e8f9 40%, #6ee7b7 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .import-top-shell {
+            background: linear-gradient(160deg, rgba(15, 23, 42, 0.94), rgba(17, 24, 39, 0.9));
+            border: 1px solid rgba(148, 163, 184, 0.22);
+        }
+
+        .import-top-card {
+            background: rgba(15, 23, 42, 0.56);
+            border: 1px solid rgba(148, 163, 184, 0.24);
+        }
+
+        .import-top-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            font-weight: 700;
+            color: #94a3b8;
+        }
+
+        .date-summary-shell {
+            background: linear-gradient(90deg, rgba(99, 102, 241, 0.15), rgba(14, 165, 233, 0.1));
+            border-top: 1px solid rgba(148, 163, 184, 0.2);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .date-metric-chip {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
     </style>
 </head>
 
@@ -141,8 +191,8 @@
                     <i class="fa-solid fa-wallet text-white text-lg"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight text-white leading-tight">Cashew</h1>
-                    <p class="text-xs text-gray-400 font-medium">Import Excel</p>
+                    <h1 class="text-xl font-bold tracking-tight leading-tight txt-gradient-highlight">Cashew</h1>
+                    <p class="text-xs font-medium txt-subtle">Import Excel</p>
                 </div>
             </div>
             <!-- Nav icons — same as cashew.html -->
@@ -226,70 +276,71 @@
             <!-- Stats row removed as requested -->
 
             <!-- ── TOOLBAR ── -->
-            <div class="glass-panel rounded-2xl px-4 py-3 mb-4 flex flex-wrap items-center gap-3 border border-white/5">
+            <div class="import-top-shell glass-panel rounded-2xl p-3 sm:p-4 mb-4 space-y-3">
+                <div class="grid grid-cols-1 xl:grid-cols-[1.2fr_1fr] gap-3">
+                    <div class="import-top-card rounded-2xl p-3 space-y-2.5">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="import-top-title">Import Session</span>
+                            <button onclick="resetImport()" title="Import new file"
+                                class="h-8 px-2.5 rounded-lg text-[11px] font-semibold border border-emerald-500/35 text-emerald-300 hover:bg-emerald-500/15 transition-all flex items-center gap-1.5">
+                                <i class="fa-solid fa-rotate-right text-[10px]"></i> New File
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-2 min-w-0 rounded-xl bg-black/25 border border-white/10 px-2.5 py-2">
+                            <i class="fa-solid fa-file-excel text-emerald-400 text-xs flex-shrink-0"></i>
+                            <span id="toolbar-filename" class="text-xs txt-title font-semibold truncate">—</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2">
+                            <div class="relative">
+                                <i class="fa-solid fa-pen-to-square absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs pointer-events-none"></i>
+                                <input type="text" id="import-data-format-input" value="{Remarks}-{amount}" placeholder="{tag}-Amount({amount})"
+                                    class="w-full bg-black/35 border border-white/15 rounded-xl pl-8 pr-3 py-2 text-xs text-white outline-none focus:border-indigo-500 font-mono" />
+                            </div>
+                            <button id="import-sort-btn" onclick="toggleImportSort()"
+                                class="h-9 px-3 rounded-xl text-xs font-semibold border border-white/15 text-gray-300 hover:text-white hover:bg-white/5 transition-all flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-arrow-down-wide-short text-xs"></i>
+                                <span id="import-sort-label">Amt ↓</span>
+                            </button>
+                        </div>
+                    </div>
 
-                <!-- File info + re-upload -->
-                <div class="flex items-center gap-2 mr-auto min-w-0">
-                    <i class="fa-solid fa-file-excel text-emerald-400 text-sm flex-shrink-0"></i>
-                    <span id="toolbar-filename" class="text-xs text-gray-300 font-semibold truncate max-w-[140px]">—</span>
-                    <button onclick="resetImport()" title="Import new file"
-                        class="h-7 px-2.5 rounded-lg text-[11px] font-semibold border border-white/10 text-gray-400 hover:text-emerald-300 hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-all flex items-center gap-1.5 flex-shrink-0">
-                        <i class="fa-solid fa-rotate-right text-xs"></i> New file
+                    <div class="import-top-card rounded-2xl p-3 space-y-2.5">
+                        <span class="import-top-title">Quick Filters & Actions</span>
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs pointer-events-none"></i>
+                            <input type="text" id="import-search-input" placeholder="Search entries…"
+                                class="w-full bg-black/35 border border-white/15 rounded-xl pl-8 pr-3 py-2 text-xs text-white outline-none focus:border-indigo-500" />
+                        </div>
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            <button onclick="setImportFormat('{tag}-Amount({amount})', this)" class="fmt-btn active h-8 px-3 rounded-xl text-xs font-semibold border border-white/15 text-gray-200 transition-all">Tag</button>
+                            <button onclick="setImportFormat('{remarks}-Amount({amount})', this)" class="fmt-btn h-8 px-3 rounded-xl text-xs font-semibold border border-white/15 text-gray-200 transition-all">Remarks</button>
+                            <button onclick="setImportFormat('{tag} | {remarks} | ₹{amount}', this)" class="fmt-btn h-8 px-3 rounded-xl text-xs font-semibold border border-white/15 text-gray-200 transition-all">Full</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <button id="club-same-category-btn" onclick="clubSameCategoryForDate(importSelectedDate, true)"
+                        class="h-10 px-2.5 rounded-xl text-[11px] font-semibold border border-amber-500/35 text-amber-300 hover:bg-amber-500/15 transition-all flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-layer-group text-xs"></i>
+                        <span class="truncate">Club Category</span>
+                    </button>
+                    <button id="add-import-record-btn" onclick="addManualImportRow()"
+                        class="h-10 px-2.5 rounded-xl text-[11px] font-semibold border border-sky-500/35 text-sky-300 hover:bg-sky-500/15 transition-all flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-plus text-xs"></i>
+                        <span class="truncate">Add Record</span>
+                    </button>
+                    <button id="save-selected-date-btn" onclick="saveSelectedDateImport()"
+                        class="h-10 px-2.5 rounded-xl text-[11px] font-semibold border border-indigo-500/35 text-indigo-300 hover:bg-indigo-500/20 transition-all flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-calendar-check text-xs"></i>
+                        <span class="truncate">Save Date</span>
+                    </button>
+                    <button id="save-all-dates-btn" onclick="saveAllImportedDates()"
+                        class="h-10 px-2.5 rounded-xl text-[11px] font-semibold border border-emerald-500/35 text-emerald-300 hover:bg-emerald-500/20 transition-all flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-floppy-disk text-xs"></i>
+                        <span class="truncate">Save All</span>
                     </button>
                 </div>
-
-                <!-- Format presets -->
-                <div class="flex items-center gap-1.5 flex-shrink-0">
-                    <span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold hidden sm:block">Format:</span>
-                    <button onclick="setImportFormat('{tag}-Amount({amount})', this)" class="fmt-btn active h-7 px-2.5 rounded-lg text-[11px] font-semibold border border-white/10 text-gray-300 transition-all">Tag</button>
-                    <button onclick="setImportFormat('{remarks}-Amount({amount})', this)" class="fmt-btn h-7 px-2.5 rounded-lg text-[11px] font-semibold border border-white/10 text-gray-300 transition-all">Remarks</button>
-                    <button onclick="setImportFormat('{tag} | {remarks} | ₹{amount}', this)" class="fmt-btn h-7 px-2.5 rounded-lg text-[11px] font-semibold border border-white/10 text-gray-300 transition-all">Full</button>
-                </div>
-
-                <!-- Custom format input -->
-                <div class="flex items-center gap-1.5 flex-shrink-0">
-                    <i class="fa-solid fa-pen-to-square text-gray-500 text-xs"></i>
-                    <input type="text" id="import-data-format-input" value="{Remarks}-{amount}" placeholder="{tag}-Amount({amount})"
-                        class="bg-black/30 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-indigo-500 font-mono w-36 sm:w-48" />
-                </div>
-
-                <!-- Search -->
-                <div class="relative flex-shrink-0">
-                    <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs pointer-events-none"></i>
-                    <input type="text" id="import-search-input" placeholder="Search entries…"
-                        class="bg-black/30 border border-white/10 rounded-lg pl-7 pr-3 py-1.5 text-xs text-white outline-none focus:border-indigo-500 w-28 sm:w-40" />
-                </div>
-
-                <!-- Sort toggle -->
-                <button id="import-sort-btn" onclick="toggleImportSort()"
-                    class="h-7 px-2.5 rounded-lg text-[11px] font-semibold border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 transition-all flex items-center gap-1.5 flex-shrink-0">
-                    <i class="fa-solid fa-arrow-down-wide-short text-xs"></i>
-                    <span id="import-sort-label">Amt ↓</span>
-                </button>
-
-                <button id="club-same-category-btn" onclick="clubSameCategoryForDate(importSelectedDate, true)"
-                    class="h-7 px-2.5 rounded-lg text-[11px] font-semibold border border-amber-500/35 text-amber-300 hover:bg-amber-500/15 transition-all flex items-center gap-1.5 flex-shrink-0">
-                    <i class="fa-solid fa-layer-group text-xs"></i>
-                    Club Same Category
-                </button>
-
-                <button id="add-import-record-btn" onclick="addManualImportRow()"
-                    class="h-7 px-2.5 rounded-lg text-[11px] font-semibold border border-sky-500/35 text-sky-300 hover:bg-sky-500/15 transition-all flex items-center gap-1.5 flex-shrink-0">
-                    <i class="fa-solid fa-plus text-xs"></i>
-                    Add Record
-                </button>
-
-                <!-- Save options -->
-                <button id="save-selected-date-btn" onclick="saveSelectedDateImport()"
-                    class="h-7 px-2.5 rounded-lg text-[11px] font-semibold border border-indigo-500/35 text-indigo-300 hover:bg-indigo-500/20 transition-all flex items-center gap-1.5 flex-shrink-0">
-                    <i class="fa-solid fa-calendar-check text-xs"></i>
-                    Save Selected Date
-                </button>
-                <button id="save-all-dates-btn" onclick="saveAllImportedDates()"
-                    class="h-7 px-2.5 rounded-lg text-[11px] font-semibold border border-emerald-500/35 text-emerald-300 hover:bg-emerald-500/20 transition-all flex items-center gap-1.5 flex-shrink-0">
-                    <i class="fa-solid fa-floppy-disk text-xs"></i>
-                    Save All Dates
-                </button>
             </div>
 
             <!-- ── BODY: date sidebar + table ── -->
@@ -304,8 +355,8 @@
                     <!-- Grand total -->
                     <div class="flex-shrink-0 border-t border-white/10 px-3 py-2.5" style="background:rgba(0,0,0,0.25)">
                         <div class="text-[9px] uppercase tracking-widest text-gray-500 font-bold">All Dates</div>
-                        <div id="import-grand-total" class="text-base font-bold text-emerald-300 font-mono mt-0.5">₹0.00</div>
-                        <div id="import-grand-rows" class="text-[10px] text-gray-500"></div>
+                        <div id="import-grand-total" class="text-base font-bold txt-amount font-mono mt-0.5">₹0.00</div>
+                        <div id="import-grand-rows" class="text-[10px] txt-subtle"></div>
                     </div>
                 </div>
 
@@ -313,22 +364,25 @@
                 <div class="flex-1 flex flex-col glass-panel rounded-2xl border border-white/5 overflow-hidden min-w-0">
 
                     <!-- Date bar -->
-                    <div class="flex-shrink-0 flex items-center justify-between px-5 py-3 border-b border-white/10"
-                         style="background:rgba(99,102,241,0.06)">
-                        <div class="flex items-center gap-2.5">
-                            <i class="fa-regular fa-calendar-day text-indigo-400 text-xs"></i>
-                            <span id="import-selected-date-label" class="text-sm font-bold text-white"></span>
-                        </div>
-                        <div class="flex items-center gap-3 text-xs">
-                            <div class="hidden md:flex items-center gap-1.5">
-                                <span class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Date Category</span>
-                                <select id="import-date-category-select" class="bg-black/40 border border-white/10 rounded-lg px-2 py-1 text-[11px] text-white outline-none focus:border-indigo-500"></select>
+                    <div class="date-summary-shell flex-shrink-0 px-3 sm:px-4 py-3">
+                        <div class="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-2.5 items-start">
+                            <div class="date-metric-chip rounded-xl px-3 py-2 inline-flex items-center gap-2 w-fit max-w-full">
+                                <i class="fa-regular fa-calendar-day text-indigo-400 text-xs"></i>
+                                <span class="import-top-title">Selected Date</span>
+                                <span id="import-selected-date-label" class="text-sm font-bold txt-date truncate"></span>
                             </div>
-                            <span class="text-gray-400 flex items-center gap-1">
-                                <i class="fa-solid fa-list-ul text-[10px]"></i>
-                                <span id="import-preview-row-count" class="text-white font-bold">0</span> rows
-                            </span>
-                            <span class="font-bold font-mono text-emerald-400" id="import-preview-total">₹0.00</span>
+                            <div class="flex flex-wrap items-center gap-2 text-xs">
+                                <span class="date-metric-chip rounded-lg px-2.5 py-1 txt-subtle flex items-center gap-1">
+                                    <i class="fa-solid fa-list-ul text-[10px]"></i>
+                                    <span id="import-preview-row-count" class="txt-title font-bold">0</span> rows
+                                </span>
+                                <span id="import-preview-total" class="date-metric-chip rounded-lg px-2.5 py-1 font-bold font-mono txt-amount">₹0.00</span>
+                                <span id="import-merge-status" class="hidden date-metric-chip rounded-lg px-2.5 py-1 text-[10px] font-semibold text-amber-300"></span>
+                            </div>
+                        </div>
+                        <div class="mt-2.5 flex flex-col sm:flex-row sm:items-center gap-2">
+                            <label for="import-date-category-select" class="import-top-title">Date Category</label>
+                            <select id="import-date-category-select" class="sm:min-w-[220px] bg-black/40 border border-white/15 rounded-xl px-2.5 py-1.5 text-[11px] text-white outline-none focus:border-indigo-500"></select>
                         </div>
                     </div>
 
@@ -398,6 +452,7 @@
         let importSelectedDate = null;
         let importSortMode = 'amount-desc';
         let importDataFormatPattern = '{tag}-Amount({amount})';
+        const savedEntriesByDateCache = {};
         const tagColorMap = {};
         const TAG_CLASSES = ['tag-indigo','tag-emerald','tag-pink','tag-amber','tag-sky','tag-purple','tag-rose','tag-teal'];
         let tagColorIndex = 0;
@@ -598,11 +653,123 @@
         function formatToIsoDate(d) {
             return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         }
+        function parseCashewDateValue(value) {
+            if (value === null || value === undefined || value === '') return null;
+
+            if (value instanceof Date && !isNaN(value.getTime())) {
+                return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+            }
+
+            const raw = String(value).trim();
+
+            // Already in app label format (dd/MMM/yyyy)
+            let match = raw.match(/^(\d{2})\/([A-Za-z]{3})\/(\d{4})$/);
+            if (match) {
+                const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                const monthIndex = months.findIndex(m => m.toLowerCase() === match[2].toLowerCase());
+                if (monthIndex !== -1) {
+                    return new Date(parseInt(match[3], 10), monthIndex, parseInt(match[1], 10));
+                }
+            }
+
+            // ISO-like date (yyyy-mm-dd)
+            match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (match) {
+                return new Date(parseInt(match[1], 10), parseInt(match[2], 10) - 1, parseInt(match[3], 10));
+            }
+
+            // Fallback to existing parser used for import files.
+            const parsed = parseImportedDate(raw);
+            if (parsed && !isNaN(parsed.getTime())) {
+                return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+            }
+
+            return null;
+        }
+
         function formatDateToDDMMMYYYY(iso) {
-            if (!iso) return '';
-            const d = new Date(iso + 'T00:00:00');
+            const d = parseCashewDateValue(iso);
+            if (!d) return '';
             const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
             return `${String(d.getDate()).padStart(2,'0')}/${months[d.getMonth()]}/${d.getFullYear()}`;
+        }
+
+        function parseDateLabel(dateLabel) {
+            if (!dateLabel) return null;
+            const m = String(dateLabel).match(/^(\d{2})\/([A-Za-z]{3})\/(\d{4})$/);
+            if (!m) return null;
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            const monthIdx = months.findIndex(mon => mon.toLowerCase() === m[2].toLowerCase());
+            if (monthIdx === -1) return null;
+            return new Date(parseInt(m[3], 10), monthIdx, parseInt(m[1], 10));
+        }
+
+        function getSheetNameFromDateLabel(dateLabel) {
+            const d = parseDateLabel(dateLabel);
+            if (!d) return '';
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            return `${months[d.getMonth()]} ${d.getFullYear()}`;
+        }
+
+        async function fetchSavedEntriesForDate(dateLabel) {
+            if (!dateLabel) return [];
+            if (Object.prototype.hasOwnProperty.call(savedEntriesByDateCache, dateLabel)) {
+                return savedEntriesByDateCache[dateLabel];
+            }
+
+            const sheetName = getSheetNameFromDateLabel(dateLabel);
+            if (!sheetName) {
+                savedEntriesByDateCache[dateLabel] = [];
+                return [];
+            }
+
+            try {
+                const response = await fetch(`${CONFIG.GOOGLE_SHEET_URL_CASHEW}?sheetName=${encodeURIComponent(sheetName)}&t=${Date.now()}`);
+                const result = await response.json();
+                const rows = (result.data || []).filter(row => formatDateToDDMMMYYYY(row.date) === dateLabel);
+                savedEntriesByDateCache[dateLabel] = rows.map((row, idx) => ({
+                    entryId: `saved-${dateLabel}-${idx}`,
+                    date: dateLabel,
+                    category: String(row.category || '').trim(),
+                    description: String(row.description || '').trim(),
+                    amount: parseFloat(row.amount) || 0
+                }));
+            } catch (error) {
+                console.warn('Failed to fetch saved rows for Cashew import merge', error);
+                savedEntriesByDateCache[dateLabel] = [];
+            }
+
+            return savedEntriesByDateCache[dateLabel];
+        }
+
+        function mergeRowsByCategory(rows) {
+            const categoryMap = new Map();
+            (rows || []).forEach(row => {
+                const amount = parseFloat(row.amount);
+                const category = String(row.category || '').trim();
+                if (isNaN(amount) || amount <= 0 || !category || category.toLowerCase() === 'select') return;
+
+                const key = category.toLowerCase();
+                if (!categoryMap.has(key)) {
+                    categoryMap.set(key, {
+                        date: row.date,
+                        category,
+                        amount: 0,
+                        descriptions: []
+                    });
+                }
+
+                const bucket = categoryMap.get(key);
+                bucket.amount += amount;
+                if (row.description) bucket.descriptions.push(row.description);
+            });
+
+            return Array.from(categoryMap.values()).map(item => ({
+                date: item.date,
+                category: item.category,
+                description: [...new Set(item.descriptions)].join(', '),
+                amount: parseFloat(item.amount.toFixed(2))
+            }));
         }
         function parseImportedAmount(value) {
             if (typeof value === 'number') return value;
@@ -882,17 +1049,18 @@
         function renderDateList(groupedEntries, sortedDates) {
             const listEl = document.getElementById('import-date-list');
             listEl.innerHTML = '';
-            sortedDates.forEach(dateLabel => {
+            sortedDates.forEach((dateLabel, idx) => {
                 const rows = groupedEntries[dateLabel];
                 const rowTotal = rows.reduce((s,r) => s + (parseFloat(r.amount)||0), 0);
+                const amountToneClass = idx % 2 === 0 ? 'txt-alt-a' : 'txt-alt-b';
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'import-date-item md:w-full min-w-[120px] flex-shrink-0 text-left px-2.5 py-2 rounded-xl border border-transparent';
                 btn.dataset.date = dateLabel;
                 btn.innerHTML = `
                     <div class="flex items-center justify-between gap-2">
-                        <div class="date-label text-xs font-bold text-gray-200 leading-tight truncate">${dateLabel}</div>
-                        <span class="text-[10px] font-mono text-emerald-400 whitespace-nowrap">₹${rowTotal.toFixed(0)}</span>
+                        <div class="date-label text-xs font-bold txt-date leading-tight truncate">${dateLabel}</div>
+                        <span class="text-[10px] font-mono ${amountToneClass} whitespace-nowrap">₹${rowTotal.toFixed(0)}</span>
                     </div>`;
                 btn.onclick = () => renderPreviewForDate(dateLabel);
                 listEl.appendChild(btn);
@@ -900,7 +1068,7 @@
         }
 
         // ── Render table for date ──
-        function renderPreviewForDate(dateLabel) {
+        async function renderPreviewForDate(dateLabel) {
             importSelectedDate = dateLabel;
             updateDateCategorySelect(dateLabel);
 
@@ -923,6 +1091,7 @@
             const mobileList = document.getElementById('import-mobile-list');
             const emptyMsg = document.getElementById('import-empty-msg');
             const noDataMsg = document.getElementById('import-no-data-msg');
+            const mergeStatusEl = document.getElementById('import-merge-status');
 
             // No data at all for this date
             if (!entries.length) {
@@ -933,6 +1102,7 @@
                 emptyMsg.classList.add('hidden');
                 document.getElementById('import-preview-row-count').textContent = '0';
                 document.getElementById('import-preview-total').textContent = '₹0.00';
+                if (mergeStatusEl) mergeStatusEl.classList.add('hidden');
                 return;
             }
             noDataMsg.classList.add('hidden');
@@ -958,6 +1128,7 @@
                 emptyMsg.style.display = 'flex';
                 document.getElementById('import-preview-row-count').textContent = '0';
                 document.getElementById('import-preview-total').textContent = '₹0.00';
+                if (mergeStatusEl) mergeStatusEl.classList.add('hidden');
                 return;
             }
             emptyMsg.classList.add('hidden');
@@ -972,24 +1143,26 @@
                 const specialTagNote = getSpecialTagNote(entry.tag);
                 const isOdd = idx % 2 === 0;
                 const rowBg = isOdd ? 'rgba(99,102,241,0.15)' : 'rgba(16,185,129,0.12)';
+                const remarkValueClass = isOdd ? 'value-remark-a' : 'value-remark-b';
+                const amountValueClass = isOdd ? 'value-amount-a' : 'value-amount-b';
                 const tr = document.createElement('tr');
                 tr.style.background = rowBg;
                 tr.innerHTML = `
                     <td class="px-2 py-2" style="background:${rowBg}">
                         <div class="grid grid-cols-3 gap-1.5">
                             <div>
-                                <div class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-0.5">Category</div>
+                                <div class="text-[10px] uppercase tracking-wider txt-category font-bold mb-0.5">Category</div>
                                 <select class="import-row-category w-full bg-black/40 border border-white/10 rounded-lg px-2 py-1 text-[11px] text-white outline-none focus:border-indigo-500" data-entry-id="${entry.entryId}">
                                     ${renderCategoryOptionsHtml(entry.category || '')}
                                 </select>
                             </div>
                             <div>
-                                <div class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-0.5">Remark</div>
-                                <input type="text" class="import-row-remarks w-full bg-black/30 border border-white/10 rounded-lg px-2 py-1 text-[11px] text-gray-300 outline-none focus:border-indigo-500" data-entry-id="${entry.entryId}" value="${(entry.remarks || '').replace(/"/g, '&quot;')}" />
+                                <div class="text-[10px] uppercase tracking-wider txt-remark font-bold mb-0.5">Remark</div>
+                                <input type="text" class="import-row-remarks w-full bg-black/30 border border-white/10 rounded-lg px-2 py-1 text-[11px] ${remarkValueClass} outline-none focus:border-indigo-500" data-entry-id="${entry.entryId}" value="${(entry.remarks || '').replace(/"/g, '&quot;')}" />
                             </div>
                             <div>
-                                <div class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-0.5">Amount</div>
-                                <input type="number" step="0.01" min="0" class="import-row-amount w-full bg-black/30 border border-white/10 rounded-lg px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-300 outline-none focus:border-emerald-500" data-entry-id="${entry.entryId}" value="${amt.toFixed(2)}" />
+                                <div class="text-[10px] uppercase tracking-wider txt-amount font-bold mb-0.5">Amount</div>
+                                <input type="number" step="0.01" min="0" class="import-row-amount w-full bg-black/30 border border-white/10 rounded-lg px-2 py-0.5 font-mono text-[10px] font-bold ${amountValueClass} outline-none focus:border-emerald-500" data-entry-id="${entry.entryId}" value="${amt.toFixed(2)}" />
                             </div>
                         </div>
                         <div class="mt-1">
@@ -1015,7 +1188,7 @@
                     card.style.background = rowBg;
                     card.innerHTML = `
                         <div class="flex items-center justify-between gap-2 mb-1">
-                            <span class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Transaction</span>
+                            <span class="text-[10px] uppercase tracking-wider txt-muted-label font-bold">Transaction</span>
                             <div class="flex items-center gap-1.5">
                                 <button type="button" class="import-row-split w-7 h-7 rounded-lg border border-sky-500/35 text-sky-300 hover:bg-sky-500/15 transition-all" data-entry-id="${entry.entryId}" title="Split transaction">
                                     <i class="fa-solid fa-code-branch text-[10px]"></i>
@@ -1027,18 +1200,18 @@
                         </div>
                         <div class="grid grid-cols-3 gap-1.5">
                             <div>
-                                <span class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Category</span>
+                                <span class="text-[10px] uppercase tracking-wider txt-category font-bold">Category</span>
                                 <select class="import-row-category w-full mt-1 bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-white outline-none focus:border-indigo-500" data-entry-id="${entry.entryId}">
                                     ${renderCategoryOptionsHtml(entry.category || '')}
                                 </select>
                             </div>
                             <div>
-                                <span class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Remark - Value</span>
-                                <input type="text" class="import-row-remarks w-full mt-1 bg-black/30 border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-gray-300 outline-none focus:border-indigo-500" data-entry-id="${entry.entryId}" value="${(entry.remarks || '').replace(/"/g, '&quot;')}" />
+                                <span class="text-[10px] uppercase tracking-wider txt-remark font-bold">Remark - Value</span>
+                                <input type="text" class="import-row-remarks w-full mt-1 bg-black/30 border border-white/10 rounded-lg px-2 py-1.5 text-[11px] ${remarkValueClass} outline-none focus:border-indigo-500" data-entry-id="${entry.entryId}" value="${(entry.remarks || '').replace(/"/g, '&quot;')}" />
                             </div>
                             <div>
-                                <span class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Amount - Value</span>
-                                <input type="number" step="0.01" min="0" class="import-row-amount w-full mt-1 bg-black/30 border border-white/10 rounded-lg px-2 py-1 font-mono text-[11px] font-bold text-emerald-300 outline-none focus:border-emerald-500" data-entry-id="${entry.entryId}" value="${amt.toFixed(2)}" />
+                                <span class="text-[10px] uppercase tracking-wider txt-amount font-bold">Amount - Value</span>
+                                <input type="number" step="0.01" min="0" class="import-row-amount w-full mt-1 bg-black/30 border border-white/10 rounded-lg px-2 py-1 font-mono text-[11px] font-bold ${amountValueClass} outline-none focus:border-emerald-500" data-entry-id="${entry.entryId}" value="${amt.toFixed(2)}" />
                             </div>
                         </div>
                         <div>
@@ -1055,6 +1228,29 @@
 
             document.getElementById('import-preview-row-count').textContent = String(entries.length);
             document.getElementById('import-preview-total').textContent = `₹${total.toFixed(2)}`;
+
+            const importedMergedRows = mergeRowsByCategory(
+                ((importedEntriesByDate && importedEntriesByDate[dateLabel]) || []).map(row => ({
+                    date: dateLabel,
+                    category: String(row.category || '').trim(),
+                    description: formatEntry(row, importDataFormatPattern),
+                    amount: parseFloat(row.amount) || 0
+                }))
+            );
+            const savedRows = await fetchSavedEntriesForDate(dateLabel);
+            const mergedRows = mergeRowsByCategory([
+                ...savedRows,
+                ...importedMergedRows
+            ]);
+            const mergedTotal = mergedRows.reduce((sum, row) => sum + (parseFloat(row.amount) || 0), 0);
+            if (mergeStatusEl) {
+                if (savedRows.length > 0) {
+                    mergeStatusEl.textContent = `Merged: ${savedRows.length} saved + ${importedMergedRows.length} import -> ${mergedRows.length} rows (₹${mergedTotal.toFixed(2)})`;
+                    mergeStatusEl.classList.remove('hidden');
+                } else {
+                    mergeStatusEl.classList.add('hidden');
+                }
+            }
         }
 
         // ── Show preview section ──
@@ -1091,7 +1287,7 @@
             renderPreviewForDate(sortedDates[0] || '');
         }
 
-        function buildCashewPayloadForDate(dateLabel) {
+        async function buildCashewPayloadForDate(dateLabel) {
             const rowsForDate = (importedEntriesByDate && importedEntriesByDate[dateLabel]) || [];
             const validRows = rowsForDate
                 .filter(entry => {
@@ -1106,33 +1302,11 @@
                     amount: parseFloat(entry.amount)
                 }));
 
-            // Merge rows that share the same category into one row per category.
-            const categoryMap = new Map();
-            validRows.forEach(row => {
-                const key = row.category.toLowerCase();
-                if (!categoryMap.has(key)) {
-                    categoryMap.set(key, {
-                        date: row.date,
-                        category: row.category,
-                        amount: 0,
-                        descriptions: []
-                    });
-                }
-
-                const bucket = categoryMap.get(key);
-                bucket.amount += row.amount;
-                if (row.description) bucket.descriptions.push(row.description);
-            });
-
-            const mergedRows = Array.from(categoryMap.values()).map(item => {
-                const uniqueDescriptions = [...new Set(item.descriptions)];
-                return {
-                    date: item.date,
-                    category: item.category,
-                    description: uniqueDescriptions.join(', '),
-                    amount: parseFloat(item.amount.toFixed(2))
-                };
-            });
+            const savedRows = await fetchSavedEntriesForDate(dateLabel);
+            const mergedRows = mergeRowsByCategory([
+                ...savedRows,
+                ...validRows
+            ]);
 
             const total = mergedRows.reduce((sum, row) => sum + row.amount, 0);
 
@@ -1177,7 +1351,7 @@
                 return;
             }
 
-            const payload = buildCashewPayloadForDate(importSelectedDate);
+            const payload = await buildCashewPayloadForDate(importSelectedDate);
             if (!payload.expenses.length) {
                 KTui.alert('No Data', `No valid rows found for ${importSelectedDate}. Select a category and amount for at least one row.`, 'error');
                 return;
@@ -1227,7 +1401,7 @@
             try {
                 for (let i = 0; i < dateLabels.length; i++) {
                     const dateLabel = dateLabels[i];
-                    const payload = buildCashewPayloadForDate(dateLabel);
+                    const payload = await buildCashewPayloadForDate(dateLabel);
                     if (!payload.expenses.length) continue;
 
                     loaderText.textContent = `Saving ${dateLabel} (${i + 1}/${dateLabels.length})...`;
@@ -1276,6 +1450,7 @@
                     // Reset tag colors for new file
                     Object.keys(tagColorMap).forEach(k => delete tagColorMap[k]);
                     tagColorIndex = 0;
+                    Object.keys(savedEntriesByDateCache).forEach(k => delete savedEntriesByDateCache[k]);
 
                     const grouped = groupByDate(all);
                     showPreview(grouped, {

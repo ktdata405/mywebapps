@@ -643,6 +643,7 @@
         let importedEntriesByDate = null;
         let importedMeta = null;
         let importDataFormatPattern = '{tag}-Amount({amount})';
+        const importSavedEntriesByDateCache = {};
 
 
         /**
@@ -1265,6 +1266,113 @@
             return amount;
         }
 
+        function formatImportedAmountForRemark(amount) {
+            const parsed = parseFloat(amount);
+            if (isNaN(parsed)) return '0';
+            return Number.isInteger(parsed) ? String(parsed) : parsed.toFixed(2).replace(/\.00$/, '');
+        }
+
+        function formatImportedEntryText(entry, pattern) {
+            if (entry && typeof entry.manualEntry === 'string' && entry.manualEntry.trim()) {
+                return entry.manualEntry.trim();
+            }
+
+            const amtTxt = formatImportedAmountForRemark(parseFloat(entry?.amount) || 0);
+            const tpl = (pattern || '').trim() || '{tag}-Amount({amount})';
+            const text = tpl
+                .replace(/\{tag}/gi, entry?.tag || '')
+                .replace(/\{remarks}/gi, entry?.remarks || '')
+                .replace(/\{amount}/gi, amtTxt)
+                .trim();
+
+            if (text) return text;
+            if (entry?.tag) return `${entry.tag}-Amount(${amtTxt})`;
+            if (entry?.remarks) return `${entry.remarks}-Amount(${amtTxt})`;
+            return `Imported-Amount(${amtTxt})`;
+        }
+
+        async function fetchSavedEntriesForDateLabel(dateLabel) {
+            if (!dateLabel) return [];
+            if (Object.prototype.hasOwnProperty.call(importSavedEntriesByDateCache, dateLabel)) {
+                return importSavedEntriesByDateCache[dateLabel];
+            }
+
+            const dateObj = parseDate(dateLabel);
+            if (!dateObj) {
+                importSavedEntriesByDateCache[dateLabel] = [];
+                return [];
+            }
+
+            const isoDate = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+            const formattedDate = formatDateToDDMMMYYYY(isoDate);
+            const sheetName = getSheetNameFromDate(isoDate);
+
+            if (!sheetName) {
+                importSavedEntriesByDateCache[dateLabel] = [];
+                return [];
+            }
+
+            try {
+                const response = await fetch(`${CONFIG.GOOGLE_SHEET_URL_CASHEW}?sheetName=${encodeURIComponent(sheetName)}&t=${Date.now()}`);
+                const data = await response.json();
+                const rows = (data.data || []).filter(entry => formatDateToDDMMMYYYY(entry.date) === formattedDate);
+                importSavedEntriesByDateCache[dateLabel] = rows.map(row => ({
+                    date: formattedDate,
+                    category: row.category || 'My Personal',
+                    description: String(row.description || '').trim(),
+                    remarks: String(row.description || '').trim(),
+                    tag: 'Saved',
+                    amount: parseFloat(row.amount) || 0,
+                    isSaved: true
+                }));
+            } catch (error) {
+                console.warn('Could not fetch saved Cashew rows for import merge:', error);
+                importSavedEntriesByDateCache[dateLabel] = [];
+            }
+
+            return importSavedEntriesByDateCache[dateLabel];
+        }
+
+        function mergeEntriesByCategoryForImport(importRows, savedRows) {
+            const merged = new Map();
+
+            const addRow = (row, source) => {
+                const category = String(row?.category || 'My Personal').trim() || 'My Personal';
+                const key = category.toLowerCase();
+                const amount = parseFloat(row?.amount) || 0;
+                const text = source === 'saved'
+                    ? String(row?.description || row?.remarks || '').trim()
+                    : formatImportedEntryText(row, importDataFormatPattern);
+
+                if (!merged.has(key)) {
+                    merged.set(key, {
+                        category,
+                        amount: 0,
+                        descriptions: [],
+                        hasSaved: false,
+                        hasImport: false
+                    });
+                }
+
+                const bucket = merged.get(key);
+                bucket.amount += amount;
+                if (text) bucket.descriptions.push(text);
+                if (source === 'saved') bucket.hasSaved = true;
+                if (source === 'import') bucket.hasImport = true;
+            };
+
+            (savedRows || []).forEach(row => addRow(row, 'saved'));
+            (importRows || []).forEach(row => addRow(row, 'import'));
+
+            return Array.from(merged.values()).map(item => ({
+                category: item.category,
+                amount: parseFloat(item.amount.toFixed(2)),
+                description: [...new Set(item.descriptions.filter(Boolean))].join(', '),
+                tag: item.hasSaved && item.hasImport ? 'Merged' : (item.hasSaved ? 'Saved' : 'Imported'),
+                remarks: item.hasSaved && item.hasImport ? 'Saved + Imported' : (item.hasSaved ? 'Saved' : 'Imported')
+            }));
+        }
+
         function resolveImportedAmount(row) {
             const aliasGroups = [
                 ['Debit', 'Debit Amount', 'Withdrawal', 'Withdrawals', 'Dr', 'Paid Out'],
@@ -1404,7 +1512,7 @@
             if (importSelectedDate) renderImportPreviewForDate(importSelectedDate);
         }
 
-        function renderImportPreviewForDate(dateLabel) {
+        async function renderImportPreviewForDate(dateLabel) {
             importSelectedDate = dateLabel;
             const previewBody = document.getElementById('import-preview-body');
             const rowCount = document.getElementById('import-preview-row-count');
@@ -1416,7 +1524,9 @@
             if (formatInput) importDataFormatPattern = formatInput.value;
 
             const searchQuery = (searchInput ? searchInput.value.toLowerCase().trim() : '');
-            let entries = [...((importedEntriesByDate && importedEntriesByDate[dateLabel]) || [])];
+            const importedRows = [...((importedEntriesByDate && importedEntriesByDate[dateLabel]) || [])];
+            const savedRows = await fetchSavedEntriesForDateLabel(dateLabel);
+            let entries = mergeEntriesByCategoryForImport(importedRows, savedRows);
 
             if (dateLabelEl) dateLabelEl.textContent = dateLabel || '';
 
@@ -1560,13 +1670,15 @@
             modal.classList.add('hidden');
         }
 
-        function importSelectedDateEntries() {
+        async function importSelectedDateEntries() {
             if (!importSelectedDate || !importedEntriesByDate || !importedEntriesByDate[importSelectedDate]) {
                 showPopup('Import Error', 'No date selected or no entries for the selected date.', 'error');
                 return;
             }
 
             const entriesToImport = importedEntriesByDate[importSelectedDate];
+            const savedRows = await fetchSavedEntriesForDateLabel(importSelectedDate);
+            const mergedEntries = mergeEntriesByCategoryForImport(entriesToImport, savedRows);
             const dateInput = document.getElementById('date-input');
             const expensesContainer = document.getElementById('expenses-container');
 
@@ -1583,20 +1695,26 @@
             }
 
             // Add imported entries to the main form
-            entriesToImport.forEach(entry => {
+            mergedEntries.forEach(entry => {
                 addRow(entry.category, entry.description, entry.amount);
             });
 
             calculateTotal();
             updateDateSaveStatus(true); // Assuming imported data is ready to be saved
             closeImportDateModal();
-            showPopup('Import Successful', `Imported ${entriesToImport.length} entries for ${importSelectedDate}. Click Save to finalize.`, 'success');
+            const savedCount = savedRows.length;
+            const message = savedCount > 0
+                ? `Merged ${entriesToImport.length} imported row(s) with ${savedCount} saved row(s) for ${importSelectedDate}. Updated totals are ready. Click Save to finalize.`
+                : `Imported ${entriesToImport.length} entries for ${importSelectedDate}. Click Save to finalize.`;
+            showPopup('Import Successful', message, 'success');
         }
 
 
         function processExcelUpload(event) {
             const file = event.target.files && event.target.files[0];
             if (!file) return;
+
+            Object.keys(importSavedEntriesByDateCache).forEach(k => delete importSavedEntriesByDateCache[k]);
 
             const loader = document.getElementById('loader');
             const loaderText = document.getElementById('loader-text');
