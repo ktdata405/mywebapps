@@ -6,8 +6,8 @@
     "test": "node tests/cashew-sync.test.js && node tests/milk-sync.test.js && node tests/rent-sync.test.js"
   },
   "dependencies": {
+    "@libsql/client": "^0.15.15",
     "@neondatabase/serverless": "^0.10.4",
-    "@libsql/client": "^0.15.15"
+    "mongodb": "^7.3.0"
   }
 }
-

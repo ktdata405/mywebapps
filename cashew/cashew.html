@@ -1046,6 +1046,22 @@
                 method: 'POST',
                 body: JSON.stringify(data),
                 mode: 'no-cors'
+            }).then(() => true).catch((err) => {
+                throw new Error(`Google Sheets save failed: ${err.message || err}`);
+            });
+
+            const saveToMongo = fetch(CONFIG.CASHEW_MONGODB_API_URL || '/api/cashew-mongo-save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            }).then(async response => {
+                const result = await response.json().catch(() => null);
+                if (!response.ok || !result || !result.ok) {
+                    const message = (result && result.message) || `MongoDB save failed with status ${response.status}`;
+                    throw new Error(message);
+                }
             });
 
             const saveToTurso = fetch(CONFIG.CASHEW_SYNC_API_URL || '/api/cashew-sync', {
@@ -1068,15 +1084,16 @@
                 }
             });
 
-            Promise.allSettled([saveToSheets, saveToTurso])
+            Promise.allSettled([saveToSheets, saveToMongo, saveToTurso])
             .then((results) => {
                 const sheetsOk = results[0].status === 'fulfilled';
-                const tursoOk = results[1].status === 'fulfilled';
+                const mongoOk = results[1].status === 'fulfilled';
+                const tursoOk = results[2].status === 'fulfilled';
 
                 loader.classList.add('hidden');
                 saveBtn.disabled = false;
 
-                if (sheetsOk && tursoOk) {
+                if (sheetsOk && mongoOk && tursoOk) {
                     initDateAccordion(dateInput.value); // Refresh calendar
                     updateDateSaveStatus(true); // Mark as saved
                     window.pendingClear = true;
@@ -1087,26 +1104,37 @@
                     return;
                 }
 
-                if (sheetsOk && !tursoOk) {
+                if (sheetsOk && mongoOk && !tursoOk) {
                     initDateAccordion(dateInput.value);
                     updateDateSaveStatus(true);
                     window.pendingClear = true;
-                    const tursoError = results[1].reason?.message || 'Turso save failed.';
-                    showPopup('Partial Success', `Saved to Google Sheets. ${tursoError}`, 'error');
+                    const tursoError = results[2].reason?.message || 'Turso save failed.';
+                    showPopup('Partial Success', `Saved to Google Sheets and MongoDB. ${tursoError}`, 'error');
                     return;
                 }
 
-                if (!sheetsOk && tursoOk) {
+                if (sheetsOk && !mongoOk && tursoOk) {
+                    initDateAccordion(dateInput.value);
+                    updateDateSaveStatus(true);
+                    window.pendingClear = true;
+                    const mongoError = results[1].reason?.message || 'MongoDB save failed.';
+                    showPopup('Partial Success', `Saved to Google Sheets and Turso. ${mongoError}`, 'error');
+                    return;
+                }
+
+                if (!sheetsOk && mongoOk && tursoOk) {
                     updateDateSaveStatus(false);
                     const sheetError = results[0].reason?.message || 'Google Sheets save failed.';
-                    showPopup('Partial Success', `Saved to Turso. ${sheetError}`, 'error');
+                    showPopup('Partial Success', `Saved to MongoDB and Turso. ${sheetError}`, 'error');
                     return;
                 }
 
+                const failedBackends = [];
+                if (!sheetsOk) failedBackends.push(results[0].reason?.message || 'Google Sheets save failed.');
+                if (!mongoOk) failedBackends.push(results[1].reason?.message || 'MongoDB save failed.');
+                if (!tursoOk) failedBackends.push(results[2].reason?.message || 'Turso save failed.');
                 updateDateSaveStatus(false);
-                const sheetError = results[0].reason?.message || 'Google Sheets save failed.';
-                const tursoError = results[1].reason?.message || 'Turso save failed.';
-                showPopup('Error', `${sheetError} ${tursoError}`, 'error');
+                showPopup('Error', failedBackends.join(' '), 'error');
             });
         }
 

@@ -15,6 +15,7 @@ const CONFIG = {
 
     // Vercel serverless endpoints for Cashew Turso operations
     CASHEW_SYNC_API_URL: '/api/cashew-sync',
+    CASHEW_MONGODB_API_URL: '/api/cashew-mongo-save',
     CASHEW_FETCH_API_URL: '/api/cashew-fetch',
     CASHEW_SYNC_BRIDGE_API_URL: '/api/cashew-sync-bridge',
 
