@@ -1,8 +1,7 @@
 const { MongoClient } = require('mongodb');
 
-//const MONGODB_URI = process.env.MONGODB_URI || process.env.ktapps_MONGODB_URI;
-const MONGODB_URI = 'mongodb+srv://ktdata405_db_user:kxoj8usoGOwm8YON@cluster0.tmjhcih.mongodb.net/?appName=Cluster0';
-const MONGODB_DB = 'ktdata405_db_user';
+const MONGODB_URI = process.env.MONGODB_URI || process.env.ktapps_MONGODB_URI;
+const MONGODB_DB = process.env.MONGODB_DB || 'ktdata405_db_user';
 const MONGODB_COLLECTION = process.env.MONGODB_COLLECTION_CASHEW || 'cashew_expenses';
 
 let cachedClient = null;
