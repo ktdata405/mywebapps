@@ -333,20 +333,99 @@
             border: 1px solid var(--border);
             border-radius: var(--radius);
             overflow: hidden;
+            max-width: 100%;
         }
 
         .table-wrapper {
             overflow-x: auto;
+            overflow-y: hidden;
+            width: 100%;
+            max-width: 100%;
+            overscroll-behavior-x: contain;
+            --period-col-width: 170px;
+            --total-col-width: 140px;
+        }
+
+        .history-subtabs {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .history-subtabs::-webkit-scrollbar { display: none; }
+
+        .history-filterbar {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 0.65rem 0.75rem;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .history-filter-item {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-width: 0;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .history-filter-select {
+            border: 1px solid var(--border);
+            background: #141418;
+            color: #ececf1;
+            border-radius: 10px;
+            padding: 0.35rem 0.55rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            min-width: 0;
+        }
+
+        .history-subtab {
+            border: 1px solid var(--border);
+            background: #151519;
+            color: var(--text-muted);
+            border-radius: 999px;
+            padding: 0.45rem 0.8rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .history-subtab.active {
+            color: #fafafa;
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.18);
+            box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.25);
         }
 
         table {
-            width: 100%;
+            width: max-content;
+            min-width: 100%;
             border-collapse: collapse;
-            font-size: 0.9rem;
+            font-size: 0.92rem;
+            line-height: 1.4;
+        }
+
+        #dataTable th:not(.col-period):not(.col-total),
+        #dataTable td:not(.col-period):not(.col-total) {
+            min-width: 92px;
         }
 
         th, td {
-            padding: 1rem 1.5rem;
+            padding: 0.9rem 1.15rem;
             text-align: right;
             border-bottom: 1px solid var(--border);
             white-space: nowrap;
@@ -354,27 +433,153 @@
 
         th {
             background: #202024;
-            color: var(--text-muted);
-            font-weight: 500;
+            color: #d4d4dc;
+            font-weight: 600;
             text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 1px;
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
         }
 
-        th:first-child, td:first-child {
+        td {
+            color: #e4e4e7;
+            font-weight: 500;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .hdr-group {
+            text-align: center;
+            font-size: 0.72rem;
+            font-weight: 700;
+            background: #202024;
+            color: #f4f4f5;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hdr-field {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            background: #202024;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cat-start {
+            border-left: 2px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .col-period,
+        .col-total {
+            background: #202024;
+            z-index: 30;
+        }
+
+        th.col-period,
+        td.col-period,
+        th.col-total,
+        td.col-total {
             text-align: left;
             position: sticky;
-            left: 0;
-            background: var(--bg-card);
-            z-index: 10;
-            border-right: 1px solid var(--border);
+            z-index: 20;
+            box-shadow: 1px 0 0 rgba(255, 255, 255, 0.06);
         }
 
-        th:first-child { background: #202024; z-index: 20; }
+        th.col-period,
+        td.col-period {
+            left: 0;
+            min-width: var(--period-col-width);
+            max-width: var(--period-col-width);
+        }
+
+        th.col-total,
+        td.col-total {
+            left: var(--period-col-width);
+            min-width: var(--total-col-width);
+            max-width: var(--total-col-width);
+        }
+
+        td.col-period,
+        td.col-total {
+            background: #111114;
+        }
+
+        td.col-total {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* ── Alternating rows: background ── */
+        tbody tr.tx-row-odd td  { background: rgba(255,255,255,0.01); }
+        tbody tr.tx-row-even td { background: rgba(255,255,255,0.04); }
+
+        /* ── Alternating rows: Period text color ── */
+        tbody tr.tx-row-odd  td.col-period span  { color: #c4b5fd; } /* soft violet */
+        tbody tr.tx-row-even td.col-period span  { color: #7dd3fc; } /* soft sky-blue */
+
+        /* ── Alternating rows: Total text color ── */
+        tbody tr.tx-row-odd  td.col-total { color: #a5f3fc; } /* cyan */
+        tbody tr.tx-row-even td.col-total { color: #86efac; } /* green */
 
         tbody tr:hover td {
-            background: rgba(255,255,255,0.02);
+            background: rgba(14, 165, 233, 0.10);
         }
+
+        tbody tr:hover td.col-period,
+        tbody tr:hover td.col-total {
+            background: #17171b;
+        }
+
+        .tx-cell {
+            color: #9ca3af;
+        }
+
+        /* ── Alternating row: value cell text contrast ── */
+        tbody tr.tx-row-odd  td.tx-cell.has-value { color: #f0e6ff; font-weight: 650; } /* soft lavender */
+        tbody tr.tx-row-even td.tx-cell.has-value { color: #e0f2fe; font-weight: 650; } /* soft ice-blue */
+
+        .tx-cell.is-zero { color: #52525b; }
+
+        .row-edit-btn {
+            background: none;
+            border: none;
+            color: #a1a1aa;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .row-edit-btn:hover { color: #f4f4f5; }
+
+        /* ── Category cell: background + alternating value text colors ── */
+
+        /* Zerodha Coin – blue */
+        tbody tr.tx-row-odd  td.tx-cell.cat-coin             { background: rgba(59,130,246,0.06); }
+        tbody tr.tx-row-even td.tx-cell.cat-coin             { background: rgba(59,130,246,0.12); }
+        tbody tr.tx-row-odd  td.tx-cell.cat-coin.has-value   { color: #60a5fa; } /* blue-400 */
+        tbody tr.tx-row-even td.tx-cell.cat-coin.has-value   { color: #bfdbfe; } /* blue-200 */
+
+        /* Groww – green */
+        tbody tr.tx-row-odd  td.tx-cell.cat-groww            { background: rgba(16,185,129,0.06); }
+        tbody tr.tx-row-even td.tx-cell.cat-groww            { background: rgba(16,185,129,0.12); }
+        tbody tr.tx-row-odd  td.tx-cell.cat-groww.has-value  { color: #34d399; } /* emerald-400 */
+        tbody tr.tx-row-even td.tx-cell.cat-groww.has-value  { color: #a7f3d0; } /* emerald-200 */
+
+        /* Govt. Schemes – amber */
+        tbody tr.tx-row-odd  td.tx-cell.cat-govt             { background: rgba(245,158,11,0.06); }
+        tbody tr.tx-row-even td.tx-cell.cat-govt             { background: rgba(245,158,11,0.12); }
+        tbody tr.tx-row-odd  td.tx-cell.cat-govt.has-value   { color: #fbbf24; } /* amber-400 */
+        tbody tr.tx-row-even td.tx-cell.cat-govt.has-value   { color: #fde68a; } /* amber-200 */
+
+        /* NJ Wealth – red */
+        tbody tr.tx-row-odd  td.tx-cell.cat-nj               { background: rgba(239,68,68,0.06); }
+        tbody tr.tx-row-even td.tx-cell.cat-nj               { background: rgba(239,68,68,0.12); }
+        tbody tr.tx-row-odd  td.tx-cell.cat-nj.has-value     { color: #f87171; } /* red-400 */
+        tbody tr.tx-row-even td.tx-cell.cat-nj.has-value     { color: #fecaca; } /* red-200 */
+
+        /* INDMoney – violet */
+        tbody tr.tx-row-odd  td.tx-cell.cat-indmoney              { background: rgba(139,92,246,0.06); }
+        tbody tr.tx-row-even td.tx-cell.cat-indmoney              { background: rgba(139,92,246,0.12); }
+        tbody tr.tx-row-odd  td.tx-cell.cat-indmoney.has-value    { color: #a78bfa; } /* violet-400 */
+        tbody tr.tx-row-even td.tx-cell.cat-indmoney.has-value    { color: #ddd6fe; } /* violet-200 */
 
         .val-positive { color: var(--text-main); }
         .val-zero { color: #52525b; }
@@ -412,15 +617,67 @@
                 grid-template-columns: 1fr;
             }
 
+            .controls-stack {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+
+            .controls-stack > .icon-btn {
+                align-self: center;
+            }
+
+            .controls-stack .meta-item {
+                width: 100%;
+                justify-content: center;
+            }
+
             /* Table responsive */
             .table-wrapper {
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
             }
 
+            .history-subtabs {
+                padding: 0.625rem;
+                gap: 0.4rem;
+            }
+
+            .history-subtab {
+                font-size: 0.7rem;
+                padding: 0.4rem 0.7rem;
+            }
+
+            .history-filterbar {
+                padding: 0.55rem 0.625rem;
+                gap: 0.5rem;
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                align-items: stretch;
+            }
+
+            .history-filter-item {
+                font-size: 0.68rem;
+                gap: 0.35rem;
+                width: 100%;
+            }
+
+            .history-filter-select {
+                font-size: 0.72rem;
+                padding: 0.32rem 0.5rem;
+                width: 100%;
+            }
+
             th, td {
                 padding: 0.75rem 1rem;
                 font-size: 0.8rem;
+            }
+
+            .table-wrapper {
+                --period-col-width: 132px;
+                --total-col-width: 104px;
             }
 
             /* Hero grid balance amount */
@@ -473,6 +730,20 @@
             .platform-grid {
                 grid-template-columns: 1fr;
             }
+            .history-filterbar {
+                grid-template-columns: 1fr;
+            }
+
+            .table-wrapper {
+                --period-col-width: 118px;
+                --total-col-width: 92px;
+            }
+
+            #dataTable th:not(.col-period):not(.col-total),
+            #dataTable td:not(.col-period):not(.col-total) {
+                min-width: 82px;
+            }
+
             .balance-amount { font-size: 1.5rem; }
             .container { padding: 0.5rem; }
             .navbar { padding: 0.75rem 0.5rem; }
@@ -757,7 +1028,7 @@
                 <button class="tab-btn" onclick="switchTab('history', this)" data-translate-key="transactionHistory">Transaction History</button>
             </div>
 
-            <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; justify-content: center;">
+            <div class="controls-stack" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; justify-content: center;">
                 <!-- Month Navigation -->
                 <div class="month-nav">
                     <button class="icon-btn" onclick="changeMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
@@ -796,14 +1067,28 @@
     <!-- View: History (Table) -->
     <div id="view-history" class="view-section">
         <div class="table-container">
+            <div class="history-subtabs" id="history-subtabs"></div>
+            <div class="history-filterbar">
+                <div class="history-filter-item">
+                    <span>Data</span>
+                    <select id="history-data-filter" class="history-filter-select" onchange="setHistoryDataFilter(this.value)">
+                        <option value="all">All Rows</option>
+                        <option value="available">With Data</option>
+                    </select>
+                </div>
+                <div class="history-filter-item">
+                    <span>Date</span>
+                    <select id="history-sort-order" class="history-filter-select" onchange="setHistorySortOrder(this.value)">
+                        <option value="desc">Newest First</option>
+                        <option value="asc">Oldest First</option>
+                    </select>
+                </div>
+            </div>
             <div class="table-wrapper">
                 <table id="dataTable">
                     <thead>
-                        <tr>
-                            <th data-translate-key="month">Period</th>
-                            <th style="color: var(--primary);" data-translate-key="total">Total</th>
-                            <!-- Dynamic Headers -->
-                        </tr>
+                        <tr id="history-group-row"></tr>
+                        <tr id="history-field-row"></tr>
                     </thead>
                     <tbody>
                         <!-- Dynamic Body -->
@@ -856,14 +1141,129 @@
 
     const BANK_FIELDS = ['hdfc_bank', 'sbi_bank', 'icici_bank', 'axis_bank'];
     const COMMON_FIELDS = ['month', 'year', 'total_investment'];
+    const FIELD_LABELS = {
+        quantum_liquid: 'Quantum Liquid',
+        navi_nifty: 'Navi Nifty 50',
+        invesco_small: 'Invesco Small Cap',
+        axis_nifty: 'Axis Nifty 50',
+        birla_nifty: 'Birla Nifty 50',
+        dsp_nifty: 'DSP Nifty 50',
+        edelweiss_bond: 'Edelweiss Bond',
+        canara_small: 'Canara Small Cap',
+        quant_small: 'Quant Small Cap',
+        birla_psu: 'Birla PSU',
+        power_grid: 'Power Grid',
+        ppf: 'PPF',
+        ssa: 'SSA',
+        nps_tier1: 'NPS Tier 1',
+        nps_tier2: 'NPS Tier 2',
+        axis_midcap: 'Axis Mid Cap',
+        dsp_midcap: 'DSP Mid Cap',
+        invesco_midcap: 'Invesco Mid Cap',
+        kotak_emerging: 'Kotak Emerging',
+        nippon_growth: 'Nippon Growth',
+        ind_jio_flexi: 'Jio Flexi',
+        ind_bandhan_small: 'Bandhan Small',
+        ind_ntpc_green: 'NTPC Green'
+    };
+    const FIELD_ALIASES = {
+        // Zerodha Coin
+        quantum_liquid: ['quantum_liquid', 'coin_quantum_liquid'],
+        navi_nifty: ['navi_nifty', 'coin_navi_nifty'],
+        invesco_small: ['invesco_small', 'coin_invesco_small'],
+        axis_nifty: ['axis_nifty', 'coin_axis_nifty'],
+        birla_nifty: ['birla_nifty', 'coin_birla_nifty'],
+        dsp_nifty: ['dsp_nifty', 'coin_dsp_nifty'],
+        edelweiss_bond: ['edelweiss_bond', 'coin_edelweiss_bond'],
+
+        // Groww
+        canara_small: ['canara_small', 'coin_canara_small'],
+        quant_small: ['quant_small', 'coin_quant_small'],
+        birla_psu: ['birla_psu', 'coin_birla_psu'],
+        power_grid: ['power_grid', 'coin_power_grid'],
+
+        // Govt. Schemes
+        ppf: ['ppf', 'ppf_account'],
+        ssa: ['ssa', 'ssa_account'],
+        nps_tier1: ['nps_tier1'],
+        nps_tier2: ['nps_tier2'],
+
+        // NJ Wealth
+        axis_midcap: ['axis_midcap', 'nj_axis_midcap'],
+        dsp_midcap: ['dsp_midcap', 'nj_dsp_midcap'],
+        invesco_midcap: ['invesco_midcap', 'nj_invesco_midcap'],
+        kotak_emerging: ['kotak_emerging', 'nj_kotak_emerging'],
+        nippon_growth: ['nippon_growth', 'nj_nippon_growth'],
+
+        // Layan
+        ind_jio_flexi: ['ind_jio_flexi'],
+        ind_bandhan_small: ['ind_bandhan_small'],
+        ind_ntpc_green: ['ind_ntpc_green']
+    };
     let globalData = [];
+    const MONTH_ORDER = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
     let currentMonthIndex = -1;
     let currentTotalNetWorth = 0;
     let isNetWorthVisible = false;
+    let currentHistoryCategory = 'all';
+    let currentHistoryDataFilter = 'all';
+    let currentHistorySortOrder = 'desc';
 
     // Utils
     const formatCurrency = (val) => 'Rs. ' + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(val);
     const formatNum = (val) => val ? new Intl.NumberFormat('en-IN').format(val) : '-';
+    const getFieldLabel = (field) => FIELD_LABELS[field] || field.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    const getActiveHistoryEntries = () => {
+        const allEntries = Object.entries(CURRENT_PLATFORMS);
+        if (currentHistoryCategory === 'all') return allEntries;
+        return allEntries.filter(([key]) => key === currentHistoryCategory);
+    };
+    const getVisibleFieldTotal = (row, entries) => entries.reduce((sum, [, p]) => {
+        return sum + p.fields.reduce((acc, f) => acc + (Number(row[f]) || 0), 0);
+    }, 0);
+
+    function syncHistoryFilters() {
+        const dataFilterEl = document.getElementById('history-data-filter');
+        const sortOrderEl = document.getElementById('history-sort-order');
+        if (dataFilterEl) dataFilterEl.value = currentHistoryDataFilter;
+        if (sortOrderEl) sortOrderEl.value = currentHistorySortOrder;
+    }
+
+    function renderHistorySubtabs() {
+        const container = document.getElementById('history-subtabs');
+        if (!container) return;
+
+        if (currentHistoryCategory !== 'all' && !CURRENT_PLATFORMS[currentHistoryCategory]) {
+            currentHistoryCategory = 'all';
+        }
+
+        const tabs = [{ key: 'all', label: 'All' }].concat(
+            Object.entries(CURRENT_PLATFORMS).map(([key, platform]) => ({ key, label: platform.name }))
+        );
+
+        container.innerHTML = tabs.map(tab => `
+            <button class="history-subtab ${tab.key === currentHistoryCategory ? 'active' : ''}" onclick="setHistoryCategory('${tab.key}')">${tab.label}</button>
+        `).join('');
+    }
+
+    window.setHistoryCategory = (key) => {
+        currentHistoryCategory = key;
+        renderHistorySubtabs();
+        syncHistoryFilters();
+        renderTable();
+    };
+
+    window.setHistoryDataFilter = (value) => {
+        currentHistoryDataFilter = value === 'available' ? 'available' : 'all';
+        syncHistoryFilters();
+        renderTable();
+    };
+
+    window.setHistorySortOrder = (value) => {
+        currentHistorySortOrder = value === 'asc' ? 'asc' : 'desc';
+        syncHistoryFilters();
+        renderTable();
+    };
 
     // Tab Switcher
     window.switchTab = (tabName, el) => {
@@ -906,6 +1306,11 @@
         loader.style.display = 'flex'; // Show loader
 
         const user = document.getElementById('user-select').value;
+        if (!SCRIPT_URL) {
+            loader.style.display = 'none';
+            KTui.alert('Error', 'MSI endpoint is not configured. Please check config.js', 'error');
+            return;
+        }
 
         // Update platforms based on user
         if (user === 'Layan') {
@@ -915,8 +1320,17 @@
         }
 
         try {
-            const res = await fetch(`${SCRIPT_URL}?sheetName=${user}&v=${Date.now()}`);
-            let data = await res.json();
+            const res = await fetch(`${SCRIPT_URL}?sheetName=${encodeURIComponent(user)}&v=${Date.now()}`);
+            if (!res.ok) {
+                throw new Error(`Fetch failed (${res.status})`);
+            }
+
+            let data;
+            try {
+                data = await res.json();
+            } catch (_) {
+                throw new Error('Invalid response from sheet endpoint. Expected JSON.');
+            }
 
             if (data.data) data = data.data;
             else if (data.records) data = data.records;
@@ -926,7 +1340,7 @@
 
             processData(data);
         } catch (e) {
-p            console.error(e);
+            console.error(e);
             KTui.alert('Error', "Sync Failed: " + e.message, 'error');
         } finally {
             setTimeout(() => {
@@ -942,24 +1356,27 @@ p            console.error(e);
             const rowKeys = Object.keys(row);
 
             const findValue = (targetKey) => {
-                // 1. Exact match
-                if (row[targetKey] !== undefined) return row[targetKey];
+                const aliases = FIELD_ALIASES[targetKey] || [targetKey];
+
+                // 1. Try explicit aliases first to avoid fuzzy wrong matches.
+                for (const alias of aliases) {
+                    if (row[alias] !== undefined) return row[alias];
+
+                    const lowerAlias = alias.toLowerCase();
+                    let foundKey = rowKeys.find(k => k.toLowerCase() === lowerAlias);
+                    if (foundKey) return row[foundKey];
+
+                    const strippedAlias = lowerAlias.replace(/[^a-z0-9]/g, '');
+                    foundKey = rowKeys.find(k => k.toLowerCase().replace(/[^a-z0-9]/g, '') === strippedAlias);
+                    if (foundKey) return row[foundKey];
+                }
 
                 const lowerTarget = targetKey.toLowerCase();
 
-                // 2. Case-insensitive match
-                let foundKey = rowKeys.find(k => k.toLowerCase() === lowerTarget);
-                if (foundKey) return row[foundKey];
-
-                // 3. Stripped match (ignore special chars)
-                const strippedTarget = lowerTarget.replace(/[^a-z0-9]/g, '');
-                foundKey = rowKeys.find(k => k.toLowerCase().replace(/[^a-z0-9]/g, '') === strippedTarget);
-                if (foundKey) return row[foundKey];
-
-                // 4. Tokenized/Partial match (aggressive)
+                // 2. Last-resort tokenized match for unrecognized headers.
                 const parts = lowerTarget.split('_').filter(p => p.length > 2);
                 if (parts.length > 0) {
-                    foundKey = rowKeys.find(k => {
+                    const foundKey = rowKeys.find(k => {
                         const cleanKey = k.toLowerCase();
                         return parts.every(part => cleanKey.includes(part));
                     });
@@ -975,8 +1392,7 @@ p            console.error(e);
             return newRow;
         }).filter(d => d.month && d.year);
 
-        const monthMap = { "Jan": 0, "Feb": 1, "Mar": 2, "Apr": 3, "May": 4, "Jun": 5, "Jul": 6, "Aug": 7, "Sep": 8, "Oct": 9, "Nov": 10, "Dec": 11 };
-        normalized.sort((a, b) => (Number(a.year) * 100 + monthMap[a.month]) - (Number(b.year) * 100 + monthMap[b.month]));
+        normalized.sort((a, b) => (Number(a.year) * 100 + MONTH_ORDER[a.month]) - (Number(b.year) * 100 + MONTH_ORDER[b.month]));
 
         globalData = normalized;
         renderUI();
@@ -1026,12 +1442,19 @@ p            console.error(e);
         // document.getElementById('last-month-val').textContent = formatCurrency(lastMonthTotal);
         // document.getElementById('record-count').textContent = globalData.length;
 
-        // Reset to latest month on new data
-        currentMonthIndex = globalData.length - 1;
+        // Default to current month/year if present; otherwise fallback to latest row.
+        const now = new Date();
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const targetMonth = monthNames[now.getMonth()];
+        const targetYear = String(now.getFullYear());
+        const currentPeriodIndex = globalData.findIndex(r => r.month === targetMonth && String(r.year) === targetYear);
+        currentMonthIndex = currentPeriodIndex !== -1 ? currentPeriodIndex : (globalData.length - 1);
 
         // renderBankBalances(lastRec); // Removed Bank Balances
         renderOverview();
         renderTotalCards();
+        renderHistorySubtabs();
+        syncHistoryFilters();
         renderTable();
     }
 
@@ -1129,62 +1552,95 @@ p            console.error(e);
     }
 
     function renderTable() {
-        const thead = document.querySelector('#dataTable thead tr');
+        const groupRow = document.getElementById('history-group-row');
+        const fieldRow = document.getElementById('history-field-row');
         const tbody = document.querySelector('#dataTable tbody');
+        const activeEntries = getActiveHistoryEntries();
 
-        while (thead.children.length > 2) thead.removeChild(thead.lastChild);
+        groupRow.innerHTML = '';
+        fieldRow.innerHTML = '';
         tbody.innerHTML = '';
 
-        Object.entries(CURRENT_PLATFORMS).forEach(([key, p]) => {
-            p.fields.forEach((f, index) => {
-                const color = FIELD_COLORS[f];
-                const th = document.createElement('th');
-                th.textContent = f.replace(/_/g, ' ').replace('midcap', 'Mid').replace('small', 'Sml').replace('ind_', '');
-                if (key === 'govt') th.textContent = th.textContent.toUpperCase();
+        const periodHeader = document.createElement('th');
+        periodHeader.rowSpan = 2;
+        periodHeader.className = 'col-period';
+        periodHeader.textContent = 'Period';
+        groupRow.appendChild(periodHeader);
 
-                th.style.color = color;
-                th.style.borderBottom = `2px solid ${color}`;
-                th.style.background = `${color}10`;
+        const totalHeader = document.createElement('th');
+        totalHeader.rowSpan = 2;
+        totalHeader.className = 'col-total';
+        totalHeader.textContent = 'Total';
+        groupRow.appendChild(totalHeader);
+
+        activeEntries.forEach(([, p]) => {
+            const groupHeader = document.createElement('th');
+            groupHeader.colSpan = p.fields.length;
+            groupHeader.className = 'hdr-group';
+            groupHeader.textContent = p.name;
+            groupHeader.style.color = p.color;
+            groupHeader.style.background = `${p.color}18`;
+            groupHeader.style.borderBottom = `1px solid ${p.color}66`;
+            groupRow.appendChild(groupHeader);
+
+            p.fields.forEach((f, index) => {
+                const th = document.createElement('th');
+                th.textContent = getFieldLabel(f);
+                th.className = 'hdr-field';
+                th.style.color = p.color;
+                th.style.background = `${p.color}12`;
+                th.style.borderBottom = `1px solid ${p.color}55`;
 
                 if (index === 0) {
-                     th.style.borderLeft = `1px solid ${color}40`;
+                    th.classList.add('cat-start');
+                    th.style.borderLeft = `2px solid ${p.color}66`;
                 }
 
-                thead.appendChild(th);
+                fieldRow.appendChild(th);
             });
         });
 
-        [...globalData].reverse().forEach(row => {
+        const rows = [...globalData];
+        if (currentHistorySortOrder === 'desc') {
+            rows.reverse();
+        }
+
+        const filteredRows = currentHistoryDataFilter === 'available'
+            ? rows.filter(row => getVisibleFieldTotal(row, activeEntries) > 0)
+            : rows;
+
+        filteredRows.forEach((row, rowIndex) => {
             const tr = document.createElement('tr');
+            tr.className = rowIndex % 2 === 0 ? 'tx-row-even' : 'tx-row-odd';
 
             const total = row.calculated_total !== undefined ? row.calculated_total : (Number(row.total_investment) || 0);
+            const filteredTotal = getVisibleFieldTotal(row, activeEntries);
+            const displayTotal = currentHistoryCategory === 'all' ? total : filteredTotal;
 
             let html = `
-                <td>
+                <td class="col-period">
                     <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                         <span>${row.month} ${row.year}</span>
-                        <button onclick="editRecord('${row.month}', '${row.year}')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px;">
+                        <button onclick="editRecord('${row.month}', '${row.year}')" class="row-edit-btn">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </button>
                     </div>
                 </td>
-                <td style="color: var(--primary); font-weight: 600;">${formatNum(total)}</td>
+                <td class="col-total">${formatNum(displayTotal)}</td>
             `;
 
-            Object.values(CURRENT_PLATFORMS).forEach(p => {
+            activeEntries.forEach(([key, p]) => {
                 p.fields.forEach((f, index) => {
                     const val = Number(row[f]) || 0;
-                    const color = FIELD_COLORS[f];
+                    const classes = ['tx-cell', `cat-${key}`];
+                    if (index === 0) classes.push('cat-start');
+                    if (val > 0) classes.push('has-value');
+                    else classes.push('is-zero');
 
-                    let style = `background: ${color}05;`;
-                    if (index === 0) {
-                        style += `border-left: 1px solid ${color}20;`;
-                    }
+                    let cellStyle = '';
+                    if (index === 0) cellStyle += `border-left: 2px solid ${p.color}40;`;
 
-                    const textColor = val > 0 ? color : '#52525b';
-                    style += `color: ${textColor};`;
-
-                    html += `<td style="${style}">${formatNum(val)}</td>`;
+                    html += `<td class="${classes.join(' ')}"${cellStyle ? ` style="${cellStyle}"` : ''}>${formatNum(val)}</td>`;
                 });
             });
 
