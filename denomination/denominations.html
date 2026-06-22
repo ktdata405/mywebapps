@@ -317,7 +317,7 @@
     <div class="max-w-7xl mx-auto flex items-center justify-between">
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);box-shadow:0 4px 14px rgba(99,102,241,0.4)">
-                <i class="fa-solid fa-indian-rupee-sign text-white text-sm"></i>
+                <i class="fa-solid fa-indian-rupee-sign text-sm"></i>
             </div>
             <div>
                 <div class="font-bold text-sm leading-tight tracking-tight">Denom's</div>
@@ -673,23 +673,69 @@
         return day + '/' + mon[d.getMonth()] + '/' + d.getFullYear();
     }
 
+    /**
+     * Converts a given number into words using the Indian numbering system (Lakh, Crore).
+     *
+     * @param {number} num The number to convert.
+     * @returns {string} The number in words, followed by "Rupees Only".
+     *
+     * Examples:
+     * 0        -> "Zero Rupees Only"
+     * 1          -> "one Rupees Only"
+     * 10         -> "ten Rupees Only"
+     * 19         -> "nineteen Rupees Only"
+     * 20         -> "twenty Rupees Only"
+     * 100        -> "one Hundred Rupees Only"
+     * 101        -> "one Hundred and one Rupees Only"
+     * 123        -> "one Hundred and twenty three Rupees Only"
+     * 1000       -> "one Thousand Rupees Only"
+     * 12345      -> "twelve Thousand three Hundred and forty five Rupees Only"
+     * 100000     -> "one Lakh Rupees Only"
+     * 100001     -> "one Lakh and one Rupees Only"
+     * 12345678   -> "one Crore twenty three Lakh forty five Thousand six Hundred and seventy eight Rupees Only"
+     */
     function numberToWords(num) {
-        if (num === 0) return 'Zero Rupees Only';
-        var a = ['','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
-        var b = ['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
-        function fmt(n, sfx) {
-            if (!n) return '';
-            var s = n > 19 ? b[Math.floor(n/10)] + (n%10 ? ' '+a[n%10] : '') : a[n];
-            return s ? s + sfx : '';
+        var n = Math.floor(Number(num));
+        if (!isFinite(n) || n <= 0) return 'Zero Rupees Only';
+
+        var ones = ['','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+        var tens = ['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+
+        function toTwoDigits(v) {
+            if (v < 20) return ones[v];
+            return tens[Math.floor(v / 10)] + (v % 10 ? ' ' + ones[v % 10] : '');
         }
-        var r = '';
-        r += fmt(Math.floor(num/10000000), ' Crore ');
-        r += fmt(Math.floor((num/100000)%100), ' Lakh ');
-        r += fmt(Math.floor((num/100)%100), ' Thousand ');
-        r += fmt(Math.floor((num/100)%10), ' Hundred ');
-        if (num > 100 && num % 100) r += 'and ';
-        r += fmt(num%100, '');
-        return r.trim().replace(/\s+/g,' ') + ' Rupees Only';
+
+        function toThreeDigits(v) {
+            var out = '';
+            var h = Math.floor(v / 100);
+            var rem = v % 100;
+            if (h > 0) out += ones[h] + ' Hundred';
+            if (rem > 0) out += (out ? ' and ' : '') + toTwoDigits(rem);
+            return out;
+        }
+
+        var parts = [];
+
+        // Keep explicit /1000 here to avoid accidental /100 grouping regression.
+        var groups = [
+            { value: 10000000, label: 'Crore' },
+            { value: 100000, label: 'Lakh' },
+            { value: 1000, label: 'Thousand' }
+        ];
+
+        groups.forEach(function(group) {
+            var chunk = Math.floor(n / group.value);
+            if (chunk > 0) {
+                parts.push(toTwoDigits(chunk) + ' ' + group.label);
+                n %= group.value;
+            }
+        });
+
+        if (n > 0) parts.push(toThreeDigits(n));
+
+        var suffix = Math.floor(Number(num)) === 1 ? ' Rupee Only' : ' Rupees Only';
+        return parts.join(' ').replace(/\s+/g, ' ').trim() + suffix;
     }
 
     function clearAll() {

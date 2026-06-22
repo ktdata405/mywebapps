@@ -1,4 +1,4 @@
-const CACHE_NAME = 'denominations-app-v4';
+const CACHE_NAME = 'denominations-app-v5';
 const STATIC_ASSETS = [
   './denominations.html',
   './denominations.html?from=standalone',
