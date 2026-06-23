@@ -322,7 +322,12 @@
 
     <div id="sheet2-data-container" class="hidden mb-8 flex justify-center">
         <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-2xl shadow-lg transform hover:scale-105 transition duration-300 text-center">
-            <div class="text-sm font-medium tracking-wider opacity-90 mb-1">Available Balance</div>
+            <div class="text-sm font-medium tracking-wider opacity-90 mb-1 flex items-center justify-center gap-2">
+                <span>Available Balance</span>
+                <button type="button" id="toggle-sheet2-balance-btn" class="text-white/80 hover:text-white" aria-label="Show available balance">
+                    <i id="sheet2-eye-icon" class="fa-solid fa-eye-slash"></i>
+                </button>
+            </div>
             <div id="sheet2-value" class="text-2xl sm:text-3xl font-black tracking-tight"></div>
         </div>
     </div>
@@ -346,6 +351,9 @@
 
 
 <script>
+    let isSheet2BalanceVisible = false;
+    let sheet2BalanceRaw = '';
+
     function formatDate(dateString) {
         if (!dateString) return '';
         const date = new Date(dateString);
@@ -389,6 +397,35 @@
             currency: 'INR',
             maximumFractionDigits: 0
         }).format(num);
+    }
+
+    function renderSheet2Balance() {
+        const valueEl = document.getElementById('sheet2-value');
+        const iconEl = document.getElementById('sheet2-eye-icon');
+        const toggleBtn = document.getElementById('toggle-sheet2-balance-btn');
+        if (!valueEl || !iconEl || !toggleBtn) return;
+
+        if (isSheet2BalanceVisible && sheet2BalanceRaw !== '') {
+            valueEl.textContent = formatCurrency(sheet2BalanceRaw);
+            iconEl.className = 'fa-solid fa-eye';
+            toggleBtn.setAttribute('aria-label', 'Hide available balance');
+        } else {
+            valueEl.textContent = '****';
+            iconEl.className = 'fa-solid fa-eye-slash';
+            toggleBtn.setAttribute('aria-label', 'Show available balance');
+        }
+    }
+
+    function setSheet2Balance(value) {
+        sheet2BalanceRaw = String(value);
+        isSheet2BalanceVisible = false;
+        renderSheet2Balance();
+    }
+
+    function toggleSheet2BalanceVisibility() {
+        if (sheet2BalanceRaw === '') return;
+        isSheet2BalanceVisible = !isSheet2BalanceVisible;
+        renderSheet2Balance();
     }
 
     function toggleAccordion(element) {
@@ -664,7 +701,6 @@
         const container = document.getElementById('report-container');
         const emptyState = document.getElementById('empty-state');
         const sheet2Container = document.getElementById('sheet2-data-container');
-        const sheet2Value = document.getElementById('sheet2-value');
 
         loader.classList.remove('hidden');
         container.classList.add('hidden');
@@ -678,7 +714,7 @@
                 loader.classList.add('hidden');
 
                 if (responsePayload.sheet2Data !== undefined && responsePayload.sheet2Data !== null && responsePayload.sheet2Data !== '') {
-                    sheet2Value.textContent = formatCurrency(responsePayload.sheet2Data);
+                    setSheet2Balance(responsePayload.sheet2Data);
                     sheet2Container.classList.remove('hidden');
                 }
 
@@ -702,7 +738,11 @@
             });
     }
 
-    document.addEventListener('DOMContentLoaded', fetchData);
+    document.addEventListener('DOMContentLoaded', () => {
+        const btn = document.getElementById('toggle-sheet2-balance-btn');
+        if (btn) btn.addEventListener('click', toggleSheet2BalanceVisibility);
+        fetchData();
+    });
 
 
     // Pull-to-refresh

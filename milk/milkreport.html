@@ -14,10 +14,13 @@
 
     <style>
         :root {
-            --bg-dark: #020617;
-            --card-bg: #0f172a;
-            --primary: #6366f1;
-            --surface: rgba(15, 23, 42, 0.75);
+            --bg-dark: #070b16;
+            --primary: #9aa8ff;
+            --on-primary: #0d1330;
+            --surface: rgba(23, 30, 52, 0.78);
+            --surface-soft: rgba(30, 38, 63, 0.72);
+            --surface-outline: rgba(186, 199, 255, 0.2);
+            --text-muted: #9aa7cf;
             /* Morning palette */
             --morning-bg: linear-gradient(135deg, rgba(251,191,36,0.22) 0%, rgba(234,88,12,0.16) 100%);
             --morning-border: rgba(251,191,36,0.40);
@@ -43,7 +46,10 @@
         html { scroll-behavior: smooth; }
 
         body {
-            background-color: var(--bg-dark);
+            background:
+                radial-gradient(circle at 16% 12%, rgba(99,102,241,0.2) 0%, transparent 42%),
+                radial-gradient(circle at 84% 84%, rgba(14,165,233,0.14) 0%, transparent 38%),
+                var(--bg-dark);
             color: #f8fafc;
             font-family: 'Plus Jakarta Sans', sans-serif;
             min-height: 100vh;
@@ -65,10 +71,10 @@
 
         .glass {
             background: var(--surface);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255,255,255,0.08);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid var(--surface-outline);
+            box-shadow: 0 12px 34px rgba(0,0,0,0.38);
             position: relative; z-index: 1;
         }
 
@@ -86,6 +92,32 @@
         /* Sticky header */
         .sticky-header { position: sticky; top: 0; z-index: 30; }
 
+        .topbar-wrap {
+            background: linear-gradient(180deg, rgba(26,34,59,0.9) 0%, rgba(20,26,48,0.82) 100%);
+            border-bottom: 1px solid var(--surface-outline);
+        }
+
+        .icon-btn {
+            width: 38px; height: 38px; border-radius: 12px;
+            border: 1px solid var(--surface-outline);
+            background: rgba(154,168,255,0.08);
+            color: #b8c4ea;
+            display: inline-flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .icon-btn:hover { color: #fff; background: rgba(154,168,255,0.2); border-color: rgba(186,199,255,0.38); }
+
+        .cta-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            color: var(--on-primary); padding: 9px 12px; border-radius: 14px;
+            font-weight: 800; font-size: 12px;
+            background: linear-gradient(145deg,#cad3ff,#9aa8ff);
+            border: 1px solid rgba(186,199,255,0.6);
+            box-shadow: 0 8px 24px rgba(94,110,193,0.4);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+        .cta-btn:hover { transform: translateY(-1px); box-shadow: 0 12px 24px rgba(94,110,193,0.52); }
+
         /* Filter panel collapse */
         .filter-panel {
             overflow: hidden;
@@ -94,14 +126,53 @@
         }
         .filter-panel.collapsed { max-height: 0; opacity: 0; }
 
-        /* Desktop table vs Mobile cards */
-        @media (min-width: 768px) {
-            .mobile-cards { display: none !important; }
-            .desktop-table { display: block !important; }
+        .filter-chip {
+            border: 1px solid rgba(186,199,255,0.34);
+            background: rgba(154,168,255,0.15);
+            color: #d3dbff;
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            transition: all 0.2s ease;
         }
-        @media (max-width: 767px) {
-            .mobile-cards { display: block !important; }
-            .desktop-table { display: none !important; }
+        .filter-chip:hover { background: rgba(154,168,255,0.28); color: #fff; }
+
+        /* Cards/List view modes */
+        .view-cards .mobile-cards { display: grid !important; }
+        .view-cards .desktop-table { display: none !important; }
+        .view-list .mobile-cards { display: none !important; }
+        .view-list .desktop-table { display: block !important; }
+
+        .view-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            border: 1px solid rgba(186,199,255,0.26);
+            background: rgba(154,168,255,0.08);
+            border-radius: 12px;
+            padding: 3px;
+        }
+        .view-toggle-btn {
+            border: none;
+            background: transparent;
+            color: #b7c2ea;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            border-radius: 9px;
+            padding: 7px 9px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+        }
+        .view-toggle-btn.active {
+            background: rgba(186,199,255,0.24);
+            color: #ffffff;
+            box-shadow: inset 0 0 0 1px rgba(186,199,255,0.34);
         }
 
         /* Mobile scroll area */
@@ -113,14 +184,256 @@
             padding-right: 2px;
         }
         .grid-scroll::-webkit-scrollbar { display: none; }
+        @media (min-width: 768px) {
+            .grid-scroll {
+                max-height: none;
+                overflow: visible;
+            }
+        }
 
         /* Summary grid */
+        .summary-strip {
+            width: 100%;
+        }
         .summary-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr;
             gap: 0.75rem;
         }
-        .summary-grid .full-width { grid-column: 1 / -1; }
+        @media (min-width: 768px) {
+            .summary-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        .summary-card.total-wide { min-height: 126px; }
+
+        .summary-mode-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            border: 1px solid rgba(186,199,255,0.26);
+            background: rgba(154,168,255,0.08);
+            border-radius: 12px;
+            padding: 3px;
+        }
+
+        .summary-mode-btn {
+            border: none;
+            background: transparent;
+            color: #b7c2ea;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            border-radius: 9px;
+            padding: 7px 9px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+        }
+
+        .summary-mode-btn.active {
+            background: rgba(186,199,255,0.24);
+            color: #ffffff;
+            box-shadow: inset 0 0 0 1px rgba(186,199,255,0.34);
+        }
+
+        .summary-view { display: none; }
+        .summary-view-card .summary-view-card-only { display: block; }
+        .summary-view-list .summary-view-list-only { display: block; }
+
+        .summary-card {
+            border-radius: 14px;
+            border: 1px solid transparent;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .summary-card.compact {
+            min-height: 86px;
+            padding: 10px 12px !important;
+            justify-content: space-between;
+        }
+
+        .summary-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .summary-combined-stack {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .summary-combined-line {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+            border-bottom: 1px dashed rgba(186,199,255,0.26);
+            padding-bottom: 4px;
+        }
+
+        .summary-combined-line:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .summary-combined-line .line-label {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .summary-combined-line .line-value {
+            font-size: 1.02rem;
+            font-weight: 900;
+            font-variant-numeric: tabular-nums;
+            text-align: right;
+        }
+
+        .summary-card.compact .summary-kicker {
+            margin-bottom: 0;
+            font-size: 9px;
+        }
+
+        .summary-card.compact .summary-value {
+            font-size: 1.05rem;
+            line-height: 1;
+        }
+
+        .summary-card.compact .summary-sub {
+            margin-top: 0;
+            font-size: 0.74rem;
+        }
+
+        .summary-kicker {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+            line-height: 1;
+        }
+
+        .summary-value {
+            font-size: 1.25rem;
+            line-height: 1.1;
+            font-weight: 900;
+            color: #fff;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.01em;
+        }
+
+        .summary-sub {
+            font-size: 0.78rem;
+            margin-top: 4px;
+            font-weight: 700;
+            line-height: 1.2;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .summary-total-wrap {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            row-gap: 8px;
+            column-gap: 12px;
+            width: 100%;
+        }
+
+        .summary-total-stack {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .summary-total-action {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: space-between;
+            margin-top: 4px;
+            width: 100%;
+        }
+
+        .payment-status-label {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: #cbd5e1;
+            text-align: left;
+        }
+
+        .summary-total-line {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+            border-bottom: 1px dashed rgba(110,231,183,0.28);
+            padding-bottom: 4px;
+        }
+
+        .summary-total-line:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .summary-total-line .line-label {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+
+        .summary-total-line .line-value {
+            font-size: 1.06rem;
+            font-weight: 900;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.01em;
+            text-align: right;
+        }
+        .summary-total-line .line-label-qty { color: #7dd3fc; text-transform: uppercase; letter-spacing: 0.05em; }
+        .summary-total-line .line-value-qty { color: #22d3ee; font-size: 1.12rem; }
+        .summary-total-line .line-label-amt { color: #fcd34d; text-transform: uppercase; letter-spacing: 0.05em; }
+        .summary-total-line .line-value-amt { color: #34d399; font-size: 1.16rem; }
+
+        .summary-amount-label {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 4px;
+            line-height: 1;
+            text-align: right;
+        }
+
+        .summary-total-left-label { text-align: left; }
+        .summary-total-right-label { text-align: right; }
+        .summary-total-left-value { text-align: left; }
+        .summary-total-right-value { text-align: right; }
+
+        .summary-amount-value {
+            font-size: 1.35rem;
+            line-height: 1.05;
+            font-weight: 900;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.01em;
+            text-align: right;
+        }
+        @media (hover:hover) {
+            .summary-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.22); }
+        }
 
         /* Select custom arrow */
         select {
@@ -143,14 +456,14 @@
 
         /* Alternating card themes */
         .day-card.theme-indigo {
-            background: linear-gradient(145deg, rgba(49,46,129,0.55) 0%, rgba(15,23,42,0.70) 100%);
-            border-color: rgba(129,140,248,0.30);
-            box-shadow: 0 4px 20px rgba(99,102,241,0.12);
+            background: linear-gradient(145deg, rgba(53,61,102,0.88) 0%, rgba(24,32,57,0.9) 100%);
+            border-color: rgba(186,199,255,0.28);
+            box-shadow: 0 8px 24px rgba(45,55,100,0.35);
         }
         .day-card.theme-teal {
-            background: linear-gradient(145deg, rgba(6,78,59,0.55) 0%, rgba(15,23,42,0.70) 100%);
-            border-color: rgba(52,211,153,0.28);
-            box-shadow: 0 4px 20px rgba(16,185,129,0.10);
+            background: linear-gradient(145deg, rgba(23,76,86,0.82) 0%, rgba(24,32,57,0.9) 100%);
+            border-color: rgba(125,227,245,0.24);
+            box-shadow: 0 8px 24px rgba(21,72,88,0.32);
         }
 
         /* Date label colors per theme */
@@ -227,6 +540,46 @@
         #report-body tr { transition: background 0.15s; }
         #report-body tr:hover { background: rgba(99,102,241,0.08) !important; }
 
+        .report-table-wrap {
+            border: 1px solid var(--surface-outline);
+            border-radius: 14px;
+            overflow: hidden;
+            background: rgba(14,20,37,0.58);
+        }
+        .report-table-wrap thead {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: rgba(24,31,54,0.96);
+            backdrop-filter: blur(10px);
+        }
+
+        .report-table-wrap th {
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            color: #a8b5df;
+            font-weight: 700;
+        }
+
+        .report-table-wrap td {
+            border-top: 1px solid rgba(186,199,255,0.08);
+        }
+
+        .row-edit-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            border: 1px solid rgba(186,199,255,0.26);
+            background: rgba(154,168,255,0.12);
+            color: #c7d2fe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            transition: all 0.2s ease;
+        }
+        .row-edit-btn:hover { background: rgba(154,168,255,0.24); color: #fff; }
+
         .td-morning { color: #fcd34d; font-weight: 700; text-align: center; }
         .td-evening { color: #a5b4fc; font-weight: 700; text-align: center; }
         .td-total   { color: #6ee7b7; font-weight: 800; text-align: center; }
@@ -246,7 +599,7 @@
         }
         .section-accent-line {
             flex: 1; height: 1px;
-            background: linear-gradient(90deg, rgba(99,102,241,0.4), transparent);
+            background: linear-gradient(90deg, rgba(154,168,255,0.55), transparent);
         }
 
         /* Status badge (small inline) */
@@ -269,9 +622,10 @@
         /* ── Monthly Bill Status Card ── */
         .bill-status-card {
             position: relative; overflow: hidden;
-            border-radius: 18px; padding: 18px 20px;
-            display: flex; align-items: center; justify-content: space-between; gap: 16px;
+            border-radius: 14px; padding: 12px 14px;
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
             transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+            min-height: 110px;
         }
         .bill-status-card.is-unpaid {
             background: linear-gradient(135deg, rgba(239,68,68,0.12) 0%, rgba(220,38,38,0.06) 100%);
@@ -290,33 +644,36 @@
             pointer-events: none;
         }
         .bill-icon-wrap {
-            width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
+            width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-size: 1rem;
             transition: all 0.4s ease;
         }
         .is-unpaid .bill-icon-wrap { background: rgba(239,68,68,0.15); }
         .is-paid   .bill-icon-wrap { background: rgba(139,92,246,0.20); }
         .bill-status-label {
-            font-size: 9px; font-weight: 800; text-transform: uppercase;
-            letter-spacing: 0.08em; margin-bottom: 3px;
+            font-size: 8px; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.08em; margin-bottom: 2px;
         }
         .is-unpaid .bill-status-label { color: #f87171; }
         .is-paid   .bill-status-label { color: #a78bfa; }
         .bill-status-title {
-            font-size: 15px; font-weight: 900; color: #fff; line-height: 1.2;
+            font-size: 13px; font-weight: 900; color: #fff; line-height: 1.2;
+            letter-spacing: 0.01em;
         }
         .bill-status-sub {
-            font-size: 10px; font-weight: 500; margin-top: 2px;
+            font-size: 9px; font-weight: 600; margin-top: 1px;
+            line-height: 1.25;
         }
+        .bill-text-wrap { display: none; }
         .is-unpaid .bill-status-sub { color: rgba(248,113,113,0.70); }
         .is-paid   .bill-status-sub { color: rgba(167,139,250,0.70); }
 
         /* Mark Paid button */
         .mark-paid-btn {
             display: flex; align-items: center; gap: 7px; flex-shrink: 0;
-            padding: 10px 18px; border-radius: 14px; border: none; cursor: pointer;
+            padding: 8px 10px; border-radius: 10px; border: none; cursor: pointer;
             font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 12px; font-weight: 800; letter-spacing: 0.03em;
+            font-size: 10px; font-weight: 800; letter-spacing: 0.03em;
             transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
             background: linear-gradient(135deg, #ef4444, #dc2626);
             color: #fff; box-shadow: 0 4px 16px rgba(239,68,68,0.35);
@@ -339,10 +696,35 @@
         }
         .paid-checkmark {
             display: flex; align-items: center; gap: 8px; flex-shrink: 0;
-            padding: 10px 18px; border-radius: 14px;
-            font-size: 12px; font-weight: 800; letter-spacing: 0.03em;
+            padding: 8px 10px; border-radius: 10px;
+            font-size: 10px; font-weight: 800; letter-spacing: 0.03em;
             background: linear-gradient(135deg, rgba(139,92,246,0.22), rgba(99,102,241,0.15));
             color: #a78bfa; border: 1px solid rgba(139,92,246,0.38);
+        }
+
+        .status-btn-unpaid {
+            color: #fecaca;
+        }
+
+        .status-btn-paid {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            flex-shrink: 0;
+            padding: 8px 10px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+            background: linear-gradient(135deg, rgba(16,185,129,0.24), rgba(5,150,105,0.18));
+            color: #86efac;
+            border: 1px solid rgba(16,185,129,0.4);
+        }
+
+        @media (max-width: 480px) {
+            .summary-value { font-size: 1.1rem; }
+            .summary-sub { font-size: 0.72rem; }
+            .summary-amount-value { font-size: 1.15rem; }
         }
 
         /* ── Confirm Popup ── */
@@ -397,13 +779,68 @@
         .confirm-proceed:hover { box-shadow: 0 6px 20px rgba(139,92,246,0.55); transform: translateY(-1px); }
         .confirm-proceed:active { transform: scale(0.96); }
 
+        .mobile-fab {
+            position: fixed;
+            right: max(14px, env(safe-area-inset-right, 0px));
+            bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+            width: 54px;
+            height: 54px;
+            border-radius: 16px;
+            background: linear-gradient(145deg,#cad3ff,#9aa8ff);
+            border: 1px solid rgba(129,140,248,0.5);
+            box-shadow: 0 14px 30px rgba(94,110,193,0.5);
+            color: #0d1330;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 35;
+        }
+
+        .input-shell {
+            background: rgba(17,24,45,0.7);
+            border: 1px solid rgba(186,199,255,0.2);
+            border-radius: 14px;
+            transition: all 0.2s ease;
+        }
+        .input-shell:focus-within {
+            border-color: rgba(186,199,255,0.56);
+            box-shadow: 0 0 0 3px rgba(154,168,255,0.18);
+        }
+
+        .hero-strip {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        @media (min-width: 768px) {
+            .hero-strip {
+                grid-template-columns: 1fr auto;
+                align-items: center;
+            }
+        }
+
+        .hero-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #c8d3ff;
+            border-radius: 999px;
+            padding: 6px 10px;
+            border: 1px solid rgba(186,199,255,0.28);
+            background: rgba(154,168,255,0.1);
+        }
+        @media (min-width: 768px) { .mobile-fab { display: none; } }
+
         @media (max-width: 380px) {
             .blk-value { font-size: 15px; }
         }
     </style>
 </head>
 
-<body>
+<body class="view-cards">
 <!-- Ambient blobs -->
 <div class="bg-blob bg-blob-1"></div>
 <div class="bg-blob bg-blob-2"></div>
@@ -411,7 +848,7 @@
 
 <!-- ── Sticky Header ── -->
 <div class="sticky-header" style="padding-top: env(safe-area-inset-top, 0px);">
-    <div class="glass border-b border-white/5 px-4 py-3 flex items-center justify-between gap-3">
+    <div class="glass topbar-wrap px-4 py-3 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
             <div class="w-10 h-10 flex-shrink-0 rounded-2xl flex items-center justify-center shadow-lg"
                  style="background: linear-gradient(135deg,#6366f1,#8b5cf6); box-shadow: 0 6px 20px rgba(99,102,241,0.35);">
@@ -419,29 +856,28 @@
             </div>
             <div class="min-w-0">
                 <h1 class="text-base font-extrabold tracking-tight text-white leading-tight truncate">Milk Report</h1>
-                <p class="text-[9px] text-indigo-400 font-bold uppercase tracking-widest hidden sm:block">Monthly Collection Records</p>
+                <p class="text-[9px] text-indigo-300 font-bold uppercase tracking-widest">Monthly Collection Records</p>
             </div>
         </div>
         <div class="flex items-center gap-2 flex-shrink-0">
             <button id="filter-toggle" onclick="toggleFilter()"
-                    class="md:hidden w-9 h-9 rounded-xl border flex items-center justify-center tap-active transition-all"
-                    style="background:rgba(99,102,241,0.15); border-color:rgba(99,102,241,0.35); color:#818cf8;">
+                    class="md:hidden icon-btn tap-active"
+                    style="background:rgba(99,102,241,0.16); border-color:rgba(99,102,241,0.4); color:#818cf8;">
                 <i class="fa-solid fa-sliders text-sm"></i>
             </button>
             <a href="milk.html"
-               class="flex items-center gap-1.5 text-white px-3 py-2 rounded-xl font-bold text-xs transition-all tap-active shadow-lg"
-               style="background: linear-gradient(135deg,#6366f1,#8b5cf6); box-shadow: 0 4px 14px rgba(99,102,241,0.35);">
+               class="cta-btn tap-active"
+               aria-label="Add new entry">
                 <i class="fa-solid fa-plus text-xs"></i>
                 <span>New Entry</span>
             </a>
             <a href="../index.html"
-               class="w-9 h-9 rounded-xl border flex items-center justify-center text-gray-400 hover:text-white transition-all tap-active"
-               style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.10);">
+               class="icon-btn tap-active"
+               aria-label="Home">
                 <i class="fa-solid fa-house text-sm"></i>
             </a>
             <a href="../settings.html"
-               class="w-9 h-9 rounded-xl border flex items-center justify-center text-gray-400 hover:text-white transition-all tap-active"
-               style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.10);"
+               class="icon-btn tap-active"
                title="Settings" aria-label="Settings">
                 <i class="fa-solid fa-gear text-sm"></i>
             </a>
@@ -451,32 +887,40 @@
 
 <div class="max-w-5xl mx-auto px-3 sm:px-6 pt-4 pb-10">
 
+    <div class="hero-strip">
+        <div class="flex flex-wrap items-center gap-2">
+            <span class="hero-chip"><i class="fa-solid fa-calendar-days"></i> Monthly Tracking</span>
+            <span class="hero-chip"><i class="fa-solid fa-chart-line"></i> Live Summary</span>
+        </div>
+    </div>
+
     <!-- ── Filter Panel ── -->
     <div id="filter-panel" class="filter-panel mb-4">
         <div class="glass rounded-2xl p-4 bento-card">
             <div class="flex justify-between items-center mb-3">
-                <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
-                    <i class="fa-solid fa-filter text-indigo-400"></i> Period Selection
+                <h3 class="text-[11px] font-bold uppercase tracking-widest flex items-center gap-2" style="color:#c7d2fe;">
+                    <i class="fa-solid fa-filter text-indigo-300"></i> Filter Period
                 </h3>
                 <div class="flex gap-2">
                     <button onclick="changeMonth(-1)"
-                            class="w-8 h-8 rounded-lg border flex items-center justify-center transition-all tap-active"
-                            style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.10); color:#9ca3af;">
+                            class="icon-btn w-8 h-8 rounded-lg tap-active"
+                            style="width:32px;height:32px;">
                         <i class="fa-solid fa-chevron-left text-[10px]"></i>
                     </button>
                     <button onclick="changeMonth(1)"
-                            class="w-8 h-8 rounded-lg border flex items-center justify-center transition-all tap-active"
-                            style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.10); color:#9ca3af;">
+                            class="icon-btn w-8 h-8 rounded-lg tap-active"
+                            style="width:32px;height:32px;">
                         <i class="fa-solid fa-chevron-right text-[10px]"></i>
                     </button>
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-3">
                 <div class="space-y-1">
-                    <label class="text-[10px] text-gray-400 font-bold ml-1 uppercase tracking-wider">Month</label>
+                    <label class="text-[10px] font-bold ml-1 uppercase tracking-wider" style="color:var(--text-muted);">Month</label>
+                    <div class="input-shell">
                     <select id="month-select"
-                            class="w-full rounded-xl py-2.5 px-3 text-sm font-semibold outline-none text-white focus:border-indigo-500 transition-all"
-                            style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.10);">
+                            class="w-full rounded-xl py-2.5 px-3 text-sm font-semibold outline-none text-white transition-all"
+                            style="background:transparent; border:none;">
                         <option value="Jan">January</option><option value="Feb">February</option>
                         <option value="Mar">March</option><option value="Apr">April</option>
                         <option value="May">May</option><option value="Jun">June</option>
@@ -484,18 +928,25 @@
                         <option value="Sep">September</option><option value="Oct">October</option>
                         <option value="Nov">November</option><option value="Dec">December</option>
                     </select>
+                    </div>
                 </div>
                 <div class="space-y-1">
-                    <label class="text-[10px] text-gray-400 font-bold ml-1 uppercase tracking-wider">Year</label>
+                    <label class="text-[10px] font-bold ml-1 uppercase tracking-wider" style="color:var(--text-muted);">Year</label>
+                    <div class="input-shell">
                     <select id="year-select"
-                            class="w-full rounded-xl py-2.5 px-3 text-sm font-semibold outline-none text-white focus:border-indigo-500 transition-all"
-                            style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.10);"></select>
+                            class="w-full rounded-xl py-2.5 px-3 text-sm font-semibold outline-none text-white transition-all"
+                            style="background:transparent; border:none;"></select>
+                    </div>
                 </div>
+            </div>
+            <div class="mt-3 flex flex-wrap gap-2">
+                <button type="button" class="filter-chip tap-active" onclick="setQuickMonth(0)"><i class="fa-solid fa-bolt mr-1"></i>Current Month</button>
+                <button type="button" class="filter-chip tap-active" onclick="setQuickMonth(-1)"><i class="fa-solid fa-clock-rotate-left mr-1"></i>Previous Month</button>
             </div>
             <button onclick="fetchMilkReport()"
                     class="w-full mt-3 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 tap-active"
-                    style="background:linear-gradient(135deg,rgba(99,102,241,0.80),rgba(139,92,246,0.70)); border:1px solid rgba(99,102,241,0.40); box-shadow:0 4px 16px rgba(99,102,241,0.25);">
-                <i id="fetch-icon" class="fa-solid fa-rotate text-white transition-transform duration-500"></i>
+                    style="background:linear-gradient(145deg,#cad3ff,#9aa8ff); color:#0d1330; border:1px solid rgba(186,199,255,0.6); box-shadow:0 8px 20px rgba(94,110,193,0.4);">
+                <i id="fetch-icon" class="fa-solid fa-rotate transition-transform duration-500" style="color:#0d1330;"></i>
                 <span>Fetch Report</span>
             </button>
         </div>
@@ -505,50 +956,89 @@
     <div id="monthly-summary" class="glass rounded-2xl p-4 bento-card mb-4">
         <div class="section-accent">
             <i class="fa-solid fa-chart-pie text-emerald-400 text-xs"></i>
-            <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Monthly Summary</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest" style="color:#c7d2fe;">Monthly Summary</span>
             <div class="section-accent-line"></div>
+            <div class="summary-mode-toggle" role="tablist" aria-label="Monthly summary view">
+                <button id="summary-card-view-btn" class="summary-mode-btn" onclick="setMonthlySummaryView('card')" role="tab" aria-selected="false">
+                    <i class="fa-solid fa-grip"></i><span>Card</span>
+                </button>
+                <button id="summary-list-view-btn" class="summary-mode-btn active" onclick="setMonthlySummaryView('list')" role="tab" aria-selected="true">
+                    <i class="fa-solid fa-list"></i><span>List</span>
+                </button>
+            </div>
         </div>
-        <div class="summary-grid">
-            <!-- Morning -->
-            <div class="p-3 rounded-xl" style="background:linear-gradient(135deg,rgba(251,191,36,0.18),rgba(234,88,12,0.12)); border:1px solid rgba(251,191,36,0.35);">
-                <p class="text-[9px] font-bold uppercase tracking-wider mb-1" style="color:#fbbf24;">☀️ Morning</p>
-                <p id="summary-morning-liters" class="text-base font-black text-white font-mono">0.0 L</p>
-                <p id="summary-morning-amount" class="text-xs font-bold font-mono" style="color:#fcd34d;">₹0.00</p>
-            </div>
-            <!-- Evening -->
-            <div class="p-3 rounded-xl" style="background:linear-gradient(135deg,rgba(99,102,241,0.22),rgba(56,189,248,0.14)); border:1px solid rgba(99,102,241,0.38);">
-                <p class="text-[9px] font-bold uppercase tracking-wider mb-1" style="color:#818cf8;">🌙 Evening</p>
-                <p id="summary-evening-liters" class="text-base font-black text-white font-mono">0.0 L</p>
-                <p id="summary-evening-amount" class="text-xs font-bold font-mono" style="color:#a5b4fc;">₹0.00</p>
-            </div>
-            <!-- Grand Total -->
-            <div class="full-width p-3 rounded-xl flex items-center justify-between"
-                 style="background:linear-gradient(135deg,rgba(16,185,129,0.20),rgba(6,182,212,0.12)); border:1px solid rgba(16,185,129,0.35);">
-                <div>
-                    <p class="text-[9px] font-bold uppercase tracking-wider mb-1" style="color:#34d399;">⚡ Grand Total</p>
-                    <p id="summary-total-liters" class="text-lg font-black text-white font-mono">0.0 L</p>
+        <div class="summary-view summary-view-card-only">
+            <div class="summary-grid">
+                <div class="summary-card p-3" style="background:linear-gradient(135deg,rgba(251,191,36,0.18),rgba(234,88,12,0.12)); border:1px solid rgba(251,191,36,0.35);">
+                    <p class="summary-kicker" style="color:#fbbf24;">Morning</p>
+                    <p data-summary-key="morning-liters" class="summary-value font-mono">0.0 L</p>
+                    <p data-summary-key="morning-amount" class="summary-sub font-mono" style="color:#fcd34d;">₹0.00</p>
                 </div>
-                <div class="text-right">
-                    <p class="text-[9px] font-bold uppercase tracking-wider mb-1" style="color:#34d399;">Amount</p>
-                    <p id="summary-total-cost" class="text-2xl font-black font-mono" style="color:#34d399;">₹0.00</p>
+                <div class="summary-card p-3" style="background:linear-gradient(135deg,rgba(99,102,241,0.22),rgba(56,189,248,0.14)); border:1px solid rgba(99,102,241,0.38);">
+                    <p class="summary-kicker" style="color:#818cf8;">Evening</p>
+                    <p data-summary-key="evening-liters" class="summary-value font-mono">0.0 L</p>
+                    <p data-summary-key="evening-amount" class="summary-sub font-mono" style="color:#a5b4fc;">₹0.00</p>
                 </div>
-            </div>
-            <!-- Monthly Bill Status — full width -->
-            <div class="full-width">
-                <div id="bill-status-card" class="bill-status-card is-unpaid">
-                    <div class="bill-icon-wrap" id="bill-icon">🧾</div>
-                    <div style="flex:1; min-width:0;">
-                        <div class="bill-status-label" id="bill-status-label">Monthly Bill</div>
-                        <div class="bill-status-title" id="bill-status-title">Unpaid</div>
-                        <div class="bill-status-sub" id="bill-status-sub">Tap the button to mark this month as paid</div>
-                    </div>
-                    <div id="bill-action-wrap">
-                        <button id="mark-paid-btn" class="mark-paid-btn" onclick="markMonthAsPaid(this)">
-                            <i class="fa-solid fa-check-circle"></i>
-                            <span>Mark Paid</span>
+                <div class="summary-card p-3" style="background:linear-gradient(135deg,rgba(16,185,129,0.20),rgba(6,182,212,0.12)); border:1px solid rgba(16,185,129,0.35);">
+                    <p class="summary-kicker" style="color:#34d399;">Total Quantity</p>
+                    <p data-summary-key="total-liters" class="summary-value font-mono" style="color:#22d3ee;">0.0 L</p>
+                </div>
+                <div class="summary-card p-3" style="background:linear-gradient(135deg,rgba(16,185,129,0.20),rgba(6,182,212,0.12)); border:1px solid rgba(16,185,129,0.35);">
+                    <p class="summary-kicker" style="color:#34d399;">Total Amount</p>
+                    <p data-summary-key="total-cost" class="summary-value font-mono" style="color:#34d399;">₹0.00</p>
+                    <div id="bill-action-wrap-card" class="summary-total-action" style="margin-top:8px;">
+                        <span class="payment-status-label">Payment Status</span>
+                        <button class="mark-paid-btn status-btn-unpaid" onclick="markMonthAsPaid(this)">
+                            <i class="fa-solid fa-check-circle"></i><span>Un-Paid</span>
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <div class="summary-view summary-view-list-only">
+            <div class="summary-strip">
+            <div class="summary-grid">
+                <div class="summary-card p-3" style="background:linear-gradient(135deg,rgba(99,102,241,0.16),rgba(56,189,248,0.10)); border:1px solid rgba(129,140,248,0.30);">
+                    <div class="summary-combined-stack">
+                        <div class="summary-combined-line">
+                            <span class="line-label" style="color:#fcd34d;">Morning Quantity</span>
+                            <span data-summary-key="morning-liters" class="line-value font-mono" style="color:#fbbf24;">0.0 L</span>
+                        </div>
+                        <div class="summary-combined-line">
+                            <span class="line-label" style="color:#fde68a;">Morning Amount</span>
+                            <span data-summary-key="morning-amount" class="line-value font-mono" style="color:#fcd34d;">₹0.00</span>
+                        </div>
+                        <div class="summary-combined-line">
+                            <span class="line-label" style="color:#a5b4fc;">Evening Quantity</span>
+                            <span data-summary-key="evening-liters" class="line-value font-mono" style="color:#818cf8;">0.0 L</span>
+                        </div>
+                        <div class="summary-combined-line">
+                            <span class="line-label" style="color:#bfdbfe;">Evening Amount</span>
+                            <span data-summary-key="evening-amount" class="line-value font-mono" style="color:#a5b4fc;">₹0.00</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="summary-card total-wide p-3 flex items-center justify-between"
+                     style="background:linear-gradient(135deg,rgba(16,185,129,0.20),rgba(6,182,212,0.12)); border:1px solid rgba(16,185,129,0.35);">
+                    <div class="summary-total-stack">
+                        <div class="summary-total-line">
+                            <span class="line-label line-label-qty">Total Quantity</span>
+                            <span data-summary-key="total-liters" class="line-value line-value-qty font-mono">0.0 L</span>
+                        </div>
+                        <div class="summary-total-line">
+                            <span class="line-label line-label-amt">Total Amount</span>
+                            <span data-summary-key="total-cost" class="line-value line-value-amt font-mono">₹0.00</span>
+                        </div>
+                        <div id="bill-action-wrap-list" class="summary-total-action">
+                            <span class="payment-status-label">Payment Status</span>
+                            <button class="mark-paid-btn status-btn-unpaid" onclick="markMonthAsPaid(this)">
+                                <i class="fa-solid fa-check-circle"></i><span>Un-Paid</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             </div>
         </div>
     </div>
@@ -557,18 +1047,26 @@
     <div class="glass rounded-2xl p-4 bento-card">
         <div class="section-accent">
             <i class="fa-solid fa-table-list text-indigo-400 text-xs"></i>
-            <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Detailed Collection</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest" style="color:#c7d2fe;">Detailed Collection</span>
             <div class="section-accent-line"></div>
-            <span id="entry-count" class="text-[9px] font-bold px-2 py-0.5 rounded-full" style="background:rgba(99,102,241,0.20); color:#a5b4fc;">0 days</span>
+            <div class="view-toggle" role="tablist" aria-label="Report view mode">
+                <button id="view-cards-btn" class="view-toggle-btn active" onclick="setViewMode('cards')" role="tab" aria-selected="true">
+                    <i class="fa-solid fa-grip"></i><span>Cards</span>
+                </button>
+                <button id="view-list-btn" class="view-toggle-btn" onclick="setViewMode('list')" role="tab" aria-selected="false">
+                    <i class="fa-solid fa-table-list"></i><span>List</span>
+                </button>
+            </div>
+            <span id="entry-count" class="text-[9px] font-bold px-2 py-0.5 rounded-full" style="background:rgba(154,168,255,0.20); color:#d3dbff; border:1px solid rgba(186,199,255,0.26);">0 days</span>
         </div>
 
         <!-- MOBILE: Card list -->
-        <div id="mobile-cards" class="mobile-cards grid-scroll space-y-2.5">
+        <div id="mobile-cards" class="mobile-cards grid-scroll grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
             <!-- JS populated -->
         </div>
 
         <!-- DESKTOP: Table -->
-        <div class="desktop-table overflow-x-auto">
+        <div class="desktop-table overflow-x-auto report-table-wrap">
                 <table class="w-full text-center text-sm">
                     <thead>
                     <tr class="text-xs uppercase tracking-wider border-b border-white/5"
@@ -589,6 +1087,10 @@
         </div>
     </div>
 </div>
+
+<a href="milk.html" class="mobile-fab tap-active" title="Add Entry" aria-label="Add Entry">
+    <i class="fa-solid fa-plus"></i>
+</a>
 
 <!-- ── Confirm Popup ── -->
 <div id="confirm-overlay" class="confirm-overlay">
@@ -650,7 +1152,62 @@
         }
     }
 
+    function setQuickMonth(offsetMonths) {
+        const now = new Date();
+        now.setMonth(now.getMonth() + offsetMonths);
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        document.getElementById('month-select').value = months[now.getMonth()];
+        document.getElementById('year-select').value = now.getFullYear();
+        fetchMilkReport();
+    }
+
+    function setViewMode(mode) {
+        const body = document.body;
+        const cardsBtn = document.getElementById('view-cards-btn');
+        const listBtn = document.getElementById('view-list-btn');
+        const nextMode = mode === 'list' ? 'list' : 'cards';
+
+        body.classList.remove('view-cards', 'view-list');
+        body.classList.add(nextMode === 'list' ? 'view-list' : 'view-cards');
+
+        cardsBtn.classList.toggle('active', nextMode === 'cards');
+        listBtn.classList.toggle('active', nextMode === 'list');
+        cardsBtn.setAttribute('aria-selected', nextMode === 'cards' ? 'true' : 'false');
+        listBtn.setAttribute('aria-selected', nextMode === 'list' ? 'true' : 'false');
+
+        localStorage.setItem('milkReportViewMode', nextMode);
+    }
+
+    function initViewMode() {
+        const saved = localStorage.getItem('milkReportViewMode');
+        setViewMode(saved === 'list' ? 'list' : 'cards');
+    }
+
+    function setMonthlySummaryView(mode) {
+        const body = document.body;
+        const cardBtn = document.getElementById('summary-card-view-btn');
+        const listBtn = document.getElementById('summary-list-view-btn');
+        const nextMode = mode === 'list' ? 'list' : 'card';
+
+        body.classList.remove('summary-view-card', 'summary-view-list');
+        body.classList.add(nextMode === 'list' ? 'summary-view-list' : 'summary-view-card');
+
+        cardBtn.classList.toggle('active', nextMode === 'card');
+        listBtn.classList.toggle('active', nextMode === 'list');
+        cardBtn.setAttribute('aria-selected', nextMode === 'card' ? 'true' : 'false');
+        listBtn.setAttribute('aria-selected', nextMode === 'list' ? 'true' : 'false');
+
+        localStorage.setItem('milkMonthlySummaryView', nextMode);
+    }
+
+    function initMonthlySummaryView() {
+        const saved = localStorage.getItem('milkMonthlySummaryView');
+        setMonthlySummaryView(saved === 'card' ? 'card' : 'list');
+    }
+
     function init() {
+        initViewMode();
+        initMonthlySummaryView();
         const ys = document.getElementById('year-select');
         const cur = new Date().getFullYear();
         for (let y = cur; y >= 2020; y--) {
@@ -689,31 +1246,29 @@
     }
 
     function setMonthlyBadge(isPaid) {
-        const card  = document.getElementById('bill-status-card');
-        const icon  = document.getElementById('bill-icon');
-        const label = document.getElementById('bill-status-label');
-        const title = document.getElementById('bill-status-title');
-        const sub   = document.getElementById('bill-status-sub');
-        const wrap  = document.getElementById('bill-action-wrap');
-        if (!card) return;
+        const wraps = [
+            document.getElementById('bill-action-wrap-card'),
+            document.getElementById('bill-action-wrap-list')
+        ].filter(Boolean);
+        if (!wraps.length) return;
 
         if (isPaid) {
-            card.className = 'bill-status-card is-paid';
-            icon.textContent = '✅';
-            label.textContent = 'Monthly Bill';
-            title.textContent = 'Paid';
-            sub.textContent = "This month's bill has been marked as paid";
-            wrap.innerHTML = `<div class="paid-checkmark"><i class="fa-solid fa-circle-check"></i><span>Confirmed</span></div>`;
+            wraps.forEach(function(wrap) {
+                wrap.innerHTML = `<span class="payment-status-label">Payment Status</span><div class="status-btn-paid"><i class="fa-solid fa-circle-check"></i><span>Paid</span></div>`;
+            });
         } else {
-            card.className = 'bill-status-card is-unpaid';
-            icon.textContent = '🧾';
-            label.textContent = 'Monthly Bill';
-            title.textContent = 'Unpaid';
-            sub.textContent = 'Tap the button to mark this month as paid';
-            wrap.innerHTML = `<button id="mark-paid-btn" class="mark-paid-btn" onclick="markMonthAsPaid(this)">
-                <i class="fa-solid fa-check-circle"></i><span>Mark Paid</span>
-            </button>`;
+            wraps.forEach(function(wrap) {
+                wrap.innerHTML = `<span class="payment-status-label">Payment Status</span><button class="mark-paid-btn status-btn-unpaid" onclick="markMonthAsPaid(this)">
+                    <i class="fa-solid fa-check-circle"></i><span>Un-Paid</span>
+                </button>`;
+            });
         }
+    }
+
+    function setSummaryMetric(metric, value) {
+        document.querySelectorAll('[data-summary-key="' + metric + '"]').forEach(function(el) {
+            el.textContent = value;
+        });
     }
 
     function renderReport(data) {
@@ -730,11 +1285,11 @@
         if (!data.length) {
             countBadge.textContent = '0 days';
             mobileCards.innerHTML = `
-                <div class="py-12 text-center flex flex-col items-center gap-3">
-                    <i class="fa-solid fa-box-open text-4xl" style="color:rgba(99,102,241,0.25);"></i>
-                    <p class="text-xs text-gray-500 uppercase tracking-widest font-bold">No records found</p>
+                <div class="py-12 text-center flex flex-col items-center gap-3 rounded-2xl border" style="grid-column:1/-1; border-color:rgba(186,199,255,0.18); background:rgba(24,31,54,0.45);">
+                    <i class="fa-solid fa-box-open text-4xl" style="color:rgba(154,168,255,0.4);"></i>
+                    <p class="text-xs uppercase tracking-widest font-bold" style="color:#aab6df;">No records found</p>
                 </div>`;
-            body.innerHTML = `<tr><td colspan="7" class="py-12 text-center text-gray-500 uppercase tracking-widest text-xs font-bold">No records found</td></tr>`;
+            body.innerHTML = `<tr><td colspan="7" class="py-12 text-center uppercase tracking-widest text-xs font-bold" style="color:#aab6df;">No records found</td></tr>`;
             resetSummary();
             setMonthlyBadge(false);
             return;
@@ -775,7 +1330,7 @@
                 <td class="py-3.5 px-3 td-cost">₹${dailyCost.toFixed(2)}</td>
                 <td class="py-3.5 px-3"><span class="remarks-cell" title="${remarks.replace(/"/g,'&quot;')}">${remarks || '—'}</span></td>
                 <td class="py-3.5 px-3">
-                    <button onclick="editEntry(${index})" class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 transition-all flex items-center justify-center mx-auto">
+                    <button onclick="editEntry(${index})" class="row-edit-btn">
                         <i class="fa-solid fa-pen-to-square text-xs"></i>
                     </button>
                 </td>`;
@@ -786,21 +1341,21 @@
             const card  = document.createElement('div');
             card.className = `day-card ${theme} tap-active`;
             card.innerHTML = `
-                <div style="padding:12px 12px 10px;">
-                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                <div style="padding:14px 13px 12px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
                         <div style="display:flex; align-items:center; gap:6px;">
-                            <div style="width:6px; height:6px; border-radius:50%; background:currentColor; opacity:0.6;" class="date-label"></div>
-                            <span class="date-label" style="font-size:12px; font-weight:800; font-family:monospace; letter-spacing:0.03em;">${dateDisplay}</span>
+                            <div style="width:7px; height:7px; border-radius:50%; background:currentColor; opacity:0.6;" class="date-label"></div>
+                            <span class="date-label" style="font-size:12px; font-weight:800; font-family:monospace; letter-spacing:0.05em;">${dateDisplay}</span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="cost-badge">₹${dailyCost.toFixed(2)}</span>
-                            <button onclick="editEntry(${index})" class="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-indigo-400">
-                                <i class="fa-solid fa-pen-to-square text-[10px]"></i>
+                            <span class="cost-badge" style="font-size:12px; padding:3px 9px;">₹${dailyCost.toFixed(2)}</span>
+                            <button onclick="editEntry(${index})" class="row-edit-btn" style="width:30px;height:30px;">
+                                <i class="fa-solid fa-pen-to-square text-[11px]"></i>
                             </button>
                         </div>
                     </div>
-                    ${remarks ? `<div style="margin-bottom:8px;"><span style="font-size:10px; color:#94a3b8;">📝 ${remarks}</span></div>` : ''}
-                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px;">
+                    ${remarks ? `<div style="margin-bottom:9px; padding:7px 10px; border-radius:10px; border:1px solid rgba(186,199,255,0.14); background:rgba(12,18,34,0.36);"><span style="font-size:10px; color:#bdc9ee;">📝 ${remarks}</span></div>` : ''}
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
                         <div class="block-morning">
                             <div class="blk-label">☀️ Morn</div>
                             <div class="blk-value">${morning.toFixed(1)}</div>
@@ -825,24 +1380,23 @@
     }
 
     function resetSummary() {
-        ['summary-morning-liters','summary-morning-amount',
-         'summary-evening-liters','summary-evening-amount',
-         'summary-total-liters','summary-total-cost']
-        .forEach(id => {
-            const el = document.getElementById(id);
-            el.textContent = id.includes('amount') || id.includes('cost') ? '₹0.00' : '0.0 L';
-        });
+        setSummaryMetric('morning-liters', '0.0 L');
+        setSummaryMetric('morning-amount', '₹0.00');
+        setSummaryMetric('evening-liters', '0.0 L');
+        setSummaryMetric('evening-amount', '₹0.00');
+        setSummaryMetric('total-liters', '0.0 L');
+        setSummaryMetric('total-cost', '₹0.00');
     }
 
     function updateSummary(mL, mA, eL, eA) {
         const tL = mL + eL, tA = mA + eA;
         const fmt = n => n.toLocaleString('en-IN', { minimumFractionDigits: 2 });
-        document.getElementById('summary-morning-liters').textContent = `${mL.toFixed(1)} L`;
-        document.getElementById('summary-morning-amount').textContent = `₹${fmt(mA)}`;
-        document.getElementById('summary-evening-liters').textContent = `${eL.toFixed(1)} L`;
-        document.getElementById('summary-evening-amount').textContent = `₹${fmt(eA)}`;
-        document.getElementById('summary-total-liters').textContent   = `${tL.toFixed(1)} L`;
-        document.getElementById('summary-total-cost').textContent     = `₹${fmt(tA)}`;
+        setSummaryMetric('morning-liters', `${mL.toFixed(1)} L`);
+        setSummaryMetric('morning-amount', `₹${fmt(mA)}`);
+        setSummaryMetric('evening-liters', `${eL.toFixed(1)} L`);
+        setSummaryMetric('evening-amount', `₹${fmt(eA)}`);
+        setSummaryMetric('total-liters', `${tL.toFixed(1)} L`);
+        setSummaryMetric('total-cost', `₹${fmt(tA)}`);
     }
 
     let _pendingPaidElement = null;

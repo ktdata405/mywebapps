@@ -429,6 +429,15 @@
                         <label class="field-label">A/C Paid</label>
                         <input type="number" id="ac-paid-input" placeholder="0.00" class="field-input" readonly />
                     </div>
+                    <div>
+                        <label class="field-label">Available Balance</label>
+                        <div class="relative">
+                            <input type="text" id="available-balance-input" placeholder="****" class="field-input pr-10" readonly />
+                            <button type="button" id="toggle-available-balance-btn" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white" aria-label="Show available balance">
+                                <i id="available-balance-eye-icon" class="fa-solid fa-eye-slash"></i>
+                            </button>
+                        </div>
+                    </div>
                     <div class="col-span-2">
                         <label class="field-label">Remarks</label>
                         <textarea id="remarks-input" placeholder="Enter remarks..." class="field-input" rows="3"></textarea>
@@ -526,6 +535,8 @@
     var COINS = [5, 2, 1];
     var ALL   = NOTES.concat(COINS);
     var editingRowIndex = null;
+    var prevBalanceFromSheet = 0;
+    var isAvailableBalanceVisible = false;
 
     var denomConfig = {
         500: { cls: 'd-500', accent: 'a-500', badge: 'Note' },
@@ -626,8 +637,133 @@
         var weekExp = parseFloat(document.getElementById('week-expenses-input').value) || 0;
         var adjAmt  = parseFloat(document.getElementById('adjust-amount-input').value) || 0;
         var acPaid  = (grandTotal + adjAmt) - weekExp;
+        var availableBalance = prevBalanceFromSheet + acPaid;
         document.getElementById('ac-paid-input').value = acPaid.toFixed(2);
+        setAvailableBalance(availableBalance);
         document.getElementById('ac-paid-pill').textContent = '\u20B9' + acPaid.toLocaleString('en-IN');
+    }
+
+    function setAvailableBalance(amount) {
+        var input = document.getElementById('available-balance-input');
+        input.dataset.raw = (parseFloat(amount) || 0).toFixed(2);
+        renderAvailableBalance();
+    }
+
+    function formatIndianAmount(value) {
+        var num = parseFloat(value);
+        if (isNaN(num)) return '0.00';
+        return num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function renderAvailableBalance() {
+        var input = document.getElementById('available-balance-input');
+        var icon = document.getElementById('available-balance-eye-icon');
+        var btn = document.getElementById('toggle-available-balance-btn');
+        var raw = input.dataset.raw || '0.00';
+
+        if (isAvailableBalanceVisible) {
+            input.value = formatIndianAmount(raw);
+            icon.className = 'fa-solid fa-eye';
+            btn.setAttribute('aria-label', 'Hide available balance');
+        } else {
+            input.value = '****';
+            icon.className = 'fa-solid fa-eye-slash';
+            btn.setAttribute('aria-label', 'Show available balance');
+        }
+    }
+
+    function toggleAvailableBalanceVisibility() {
+        isAvailableBalanceVisible = !isAvailableBalanceVisible;
+        renderAvailableBalance();
+    }
+
+    function parseFlexibleDate(value) {
+        if (!value) return null;
+        if (value instanceof Date && !isNaN(value)) return value;
+        var raw = String(value).trim();
+
+        var d = new Date(raw);
+        if (!isNaN(d)) return d;
+
+        var m = raw.match(/^(\d{1,2})[\/-]([A-Za-z]{3,})[\/-](\d{4})$/);
+        if (!m) return null;
+
+        var day = parseInt(m[1], 10);
+        var monKey = m[2].slice(0, 3).toLowerCase();
+        var year = parseInt(m[3], 10);
+        var months = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11 };
+        if (months[monKey] === undefined) return null;
+
+        return new Date(year, months[monKey], day);
+    }
+
+    function getRowPrevBalance(row) {
+        var keys = Object.keys(row || {});
+        for (var i = 0; i < keys.length; i++) {
+            var k = keys[i].toLowerCase();
+            if (
+                k.indexOf('prev bal') !== -1 ||
+                k.indexOf('available balance') !== -1 ||
+                k.indexOf('avl bal') !== -1 ||
+                k.indexOf('closing') !== -1
+            ) {
+                var v = parseFloat(row[keys[i]]);
+                if (!isNaN(v)) return v;
+            }
+        }
+        return 0;
+    }
+
+    function getMonthSheetName(isoDate) {
+        var dt = parseFlexibleDate(isoDate);
+        if (!dt || isNaN(dt)) dt = new Date();
+        var mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return mon[dt.getMonth()] + ' ' + dt.getFullYear();
+    }
+
+    function updatePrevBalanceFromSheet() {
+        var dateIso = document.getElementById('date-input').value;
+        var selectedDate = parseFlexibleDate(dateIso);
+        if (selectedDate) selectedDate.setHours(0, 0, 0, 0);
+
+        var sheetName = getMonthSheetName(dateIso);
+        var url = CONFIG.GOOGLE_SHEET_URL_DENOMINATIONS + '?sheetName=' + encodeURIComponent(sheetName);
+
+        return fetch(url)
+            .then(function(res) { return res.json(); })
+            .then(function(payload) {
+                var rows = payload.data || payload.reports || [];
+                var bestRow = null;
+                var bestTime = -Infinity;
+
+                rows.forEach(function(row) {
+                    var rowDate = parseFlexibleDate(row.Date || row.date);
+                    if (!rowDate || isNaN(rowDate)) return;
+                    rowDate.setHours(0, 0, 0, 0);
+                    var t = rowDate.getTime();
+
+                    if (selectedDate && t >= selectedDate.getTime()) return;
+                    if (t > bestTime) {
+                        bestTime = t;
+                        bestRow = row;
+                    }
+                });
+
+                if (bestRow) {
+                    prevBalanceFromSheet = getRowPrevBalance(bestRow);
+                } else if (payload.sheet2Data !== undefined && payload.sheet2Data !== null && payload.sheet2Data !== '') {
+                    var fallbackBal = parseFloat(payload.sheet2Data);
+                    prevBalanceFromSheet = isNaN(fallbackBal) ? 0 : fallbackBal;
+                } else {
+                    prevBalanceFromSheet = 0;
+                }
+
+                calculate();
+            })
+            .catch(function() {
+                prevBalanceFromSheet = 0;
+                calculate();
+            });
     }
 
     function animateValue(el, from, to, dur) {
@@ -661,7 +797,10 @@
         var dt = new Date(inp.value);
         dt.setDate(dt.getDate() + d);
         var today = new Date(); today.setHours(0,0,0,0);
-        if (dt <= today) inp.value = dt.toISOString().split('T')[0];
+        if (dt <= today) {
+            inp.value = dt.toISOString().split('T')[0];
+            updatePrevBalanceFromSheet();
+        }
     }
 
     function formatDate(iso) {
@@ -747,13 +886,13 @@
             var ta = r.querySelector('.row-total-amt');
             if (ta) { ta.style.opacity = '0.3'; ta.textContent = '0'; }
         });
-        ['week-expenses-input','adjust-amount-input','atm-withdrawal-input','ac-paid-input','remarks-input'].forEach(function(id) {
+        ['week-expenses-input','adjust-amount-input','atm-withdrawal-input','ac-paid-input','available-balance-input','remarks-input'].forEach(function(id) {
             document.getElementById(id).value = '';
         });
         document.getElementById('ac-paid-pill').textContent = '\u20B90';
         editingRowIndex = null;
         maxTotal = 1;
-        calculate();
+        updatePrevBalanceFromSheet();
     }
 
     function populateData(data) {
@@ -775,7 +914,7 @@
         if (data['Adjust Amount'])  document.getElementById('adjust-amount-input').value  = data['Adjust Amount'];
         if (data['ATM Withdrawal']) document.getElementById('atm-withdrawal-input').value = data['ATM Withdrawal'];
         if (data['Remarks'])        document.getElementById('remarks-input').value        = data['Remarks'];
-        calculate();
+        updatePrevBalanceFromSheet();
     }
 
     function showPopup(title, msg, type) {
@@ -884,6 +1023,8 @@
         ['week-expenses-input','adjust-amount-input','atm-withdrawal-input'].forEach(function(id) {
             document.getElementById(id).addEventListener('input', calculate);
         });
+        document.getElementById('toggle-available-balance-btn').addEventListener('click', toggleAvailableBalanceVisibility);
+        document.getElementById('date-input').addEventListener('change', updatePrevBalanceFromSheet);
         var edit = localStorage.getItem('editReportData');
         if (edit) {
             var d = JSON.parse(edit);
@@ -891,7 +1032,7 @@
             editingRowIndex = d.rowIndex !== undefined ? d.rowIndex : null;
             localStorage.removeItem('editReportData');
         }
-        calculate();
+        updatePrevBalanceFromSheet();
     }
 
     init();
