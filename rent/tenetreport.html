@@ -71,26 +71,58 @@
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
         }
 
-        .accordion-content {
-            transition: max-height 0.3s ease-out, opacity 0.3s ease-out, padding 0.3s ease-out;
+        .action-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            background: rgba(15, 23, 42, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .action-btn.edit:hover {
+            color: #818cf8;
+            border-color: rgba(129, 140, 248, 0.5);
+            background: rgba(99, 102, 241, 0.18);
+            box-shadow: 0 0 10px rgba(99,102,241,0.2);
+        }
+
+        .action-btn.del:hover {
+            color: #fb7185;
+            border-color: rgba(251, 113, 133, 0.5);
+            background: rgba(244, 63, 94, 0.15);
+            box-shadow: 0 0 10px rgba(244,63,94,0.2);
+        }
+
+        /* Card accent bar */
+        .card-kalyan { border-left: 3px solid #6366f1; }
+        .card-srikanth { border-left: 3px solid #ec4899; }
+
+        /* Accordion */
+        .card-details {
             max-height: 0;
-            opacity: 0;
             overflow: hidden;
-            padding-top: 0;
-            padding-bottom: 0;
+            opacity: 0;
+            transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease;
         }
-
-        .accordion-content.active {
+        .card-details.open {
+            max-height: 600px;
             opacity: 1;
-            padding-top: 1rem;
-            padding-bottom: 1rem;
         }
-
-        .rotate-icon {
+        .chevron-icon {
             transition: transform 0.3s ease;
         }
-
-        .rotate-icon.active {
+        .chevron-icon.open {
             transform: rotate(180deg);
         }
 
@@ -143,7 +175,7 @@
             }
 
             /* Header - sticky at top */
-            .glass-card.flex.flex-col.md\\:flex-row {
+            .header-card {
                 position: sticky;
                 top: 0;
                 z-index: 20;
@@ -176,13 +208,10 @@
                 font-size: 1.5rem !important;
             }
 
-            /* Report container */
+            /* Report container list spacing on mobile */
             #report-container {
-                gap: 0.5rem !important;
+                gap: 0.75rem !important;
             }
-
-            /* Accordion header */
-            .p-4.flex.justify-between { padding: 0.75rem !important; }
 
             /* Bottom padding to account for summary bar */
             .max-w-4xl.mx-auto {
@@ -282,6 +311,14 @@
         .kt-fab:active { transform: scale(0.9); }
         @media (min-width: 768px) { .kt-fab { display: none; } }
 
+        .refresh-spinning {
+            animation: spin 0.85s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         /* Skeleton */
         .skeleton {
             background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.03) 75%);
@@ -320,7 +357,7 @@
 
 <div class="max-w-4xl mx-auto">
     <!-- Header -->
-    <div class="glass-card flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-6 p-3 sm:p-4 rounded-xl sticky top-0 z-10 gap-3">
+    <div class="header-card glass-card flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-6 p-3 sm:p-4 rounded-xl sticky top-0 z-10 gap-3">
         <div class="flex items-center gap-3 w-full sm:w-auto">
             <h5 class="text-base sm:text-xl font-bold flex items-center gap-2 text-white">
                 <i class="fa-solid fa-chart-pie text-emerald-400"></i> <span>Tenet Report</span>
@@ -330,7 +367,7 @@
         <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
             <!-- Filter -->
             <div class="relative flex-1 sm:flex-none">
-                <select id="sideFilter" onchange="fetchData()" class="bg-white/10 border border-white/20 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 sm:p-2.5 outline-none appearance-none pr-8 cursor-pointer" style="font-size: 16px; min-height: 44px;">
+                <select id="sideFilter" onchange="handleFilterChange()" class="bg-white/10 border border-white/20 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 sm:p-2.5 outline-none appearance-none pr-8 cursor-pointer" style="font-size: 16px; min-height: 44px;">
                     <option value="All" class="bg-slate-800">All Sides</option>
                     <option value="Kalyan" class="bg-slate-800">Kalyan</option>
                     <option value="Srikanth" class="bg-slate-800">Srikanth</option>
@@ -341,8 +378,8 @@
             </div>
 
             <div class="flex gap-2">
-                <button onclick="fetchData()" class="bg-blue-500/20 hover:bg-blue-500/30 active:bg-blue-500/50 text-blue-300 border border-blue-500/30 w-11 h-11 rounded-full transition flex items-center justify-center shadow-sm" title="Refresh">
-                    <i class="fa-solid fa-sync"></i>
+                <button id="refresh-btn" onclick="fetchData()" class="bg-blue-500/20 hover:bg-blue-500/30 active:bg-blue-500/50 text-blue-300 border border-blue-500/30 w-11 h-11 rounded-full transition flex items-center justify-center shadow-sm" title="Refresh" aria-label="Refresh report data">
+                    <i id="refresh-icon" class="fa-solid fa-sync"></i>
                 </button>
                 <a href="tenet.html" class="bg-white/10 hover:bg-white/20 active:bg-white/30 text-white w-11 h-11 rounded-full transition flex items-center justify-center" title="Add New">
                     <i class="fa-solid fa-plus"></i>
@@ -355,6 +392,7 @@
                 </a>
             </div>
         </div>
+
     </div>
 
     <div id="loader" class="flex justify-center items-center py-20">
@@ -399,6 +437,7 @@
 <script>
     const SCRIPT_URL = CONFIG.GOOGLE_SHEET_URL_RENT;
     let allRecords = [];
+    let isFetching = false;
 
     function formatDate(dateString) {
         if (!dateString) return '';
@@ -469,217 +508,348 @@
         }).format(num);
     }
 
-    function toggleAccordion(element) {
-        const content = element.nextElementSibling;
-        const icon = element.querySelector('.rotate-icon');
+    const fieldMeta = {
+        'Date':         { icon: 'fa-calendar-days',   bg: 'bg-slate-500/10',   border: 'border-slate-500/20' },
+        'Rent Amount':  { icon: 'fa-house',            bg: 'bg-indigo-500/10',  border: 'border-indigo-500/20' },
+        'Paid Amount':  { icon: 'fa-circle-check',     bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
+        'Balance':      { icon: 'fa-triangle-exclamation', bg: 'bg-rose-500/10',  border: 'border-rose-500/20' },
+        'Power Bill':   { icon: 'fa-bolt',             bg: 'bg-yellow-500/10',  border: 'border-yellow-500/20' },
+        'Water Bill':   { icon: 'fa-droplet',          bg: 'bg-blue-500/10',    border: 'border-blue-500/20' },
+    };
 
-        if (content.style.maxHeight) {
-            content.style.maxHeight = null;
-            content.classList.remove('active');
-            icon.classList.remove('active');
-        } else {
-            content.classList.add('active');
-            content.style.maxHeight = content.scrollHeight + "px";
-            icon.classList.add('active');
-        }
+    function createDetailField(field) {
+        const meta = fieldMeta[field.label] || { icon: 'fa-circle-info', bg: 'bg-white/5', border: 'border-white/10' };
+        const item = document.createElement('div');
+        item.className = `${meta.bg} p-3 rounded-xl border ${meta.border} flex flex-col gap-1.5 transition hover:brightness-110`;
+
+        const label = document.createElement('div');
+        label.className = 'detail-icon-label text-[10px] text-gray-400 uppercase font-bold tracking-wider';
+        label.innerHTML = `<i class="fa-solid ${meta.icon} text-[9px] opacity-70"></i> ${field.label}`;
+
+        const value = document.createElement('div');
+        value.className = `font-bold text-sm ${field.color}`;
+        value.textContent = field.label === 'Date' ? field.value : formatCurrency(field.value);
+
+        item.appendChild(label);
+        item.appendChild(value);
+        return item;
     }
 
-    function createListItem(data) {
-        const itemContainer = document.createElement('div');
-        itemContainer.className = 'glass-card rounded-xl overflow-hidden';
-
-        const header = document.createElement('div');
-        header.className = 'p-4 flex justify-between items-center cursor-pointer hover:bg-white/5 transition select-none';
-
-        const content = document.createElement('div');
-        content.className = 'accordion-content bg-black/20';
-
-        // Header Content
-        const headerContent = document.createElement('div');
-        headerContent.className = 'flex items-center gap-4 flex-grow';
-        headerContent.onclick = () => toggleAccordion(header);
-
-        const sideColor = data.side === 'Kalyan' ? 'text-indigo-300 bg-indigo-500/20 border-indigo-500/30' : 'text-pink-300 bg-pink-500/20 border-pink-500/30';
-        const sideIcon = data.side === 'Kalyan' ? 'fa-user' : 'fa-user-group';
-
-        headerContent.innerHTML = `
-            <div class="${sideColor} w-10 h-10 rounded-full flex items-center justify-center border">
-                <i class="fa-solid ${sideIcon}"></i>
-            </div>
-            <div>
-                <div class="font-bold text-white">${formatDate(data.date)}</div>
-                <div class="text-xs text-gray-400">${data.side}</div>
-            </div>
-        `;
-
-        // Right Section (Amount + Actions)
-        const rightSection = document.createElement('div');
-        rightSection.className = 'flex items-center gap-3';
-
-        // Edit Button
-        const editBtn = document.createElement('button');
-        editBtn.className = 'text-gray-400 hover:text-blue-400 transition p-2 rounded-full hover:bg-blue-500/10';
-        editBtn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i>';
-        editBtn.onclick = (e) => {
-            e.stopPropagation();
-            sessionStorage.setItem('tenetEditData', JSON.stringify(data));
-            window.location.href = 'tenet.html';
-        };
-
-        const amountDiv = document.createElement('div');
-        amountDiv.className = 'text-right min-w-[80px]';
-        amountDiv.innerHTML = `<div class="font-bold text-lg text-emerald-400">${formatCurrency(data.totalPaid)}</div>`;
-        amountDiv.onclick = () => toggleAccordion(header);
-
-        const chevron = document.createElement('i');
-        chevron.className = 'fa-solid fa-chevron-down text-gray-500 rotate-icon ml-2';
-        chevron.onclick = () => toggleAccordion(header);
-
-        rightSection.appendChild(editBtn);
-        rightSection.appendChild(amountDiv);
-        rightSection.appendChild(chevron);
-
-        header.appendChild(headerContent);
-        header.appendChild(rightSection);
-        itemContainer.appendChild(header);
-
-        // Render Details
-        renderDetails(content, data);
-
-        itemContainer.appendChild(content);
-        return itemContainer;
-    }
-
-    function renderDetails(contentContainer, data) {
-        contentContainer.innerHTML = '';
-        const innerPadding = document.createElement('div');
-        innerPadding.className = 'px-4 pb-4';
-
-        const detailsGrid = document.createElement('div');
-        detailsGrid.className = 'grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm';
-
-        const fields = [
-            { label: 'Date', value: formatDate(data.date), color: 'text-white' },
-            { label: 'Rent Amount', value: data.rentAmount, color: 'text-gray-200' },
-            { label: 'Paid Amount', value: data.paidAmount, color: 'text-emerald-300' },
-            { label: 'Balance', value: data.balanceAmount, color: 'text-rose-300' },
-            { label: 'Power Bill', value: data.powerBill, color: 'text-yellow-300' },
-            { label: 'Water Bill', value: data.waterBill, color: 'text-blue-300' },
-        ];
-
-        fields.forEach(field => {
-            const item = document.createElement('div');
-            item.className = 'bg-white/5 p-3 rounded-lg border border-white/10';
-            item.innerHTML = `
-                <div class="text-xs text-gray-400 uppercase font-bold mb-1">${field.label}</div>
-                <div class="font-semibold ${field.color}">${field.label === 'Date' ? field.value : formatCurrency(field.value)}</div>
-            `;
-            detailsGrid.appendChild(item);
-        });
-
-        innerPadding.appendChild(detailsGrid);
-
-        // Remarks Section - Robust Check
-        let remarksText = '';
-        if (data.remarks !== undefined && data.remarks !== null) {
-            remarksText = String(data.remarks).trim();
-        }
-
-        if (remarksText !== '' && remarksText !== '-') {
-             const remarksCard = document.createElement('div');
-             remarksCard.className = 'mt-3 bg-white/5 p-4 rounded-xl border border-white/10 flex flex-col gap-1';
-             remarksCard.innerHTML = `
-                <div class="flex items-center gap-2 text-gray-400 mb-1">
-                    <i class="fa-solid fa-comment-dots text-xs"></i>
-                    <span class="text-[10px] uppercase font-bold tracking-wider">Remarks</span>
+    function renderSkeletonRows() {
+        const container = document.getElementById('report-container');
+        container.innerHTML = '';
+        container.classList.remove('hidden');
+        for (let i = 0; i < 4; i++) {
+            const card = document.createElement('div');
+            card.className = 'glass-card rounded-2xl p-4 flex flex-col gap-3';
+            card.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="skeleton w-10 h-10 rounded-2xl"></div>
+                        <div>
+                            <div class="skeleton h-4 w-24 mb-1.5"></div>
+                            <div class="skeleton h-3 w-14"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton h-7 w-7 rounded-lg"></div>
                 </div>
-                <div class="text-gray-200 text-sm leading-relaxed">${remarksText}</div>
-             `;
-             innerPadding.appendChild(remarksCard);
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="skeleton h-14 rounded-xl"></div>
+                    <div class="skeleton h-14 rounded-xl"></div>
+                    <div class="skeleton h-14 rounded-xl"></div>
+                    <div class="skeleton h-14 rounded-xl"></div>
+                    <div class="skeleton h-14 rounded-xl"></div>
+                    <div class="skeleton h-14 rounded-xl"></div>
+                </div>
+                <div class="skeleton h-14 rounded-xl"></div>
+            `;
+            container.appendChild(card);
         }
-
-        // NEW: Total Paid Highlight Card (Centered)
-        const totalCard = document.createElement('div');
-        totalCard.className = 'mt-4 p-4 rounded-xl bg-gradient-to-r from-emerald-900/30 to-teal-900/30 border border-emerald-500/20 flex flex-col items-center justify-center shadow-lg text-center';
-        totalCard.innerHTML = `
-            <div class="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 mb-2">
-                <i class="fa-solid fa-sack-dollar text-xl"></i>
-            </div>
-            <p class="text-[10px] uppercase tracking-widest text-emerald-400 font-bold mb-0.5">Total Paid</p>
-            <div class="text-3xl font-black text-white tracking-tight">${formatCurrency(data.totalPaid)}</div>
-        `;
-        innerPadding.appendChild(totalCard);
-
-        contentContainer.appendChild(innerPadding);
     }
 
-    function fetchData() {
-        const loader = document.getElementById('loader');
+    function applyFiltersAndRender() {
         const container = document.getElementById('report-container');
         const emptyState = document.getElementById('empty-state');
         const summaryBar = document.getElementById('summary-bar');
         const totalValue = document.getElementById('total-collected-value');
         const sideFilter = document.getElementById('sideFilter').value;
 
-        loader.classList.remove('hidden');
-        container.classList.add('hidden');
-        emptyState.classList.add('hidden');
+        let displayRecords = [...allRecords];
+        if (sideFilter !== 'All') {
+            displayRecords = displayRecords.filter((r) => r.side === sideFilter);
+        }
 
-        // Hide summary bar initially
-        if(summaryBar) summaryBar.classList.add('translate-y-full');
-
+        displayRecords.sort((a, b) => parseDate(b.date) - parseDate(a.date));
         container.innerHTML = '';
 
+        if (!displayRecords.length) {
+            container.classList.add('hidden');
+            emptyState.classList.remove('hidden');
+            summaryBar.classList.add('translate-y-full');
+            return;
+        }
+
+        emptyState.classList.add('hidden');
+        container.classList.remove('hidden');
+        displayRecords.forEach((item) => container.appendChild(createListItem(item)));
+
+        const total = displayRecords.reduce((sum, record) => sum + (parseFloat(record.totalPaid) || 0), 0);
+        totalValue.textContent = formatCurrency(total);
+        setTimeout(() => summaryBar.classList.remove('translate-y-full'), 100);
+    }
+
+    function setRefreshState(isLoading) {
+        const refreshBtn = document.getElementById('refresh-btn');
+        const refreshIcon = document.getElementById('refresh-icon');
+        if (!refreshBtn || !refreshIcon) return;
+        refreshBtn.disabled = isLoading;
+        refreshBtn.classList.toggle('opacity-60', isLoading);
+        refreshBtn.classList.toggle('cursor-not-allowed', isLoading);
+        refreshIcon.classList.toggle('refresh-spinning', isLoading);
+    }
+
+    function handleFilterChange() {
+        localStorage.setItem('rentTenetReportSideFilter', document.getElementById('sideFilter').value);
+        applyFiltersAndRender();
+    }
+
+    async function sendRentAction(action, payload) {
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, ...payload })
+            });
+            return await response.json();
+        } catch (error) {
+            return { result: 'error', error: error.message || 'Request failed' };
+        }
+    }
+
+    async function deleteTenetRecord(record) {
+        const confirmed = await new Promise((resolve) => {
+            KTui.confirm(
+                'Delete Record',
+                'Are you sure you want to delete this record? This cannot be undone.',
+                () => resolve(true),
+                { confirmText: 'Delete', cancelText: 'Cancel', danger: true }
+            );
+            const cancelBtn = document.querySelector('#__ktui_btns__ .ktui-btn-cancel');
+            if (cancelBtn) {
+                cancelBtn.onclick = () => {
+                    KTui.close();
+                    resolve(false);
+                };
+            }
+        });
+
+        if (!confirmed) return;
+
+        setRefreshState(true);
+        const result = await sendRentAction('delete', {
+            originalDate: record.date,
+            originalSide: record.side
+        });
+        setRefreshState(false);
+
+        if (result && result.result === 'success') {
+            KTui.toast('Record deleted', 'success');
+            fetchData();
+        } else {
+            KTui.toast((result && (result.error || result.message)) || 'Delete failed', 'error');
+        }
+    }
+
+    function createListItem(data) {
+        const isKalyan = data.side === 'Kalyan';
+        const sideClass      = isKalyan ? 'card-kalyan'                                                        : 'card-srikanth';
+        const sideIconColor  = isKalyan ? 'text-indigo-400 bg-indigo-500/15 border-indigo-500/30'             : 'text-pink-400 bg-pink-500/15 border-pink-500/30';
+        const sideIcon       = isKalyan ? 'fa-user'                                                           : 'fa-user-group';
+        const sideBadge      = isKalyan
+            ? `<span class="text-[10px] font-bold tracking-wide px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/25">Kalyan</span>`
+            : `<span class="text-[10px] font-bold tracking-wide px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/25">Srikanth</span>`;
+        const gradFrom = isKalyan ? 'from-indigo-900/40' : 'from-pink-900/40';
+        const gradTo   = isKalyan ? 'to-purple-900/30'   : 'to-rose-900/30';
+        const totalBorder = isKalyan ? 'border-indigo-500/25' : 'border-pink-500/25';
+        const iconBg   = isKalyan ? 'bg-indigo-500/20 text-indigo-300' : 'bg-pink-500/20 text-pink-300';
+
+        const fields = [
+            { label: 'Rent Amount', value: data.rentAmount,    color: 'text-indigo-300' },
+            { label: 'Paid Amount', value: data.paidAmount,    color: 'text-emerald-300' },
+            { label: 'Balance',     value: data.balanceAmount, color: 'text-rose-300' },
+            { label: 'Power Bill',  value: data.powerBill,     color: 'text-yellow-300' },
+            { label: 'Water Bill',  value: data.waterBill,     color: 'text-blue-300' },
+            { label: 'Date',        value: formatDate(data.date), color: 'text-slate-200' },
+        ];
+
+        const fieldsHtml = fields.map(f => {
+            const meta = fieldMeta[f.label] || { icon: 'fa-circle-info', bg: 'bg-white/5', border: 'border-white/10' };
+            const displayVal = f.label === 'Date' ? f.value : formatCurrency(f.value);
+            return `
+                <div class="${meta.bg} p-2.5 rounded-xl border ${meta.border} flex flex-col gap-1">
+                    <div class="flex items-center gap-1 text-[9px] text-gray-400 uppercase font-bold tracking-wider">
+                        <i class="fa-solid ${meta.icon} opacity-60"></i> ${f.label}
+                    </div>
+                    <div class="font-bold text-sm ${f.color} leading-tight">${displayVal}</div>
+                </div>`;
+        }).join('');
+
+        let remarksHtml = '';
+        const remarksText = data.remarks ? String(data.remarks).trim() : '';
+        if (remarksText && remarksText !== '-') {
+            remarksHtml = `
+                <div class="bg-amber-500/5 px-3 py-2.5 rounded-xl border border-amber-500/15 flex gap-2 items-start">
+                    <i class="fa-solid fa-comment-dots text-amber-400/60 mt-0.5 text-xs shrink-0"></i>
+                    <span class="text-gray-300 text-xs leading-relaxed">${remarksText}</span>
+                </div>`;
+        }
+
+        const card = document.createElement('div');
+        card.className = `glass-card rounded-2xl overflow-hidden flex flex-col ${sideClass}`;
+        card.innerHTML = `
+            <!-- Card Header (always visible) -->
+            <div class="p-4 flex items-center justify-between cursor-pointer select-none hover:bg-white/5 active:bg-white/10 transition-colors" data-toggle>
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="${sideIconColor} w-10 h-10 rounded-2xl flex items-center justify-center border shrink-0 shadow-sm">
+                        <i class="fa-solid ${sideIcon} text-sm"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="font-bold text-white text-sm leading-tight">${formatDate(data.date)}</div>
+                        <div class="mt-0.5 flex items-center gap-1.5">${sideBadge}<span class="text-emerald-400 font-black text-sm tabular-nums">${formatCurrency(data.totalPaid)}</span></div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <button class="action-btn edit" title="Edit" aria-label="Edit record" data-edit>
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                    <button class="action-btn del" title="Delete" aria-label="Delete record" data-del>
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                    <div class="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center ml-0.5">
+                        <i class="fa-solid fa-chevron-down text-gray-500 text-xs chevron-icon"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Collapsible Details -->
+            <div class="card-details">
+                <div class="border-t border-white/7 mx-4"></div>
+                <!-- Detail Fields Grid -->
+                <div class="px-4 pt-3 pb-3">
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        ${fieldsHtml}
+                    </div>
+                </div>
+
+                ${remarksHtml ? `<div class="px-4 pb-3">${remarksHtml}</div>` : ''}
+
+                <!-- Total Paid Footer -->
+                <div class="mx-4 mb-4 p-3.5 rounded-xl bg-gradient-to-r ${gradFrom} ${gradTo} border ${totalBorder} flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl ${iconBg} flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-sack-dollar"></i>
+                        </div>
+                        <div>
+                            <p class="text-[9px] uppercase tracking-widest text-gray-400 font-bold">Total Paid</p>
+                            <div class="text-xl font-black text-white tabular-nums leading-tight">${formatCurrency(data.totalPaid)}</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1 text-emerald-400 text-[11px] font-semibold bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
+                        <i class="fa-solid fa-circle-check text-[9px]"></i> Paid
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Toggle accordion (exclusive open)
+        const toggleHeader = card.querySelector('[data-toggle]');
+        const detailsPanel = card.querySelector('.card-details');
+        const chevron = card.querySelector('.chevron-icon');
+        toggleHeader.addEventListener('click', (e) => {
+            if (e.target.closest('[data-edit]') || e.target.closest('[data-del]')) return;
+
+            const container = document.getElementById('report-container');
+            const isOpen = detailsPanel.classList.contains('open');
+
+            // Close any other open card first
+            container.querySelectorAll('.card-details.open').forEach((panel) => {
+                if (panel === detailsPanel) return;
+                panel.classList.remove('open');
+                const otherChevron = panel.closest('.glass-card')?.querySelector('.chevron-icon');
+                if (otherChevron) otherChevron.classList.remove('open');
+            });
+
+            detailsPanel.classList.toggle('open', !isOpen);
+            chevron.classList.toggle('open', !isOpen);
+        });
+
+        card.querySelector('[data-edit]').onclick = (e) => {
+            e.stopPropagation();
+            sessionStorage.setItem('tenetEditData', JSON.stringify(data));
+            window.location.href = 'tenet.html';
+        };
+        card.querySelector('[data-del]').onclick = (e) => {
+            e.stopPropagation();
+            deleteTenetRecord(data);
+        };
+
+        return card;
+    }
+
+    function fetchData() {
+        if (isFetching) return;
+        isFetching = true;
+
+        const loader = document.getElementById('loader');
+        const container = document.getElementById('report-container');
+        const emptyState = document.getElementById('empty-state');
+        const summaryBar = document.getElementById('summary-bar');
+
+        loader.classList.remove('hidden');
+        emptyState.classList.add('hidden');
+        setRefreshState(true);
+        renderSkeletonRows();
+
+        if (summaryBar) summaryBar.classList.add('translate-y-full');
+
         fetch(SCRIPT_URL)
-            .then(response => response.json())
-            .then(responsePayload => {
+            .then((response) => response.json())
+            .then((responsePayload) => {
                 loader.classList.add('hidden');
-
                 allRecords = responsePayload.data || [];
-                let displayRecords = allRecords;
-
-                if (sideFilter !== 'All') {
-                    displayRecords = displayRecords.filter(r => r.side === sideFilter);
-                }
-
-                if (displayRecords && displayRecords.length > 0) {
-                    container.classList.remove('hidden');
-
-                    // Sort by date descending
-                    displayRecords.sort((a, b) => parseDate(b.date) - parseDate(a.date));
-
-                    // Calculate Total
-                    const total = displayRecords.reduce((sum, record) => {
-                        const val = parseFloat(record.totalPaid);
-                        return sum + (isNaN(val) ? 0 : val);
-                    }, 0);
-
-                    if (summaryBar && totalValue) {
-                        totalValue.textContent = formatCurrency(total);
-                        // Show summary bar with animation
-                        setTimeout(() => {
-                            summaryBar.classList.remove('translate-y-full');
-                        }, 100);
-                    }
-
-                    displayRecords.forEach(item => container.appendChild(createListItem(item)));
-                } else {
-                    emptyState.classList.remove('hidden');
-                }
+                applyFiltersAndRender();
             })
-            .catch(error => {
+            .catch((error) => {
                 console.error('Error fetching data:', error);
                 loader.classList.add('hidden');
+                container.classList.add('hidden');
                 emptyState.innerHTML = `
-                        <i class="fa-solid fa-triangle-exclamation text-6xl mb-4 text-red-400"></i>
-                        <p class="text-xl text-red-300">Error loading reports</p>
-                        <p class="text-sm text-gray-400 mt-2">${error.message}</p>
-                    `;
+                    <i class="fa-solid fa-triangle-exclamation text-6xl mb-4 text-red-400"></i>
+                    <p class="text-xl text-red-300">Error loading reports</p>
+                    <p class="text-sm text-gray-400 mt-2">${error.message}</p>
+                `;
                 emptyState.classList.remove('hidden');
+            })
+            .finally(() => {
+                isFetching = false;
+                setRefreshState(false);
             });
     }
 
-    document.addEventListener('DOMContentLoaded', fetchData);
+    function restorePersistedFilters() {
+        const sideFilter = localStorage.getItem('rentTenetReportSideFilter');
+        if (!sideFilter) return;
+        const select = document.getElementById('sideFilter');
+        const hasOption = Array.from(select.options).some((option) => option.value === sideFilter);
+        if (hasOption) select.value = sideFilter;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        restorePersistedFilters();
+
+
+        fetchData();
+    });
 
     // ===== MOBILE ENHANCEMENTS =====
     function showToast(msg, type = 'success', duration = 2800) {

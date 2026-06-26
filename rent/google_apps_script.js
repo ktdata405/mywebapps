@@ -162,7 +162,44 @@ function handlePost(e) {
     return String(d).trim();
   }
 
-  if (data.action === 'update') {
+  if (data.action === 'delete') {
+    const allData = sheet.getDataRange().getValues();
+    let rowIndexToDelete = -1;
+
+    const targetDate = data.originalDate || data.date;
+    const targetSide = data.originalSide || data.side;
+
+    for (let i = 1; i < allData.length; i++) {
+      const row = allData[i];
+      const rowDate = colMap.date > -1 ? formatDate(row[colMap.date]) : '';
+      const rowSide = colMap.side > -1 ? row[colMap.side] : '';
+
+      let match = (rowDate === targetDate);
+      if (match && targetSide && rowSide) {
+        match = (rowSide === targetSide);
+      }
+
+      if (match) {
+        rowIndexToDelete = i + 1;
+        break;
+      }
+    }
+
+    if (rowIndexToDelete > -1) {
+      sheet.deleteRow(rowIndexToDelete);
+      return ContentService
+        .createTextOutput(JSON.stringify({ "result": "success", "message": "Record deleted" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        "result": "error",
+        "error": `Record not found for delete. Searched for Date: '${targetDate}'` + (targetSide ? ` and Side: '${targetSide}'` : '')
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } else if (data.action === 'update') {
     const allData = sheet.getDataRange().getValues();
     let rowIndexToUpdate = -1;
     
