@@ -162,11 +162,6 @@
             min-width: 44px;
         }
 
-        /* Summary bar safe area */
-        #summary-bar {
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-
         /* Mobile layout fixes */
         @media (max-width: 640px) {
             body {
@@ -199,12 +194,7 @@
                 grid-template-columns: 1fr 1fr !important;
             }
 
-            /* Summary bar content */
-            #summary-bar .relative {
-                padding: 0.75rem 1rem;
-            }
-
-            #total-collected-value {
+            #top-total-collected-value {
                 font-size: 1.5rem !important;
             }
 
@@ -213,9 +203,9 @@
                 gap: 0.75rem !important;
             }
 
-            /* Bottom padding to account for summary bar */
+            /* Bottom padding for floating action button */
             .max-w-4xl.mx-auto {
-                padding-bottom: 5rem;
+                padding-bottom: 3.5rem;
             }
         }
 
@@ -347,7 +337,7 @@
     </style>
 </head>
 
-<body class="p-3 md:p-10 pb-32" style="padding-bottom: calc(8rem + env(safe-area-inset-bottom));">
+<body class="p-3 md:p-10 pb-20" style="padding-bottom: calc(5rem + env(safe-area-inset-bottom));">
 
 <div class="bg-animation">
     <div class="orb orb-1"></div>
@@ -401,6 +391,24 @@
         </div>
     </div>
 
+    <!-- Top Summary Block (above transactions) -->
+    <div id="top-summary-block" class="hidden glass-card rounded-xl px-2 py-2.5 mb-3 border border-white/10 w-fit mx-auto">
+        <div class="flex items-center justify-center gap-2.5">
+            <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/25 ring-1 ring-white/10 shrink-0">
+                <i class="fa-solid fa-wallet text-white text-base"></i>
+            </div>
+            <div class="flex flex-col items-center justify-center text-center gap-1">
+                <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Total Collected</p>
+                <div class="flex items-center justify-center gap-2">
+                    <h3 id="top-total-collected-value" class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">₹••••</h3>
+                    <button id="top-toggle-total-collected" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-gray-200 border border-white/15 transition" title="Show total collected" aria-label="Show total collected">
+                        <i id="top-toggle-total-collected-icon" class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="report-container" class="flex flex-col gap-3 hidden">
         <!-- List items will be inserted here -->
     </div>
@@ -411,33 +419,12 @@
     </div>
 </div>
 
-<!-- Bottom Summary Bar -->
-<div id="summary-bar" class="fixed bottom-0 left-0 w-full z-50 transform translate-y-full transition-transform duration-500 ease-out">
-    <div class="absolute inset-0 bg-[#0f172a]/90 backdrop-blur-xl border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]"></div>
-    <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-50"></div>
-
-    <div class="relative max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
-        <div>
-            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Total Collected</p>
-            <h2 id="total-collected-value" class="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 filter drop-shadow-lg">₹0</h2>
-        </div>
-
-        <div class="flex items-center gap-3">
-            <div class="text-right hidden sm:block">
-                <p class="text-[10px] text-gray-500 font-medium">Net Revenue</p>
-                <p class="text-xs text-emerald-400 font-bold">Verified <i class="fa-solid fa-circle-check ml-1"></i></p>
-            </div>
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/25 ring-1 ring-white/10">
-                <i class="fa-solid fa-wallet text-white text-lg"></i>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
     const SCRIPT_URL = CONFIG.GOOGLE_SHEET_URL_RENT;
     let allRecords = [];
     let isFetching = false;
+    let currentCollectedTotal = 0;
+    let isCollectedTotalVisible = false;
 
     function formatDate(dateString) {
         if (!dateString) return '';
@@ -508,6 +495,26 @@
         }).format(num);
     }
 
+    function renderTotalCollected() {
+        const topTotalValue = document.getElementById('top-total-collected-value');
+        const topToggleIcon = document.getElementById('top-toggle-total-collected-icon');
+        const topToggleBtn = document.getElementById('top-toggle-total-collected');
+        if (!topTotalValue) return;
+
+        topTotalValue.textContent = isCollectedTotalVisible ? formatCurrency(currentCollectedTotal) : '₹••••';
+
+        if (topToggleIcon) {
+            topToggleIcon.classList.toggle('fa-eye', !isCollectedTotalVisible);
+            topToggleIcon.classList.toggle('fa-eye-slash', isCollectedTotalVisible);
+        }
+
+        if (topToggleBtn) {
+            const actionText = isCollectedTotalVisible ? 'Hide' : 'Show';
+            topToggleBtn.title = `${actionText} total collected`;
+            topToggleBtn.setAttribute('aria-label', `${actionText} total collected`);
+        }
+    }
+
     const fieldMeta = {
         'Date':         { icon: 'fa-calendar-days',   bg: 'bg-slate-500/10',   border: 'border-slate-500/20' },
         'Rent Amount':  { icon: 'fa-house',            bg: 'bg-indigo-500/10',  border: 'border-indigo-500/20' },
@@ -570,8 +577,7 @@
     function applyFiltersAndRender() {
         const container = document.getElementById('report-container');
         const emptyState = document.getElementById('empty-state');
-        const summaryBar = document.getElementById('summary-bar');
-        const totalValue = document.getElementById('total-collected-value');
+        const topSummaryBlock = document.getElementById('top-summary-block');
         const sideFilter = document.getElementById('sideFilter').value;
 
         let displayRecords = [...allRecords];
@@ -585,17 +591,17 @@
         if (!displayRecords.length) {
             container.classList.add('hidden');
             emptyState.classList.remove('hidden');
-            summaryBar.classList.add('translate-y-full');
+            if (topSummaryBlock) topSummaryBlock.classList.add('hidden');
             return;
         }
 
         emptyState.classList.add('hidden');
         container.classList.remove('hidden');
+        if (topSummaryBlock) topSummaryBlock.classList.remove('hidden');
         displayRecords.forEach((item) => container.appendChild(createListItem(item)));
 
-        const total = displayRecords.reduce((sum, record) => sum + (parseFloat(record.totalPaid) || 0), 0);
-        totalValue.textContent = formatCurrency(total);
-        setTimeout(() => summaryBar.classList.remove('translate-y-full'), 100);
+        currentCollectedTotal = displayRecords.reduce((sum, record) => sum + (parseFloat(record.totalPaid) || 0), 0);
+        renderTotalCollected();
     }
 
     function setRefreshState(isLoading) {
@@ -664,7 +670,7 @@
         const isKalyan = data.side === 'Kalyan';
         const sideClass      = isKalyan ? 'card-kalyan'                                                        : 'card-srikanth';
         const sideIconColor  = isKalyan ? 'text-indigo-400 bg-indigo-500/15 border-indigo-500/30'             : 'text-pink-400 bg-pink-500/15 border-pink-500/30';
-        const sideIcon       = isKalyan ? 'fa-user'                                                           : 'fa-user-group';
+        const sideInitial    = isKalyan ? 'K'                                                                 : 'S';
         const sideBadge      = isKalyan
             ? `<span class="text-[10px] font-bold tracking-wide px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/25">Kalyan</span>`
             : `<span class="text-[10px] font-bold tracking-wide px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/25">Srikanth</span>`;
@@ -711,7 +717,7 @@
             <div class="p-4 flex items-center justify-between cursor-pointer select-none hover:bg-white/5 active:bg-white/10 transition-colors" data-toggle>
                 <div class="flex items-center gap-3 min-w-0">
                     <div class="${sideIconColor} w-10 h-10 rounded-2xl flex items-center justify-center border shrink-0 shadow-sm">
-                        <i class="fa-solid ${sideIcon} text-sm"></i>
+                        <span class="text-sm font-black leading-none">${sideInitial}</span>
                     </div>
                     <div class="min-w-0">
                         <div class="font-bold text-white text-sm leading-tight">${formatDate(data.date)}</div>
@@ -750,7 +756,7 @@
                             <i class="fa-solid fa-sack-dollar"></i>
                         </div>
                         <div>
-                            <p class="text-[9px] uppercase tracking-widest text-gray-400 font-bold">Total Paid</p>
+                            <p class="text-[9px] uppercase tracking-widest text-gray-400 font-bold">Total Paid <span class="text-emerald-400">(Rent Amount+Water Bill)</span></p>
                             <div class="text-xl font-black text-white tabular-nums leading-tight">${formatCurrency(data.totalPaid)}</div>
                         </div>
                     </div>
@@ -803,14 +809,11 @@
         const loader = document.getElementById('loader');
         const container = document.getElementById('report-container');
         const emptyState = document.getElementById('empty-state');
-        const summaryBar = document.getElementById('summary-bar');
 
         loader.classList.remove('hidden');
         emptyState.classList.add('hidden');
         setRefreshState(true);
         renderSkeletonRows();
-
-        if (summaryBar) summaryBar.classList.add('translate-y-full');
 
         fetch(SCRIPT_URL)
             .then((response) => response.json())
@@ -846,6 +849,17 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         restorePersistedFilters();
+
+        const topTotalToggleBtn = document.getElementById('top-toggle-total-collected');
+
+        if (topTotalToggleBtn) {
+            topTotalToggleBtn.addEventListener('click', () => {
+                isCollectedTotalVisible = !isCollectedTotalVisible;
+                renderTotalCollected();
+            });
+        }
+
+        renderTotalCollected();
 
 
         fetchData();
