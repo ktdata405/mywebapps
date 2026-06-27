@@ -170,6 +170,66 @@
             z-index: 2;
         }
 
+        /* Keep desktop/webview layout unchanged; only optimize bottom bar for small mobile screens. */
+        @media (max-width: 640px) {
+            .bottom-action-content {
+                padding: 0.75rem 1rem;
+            }
+
+            .bottom-action-summary {
+                width: 100%;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                align-items: end;
+                gap: 0.5rem;
+            }
+
+            .bottom-total-block {
+                min-width: 0;
+                flex: 1 1 auto;
+            }
+
+            .bottom-total-amount {
+                font-size: 1.125rem;
+                line-height: 1.5rem;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .bottom-days-count {
+                font-size: 1.125rem;
+                line-height: 1.5rem;
+            }
+
+            .bottom-action-buttons {
+                width: 100%;
+                margin-top: 0.75rem;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+                gap: 0.5rem;
+            }
+
+            .mobile-flex-btn {
+                flex: 1 1 0;
+                min-width: 0;
+                height: 2.75rem;
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+
+            .mobile-btn-text {
+                font-size: 0.8125rem;
+                line-height: 1rem;
+            }
+
+            .mobile-icon-btn {
+                width: 2.75rem;
+                height: 2.75rem;
+                flex-shrink: 0;
+            }
+        }
+
 </style>
 </head>
 
@@ -289,28 +349,31 @@
 
     <!-- Bottom Action Bar -->
     <div class="fixed bottom-0 left-0 w-full glass-panel border-t border-white/10 z-40 pb-safe bg-[#0b0f19]/90 backdrop-blur-xl">
-        <div class="max-w-3xl lg:max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-6">
-            <div class="flex flex-col">
-                <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-0.5" data-translate-key="totalExpense">Total Expense</span>
-                <span id="total-amount" class="text-2xl font-bold text-white tracking-tight font-mono">Rs. 0.00</span>
-            </div>
-            <!-- New: Number of Days -->
-            <div class="flex flex-col items-end">
-                <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-0.5">Days with Data</span>
-                <span id="entry-count" class="text-2xl font-bold text-white tracking-tight font-mono">0</span>
+        <div class="bottom-action-content max-w-3xl lg:max-w-7xl mx-auto px-6 py-4">
+            <div class="bottom-action-summary flex items-center justify-between gap-6">
+                <div class="bottom-total-block flex flex-col">
+                    <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-0.5" data-translate-key="totalExpense">Total Expense</span>
+                    <span id="total-amount" class="bottom-total-amount text-2xl font-bold text-white tracking-tight font-mono">Rs. 0.00</span>
+                </div>
+                <!-- New: Number of Days -->
+                <div class="flex flex-col items-end">
+                    <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-0.5">Days with Data</span>
+                    <span id="entry-count" class="bottom-days-count text-2xl font-bold text-white tracking-tight font-mono">0</span>
+                </div>
             </div>
 
-            <div class="flex items-center gap-3">
+            <div class="bottom-action-buttons flex items-center gap-3">
                 <!-- Add Another Expense Button -->
-                <button onclick="addRow()" class="h-12 px-4 rounded-2xl bg-white/5 hover:bg-indigo-500/10 border border-white/5 text-gray-400 hover:text-indigo-400 transition-all duration-300 flex items-center justify-center gap-2 group active:scale-[0.95]">
+                <button onclick="addRow()" class="mobile-flex-btn h-12 px-4 rounded-2xl bg-white/5 hover:bg-indigo-500/10 border border-white/5 text-gray-400 hover:text-indigo-400 transition-all duration-300 flex items-center justify-center gap-2 group active:scale-[0.95]">
                     <i class="fa-solid fa-plus text-sm"></i>
+                    <span class="mobile-btn-text font-semibold tracking-wide sm:hidden">Add</span>
                     <span class="font-semibold tracking-wide text-sm hidden sm:inline" data-translate-key="addAnotherExpense">Add Expense</span>
                 </button>
 
-                <button onclick="clearAll()" class="w-12 h-12 rounded-2xl bg-white/5 hover:bg-red-500/10 border border-white/5 text-gray-400 hover:text-red-400 flex items-center justify-center transition-all active:scale-95" title="Clear All">
+                <button onclick="clearAll()" class="mobile-icon-btn w-12 h-12 rounded-2xl bg-white/5 hover:bg-red-500/10 border border-white/5 text-gray-400 hover:text-red-400 flex items-center justify-center transition-all active:scale-95" title="Clear All">
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
-                <button onclick="saveData()" id="save-btn" class="h-12 px-8 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-indigo-600/25 flex items-center gap-2.5 transition-all active:scale-95 hover:shadow-indigo-600/40">
+                <button onclick="saveData()" id="save-btn" class="mobile-flex-btn h-12 px-8 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2.5 transition-all active:scale-95 hover:shadow-indigo-600/40">
                     <i class="fa-solid fa-check"></i>
                     <span data-translate-key="save">Save</span>
                 </button>

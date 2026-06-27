@@ -3,304 +3,326 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animated Wheel - Web Design & Development</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Scheduled Transactions Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
     <style>
-        :root {
-            --bg-color: #1a2a3a;
-            --wheel-color: #34495e;
-            --wheel-border: #7f8c8d;
-            --accent-glow: #00d2d3;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
         body {
-            background-color: var(--bg-color);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #FFFDF6 0%, #F7F3E3 100%);
         }
-
-        /* Main Viewport Container */
-        .container {
-            position: relative;
-            width: 750px;
-            height: 750px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
         }
-
-        /* SVG Dynamic Connecting Lines Layer */
-        .lines-container {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .connecting-line {
-            stroke: rgba(255, 255, 255, 0.25);
-            stroke-width: 2;
-            stroke-dasharray: 6, 4;
-        }
-
-        /* Outer Orbit Track System */
-        .orbit-system {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            z-index: 3;
-            /* Smooth consistent global rotation */
-            animation: globalRotation 30s linear infinite;
-        }
-
-        @keyframes globalRotation {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        /* Individual Floating Icon Nodes */
-        .icon-node {
-            position: absolute;
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-size: 1.5rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-            cursor: pointer;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-
-            /* Center anchors for placement math */
-            left: calc(50% - 32.5px);
-            top: calc(50% - 32.5px);
-        }
-
-        /* Keep the glyph icons upright while everything spins */
-        .icon-node i {
-            animation: counterRotation 30s linear infinite;
-        }
-
-        @keyframes counterRotation {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(-360deg); }
-        }
-
-        .icon-node:hover {
-            transform: scale(1.3) !important;
-            box-shadow: 0 0 20px var(--accent-glow);
-        }
-
-        /* ==========================================
-           CENTRAL MECHANICAL WHEEL
-           ========================================== */
-        .center-wheel-wrapper {
-            position: absolute;
-            width: 320px;
-            height: 320px;
-            z-index: 5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .gear-wheel {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border: 8px solid var(--wheel-border);
-            border-radius: 50%;
-            background: radial-gradient(circle, #2c3e50 40%, #1a252f 100%);
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.7), 0 15px 40px rgba(0,0,0,0.5);
-            /* Spins backward relative to outer icons for complexity */
-            animation: gearRotate 20s linear infinite;
-        }
-
-        /* Cog teeth design details */
-        .gear-wheel::before, .gear-wheel::after {
-            content: "";
-            position: absolute;
-            top: -12px; left: 50%;
-            width: 24px; height: 328px;
-            background: var(--wheel-border);
-            transform: translateX(-50%);
-            border-radius: 4px;
-            z-index: -1;
-        }
-        .gear-wheel::after { transform: translateX(-50%) rotate(90deg); }
-
-        .gear-teeth-extra {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
-        .gear-teeth-extra::before, .gear-teeth-extra::after {
-            content: "";
-            position: absolute;
-            top: -12px; left: 50%;
-            width: 24px; height: 328px;
-            background: var(--wheel-border);
-            transform: translateX(-50%) rotate(45deg);
-            border-radius: 4px;
-        }
-        .gear-teeth-extra::after { transform: translateX(-50%) rotate(135deg); }
-
-        @keyframes gearRotate {
-            from { transform: rotate(360deg); }
-            to { transform: rotate(0deg); }
-        }
-
-        /* Center Content Window inside the Wheel */
-        .wheel-content {
-            position: relative;
-            width: 240px;
-            height: 240px;
-            background: rgba(26, 42, 58, 0.85);
-            border: 3px double rgba(255,255,255,0.2);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
-            box-shadow: 0 0 25px rgba(0, 210, 211, 0.2);
-            z-index: 6;
-        }
-
-        .wheel-content h1 {
-            color: #ffffff;
-            font-size: 1.55rem;
-            font-weight: 600;
-            letter-spacing: 1px;
-            line-height: 1.4;
-            text-transform: uppercase;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-            animation: pulseGlow 3s ease-in-out infinite;
-        }
-
-        @keyframes pulseGlow {
-            0%, 100% { text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-            50% { text-shadow: 0 0 15px var(--accent-glow), 0 0 5px #fff; color: #e0fcfc; }
-        }
-
-        /* Hover Mechanics to Pause System */
-        .container:hover .orbit-system,
-        .container:hover .icon-node i {
-            animation-play-state: paused;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #E4E4E7;
+            border-radius: 10px;
         }
     </style>
 </head>
-<body>
+<body class="min-h-screen flex items-center justify-center p-0 md:p-8 antialiased text-zinc-800">
 
-<div class="container">
+<div class="w-full max-w-5xl bg-white md:rounded-[32px] md:shadow-[0_32px_64px_rgba(0,0,0,0.06)] md:border border-zinc-100 min-h-screen md:min-h-[750px] md:max-h-[850px] flex flex-col md:flex-row overflow-hidden">
 
-    <svg class="lines-container" id="svgCanvas"></svg>
+    <aside class="hidden md:flex flex-col w-64 bg-zinc-50 border-r border-zinc-100 p-6 justify-between">
+        <div class="space-y-6">
+            <div class="flex items-center gap-3 px-2">
+                <div class="w-8 h-8 bg-amber-400 rounded-xl flex items-center justify-center">
+                    <i data-lucide="wallet" class="w-4 h-4 text-zinc-900"></i>
+                </div>
+                <span class="font-bold text-sm tracking-tight text-zinc-900">FinSphere</span>
+            </div>
 
-    <div class="orbit-system" id="orbitSystem">
-    </div>
-
-    <div class="center-wheel-wrapper">
-        <div class="gear-wheel">
-            <div class="gear-teeth-extra"></div>
+            <nav class="space-y-1">
+                <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold bg-zinc-900 text-white shadow-xs">
+                    <i data-lucide="calendar" class="w-4 h-4"></i> Scheduled
+                </a>
+                <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-zinc-500 hover:bg-zinc-200/50 hover:text-zinc-900 transition-all">
+                    <i data-lucide="history" class="w-4 h-4"></i> Analytics
+                </a>
+                <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-zinc-500 hover:bg-zinc-200/50 hover:text-zinc-900 transition-all">
+                    <i data-lucide="settings" class="w-4 h-4"></i> Settings
+                </a>
+            </nav>
         </div>
-        <div class="wheel-content">
-            <h1>Web Design &<br>Development</h1>
-        </div>
-    </div>
 
+        <div class="flex items-center gap-3 px-2 py-2 border-t border-zinc-200/60 pt-4">
+            <div class="w-8 h-8 bg-zinc-200 rounded-full flex items-center justify-center font-bold text-xs text-zinc-700">JD</div>
+            <div>
+                <h4 class="text-xs font-bold text-zinc-900">John Doe</h4>
+                <p class="text-[10px] text-zinc-400">Premium Account</p>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col bg-white relative">
+
+        <div class="md:hidden">
+            <div class="px-6 pt-3 pb-2 flex justify-between items-center text-xs font-semibold text-zinc-800 bg-white">
+                <span>17:11</span>
+                <div class="flex items-center gap-1.5">
+                    <i data-lucide="signal" class="w-3.5 h-3.5"></i>
+                    <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+                    <i data-lucide="battery" class="w-4 h-4"></i>
+                </div>
+            </div>
+            <div class="bg-gradient-to-b from-amber-400/20 to-white px-6 pt-5 pb-3 text-center">
+                <h1 class="text-xl font-bold text-zinc-900 tracking-tight">Never miss a bill again</h1>
+                <p class="text-xs text-zinc-500 mt-0.5 font-medium">Set and forget.</p>
+            </div>
+        </div>
+
+        <header class="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-100">
+            <div class="flex items-center gap-3">
+                <button class="md:hidden p-1.5 hover:bg-zinc-100 rounded-full transition-colors">
+                    <i data-lucide="arrow-left" class="w-5 h-5 text-zinc-700"></i>
+                </button>
+                <div>
+                    <h2 class="text-base md:text-lg font-bold text-zinc-900 tracking-tight">Scheduled Transactions</h2>
+                    <p class="hidden md:block text-xs text-zinc-400 mt-0.5">Manage your upcoming and automated commits.</p>
+                </div>
+            </div>
+
+            <button onclick="toggleModal(true)" class="hidden sm:flex items-center gap-2 bg-zinc-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl hover:bg-zinc-800 transition-all shadow-xs active:scale-[0.98]">
+                <i data-lucide="plus" class="w-4 h-4"></i> Add Transaction
+            </button>
+        </header>
+
+        <section class="p-6 grid grid-cols-1 sm:grid-cols-12 gap-3 items-center bg-white">
+            <div class="sm:col-span-5 bg-zinc-100 p-1 rounded-xl flex h-10">
+                <button id="tab-upcoming" onclick="switchTab('upcoming')" class="flex-1 text-xs font-semibold rounded-lg transition-all shadow-xs bg-white text-zinc-900">
+                    Upcoming
+                </button>
+                <button id="tab-completed" onclick="switchTab('completed')" class="flex-1 text-xs font-semibold rounded-lg transition-all text-zinc-400 hover:text-zinc-600">
+                    Completed
+                </button>
+            </div>
+
+            <div class="sm:col-span-7 relative flex items-center h-10">
+                <i data-lucide="search" class="w-4 h-4 text-zinc-400 absolute left-3.5 pointer-events-none"></i>
+                <input id="search-input" type="text" placeholder="Search scheduled transactions..."
+                       class="w-full h-full bg-zinc-50 text-xs pl-10 pr-4 rounded-xl border border-transparent focus:border-zinc-200 focus:bg-white focus:outline-none transition-all placeholder-zinc-400 text-zinc-700">
+            </div>
+        </section>
+
+        <div class="mx-6 pb-3 flex justify-between items-center border-b border-zinc-100">
+            <span class="text-xs font-bold text-zinc-500 uppercase tracking-wider">Statement Window</span>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-medium text-zinc-400">Estimated Outflow:</span>
+                <span id="summary-amount" class="text-sm font-bold text-zinc-900">-₹59,149.00</span>
+            </div>
+        </div>
+
+        <div id="transaction-container" class="flex-1 overflow-y-auto px-6 py-4 space-y-3 custom-scrollbar bg-white">
+        </div>
+
+        <button onclick="toggleModal(true)" class="sm:hidden fixed bottom-6 right-6 w-14 h-14 bg-zinc-900 text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all z-40">
+            <i data-lucide="plus" class="w-6 h-6"></i>
+        </button>
+    </main>
+</div>
+
+<div id="add-modal" class="fixed inset-0 bg-zinc-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none transition-opacity duration-200">
+    <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl transform scale-95 transition-transform duration-200" id="modal-card">
+        <div class="flex justify-between items-center mb-5">
+            <h3 class="text-sm font-bold text-zinc-900">Add New Schedule</h3>
+            <button onclick="toggleModal(false)" class="p-1 text-zinc-400 hover:text-zinc-600 rounded-full hover:bg-zinc-100 transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+
+        <form id="tx-form" onsubmit="handleFormSubmit(event)" class="space-y-4">
+            <div>
+                <label class="block text-[11px] font-bold text-zinc-400 uppercase tracking-wide mb-1">Title</label>
+                <input required id="form-title" type="text" placeholder="e.g., Gym Membership" class="w-full text-xs p-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none focus:border-zinc-900">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-[11px] font-bold text-zinc-400 uppercase tracking-wide mb-1">Frequency</label>
+                    <select id="form-freq" class="w-full text-xs p-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none focus:border-zinc-900">
+                        <option>Repeats monthly</option>
+                        <option>Does not repeat</option>
+                        <option>Repeats yearly</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-zinc-400 uppercase tracking-wide mb-1">Due Date</label>
+                    <input required id="form-date" type="text" placeholder="e.g., 05 Jun" class="w-full text-xs p-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none focus:border-zinc-900">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-[11px] font-bold text-zinc-400 uppercase tracking-wide mb-1">Amount (₹)</label>
+                    <input required id="form-amount" type="number" placeholder="0.00" class="w-full text-xs p-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none focus:border-zinc-900">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-zinc-400 uppercase tracking-wide mb-1">Category Visual</label>
+                    <select id="form-icon" class="w-full text-xs p-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none focus:border-zinc-900">
+                        <option value="credit-card">Card Subscription</option>
+                        <option value="trending-up">Investment / SIP</option>
+                        <option value="home">Rent / Living</option>
+                        <option value="zap">Utility / Bills</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full text-xs font-semibold bg-zinc-900 text-white p-3 rounded-xl hover:bg-zinc-800 transition-all shadow-xs pt-3.5 pb-3.5">
+                Save Transaction Schedule
+            </button>
+        </form>
+    </div>
 </div>
 
 <script>
-    const iconData = [
-        { icon: "fa-search", color: "#2ecc71" },
-        { icon: "fa-comments", color: "#e67e22" },
-        { icon: "fa-video", color: "#9b59b6" },
-        { icon: "fa-image", color: "#e74c3c" },
-        { icon: "fa-shield-alt", color: "#d35400" },
-        { icon: "fa-user", color: "#f1929d" },
-        { icon: "fa-cog", color: "#1abc9c" },
-        { icon: "fa-mobile-alt", color: "#a55eea" },
-        { icon: "fa-envelope", color: "#34495e" }
+    // Reactive dataset array architecture
+    let transactions = [
+        { id: 1, title: 'Nifty 50 Index Fund SIP', subtitle: 'Does not repeat', date: '25 May', amount: 24000.00, status: 'upcoming', color: 'bg-emerald-50 text-emerald-600', icon: 'trending-up' },
+        { id: 2, title: 'Netflix subscription', subtitle: 'Repeats monthly', date: '27 May', amount: 649.00, status: 'upcoming', color: 'bg-rose-50 text-rose-600', icon: 'clapperboard' },
+        { id: 3, title: 'Health insurance', subtitle: 'Repeats yearly', date: '28 May', amount: 12000.00, status: 'upcoming', color: 'bg-blue-50 text-blue-600', icon: 'shield-check' },
+        { id: 4, title: 'Rent', subtitle: 'Repeats monthly', date: '30 May', amount: 20000.00, status: 'upcoming', color: 'bg-teal-50 text-teal-600', icon: 'home' },
+        { id: 5, title: 'Electricity bill', subtitle: 'Repeats monthly', date: '31 May', amount: 2500.00, status: 'upcoming', color: 'bg-orange-50 text-orange-600', icon: 'zap' }
     ];
 
-    const orbitSystem = document.getElementById('orbitSystem');
-    const svgCanvas = document.getElementById('svgCanvas');
-    const totalIcons = iconData.length;
-    const radius = 270; // Circle radius size
+    let currentTab = 'upcoming';
+    let searchQuery = '';
 
-    // Array to hold references of created elements for alignment loops
-    const activeNodes = [];
-
-    // 1. Build and position elements geometrically
-    iconData.forEach((data, index) => {
-        const angle = (index / totalIcons) * 2 * Math.PI;
-        const x = Math.cos(angle) * radius;
-        const y = Math.sin(angle) * radius;
-
-        // Generate Node Dom Tree
-        const node = document.createElement('div');
-        node.classList.add('icon-node');
-        node.style.backgroundColor = data.color;
-        node.style.transform = `translate(${x}px, ${y}px)`;
-
-        const icon = document.createElement('i');
-        icon.classList.add('fas', data.icon);
-        node.appendChild(icon);
-        orbitSystem.appendChild(node);
-
-        // Create corresponding dynamic SVG structural line
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.classList.add('connecting-line');
-        svgCanvas.appendChild(line);
-
-        activeNodes.push({ element: node, line: line });
-    });
-
-    // 2. Realtime Animation Engine Tracking loop to draw lines during rotation
-    function animateLines() {
-        const centerX = svgCanvas.clientWidth / 2;
-        const centerY = svgCanvas.clientHeight / 2;
-
-        activeNodes.forEach(item => {
-            // Read exact runtime position matrices of icons relative to the viewport
-            const rect = item.element.getBoundingClientRect();
-            const containerRect = svgCanvas.getBoundingClientRect();
-
-            const currentX = (rect.left + rect.width / 2) - containerRect.left;
-            const currentY = (rect.top + rect.height / 2) - containerRect.top;
-
-            // Bind attributes across coordinates
-            item.line.setAttribute('x1', centerX);
-            item.line.setAttribute('y1', centerY);
-            item.line.setAttribute('x2', currentX);
-            item.line.setAttribute('y2', currentY);
-        });
-
-        requestAnimationFrame(animateLines);
+    // Formats numerical dynamic output strings
+    function formatCurrency(num) {
+        return '₹' + num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    // Initialize engine tracking
-    window.addEventListener('load', () => {
-        animateLines();
+    function calculateAndRenderSummary() {
+        const filteredSum = transactions
+            .filter(item => item.status === currentTab && item.title.toLowerCase().includes(searchQuery.toLowerCase()))
+            .reduce((acc, curr) => acc + curr.amount, 0);
+
+        document.getElementById('summary-amount').innerText = `-${formatCurrency(filteredSum)}`;
+    }
+
+    function renderTransactions() {
+        const container = document.getElementById('transaction-container');
+        container.innerHTML = '';
+
+        const filtered = transactions.filter(item => {
+            const matchesTab = item.status === currentTab;
+            const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
+            return matchesTab && matchesSearch;
+        });
+
+        calculateAndRenderSummary();
+
+        if(filtered.length === 0) {
+            container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-20 text-center text-zinc-400">
+                        <i data-lucide="layers-3" class="w-8 h-8 mb-2 stroke-[1.25]"></i>
+                        <p class="text-xs font-medium">Clear stack. No scheduled actions found.</p>
+                    </div>
+                `;
+            lucide.createIcons();
+            return;
+        }
+
+        filtered.forEach(item => {
+            const itemHTML = `
+                    <div class="flex items-center justify-between p-3.5 rounded-2xl border border-zinc-100 hover:border-zinc-200 hover:shadow-xs transition-all duration-200 group cursor-pointer">
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-10 h-10 ${item.color || 'bg-zinc-100 text-zinc-600'} rounded-xl flex items-center justify-center transition-transform group-hover:scale-105">
+                                <i data-lucide="${item.icon || 'credit-card'}" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-zinc-900 tracking-tight">${item.title}</h4>
+                                <p class="text-[10px] text-zinc-400 font-medium mt-0.5">${item.subtitle}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs font-bold text-zinc-900">${formatCurrency(item.amount)}</span>
+                            <p class="text-[10px] text-zinc-400 font-medium mt-0.5">${item.date}</p>
+                        </div>
+                    </div>
+                `;
+            container.insertAdjacentHTML('beforeend', itemHTML);
+        });
+
+        lucide.createIcons();
+    }
+
+    function switchTab(tab) {
+        currentTab = tab;
+        const upTab = document.getElementById('tab-upcoming');
+        const compTab = document.getElementById('tab-completed');
+
+        if(tab === 'upcoming') {
+            upTab.className = "flex-1 text-xs font-semibold rounded-lg transition-all shadow-xs bg-white text-zinc-900";
+            compTab.className = "flex-1 text-xs font-semibold rounded-lg transition-all text-zinc-400 hover:text-zinc-600";
+        } else {
+            compTab.className = "flex-1 text-xs font-semibold rounded-lg transition-all shadow-xs bg-white text-zinc-900";
+            upTab.className = "flex-1 text-xs font-semibold rounded-lg transition-all text-zinc-400 hover:text-zinc-600";
+        }
+        renderTransactions();
+    }
+
+    // Modal Presentation UI Handlers
+    function toggleModal(open) {
+        const modal = document.getElementById('add-modal');
+        const card = document.getElementById('modal-card');
+        if(open) {
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            card.classList.remove('scale-95');
+        } else {
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            card.classList.add('scale-95');
+            document.getElementById('tx-form').reset();
+        }
+    }
+
+    // Submits new items to data stack
+    function handleFormSubmit(e) {
+        e.preventDefault();
+
+        const title = document.getElementById('form-title').value;
+        const subtitle = document.getElementById('form-freq').value;
+        const date = document.getElementById('form-date').value;
+        const amount = parseFloat(document.getElementById('form-amount').value || 0);
+        const icon = document.getElementById('form-icon').value;
+
+        // Map color pallets depending on pick
+        const colorMap = {
+            'credit-card': 'bg-purple-50 text-purple-600',
+            'trending-up': 'bg-emerald-50 text-emerald-600',
+            'home': 'bg-teal-50 text-teal-600',
+            'zap': 'bg-orange-50 text-orange-600'
+        };
+
+        const newTx = {
+            id: Date.now(),
+            title,
+            subtitle,
+            date,
+            amount,
+            status: 'upcoming',
+            color: colorMap[icon] || 'bg-zinc-100 text-zinc-600',
+            icon
+        };
+
+        transactions.unshift(newTx); // Insert newest entry first
+        toggleModal(false);
+        renderTransactions();
+    }
+
+    // Event hooks
+    document.getElementById('search-input').addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        renderTransactions();
     });
-    window.addEventListener('resize', () => {
-        animateLines();
+
+    document.addEventListener('DOMContentLoaded', () => {
+        renderTransactions();
     });
 </script>
 </body>
