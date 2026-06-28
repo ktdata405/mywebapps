@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="../theme.js"></script>
+    <script src="../auth.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="../root/logo.png">
+    <meta name="theme-color" content="#030305">
+    <title>Wallet Report - KT Apps</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="../ktui.js"></script>
+    <script src="../config.js"></script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #070b14;
+            color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .glass {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+        }
+
+        input, select {
+            background: rgba(15, 23, 42, 0.65);
+            border: 1px solid rgba(148, 163, 184, 0.24);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-24">
+    <div class="fixed inset-0 z-[-1] pointer-events-none overflow-hidden">
+        <div class="absolute -top-44 -left-24 w-[500px] h-[500px] rounded-full bg-indigo-600/20 blur-[110px]"></div>
+        <div class="absolute -bottom-44 -right-24 w-[500px] h-[500px] rounded-full bg-cyan-500/20 blur-[110px]"></div>
+    </div>
+
+    <header class="sticky top-0 z-30 glass border-b border-slate-700/30 px-4 py-4 mb-5">
+        <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-500 to-indigo-600 grid place-items-center shadow-lg shadow-cyan-500/20">
+                    <i class="fa-solid fa-shield-halved text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-white leading-tight">Wallet Report</h1>
+                    <p class="text-xs text-slate-400">Google Sheet records grouped by owner</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="wallet.html" class="w-10 h-10 rounded-full border border-slate-600/40 bg-slate-900/50 grid place-items-center text-slate-300 hover:text-white hover:border-slate-400 transition-colors" aria-label="Add Wallet Entry">
+                    <i class="fa-solid fa-plus"></i>
+                </a>
+                <a href="../dashboard.html" class="w-10 h-10 rounded-full border border-slate-600/40 bg-slate-900/50 grid place-items-center text-slate-300 hover:text-white hover:border-slate-400 transition-colors" aria-label="Dashboard">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 space-y-4">
+        <section class="glass rounded-3xl p-4 grid md:grid-cols-4 gap-3">
+            <label for="owner-filter" class="sr-only">Filter by owner</label>
+            <select id="owner-filter" class="rounded-xl px-3 py-2.5 text-sm text-white">
+                <option value="">All Owners</option>
+                <option>Kalyan</option>
+                <option>Latha</option>
+                <option>Anshika</option>
+                <option>Amma</option>
+                <option>Dad</option>
+                <option>Chinnu</option>
+                <option>Arshika</option>
+                <option>Kartheek</option>
+                <option>Srikanth</option>
+                <option>Common Family</option>
+            </select>
+            <label for="type-filter" class="sr-only">Filter by type</label>
+            <select id="type-filter" class="rounded-xl px-3 py-2.5 text-sm text-white">
+                <option value="">All Types</option>
+                <option value="credential">Text Credential</option>
+                <option value="id_card">ID Card</option>
+                <option value="card">Card + CVV</option>
+            </select>
+            <label for="search-input" class="sr-only">Search entries</label>
+            <input id="search-input" type="text" placeholder="Search label, owner, type..." class="rounded-xl px-3 py-2.5 text-sm text-white md:col-span-2">
+        </section>
+
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-3" id="stats"></section>
+
+        <section class="glass rounded-3xl p-4">
+            <div id="list" class="space-y-3"></div>
+        </section>
+    </main>
+
+    <script>
+        const WALLET_SCRIPT_URL = (typeof CONFIG !== 'undefined' && CONFIG && CONFIG.GOOGLE_SHEET_URL_WALLET)
+            ? String(CONFIG.GOOGLE_SHEET_URL_WALLET).trim()
+            : '';
+
+        let allRows = [];
+
+        document.getElementById('owner-filter').addEventListener('change', render);
+        document.getElementById('type-filter').addEventListener('change', render);
+        document.getElementById('search-input').addEventListener('input', render);
+
+        init();
+
+        async function init() {
+            if (!isValidScriptUrl(WALLET_SCRIPT_URL)) {
+                notify('Wallet Google Sheet URL missing in config.js', 'error');
+                return;
+            }
+            allRows = await fetchWalletEntries();
+            render();
+        }
+
+        async function fetchWalletEntries() {
+            try {
+                const url = new URL(WALLET_SCRIPT_URL);
+                url.searchParams.set('action', 'listWalletEntries');
+                url.searchParams.set('t', String(Date.now()));
+
+                const response = await fetch(url.toString(), { cache: 'no-store' });
+                if (response.status === 401 || response.status === 403) {
+                    notify('Apps Script access denied (403). Redeploy Web App access and use the /exec URL.', 'error');
+                    return [];
+                }
+                const result = await response.json();
+                if (!result || !result.success || !Array.isArray(result.data)) {
+                    notify('Invalid wallet response', 'error');
+                    return [];
+                }
+                return result.data.map(normalizeRow);
+            } catch (error) {
+                notify('Fetch failed: ' + error.message, 'error');
+                return [];
+            }
+        }
+
+        function normalizeRow(item) {
+            return {
+                id: item.id || item.rowId || '',
+                owner: String(item.owner || ''),
+                type: String(item.type || ''),
+                title: String(item.title || item.cardLabel || item.idType || ''),
+                textValue: String(item.textValue || ''),
+                idType: String(item.idType || ''),
+                idNumber: String(item.idNumber || ''),
+                idName: String(item.idName || ''),
+                cardLabel: String(item.cardLabel || ''),
+                cardNumber: String(item.cardNumber || ''),
+                cardExpiry: String(item.cardExpiry || ''),
+                cardCvv: String(item.cardCvv || ''),
+                cardHolder: String(item.cardHolder || ''),
+                savedAt: String(item.savedAt || item.timestamp || '')
+            };
+        }
+
+        function render() {
+            const ownerFilter = document.getElementById('owner-filter').value.trim().toLowerCase();
+            const typeFilter = document.getElementById('type-filter').value.trim().toLowerCase();
+            const search = document.getElementById('search-input').value.trim().toLowerCase();
+
+            const rows = allRows.filter((row) => {
+                const blob = [row.owner, row.type, row.title, row.textValue, row.idType, row.idNumber, row.cardLabel, row.cardNumber].join(' ').toLowerCase();
+                if (ownerFilter && row.owner.toLowerCase() !== ownerFilter) return false;
+                if (typeFilter && row.type.toLowerCase() !== typeFilter) return false;
+                if (search && !blob.includes(search)) return false;
+                return true;
+            });
+
+            renderStats(rows);
+            renderRows(rows);
+        }
+
+        function renderStats(rows) {
+            const owners = new Set(rows.map((row) => row.owner).filter(Boolean));
+            const credentials = rows.filter((row) => row.type === 'credential').length;
+            const ids = rows.filter((row) => row.type === 'id_card').length;
+            const cards = rows.filter((row) => row.type === 'card').length;
+            document.getElementById('stats').innerHTML = [
+                statCard('Total', String(rows.length), 'fa-database'),
+                statCard('Owners', String(owners.size), 'fa-folder-tree'),
+                statCard('Credentials', String(credentials), 'fa-key'),
+                statCard('ID/Cards', String(ids + cards), 'fa-id-card')
+            ].join('');
+        }
+
+        function renderRows(rows) {
+            const list = document.getElementById('list');
+            if (!rows.length) {
+                list.innerHTML = '<p class="text-sm text-slate-400">No wallet entries found.</p>';
+                return;
+            }
+
+            list.innerHTML = rows.map((row) => {
+                if (row.type === 'credential') {
+                    return rowCard(row, row.title || 'Credential', row.textValue, 'fa-key', 'credential');
+                }
+                if (row.type === 'id_card') {
+                    const body = [row.idType, row.idNumber, row.idName].filter(Boolean).join(' | ');
+                    return rowCard(row, row.idType || 'ID Card', body, 'fa-id-card', 'id_card');
+                }
+                const body = [row.cardNumber, row.cardExpiry ? `EXP ${row.cardExpiry}` : '', row.cardCvv ? `CVV ${row.cardCvv}` : '', row.cardHolder].filter(Boolean).join(' | ');
+                return rowCard(row, row.cardLabel || 'Card', body, 'fa-credit-card', 'card');
+            }).join('');
+
+            document.querySelectorAll('[data-delete-id]').forEach((btn) => {
+                btn.addEventListener('click', async () => {
+                    await deleteWalletEntry(btn.dataset.deleteId);
+                });
+            });
+        }
+
+        function rowCard(row, title, body, icon, type) {
+            const time = row.savedAt ? new Date(row.savedAt).toLocaleString() : '-';
+            const safeTitle = escapeHtml(title || '-');
+            const safeBody = escapeHtml(body || '-');
+            const safeOwner = escapeHtml(row.owner || '-');
+            const safeType = escapeHtml(type);
+            const safeTime = escapeHtml(time);
+            return `
+                <article class="rounded-2xl border border-slate-700/50 p-3 bg-slate-900/40">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-[11px] text-cyan-300 uppercase tracking-widest">${safeOwner} | ${safeType}</p>
+                            <h3 class="text-sm font-semibold text-white mt-1"><i class="fa-solid ${icon} mr-1"></i>${safeTitle}</h3>
+                            <p class="text-xs text-slate-300 mt-1 break-all whitespace-pre-wrap">${safeBody}</p>
+                            <p class="text-[11px] text-slate-500 mt-2">${safeTime}</p>
+                        </div>
+                        <button data-delete-id="${escapeHtml(String(row.id))}" class="w-8 h-8 rounded-full border border-rose-400/40 text-rose-200 hover:bg-rose-500/20 transition-colors" aria-label="Delete">
+                            <i class="fa-solid fa-trash text-xs"></i>
+                        </button>
+                    </div>
+                </article>
+            `;
+        }
+
+        async function deleteWalletEntry(id) {
+            if (!id) {
+                notify('Missing row id', 'error');
+                return;
+            }
+            const ok = confirm('Delete this wallet entry?');
+            if (!ok) return;
+
+            try {
+                const url = new URL(WALLET_SCRIPT_URL);
+                url.searchParams.set('action', 'deleteWalletEntry');
+                url.searchParams.set('id', id);
+                url.searchParams.set('t', String(Date.now()));
+
+                const response = await fetch(url.toString(), { cache: 'no-store' });
+                if (response.status === 401 || response.status === 403) {
+                    notify('Apps Script access denied (403). Redeploy Web App access and use the /exec URL.', 'error');
+                    return;
+                }
+                const result = await response.json();
+                if (!result || !result.success) {
+                    notify((result && result.message) || 'Delete failed', 'error');
+                    return;
+                }
+                notify('Entry deleted', 'success');
+                await init();
+            } catch (error) {
+                notify('Delete failed: ' + error.message, 'error');
+            }
+        }
+
+        function statCard(label, value, icon) {
+            return `
+                <div class="glass rounded-2xl p-3">
+                    <p class="text-[11px] text-slate-400 uppercase tracking-wider">${label}</p>
+                    <p class="text-xl text-white font-bold mt-1"><i class="fa-solid ${icon} mr-1 text-cyan-300"></i>${value}</p>
+                </div>
+            `;
+        }
+
+        function isValidScriptUrl(url) {
+            if (!url) return false;
+            const trimmed = url.trim();
+            if (!trimmed || trimmed.includes('YOUR-') || trimmed.includes('SCRIPT-ID')) return false;
+            return trimmed.startsWith('https://script.google.com');
+        }
+
+        function notify(message, type) {
+            if (typeof KTui !== 'undefined' && KTui.toast) {
+                KTui.toast(message, type || 'info');
+                return;
+            }
+            if (typeof showToast === 'function') {
+                showToast(message, type || 'info');
+                return;
+            }
+            alert(message);
+        }
+
+        function escapeHtml(value) {
+            return String(value || '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        }
+    </script>
+</body>
+</html>
+
+

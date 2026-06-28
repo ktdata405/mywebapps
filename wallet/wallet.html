@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="../theme.js"></script>
+    <script src="../auth.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="../root/logo.png">
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#030305">
+    <title>Wallet Vault - KT Apps</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="../ktui.js"></script>
+    <script src="../config.js"></script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #070b14;
+            color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .glass {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+        }
+
+        input, textarea, select {
+            background: rgba(15, 23, 42, 0.65);
+            border: 1px solid rgba(148, 163, 184, 0.24);
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: rgba(99, 102, 241, 0.85);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-12">
+    <div class="fixed inset-0 z-[-1] pointer-events-none overflow-hidden">
+        <div class="absolute -top-44 -left-24 w-[500px] h-[500px] rounded-full bg-indigo-600/20 blur-[110px]"></div>
+        <div class="absolute -bottom-44 -right-24 w-[500px] h-[500px] rounded-full bg-cyan-500/20 blur-[110px]"></div>
+    </div>
+
+    <header class="sticky top-0 z-30 glass border-b border-slate-700/30 px-4 py-4 mb-6">
+        <div class="max-w-5xl mx-auto flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-500 to-indigo-600 grid place-items-center shadow-lg shadow-cyan-500/20">
+                    <i class="fa-solid fa-wallet text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-white leading-tight">Wallet Vault</h1>
+                    <p class="text-xs text-slate-400">Saves directly to Google Sheet (no local storage)</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="walletreport.html" class="w-10 h-10 rounded-full border border-slate-600/40 bg-slate-900/50 grid place-items-center text-slate-300 hover:text-white hover:border-slate-400 transition-colors" aria-label="Wallet Report">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </a>
+                <a href="../index.html" class="w-10 h-10 rounded-full border border-slate-600/40 bg-slate-900/50 grid place-items-center text-slate-300 hover:text-white hover:border-slate-400 transition-colors" aria-label="Go Home">
+                    <i class="fa-solid fa-house"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 space-y-5">
+        <section class="glass rounded-3xl p-4 border border-cyan-500/25">
+            <label class="text-xs font-semibold text-slate-300">Select Wallet Owner / Folder</label>
+            <select id="owner" class="w-full mt-2 rounded-xl px-3 py-2.5 text-sm text-white" required>
+                <option>Kalyan</option>
+                <option>Latha</option>
+                <option>Anshika</option>
+                <option>Amma</option>
+                <option>Dad</option>
+                <option>Chinnu</option>
+                <option>Arshika</option>
+                <option>Kartheek</option>
+                <option>Srikanth</option>
+                <option>Common Family</option>
+            </select>
+        </section>
+
+        <section class="grid lg:grid-cols-3 gap-4">
+            <form id="credential-form" class="glass rounded-3xl p-5 space-y-3">
+                <h2 class="text-sm font-bold text-cyan-200">Text Credential</h2>
+                <input id="cred-title" type="text" required placeholder="Label (example: Gmail)" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
+                <textarea id="cred-text" rows="3" required placeholder="Credential text" class="w-full rounded-xl px-3 py-2.5 text-sm text-white"></textarea>
+                <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-semibold">Save Credential</button>
+            </form>
+
+            <form id="id-form" class="glass rounded-3xl p-5 space-y-3">
+                <h2 class="text-sm font-bold text-indigo-200">ID Card Number</h2>
+                <select id="id-type" class="w-full rounded-xl px-3 py-2.5 text-sm text-white" required>
+                    <option value="Aadhaar">Aadhaar</option>
+                    <option value="PAN">PAN</option>
+                    <option value="Driving License">Driving License</option>
+                    <option value="Passport">Passport</option>
+                    <option value="Voter ID">Voter ID</option>
+                    <option value="Other">Other</option>
+                </select>
+                <input id="id-number" type="text" required placeholder="ID Number" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
+                <input id="id-name" type="text" placeholder="Name on ID (optional)" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
+                <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-semibold">Save ID Card</button>
+            </form>
+
+            <form id="card-form" class="glass rounded-3xl p-5 space-y-3">
+                <h2 class="text-sm font-bold text-emerald-200">Card Number + CVV</h2>
+                <input id="card-label" type="text" required placeholder="Card Label" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
+                <input id="card-number" type="text" inputmode="numeric" required placeholder="Card Number" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
+                <div class="grid grid-cols-2 gap-3">
+                    <input id="card-expiry" type="text" placeholder="MM/YY" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
+                    <input id="card-cvv" type="text" inputmode="numeric" required placeholder="CVV" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
+                </div>
+                <input id="card-holder" type="text" placeholder="Card Holder Name (optional)" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
+                <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-600 text-white font-semibold">Save Card</button>
+            </form>
+        </section>
+
+        <section class="glass rounded-3xl p-4 border border-amber-500/30 bg-amber-900/10">
+            <p class="text-xs text-amber-100">
+                This page sends data directly to your Google Apps Script endpoint. Nothing is written to localStorage.
+            </p>
+        </section>
+    </main>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('../sw.js').catch(() => {});
+            });
+        }
+
+        const WALLET_SCRIPT_URL = (typeof CONFIG !== 'undefined' && CONFIG && CONFIG.GOOGLE_SHEET_URL_WALLET)
+            ? String(CONFIG.GOOGLE_SHEET_URL_WALLET).trim()
+            : '';
+
+        function isValidScriptUrl(url) {
+            if (!url) return false;
+            const trimmed = url.trim();
+            if (!trimmed || trimmed.includes('YOUR-') || trimmed.includes('SCRIPT-ID')) return false;
+            return trimmed.startsWith('https://script.google.com');
+        }
+
+        document.getElementById('credential-form').addEventListener('submit', (event) => {
+            event.preventDefault();
+            const payload = {
+                owner: selectedOwner(),
+                type: 'credential',
+                title: document.getElementById('cred-title').value.trim(),
+                textValue: document.getElementById('cred-text').value.trim()
+            };
+            if (!payload.title || !payload.textValue) return;
+            saveWalletEntry(payload, event.target);
+        });
+
+        document.getElementById('id-form').addEventListener('submit', (event) => {
+            event.preventDefault();
+            const payload = {
+                owner: selectedOwner(),
+                type: 'id_card',
+                idType: document.getElementById('id-type').value.trim(),
+                idNumber: document.getElementById('id-number').value.trim(),
+                idName: document.getElementById('id-name').value.trim()
+            };
+            if (!payload.idType || !payload.idNumber) return;
+            saveWalletEntry(payload, event.target);
+        });
+
+        document.getElementById('card-form').addEventListener('submit', (event) => {
+            event.preventDefault();
+            const payload = {
+                owner: selectedOwner(),
+                type: 'card',
+                cardLabel: document.getElementById('card-label').value.trim(),
+                cardNumber: document.getElementById('card-number').value.trim(),
+                cardExpiry: document.getElementById('card-expiry').value.trim(),
+                cardCvv: document.getElementById('card-cvv').value.trim(),
+                cardHolder: document.getElementById('card-holder').value.trim()
+            };
+            if (!payload.cardLabel || !payload.cardNumber || !payload.cardCvv) return;
+            saveWalletEntry(payload, event.target);
+        });
+
+        function selectedOwner() {
+            return document.getElementById('owner').value.trim();
+        }
+
+        async function saveWalletEntry(payload, form) {
+            if (!isValidScriptUrl(WALLET_SCRIPT_URL)) {
+                notify('Wallet Google Sheet URL missing in config.js', 'error');
+                return;
+            }
+
+            try {
+                const url = new URL(WALLET_SCRIPT_URL);
+                url.searchParams.set('action', 'addWalletEntry');
+                Object.keys(payload).forEach((key) => {
+                    if (payload[key] !== undefined && payload[key] !== null) {
+                        url.searchParams.set(key, String(payload[key]));
+                    }
+                });
+                url.searchParams.set('savedAt', new Date().toISOString());
+                url.searchParams.set('t', String(Date.now()));
+
+                const response = await fetch(url.toString(), { cache: 'no-store' });
+                if (response.status === 401 || response.status === 403) {
+                    notify('Apps Script access denied (403). Redeploy Web App access and use the /exec URL.', 'error');
+                    return;
+                }
+                const result = await response.json();
+                if (!result || !result.success) {
+                    notify((result && result.message) || 'Save failed', 'error');
+                    return;
+                }
+
+                form.reset();
+                notify('Saved to Google Sheet', 'success');
+            } catch (error) {
+                notify('Save failed: ' + error.message, 'error');
+            }
+        }
+
+        function notify(message, type) {
+            if (typeof KTui !== 'undefined' && KTui.toast) {
+                KTui.toast(message, type || 'info');
+                return;
+            }
+            if (typeof showToast === 'function') {
+                showToast(message, type || 'info');
+                return;
+            }
+            alert(message);
+        }
+    </script>
+</body>
+</html>
+

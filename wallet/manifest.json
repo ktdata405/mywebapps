@@ -1,0 +1,22 @@
+{
+  "name": "Wallet Vault - KT Apps",
+  "short_name": "Wallet",
+  "description": "Save credentials text, ID card numbers, and card data",
+  "start_url": "./wallet.html",
+  "display": "standalone",
+  "background_color": "#030305",
+  "theme_color": "#030305",
+  "icons": [
+    {
+      "src": "../root/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "../root/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kt-apps-v8';
+const CACHE_NAME = 'kt-apps-v9';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -24,6 +24,9 @@ const STATIC_ASSETS = [
   './calculator/manifest.json',
   './loan/loan.html',
   './loan/manifest.json',
+  './wallet/wallet.html',
+  './wallet/walletreport.html',
+  './wallet/manifest.json',
   './temp.html',
   './scan/manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
