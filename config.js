@@ -32,7 +32,7 @@ const CONFIG = {
     GOOGLE_SHEET_URL_DEBTS: 'https://script.google.com/macros/s/AKfycbzXF14LayWcUqHi8IHAaPby3klVgLwg1joi18lX6RybVIFLEYFlqkT7HZwKofecLrUxEQ/exec',
 
     //Prod Link
-    GOOGLE_SHEET_URL_WALLET: 'https://script.google.com/macros/s/AKfycbxvmbBY9UUtfLzN_i8n2tNxCGMEDbaJN8U4Z7EAbOOGppfdXKeKoF4uJl9vlTT-BZM/exec',
+    GOOGLE_SHEET_URL_WALLET: 'https://script.google.com/macros/s/AKfycbzucE4LXHR8Jg6JNHnk2HsT01Ph7-9DfarVCceqZyPrKKElNS0tc1c5b76vIDy8XJbE/exec',
 
     // Google Sheets URLs
     SHEET_URL_CASHEW: 'https://docs.google.com/spreadsheets/d/1mwCrrpMGc1jq07sPgg17EiYtSQTK27ntqMTlFH7ZHZg/edit', // Replace with actual ID

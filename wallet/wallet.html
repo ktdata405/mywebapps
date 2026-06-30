@@ -45,6 +45,16 @@
             border-color: rgba(99, 102, 241, 0.85);
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
         }
+
+        .entry-chip {
+            transition: all 0.2s ease;
+        }
+
+        .entry-chip-active {
+            background: rgba(30, 41, 59, 0.85);
+            border-color: rgba(226, 232, 240, 0.6) !important;
+            color: #ffffff !important;
+        }
     </style>
 </head>
 <body class="min-h-screen pb-12">
@@ -61,7 +71,6 @@
                 </div>
                 <div>
                     <h1 class="text-lg font-bold text-white leading-tight">Wallet Vault</h1>
-                    <p class="text-xs text-slate-400">Saves directly to Google Sheet (no local storage)</p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
@@ -92,48 +101,78 @@
             </select>
         </section>
 
-        <section class="grid lg:grid-cols-3 gap-4">
-            <form id="credential-form" class="glass rounded-3xl p-5 space-y-3">
-                <h2 class="text-sm font-bold text-cyan-200">Text Credential</h2>
-                <input id="cred-title" type="text" required placeholder="Label (example: Gmail)" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
-                <textarea id="cred-text" rows="3" required placeholder="Credential text" class="w-full rounded-xl px-3 py-2.5 text-sm text-white"></textarea>
-                <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-semibold">Save Credential</button>
-            </form>
-
-            <form id="id-form" class="glass rounded-3xl p-5 space-y-3">
-                <h2 class="text-sm font-bold text-indigo-200">ID Card Number</h2>
-                <select id="id-type" class="w-full rounded-xl px-3 py-2.5 text-sm text-white" required>
-                    <option value="Aadhaar">Aadhaar</option>
-                    <option value="PAN">PAN</option>
-                    <option value="Driving License">Driving License</option>
-                    <option value="Passport">Passport</option>
-                    <option value="Voter ID">Voter ID</option>
-                    <option value="Other">Other</option>
-                </select>
-                <input id="id-number" type="text" required placeholder="ID Number" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
-                <input id="id-name" type="text" placeholder="Name on ID (optional)" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
-                <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-semibold">Save ID Card</button>
-            </form>
-
-            <form id="card-form" class="glass rounded-3xl p-5 space-y-3">
-                <h2 class="text-sm font-bold text-emerald-200">Card Number + CVV</h2>
-                <input id="card-label" type="text" required placeholder="Card Label" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
-                <input id="card-number" type="text" inputmode="numeric" required placeholder="Card Number" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
-                <div class="grid grid-cols-2 gap-3">
-                    <input id="card-expiry" type="text" placeholder="MM/YY" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
-                    <input id="card-cvv" type="text" inputmode="numeric" required placeholder="CVV" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
+        <section class="space-y-4">
+            <div class="glass rounded-3xl p-3 border border-slate-700/40">
+                <p class="text-xs font-semibold text-slate-300 mb-2">Choose Entry Type</p>
+                <div id="entry-type-chips" class="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
+                    <button type="button" class="entry-chip px-3 py-2 rounded-xl sm:rounded-full text-xs font-semibold border border-cyan-500/40 text-cyan-200" data-target="credential-form">Bank</button>
+                    <button type="button" class="entry-chip px-3 py-2 rounded-xl sm:rounded-full text-xs font-semibold border border-indigo-500/40 text-indigo-200" data-target="id-form">IDs</button>
+                    <button type="button" class="entry-chip px-3 py-2 rounded-xl sm:rounded-full text-xs font-semibold border border-emerald-500/40 text-emerald-200" data-target="card-form">Cards</button>
                 </div>
-                <input id="card-holder" type="text" placeholder="Card Holder Name (optional)" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
-                <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-600 text-white font-semibold">Save Card</button>
-            </form>
-        </section>
+            </div>
 
-        <section class="glass rounded-3xl p-4 border border-amber-500/30 bg-amber-900/10">
-            <p class="text-xs text-amber-100">
-                This page sends data directly to your Google Apps Script endpoint. Nothing is written to localStorage.
-            </p>
+            <div class="w-full">
+                <form id="credential-form" class="glass rounded-3xl p-5 space-y-3 hidden w-full max-w-2xl mx-auto">
+                    <h2 class="text-sm font-bold text-cyan-200">Bank Login Credentials</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <input id="bank-name" type="text" required placeholder="Bank Name" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
+                        <input id="bank-username" type="text" required placeholder="Username/Customer ID" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
+                        <input id="bank-login-password" type="password" required placeholder="Login Password" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
+                        <input id="bank-tpass" type="password" required placeholder="T-Password/T-PIN" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
+                        <select id="bank-channel" class="w-full rounded-xl px-3 py-2.5 text-sm text-white" required>
+                            <option value="">Web/Mobile App</option>
+                            <option value="Web">Web</option>
+                            <option value="Mobile App">Mobile App</option>
+                            <option value="Both">Both</option>
+                        </select>
+                        <input id="bank-card-pin" type="password" required placeholder="Card PIN" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
+                        <select id="bank-status" class="w-full rounded-xl px-3 py-2.5 text-sm text-white md:col-span-2" required>
+                            <option value="">Status</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Blocked">Blocked</option>
+                        </select>
+                        <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-semibold md:col-span-2">Save Credential</button>
+                    </div>
+                </form>
+
+                <form id="id-form" class="glass rounded-3xl p-5 space-y-3 hidden w-full max-w-2xl mx-auto">
+                    <h2 class="text-sm font-bold text-indigo-200">ID Card Number</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <select id="id-type" class="w-full rounded-xl px-3 py-2.5 text-sm text-white" required>
+                            <option value="Aadhaar">Aadhaar</option>
+                            <option value="PAN">PAN</option>
+                            <option value="Driving License">Driving License</option>
+                            <option value="Passport">Passport</option>
+                            <option value="Voter ID">Voter ID</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <input id="id-number" type="text" required placeholder="ID Number" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
+                        <input id="id-name" type="text" placeholder="Name on ID (optional)" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
+                        <input id="id-valid-from" type="date" placeholder="Valid From" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
+                        <input id="id-valid-to" type="date" placeholder="Valid To" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
+                        <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-semibold md:col-span-2">Save ID Card</button>
+                    </div>
+                </form>
+
+                <form id="card-form" class="glass rounded-3xl p-5 space-y-3 hidden w-full max-w-2xl mx-auto">
+                    <h2 class="text-sm font-bold text-emerald-200">Card Number + CVV</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <input id="card-label" type="text" required placeholder="Card Label" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
+                        <input id="card-number" type="text" inputmode="numeric" required placeholder="Card Number" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
+                        <input id="card-expiry" type="text" placeholder="MM/YY" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
+                        <input id="card-cvv" type="text" inputmode="numeric" required placeholder="CVV" class="w-full rounded-xl px-3 py-2.5 text-sm text-white">
+                        <input id="card-holder" type="text" placeholder="Card Holder Name (optional)" class="w-full rounded-xl px-3 py-2.5 text-sm text-white md:col-span-2">
+                        <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-600 text-white font-semibold md:col-span-2">Save Card</button>
+                    </div>
+                </form>
+            </div>
         </section>
     </main>
+
+    <footer class="max-w-5xl mx-auto px-4 pb-8 pt-2 text-center text-xs text-slate-400">
+        <p data-translate-key="copyright_thammineni">&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
+    </footer>
 
     <script>
         if ('serviceWorker' in navigator) {
@@ -146,6 +185,31 @@
             ? String(CONFIG.GOOGLE_SHEET_URL_WALLET).trim()
             : '';
 
+        const entryTypeChips = document.querySelectorAll('.entry-chip');
+        const entryForms = ['credential-form', 'id-form', 'card-form'];
+
+        function showEntryForm(formId) {
+            entryForms.forEach((id) => {
+                const form = document.getElementById(id);
+                if (!form) return;
+                form.classList.toggle('hidden', id !== formId);
+            });
+
+            entryTypeChips.forEach((chip) => {
+                const isActive = chip.dataset.target === formId;
+                chip.classList.toggle('entry-chip-active', isActive);
+            });
+        }
+
+        entryTypeChips.forEach((chip) => {
+            chip.addEventListener('click', () => {
+                showEntryForm(chip.dataset.target);
+            });
+        });
+
+        // Keep all forms hidden until the user picks one chip.
+        showEntryForm('');
+
         function isValidScriptUrl(url) {
             if (!url) return false;
             const trimmed = url.trim();
@@ -155,13 +219,37 @@
 
         document.getElementById('credential-form').addEventListener('submit', (event) => {
             event.preventDefault();
+
+            const bankName = document.getElementById('bank-name').value.trim();
+            const username = document.getElementById('bank-username').value.trim();
+            const loginPassword = document.getElementById('bank-login-password').value.trim();
+            const tPass = document.getElementById('bank-tpass').value.trim();
+            const channel = document.getElementById('bank-channel').value.trim();
+            const cardPin = document.getElementById('bank-card-pin').value.trim();
+            const status = document.getElementById('bank-status').value.trim();
+
             const payload = {
                 owner: selectedOwner(),
                 type: 'credential',
-                title: document.getElementById('cred-title').value.trim(),
-                textValue: document.getElementById('cred-text').value.trim()
+                title: bankName,
+                textValue: [
+                    `Username/Customer ID: ${username}`,
+                    `Login Password: ${loginPassword}`,
+                    `T-Password/T-PIN: ${tPass}`,
+                    `Web/Mobile App: ${channel}`,
+                    `Card PIN: ${cardPin}`,
+                    `Status: ${status}`
+                ].join('\n'),
+                credBankName: bankName,
+                credUsername: username,
+                credLoginPassword: loginPassword,
+                credTPassOrPin: tPass,
+                credChannel: channel,
+                credCardPin: cardPin,
+                credStatus: status
             };
-            if (!payload.title || !payload.textValue) return;
+
+            if (!bankName || !username || !loginPassword || !tPass || !channel || !cardPin || !status) return;
             saveWalletEntry(payload, event.target);
         });
 
@@ -172,7 +260,9 @@
                 type: 'id_card',
                 idType: document.getElementById('id-type').value.trim(),
                 idNumber: document.getElementById('id-number').value.trim(),
-                idName: document.getElementById('id-name').value.trim()
+                idName: document.getElementById('id-name').value.trim(),
+                validFrom: document.getElementById('id-valid-from').value.trim(),
+                validTo: document.getElementById('id-valid-to').value.trim()
             };
             if (!payload.idType || !payload.idNumber) return;
             saveWalletEntry(payload, event.target);
@@ -246,4 +336,3 @@
     </script>
 </body>
 </html>
-

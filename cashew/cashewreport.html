@@ -436,6 +436,13 @@
                     <label class="text-[10px] text-gray-400 font-bold uppercase ml-1">Category</label>
                     <select id="export-category-select" class="w-full bg-slate-900/50 border border-white/10 rounded-xl p-3 text-sm font-semibold outline-none text-white"></select>
                 </div>
+                <div class="space-y-2">
+                    <label class="text-[10px] text-gray-400 font-bold uppercase ml-1">Sort by Date</label>
+                    <select id="export-sort-select" class="w-full bg-slate-900/50 border border-white/10 rounded-xl p-3 text-sm font-semibold outline-none text-white">
+                        <option value="desc">Newest to Oldest</option>
+                        <option value="asc">Oldest to Newest</option>
+                    </select>
+                </div>
                 <div class="flex items-center gap-3 bg-white/5 p-4 rounded-2xl border border-white/5">
                     <input type="checkbox" id="export-current-month-only" class="w-5 h-5 rounded border-white/10 bg-slate-900 accent-indigo-500" onchange="toggleExportCurrentMonth()">
                     <label for="export-current-month-only" class="text-sm text-gray-300 font-bold">Current Month Only</label>
@@ -893,6 +900,7 @@
             loader.classList.remove('hidden');
 
             const category = document.getElementById('export-category-select').value;
+            const sortOrder = document.getElementById('export-sort-select').value;
             const fM = document.getElementById('export-from-month-select').value;
             const fY = document.getElementById('export-from-year-select').value;
             const tM = document.getElementById('export-to-month-select').value;
@@ -902,41 +910,49 @@
                 .then(r => r.json())
                 .then(res => {
                     loader.classList.add('hidden');
-                    generateExportContent(res.data || [], category, fM, fY, tM, tY);
+                    generateExportContent(res.data || [], category, fM, fY, tM, tY, sortOrder);
                 })
                 .catch(e => { loader.classList.add('hidden'); KTui.alert('Error', 'Export failed', 'error'); });
         }
 
-        function generateExportContent(data, category, fM, fY, tM, tY) {
-            // Re-using the logic from the previous version but simplified
+        function generateExportContent(data, category, fM, fY, tM, tY, sortOrder = 'desc') {
             const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-            const start = new Date(fY, months.indexOf(fM), 1);
-            const end = new Date(tY, months.indexOf(tM) + 1, 0);
+            const start = new Date(Number(fY), months.indexOf(fM), 1);
+            const end = new Date(Number(tY), months.indexOf(tM) + 1, 0);
 
-            let filtered = data.filter(i => {
-                const d = new Date(i.date);
-                const periodOk = d >= start && d <= end;
+            let filtered = data.map(i => ({ ...i, _parsedDate: parseRecordDate(i.date) })).filter(i => {
+                const periodOk = i._parsedDate && i._parsedDate >= start && i._parsedDate <= end;
                 const catOk = category === 'All' || i.category === category;
                 return periodOk && catOk;
             });
 
+            filtered.sort((a, b) => sortOrder === 'asc' ? a._parsedDate - b._parsedDate : b._parsedDate - a._parsedDate);
+
             if(!filtered.length) { KTui.alert('Notice', 'No data to export', 'info'); return; }
+
+            const grandTotal = filtered.reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
 
             let text = `CASHEW REPORT\n${'='.repeat(30)}\n`;
             text += `Period: ${fM} ${fY} - ${tM} ${tY}\n`;
-            text += `Category: ${category}\n${'='.repeat(30)}\n\n`;
+            text += `Category: ${category}\n`;
+            text += `GRAND TOTAL: Rs. ${grandTotal.toLocaleString('en-IN')}\n`;
+            text += `${'='.repeat(30)}\n\n`;
 
-            let total = 0;
             filtered.forEach(i => {
-                text += `${formatDate(i.date)} | ${i.category.padEnd(15)} | Rs. ${i.amount.toLocaleString('en-IN').padEnd(10)} | ${i.description}\n`;
-                total += i.amount;
+                const amount = Number(i.amount) || 0;
+                const safeDate = i._parsedDate ? toDateKey(i._parsedDate) : i.date;
+                const description = i.description || '';
+                text += `${formatDate(safeDate)} | ${(i.category || '').padEnd(15)} | Rs. ${amount.toLocaleString('en-IN').padEnd(10)} | ${description}\n`;
             });
-            text += `\n${'-'.repeat(30)}\nGRAND TOTAL: Rs. ${total.toLocaleString('en-IN')}\n${'='.repeat(30)}`;
+
+            text += `\n${'='.repeat(30)}\nGRAND TOTAL: Rs. ${grandTotal.toLocaleString('en-IN')}\n${'='.repeat(30)}`;
 
             document.getElementById('export-content-preview').textContent = text;
             document.getElementById('export-preview-modal').classList.remove('hidden');
 
-            window._exportData = { text, filename: `Cashew_Report_${category}_${fM}${fY}.txt` };
+            const safeCategory = (category || 'All').replace(/\s+/g, '_');
+            const baseName = `Expenses_Report_${safeCategory}_from_${fM}${fY}_To_${tM}${tY}`;
+            window._exportData = { text, filename: `${baseName}.txt` };
         }
 
         function closeExportPreview() { document.getElementById('export-preview-modal').classList.add('hidden'); }
@@ -944,22 +960,65 @@
             navigator.clipboard.writeText(window._exportData.text).then(() => KTui.alert('Success', 'Copied!', 'success'));
         }
 
+        function sanitizeDownloadName(name, targetExt) {
+            const raw = String(name || 'Cashew_Report');
+            const cleaned = raw
+                .replace(/[\\/:*?"<>|]+/g, '_')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            const noExt = cleaned.replace(/\.[^/.]+$/, '');
+            return `${noExt || 'Cashew_Report'}${targetExt}`;
+        }
+
         function triggerDownload() {
+            if(!window._exportData || !window._exportData.text) {
+                KTui.alert('Notice', 'No export data available', 'info');
+                return;
+            }
+
             const blob = new Blob([window._exportData.text], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url; a.download = window._exportData.filename;
+            a.href = url;
+            a.download = sanitizeDownloadName(window._exportData.filename, '.txt');
             a.click();
         }
 
         function triggerPdfDownload() {
+            if(!window._exportData || !window._exportData.text) {
+                KTui.alert('Notice', 'No export data available', 'info');
+                return;
+            }
+
+            if(!window.jspdf || !window.jspdf.jsPDF) {
+                KTui.alert('Error', 'PDF library not loaded', 'error');
+                return;
+            }
+
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.setFont("courier");
-            doc.setFontSize(10);
-            const lines = doc.splitTextToSize(window._exportData.text, 180);
-            doc.text(lines, 10, 10);
-            doc.save(window._exportData.filename.replace('.txt', '.pdf'));
+            const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+            doc.setFont('courier', 'normal');
+            doc.setFontSize(9);
+
+            const margin = 10;
+            const lineHeight = 4;
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const maxWidth = pageWidth - (margin * 2);
+            const lines = doc.splitTextToSize(window._exportData.text, maxWidth);
+
+            let y = margin;
+            lines.forEach(line => {
+                if(y > pageHeight - margin) {
+                    doc.addPage();
+                    y = margin;
+                }
+                doc.text(line, margin, y);
+                y += lineHeight;
+            });
+
+            doc.save(sanitizeDownloadName(window._exportData.filename, '.pdf'));
         }
 
         document.getElementById('download-export-btn').onclick = triggerDownload;
