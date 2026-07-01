@@ -93,6 +93,21 @@
         .import-date-item:hover { background: rgba(255,255,255,0.05); }
         .import-date-item.active { background: rgba(99,102,241,0.18); border-color: rgba(99,102,241,0.4) !important; }
         .import-date-item.active .date-label { color: #a5b4fc; }
+        .import-date-item.failed { border-color: rgba(248,113,113,0.35) !important; }
+
+        .field-error {
+            border-color: rgba(248,113,113,0.9) !important;
+            box-shadow: 0 0 0 1px rgba(248,113,113,0.3) !important;
+            background: rgba(127,29,29,0.2) !important;
+        }
+
+        .field-error-text {
+            margin-top: 3px;
+            font-size: 10px;
+            line-height: 1.2;
+            color: #fda4af;
+            font-weight: 600;
+        }
 
         /* Table row alternating colors */
         #import-preview-body tr { transition: background 0.12s ease; }
@@ -273,6 +288,13 @@
                     Club Same Category
                 </button>
 
+                <button id="remove-incoming-btn" onclick="removeIncomingTransactions()"
+                    class="h-7 px-2.5 rounded-lg text-[11px] font-semibold border border-rose-500/35 text-rose-300 hover:bg-rose-500/15 transition-all flex items-center gap-1.5 flex-shrink-0"
+                    title="Remove incoming/received and CTT transactions">
+                    <i class="fa-solid fa-filter text-xs"></i>
+                    Remove Incoming + CTT
+                </button>
+
                 <button id="add-import-record-btn" onclick="addManualImportRow()"
                     class="h-7 px-2.5 rounded-lg text-[11px] font-semibold border border-sky-500/35 text-sky-300 hover:bg-sky-500/15 transition-all flex items-center gap-1.5 flex-shrink-0">
                     <i class="fa-solid fa-plus text-xs"></i>
@@ -296,11 +318,11 @@
             <div class="flex flex-col md:flex-row gap-4 min-h-0 md:h-[calc(100vh-380px)] md:min-h-[340px]">
 
                 <!-- Left: Date list -->
-                <div class="w-full md:w-36 lg:w-48 flex-shrink-0 flex flex-col glass-panel rounded-2xl border border-white/5 overflow-hidden">
+                <div class="w-full md:w-56 lg:w-64 flex-shrink-0 flex flex-col glass-panel rounded-2xl border border-white/5 overflow-hidden">
                     <div class="px-3 pt-3 pb-1 flex-shrink-0">
                         <p class="text-[9px] uppercase tracking-widest text-gray-500 font-bold">By Date</p>
                     </div>
-                    <div id="import-date-list" class="flex md:block gap-1 overflow-x-auto md:overflow-y-auto px-2 pb-2 md:space-y-1"></div>
+                    <div id="import-date-list" class="flex md:block gap-2 overflow-x-auto md:overflow-y-auto px-2.5 pb-2.5 md:space-y-2"></div>
                     <!-- Grand total -->
                     <div class="flex-shrink-0 border-t border-white/10 px-3 py-2.5" style="background:rgba(0,0,0,0.25)">
                         <div class="text-[9px] uppercase tracking-widest text-gray-500 font-bold">All Dates</div>
@@ -398,9 +420,13 @@
         let importSelectedDate = null;
         let importSortMode = 'amount-desc';
         let importDataFormatPattern = '{tag}-Amount({amount})';
+        const savedImportDates = new Set();
+        const failedImportDates = new Set();
+        const importFieldErrorsByDate = {};
         const tagColorMap = {};
         const TAG_CLASSES = ['tag-indigo','tag-emerald','tag-pink','tag-amber','tag-sky','tag-purple','tag-rose','tag-teal'];
         let tagColorIndex = 0;
+        const INCOMING_TEXT_TOKENS = ['received', 'credit', 'cr', 'incoming', 'refund', 'reversal', 'deposit'];
         const CASHEW_CATEGORIES = [
             'Home',
             'My Personal',
@@ -604,21 +630,53 @@
             const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
             return `${String(d.getDate()).padStart(2,'0')}/${months[d.getMonth()]}/${d.getFullYear()}`;
         }
+
+        function parseDDMMMYYYYLabel(dateLabel) {
+            const raw = String(dateLabel || '').trim();
+            const match = raw.match(/^(\d{2})\/([A-Za-z]{3})\/(\d{4})$/);
+            if (!match) return null;
+            const day = Number(match[1]);
+            const monthTxt = match[2].toLowerCase();
+            const year = Number(match[3]);
+            const monthMap = {
+                jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+                jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11
+            };
+            const month = monthMap[monthTxt];
+            if (month === undefined) return null;
+            return new Date(year, month, day);
+        }
+
+        function formatImportDateDisplay(dateLabel) {
+            const parsed = parseDDMMMYYYYLabel(dateLabel);
+            if (!parsed || isNaN(parsed.getTime())) return String(dateLabel || '');
+            const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+            return `${dateLabel} ${days[parsed.getDay()]}`;
+        }
         function parseImportedAmount(value) {
             if (typeof value === 'number') return value;
             if (!value) return NaN;
             return parseFloat(String(value).replace(/,/g,'').replace(/[^0-9.-]/g,'').trim());
         }
-        function resolveImportedAmount(row) {
-            const aliasGroups = [
-                ['Debit','Debit Amount','Withdrawal','Withdrawals','Dr','Paid Out'],
-                ['Amount','Txn Amount','Transaction Amount','Amt','Value'],
-                ['Credit','Credit Amount','Deposit','Deposits','Cr','Paid In']
-            ];
 
-            for (const aliases of aliasGroups) {
-                const parsed = parseImportedAmount(getExcelCellValue(row, aliases));
-                if (!isNaN(parsed) && parsed !== 0) return Math.abs(parsed);
+        function resolveImportedAmountDetails(row) {
+            const debitAliases = ['Debit','Debit Amount','Withdrawal','Withdrawals','Dr','Paid Out'];
+            const genericAliases = ['Amount','Txn Amount','Transaction Amount','Amt','Value'];
+            const creditAliases = ['Credit','Credit Amount','Deposit','Deposits','Cr','Paid In', 'Received', 'Incoming'];
+
+            const debitValue = parseImportedAmount(getExcelCellValue(row, debitAliases));
+            if (!isNaN(debitValue) && debitValue !== 0) {
+                return { amount: Math.abs(debitValue), isIncoming: false };
+            }
+
+            const genericValue = parseImportedAmount(getExcelCellValue(row, genericAliases));
+            if (!isNaN(genericValue) && genericValue !== 0) {
+                return { amount: Math.abs(genericValue), isIncoming: genericValue > 0 };
+            }
+
+            const creditValue = parseImportedAmount(getExcelCellValue(row, creditAliases));
+            if (!isNaN(creditValue) && creditValue !== 0) {
+                return { amount: Math.abs(creditValue), isIncoming: true };
             }
 
             // Fallback: scan numeric-looking columns when headers are unexpected.
@@ -626,16 +684,94 @@
             for (const key of keys) {
                 const nk = normalizeExcelHeader(key);
                 if (!nk || nk.includes('balance')) continue;
-                if (/(amount|amt|debit|credit|withdraw|deposit|\bdr\b|\bcr\b|value)/.test(nk)) {
+                if (/(amount|amt|debit|credit|withdraw|deposit|\bdr\b|\bcr\b|value|received|incoming)/.test(nk)) {
                     const parsed = parseImportedAmount(row[key]);
-                    if (!isNaN(parsed) && parsed !== 0) return Math.abs(parsed);
+                    if (!isNaN(parsed) && parsed !== 0) {
+                        const incomingHeader = /(credit|deposit|\bcr\b|received|incoming)/.test(nk);
+                        const outgoingHeader = /(debit|withdraw|\bdr\b|paid\s*out)/.test(nk);
+                        const isIncoming = incomingHeader ? true : (outgoingHeader ? false : parsed > 0);
+                        return { amount: Math.abs(parsed), isIncoming };
+                    }
                 }
             }
-            return NaN;
+
+            return { amount: NaN, isIncoming: false };
+        }
+
+        function isIncomingEntry(entry) {
+            if (entry && entry.isIncoming === true) return true;
+            const searchable = `${entry?.tag || ''} ${entry?.remarks || ''}`.toLowerCase();
+            return INCOMING_TEXT_TOKENS.some(token => searchable.includes(token));
+        }
+
+        function isCttEntry(entry) {
+            const searchable = `${entry?.tag || ''} ${entry?.remarks || ''}`;
+            return /\bctt\b/i.test(searchable);
+        }
+
+        function removeIncomingTransactions() {
+            if (!importedEntriesByDate) return;
+            let removedCount = 0;
+
+            Object.keys(importedEntriesByDate).forEach(dateLabel => {
+                const rows = importedEntriesByDate[dateLabel] || [];
+                const keptRows = rows.filter(row => !isIncomingEntry(row) && !isCttEntry(row));
+                removedCount += (rows.length - keptRows.length);
+                if (keptRows.length) importedEntriesByDate[dateLabel] = keptRows;
+                else delete importedEntriesByDate[dateLabel];
+            });
+
+            if (!removedCount) {
+                KTui.alert('No Matching Rows', 'No incoming/received or CTT transactions found to remove.', 'success');
+                return;
+            }
+
+            const remainingDates = refreshOverviewStatsAndDateList();
+            if (importSelectedDate && importedEntriesByDate[importSelectedDate]?.length) {
+                renderPreviewForDate(importSelectedDate);
+            } else if (remainingDates.length) {
+                renderPreviewForDate(remainingDates[0]);
+            } else {
+                importSelectedDate = '';
+                const previewBodyEl = document.getElementById('import-preview-body');
+                const mobileListEl = document.getElementById('import-mobile-list');
+                if (previewBodyEl) previewBodyEl.innerHTML = '';
+                if (mobileListEl) mobileListEl.innerHTML = '';
+                const labelEl = document.getElementById('import-selected-date-label');
+                if (labelEl) labelEl.textContent = 'No Data';
+                const rowCountEl = document.getElementById('import-preview-row-count');
+                if (rowCountEl) rowCountEl.textContent = '0';
+                const totalEl = document.getElementById('import-preview-total');
+                if (totalEl) totalEl.textContent = '₹0.00';
+                const noDataMsg = document.getElementById('import-no-data-msg');
+                if (noDataMsg) {
+                    noDataMsg.classList.remove('hidden');
+                    noDataMsg.style.display = 'flex';
+                }
+            }
+
+            KTui.alert('Rows Removed', `Removed ${removedCount} incoming/received or CTT transaction(s).`, 'success');
         }
         function fmtAmt(n) {
             return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.00$/,'');
         }
+
+        function buildRemarkAmountText(remarkText, amount) {
+            const baseRemark = String(remarkText || '').trim() || 'Imported';
+            return `${baseRemark}-${fmtAmt(parseFloat(amount) || 0)}`;
+        }
+
+        function parseAmountFromRemarkText(remarkText) {
+            const raw = String(remarkText || '');
+            const amountMatches = Array.from(raw.matchAll(/-\s*([0-9]+(?:\.[0-9]+)?)/g));
+            if (!amountMatches.length) {
+                const legacy = Array.from(raw.matchAll(/-Amount\(\s*([0-9]+(?:\.[0-9]+)?)\s*\)/gi));
+                if (!legacy.length) return NaN;
+                return legacy.reduce((sum, match) => sum + (parseFloat(match[1]) || 0), 0);
+            }
+            return amountMatches.reduce((sum, match) => sum + (parseFloat(match[1]) || 0), 0);
+        }
+
         function formatEntry(entry, pattern) {
             if (entry && typeof entry.manualEntry === 'string' && entry.manualEntry.trim()) {
                 return entry.manualEntry.trim();
@@ -686,7 +822,9 @@
                 date: importSelectedDate,
                 tag: 'Manual',
                 remarks: '',
+                manualEntry: '',
                 amount: 0,
+                isIncoming: false,
                 category: ''
             });
 
@@ -723,11 +861,12 @@
                         const row = getRowByEntryId(dateLabel, event.target.dataset.entryId);
                         if (!row) return;
                         row.category = event.target.value;
+                        clearImportEntryFieldError(dateLabel, event.target.dataset.entryId, 'category');
                         clubSameCategoryForDate(dateLabel);
                     });
                 });
 
-                root.querySelectorAll('.import-row-entry').forEach(inputEl => {
+                root.querySelectorAll('.import-row-tx-details').forEach(inputEl => {
                     inputEl.addEventListener('input', (event) => {
                         const row = getRowByEntryId(dateLabel, event.target.dataset.entryId);
                         if (!row) return;
@@ -736,10 +875,27 @@
                 });
 
                 root.querySelectorAll('.import-row-remarks').forEach(inputEl => {
-                    inputEl.addEventListener('change', (event) => {
+                    inputEl.addEventListener('input', (event) => {
                         const row = getRowByEntryId(dateLabel, event.target.dataset.entryId);
                         if (!row) return;
                         row.remarks = event.target.value;
+
+                        const parsedAmount = parseAmountFromRemarkText(event.target.value);
+                        if (!isNaN(parsedAmount) && parsedAmount >= 0) {
+                            row.amount = parseFloat(parsedAmount.toFixed(2));
+                            root.querySelectorAll(`.import-row-amount[data-entry-id="${event.target.dataset.entryId}"]`).forEach(amountInput => {
+                                amountInput.value = row.amount.toFixed(2);
+                            });
+
+                            const rowsForDate = (importedEntriesByDate && importedEntriesByDate[dateLabel]) || [];
+                            const total = rowsForDate.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+                            const totalEl = document.getElementById('import-preview-total');
+                            if (totalEl) totalEl.textContent = `₹${total.toFixed(2)}`;
+                            refreshOverviewStatsAndDateList();
+                            clearImportEntryFieldError(dateLabel, event.target.dataset.entryId, 'amount');
+                        }
+
+                        clearImportEntryFieldError(dateLabel, event.target.dataset.entryId, 'remarks');
                     });
                 });
 
@@ -749,6 +905,7 @@
                         if (!row) return;
                         const nextAmount = parseFloat(event.target.value);
                         row.amount = isNaN(nextAmount) ? 0 : nextAmount;
+                        clearImportEntryFieldError(dateLabel, event.target.dataset.entryId, 'amount');
 
                         const rowsForDate = (importedEntriesByDate && importedEntriesByDate[dateLabel]) || [];
                         const total = rowsForDate.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
@@ -825,12 +982,33 @@
                         renderPreviewForDate(dateLabel);
                     });
                 });
+
+                root.querySelectorAll('.import-row-duplicate-giving').forEach(btn => {
+                    btn.addEventListener('click', (event) => {
+                        const entryId = event.currentTarget.dataset.entryId;
+                        const rowsForDate = importedEntriesByDate && importedEntriesByDate[dateLabel];
+                        if (!entryId || !rowsForDate) return;
+
+                        const rowIndex = rowsForDate.findIndex(row => row.entryId === entryId);
+                        if (rowIndex === -1) return;
+
+                        const sourceRow = rowsForDate[rowIndex];
+                        const duplicateRow = {
+                            ...sourceRow,
+                            entryId: createImportEntryId('duplicate')
+                        };
+
+                        rowsForDate.splice(rowIndex + 1, 0, duplicateRow);
+                        refreshOverviewStatsAndDateList();
+                        renderPreviewForDate(dateLabel);
+                    });
+                });
             });
         }
         function sortDateLabels(labels) {
             return [...labels].sort((a,b) => {
-                const da = new Date(a.split('/').reverse().join('-'));
-                const db = new Date(b.split('/').reverse().join('-'));
+                const da = parseDDMMMYYYYLabel(a) || new Date(a);
+                const db = parseDDMMMYYYYLabel(b) || new Date(b);
                 return da - db;
             });
         }
@@ -850,18 +1028,32 @@
                     const dateObj = parseImportedDate(getExcelCellValue(row, ['Date','Transaction Date','Txn Date','Entry Date']));
                     if (!dateObj) { skippedDate++; return; }
 
-                    const amount = resolveImportedAmount(row);
-                    if (isNaN(amount) || amount <= 0) { skippedAmt++; return; }
+                    const amountDetails = resolveImportedAmountDetails(row);
+                    if (isNaN(amountDetails.amount) || amountDetails.amount <= 0) { skippedAmt++; return; }
 
-                    const remarks = String(getExcelCellValue(row, ['Remarks','Remark','Narration','Description','Details'])||'').trim();
+                    const sheetTransactionDetails = String(getExcelCellValue(row, [
+                        'Transaction Details',
+                        'Transaction Detail',
+                        'Transaction Description',
+                        'Txn Details',
+                        'Txn Detail',
+                        'Details',
+                        'Description',
+                        'Narration'
+                    ]) || '').trim();
+                    const sheetRemark = String(getExcelCellValue(row, ['Remarks','Remark']) || '').trim();
                     const tag = String(rawTag||'').trim();
+                    const transactionDetails = sheetTransactionDetails || sheetRemark || tag || 'Imported';
+                    const remarkBaseText = sheetRemark || sheetTransactionDetails || tag || 'Imported';
 
                     all.push({
                         entryId: `${sheetName}-${entryCounter++}`,
                         date: formatDateToDDMMMYYYY(formatToIsoDate(dateObj)),
                         tag,
-                        remarks: remarks || 'Imported',
-                        amount,
+                        remarks: buildRemarkAmountText(remarkBaseText, amountDetails.amount),
+                        manualEntry: transactionDetails,
+                        amount: amountDetails.amount,
+                        isIncoming: amountDetails.isIncoming,
                         category: ''
                     });
                 });
@@ -885,14 +1077,30 @@
             sortedDates.forEach(dateLabel => {
                 const rows = groupedEntries[dateLabel];
                 const rowTotal = rows.reduce((s,r) => s + (parseFloat(r.amount)||0), 0);
+                const parsedDate = parseDDMMMYYYYLabel(dateLabel);
+                const isSunday = parsedDate && parsedDate.getDay() === 0;
+                const isSaved = savedImportDates.has(dateLabel);
+                const isFailed = failedImportDates.has(dateLabel);
+                const statusDot = isFailed
+                    ? '<i class="fa-solid fa-circle-exclamation text-[10px] text-rose-400 mr-1" title="Save failed"></i>'
+                    : (isSaved
+                    ? '<i class="fa-solid fa-circle text-[8px] text-emerald-400 mr-1" title="Saved"></i>'
+                    : (isSunday ? '<i class="fa-solid fa-circle text-[8px] text-red-400 mr-1" title="Sunday"></i>' : ''));
+                const dateColorClass = isFailed
+                    ? 'text-rose-300'
+                    : (isSaved && !isSunday ? 'text-emerald-300' : (isSunday ? 'text-red-300' : 'text-gray-200'));
+                const amountColorClass = isFailed
+                    ? 'text-rose-300'
+                    : (isSaved ? 'text-emerald-300' : (isSunday ? 'text-red-300' : 'text-emerald-400'));
                 const btn = document.createElement('button');
                 btn.type = 'button';
-                btn.className = 'import-date-item md:w-full min-w-[120px] flex-shrink-0 text-left px-2.5 py-2 rounded-xl border border-transparent';
+                btn.className = 'import-date-item md:w-full min-w-[165px] flex-shrink-0 text-left px-3 py-2.5 rounded-xl border border-transparent';
+                if (isFailed) btn.classList.add('failed');
                 btn.dataset.date = dateLabel;
                 btn.innerHTML = `
                     <div class="flex items-center justify-between gap-2">
-                        <div class="date-label text-xs font-bold text-gray-200 leading-tight truncate">${dateLabel}</div>
-                        <span class="text-[10px] font-mono text-emerald-400 whitespace-nowrap">₹${rowTotal.toFixed(0)}</span>
+                        <div class="date-label text-[11px] font-bold leading-snug break-words pr-2 ${dateColorClass}">${statusDot}${formatImportDateDisplay(dateLabel)}</div>
+                        <span class="text-[11px] font-mono whitespace-nowrap flex-shrink-0 ${amountColorClass}">₹${rowTotal.toFixed(0)}</span>
                     </div>`;
                 btn.onclick = () => renderPreviewForDate(dateLabel);
                 listEl.appendChild(btn);
@@ -903,6 +1111,7 @@
         function renderPreviewForDate(dateLabel) {
             importSelectedDate = dateLabel;
             updateDateCategorySelect(dateLabel);
+            const dateErrors = importFieldErrorsByDate[dateLabel] || null;
 
             const formatInput = document.getElementById('import-data-format-input');
             if (formatInput) importDataFormatPattern = formatInput.value;
@@ -917,7 +1126,7 @@
 
             // Update header
             const labelEl = document.getElementById('import-selected-date-label');
-            if (labelEl) labelEl.textContent = dateLabel || '';
+            if (labelEl) labelEl.textContent = formatImportDateDisplay(dateLabel);
 
             const previewBody = document.getElementById('import-preview-body');
             const mobileList = document.getElementById('import-mobile-list');
@@ -940,6 +1149,7 @@
             // Filter
             if (searchQuery) {
                 entries = entries.filter(e =>
+                    (e.manualEntry||'').toLowerCase().includes(searchQuery) ||
                     (e.remarks||'').toLowerCase().includes(searchQuery) ||
                     (e.tag||'').toLowerCase().includes(searchQuery) ||
                     (e.category||'').toLowerCase().includes(searchQuery) ||
@@ -967,8 +1177,13 @@
             let total = 0;
             entries.forEach((entry, idx) => {
                 const amt = parseFloat(entry.amount) || 0;
+                if (typeof entry.remarks === 'string') {
+                    entry.remarks = entry.remarks.replace(/-Amount\(([^)]+)\)\s*$/i, '-$1');
+                }
                 total += amt;
-                const displayText = formatEntry(entry, importDataFormatPattern);
+                const hasCategoryError = !!(dateErrors && dateErrors.category && dateErrors.category.has(entry.entryId));
+                const hasAmountError = !!(dateErrors && dateErrors.amount && dateErrors.amount.has(entry.entryId));
+                const hasRemarkError = !!(dateErrors && dateErrors.remarks && dateErrors.remarks.has(entry.entryId));
                 const specialTagNote = getSpecialTagNote(entry.tag);
                 const isOdd = idx % 2 === 0;
                 const rowBg = isOdd ? 'rgba(99,102,241,0.15)' : 'rgba(16,185,129,0.12)';
@@ -979,26 +1194,33 @@
                         <div class="grid grid-cols-3 gap-1.5">
                             <div>
                                 <div class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-0.5">Category</div>
-                                <select class="import-row-category w-full bg-black/40 border border-white/10 rounded-lg px-2 py-1 text-[11px] text-white outline-none focus:border-indigo-500" data-entry-id="${entry.entryId}">
+                                <select class="import-row-category w-full bg-black/40 border border-white/10 rounded-lg px-2 py-1 text-[11px] text-white outline-none focus:border-indigo-500${hasCategoryError ? ' field-error' : ''}" data-entry-id="${entry.entryId}">
                                     ${renderCategoryOptionsHtml(entry.category || '')}
                                 </select>
+                                ${hasCategoryError ? '<div class="field-error-text">Category is required</div>' : ''}
                             </div>
                             <div>
-                                <div class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-0.5">Remark</div>
-                                <input type="text" class="import-row-remarks w-full bg-black/30 border border-white/10 rounded-lg px-2 py-1 text-[11px] text-gray-300 outline-none focus:border-indigo-500" data-entry-id="${entry.entryId}" value="${(entry.remarks || '').replace(/"/g, '&quot;')}" />
+                                <div class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-0.5">Transaction Details</div>
+                                <input type="text" class="import-row-tx-details w-full bg-black/30 border border-white/10 rounded-lg px-2 py-1 text-[11px] text-gray-200 outline-none focus:border-indigo-500" data-entry-id="${entry.entryId}" value="${String(entry.manualEntry || '').replace(/"/g, '&quot;')}" placeholder="Transaction details" />
                             </div>
                             <div>
                                 <div class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-0.5">Amount</div>
-                                <input type="number" step="0.01" min="0" class="import-row-amount w-full bg-black/30 border border-white/10 rounded-lg px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-300 outline-none focus:border-emerald-500" data-entry-id="${entry.entryId}" value="${amt.toFixed(2)}" />
+                                <input type="number" step="0.01" min="0" class="import-row-amount w-full bg-black/30 border border-white/10 rounded-lg px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-300 outline-none focus:border-emerald-500${hasAmountError ? ' field-error' : ''}" data-entry-id="${entry.entryId}" value="${amt.toFixed(2)}" />
+                                ${hasAmountError ? '<div class="field-error-text">Amount should be greater than 0</div>' : ''}
                             </div>
                         </div>
                         <div class="mt-1">
-                            <textarea rows="2" class="import-row-entry w-full h-12 bg-black/30 border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-gray-200 outline-none focus:border-indigo-500 resize-none overflow-y-auto leading-relaxed" data-entry-id="${entry.entryId}" placeholder="Entry details">${(displayText || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
-                            ${specialTagNote ? `<div class="mt-1 text-[10px] text-amber-300">Tag: ${specialTagNote.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>` : ''}
+                            <div class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-0.5">Remark - Amount</div>
+                            <input type="text" class="import-row-remarks w-full bg-black/30 border border-white/10 rounded-lg px-2 py-1 text-[11px] text-gray-300 outline-none focus:border-indigo-500${hasRemarkError ? ' field-error' : ''}" data-entry-id="${entry.entryId}" value="${(entry.remarks || '').replace(/"/g, '&quot;')}" placeholder="Remark - Amount" />
+                            ${hasRemarkError ? '<div class="field-error-text">Remark - Amount is required</div>' : ''}
                         </div>
+                        ${specialTagNote ? `<div class="mt-1 text-[10px] text-amber-300">Tag: ${specialTagNote.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>` : ''}
                     </td>
                     <td class="px-3 py-2.5 text-center" style="background:${rowBg}">
                         <div class="flex items-center justify-center gap-1.5">
+                            <button type="button" class="import-row-duplicate-giving w-7 h-7 rounded-lg border border-amber-500/35 text-amber-300 hover:bg-amber-500/15 transition-all" data-entry-id="${entry.entryId}" title="Duplicate transaction">
+                                <i class="fa-solid fa-copy text-[10px]"></i>
+                            </button>
                             <button type="button" class="import-row-split w-7 h-7 rounded-lg border border-sky-500/35 text-sky-300 hover:bg-sky-500/15 transition-all" data-entry-id="${entry.entryId}" title="Split transaction">
                                 <i class="fa-solid fa-code-branch text-[10px]"></i>
                             </button>
@@ -1017,6 +1239,9 @@
                         <div class="flex items-center justify-between gap-2 mb-1">
                             <span class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Transaction</span>
                             <div class="flex items-center gap-1.5">
+                                <button type="button" class="import-row-duplicate-giving w-7 h-7 rounded-lg border border-amber-500/35 text-amber-300 hover:bg-amber-500/15 transition-all" data-entry-id="${entry.entryId}" title="Duplicate transaction">
+                                    <i class="fa-solid fa-copy text-[10px]"></i>
+                                </button>
                                 <button type="button" class="import-row-split w-7 h-7 rounded-lg border border-sky-500/35 text-sky-300 hover:bg-sky-500/15 transition-all" data-entry-id="${entry.entryId}" title="Split transaction">
                                     <i class="fa-solid fa-code-branch text-[10px]"></i>
                                 </button>
@@ -1028,23 +1253,27 @@
                         <div class="grid grid-cols-3 gap-1.5">
                             <div>
                                 <span class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Category</span>
-                                <select class="import-row-category w-full mt-1 bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-white outline-none focus:border-indigo-500" data-entry-id="${entry.entryId}">
+                                <select class="import-row-category w-full mt-1 bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-white outline-none focus:border-indigo-500${hasCategoryError ? ' field-error' : ''}" data-entry-id="${entry.entryId}">
                                     ${renderCategoryOptionsHtml(entry.category || '')}
                                 </select>
+                                ${hasCategoryError ? '<div class="field-error-text">Category is required</div>' : ''}
                             </div>
                             <div>
-                                <span class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Remark - Value</span>
-                                <input type="text" class="import-row-remarks w-full mt-1 bg-black/30 border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-gray-300 outline-none focus:border-indigo-500" data-entry-id="${entry.entryId}" value="${(entry.remarks || '').replace(/"/g, '&quot;')}" />
+                                <span class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Transaction Details</span>
+                                <input type="text" class="import-row-tx-details w-full mt-1 bg-black/30 border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-gray-200 outline-none focus:border-indigo-500" data-entry-id="${entry.entryId}" value="${String(entry.manualEntry || '').replace(/"/g, '&quot;')}" placeholder="Transaction details" />
                             </div>
                             <div>
                                 <span class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Amount - Value</span>
-                                <input type="number" step="0.01" min="0" class="import-row-amount w-full mt-1 bg-black/30 border border-white/10 rounded-lg px-2 py-1 font-mono text-[11px] font-bold text-emerald-300 outline-none focus:border-emerald-500" data-entry-id="${entry.entryId}" value="${amt.toFixed(2)}" />
+                                <input type="number" step="0.01" min="0" class="import-row-amount w-full mt-1 bg-black/30 border border-white/10 rounded-lg px-2 py-1 font-mono text-[11px] font-bold text-emerald-300 outline-none focus:border-emerald-500${hasAmountError ? ' field-error' : ''}" data-entry-id="${entry.entryId}" value="${amt.toFixed(2)}" />
+                                ${hasAmountError ? '<div class="field-error-text">Amount should be greater than 0</div>' : ''}
                             </div>
                         </div>
                         <div>
-                            <textarea rows="2" class="import-row-entry w-full h-12 mt-1 bg-black/30 border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-gray-200 outline-none focus:border-indigo-500 resize-none overflow-y-auto leading-relaxed" data-entry-id="${entry.entryId}" placeholder="Entry details">${(displayText || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
-                            ${specialTagNote ? `<div class="mt-1 text-[10px] text-amber-300">Tag: ${specialTagNote.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>` : ''}
+                            <span class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Remark - Amount</span>
+                            <input type="text" class="import-row-remarks w-full mt-1 bg-black/30 border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-gray-300 outline-none focus:border-indigo-500${hasRemarkError ? ' field-error' : ''}" data-entry-id="${entry.entryId}" value="${(entry.remarks || '').replace(/"/g, '&quot;')}" placeholder="Remark - Amount" />
+                            ${hasRemarkError ? '<div class="field-error-text">Remark - Amount is required</div>' : ''}
                         </div>
+                        ${specialTagNote ? `<div class="mt-1 text-[10px] text-amber-300">Tag: ${specialTagNote.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>` : ''}
                     `;
                     mobileList.appendChild(card);
                 }
@@ -1102,7 +1331,7 @@
                 .map(entry => ({
                     date: dateLabel,
                     category: String(entry.category || '').trim(),
-                    description: formatEntry(entry, importDataFormatPattern),
+                    description: String(entry.remarks || '').trim() || formatEntry(entry, importDataFormatPattern),
                     amount: parseFloat(entry.amount)
                 }));
 
@@ -1154,15 +1383,49 @@
             });
         }
 
-        function getInvalidCategoryCountForDate(dateLabel) {
+        function clearImportFieldErrors(dateLabel) {
+            if (dateLabel) {
+                delete importFieldErrorsByDate[dateLabel];
+                return;
+            }
+            Object.keys(importFieldErrorsByDate).forEach(key => delete importFieldErrorsByDate[key]);
+        }
+
+        function clearImportEntryFieldError(dateLabel, entryId, fieldKey) {
+            const byDate = importFieldErrorsByDate[dateLabel];
+            if (!byDate || !entryId || !fieldKey || !byDate[fieldKey]) return;
+            byDate[fieldKey].delete(entryId);
+            if (!byDate.category.size && !byDate.amount.size && !byDate.remarks.size) {
+                delete importFieldErrorsByDate[dateLabel];
+            }
+        }
+
+        function getInvalidRowsForDate(dateLabel) {
             const rowsForDate = (importedEntriesByDate && importedEntriesByDate[dateLabel]) || [];
-            return rowsForDate.filter(entry => {
+            const invalid = {
+                category: new Set(),
+                amount: new Set(),
+                remarks: new Set()
+            };
+
+            rowsForDate.forEach(entry => {
                 const amount = parseFloat(entry.amount);
                 const category = String(entry.category || '').trim().toLowerCase();
-                const isValidAmount = !isNaN(amount) && amount > 0;
                 const isInvalidCategory = !category || category === 'select';
-                return isValidAmount && isInvalidCategory;
-            }).length;
+
+                if (isInvalidCategory) invalid.category.add(entry.entryId);
+                if (isNaN(amount) || amount <= 0) invalid.amount.add(entry.entryId);
+                if (!String(entry.remarks || '').trim()) invalid.remarks.add(entry.entryId);
+            });
+
+            return invalid;
+        }
+
+        function applyInvalidRowsForDate(dateLabel, invalidRows) {
+            const hasIssues = invalidRows.category.size || invalidRows.amount.size || invalidRows.remarks.size;
+            if (hasIssues) importFieldErrorsByDate[dateLabel] = invalidRows;
+            else delete importFieldErrorsByDate[dateLabel];
+            return hasIssues;
         }
 
         async function saveSelectedDateImport() {
@@ -1171,9 +1434,15 @@
                 return;
             }
 
-            const invalidCategoryCount = getInvalidCategoryCountForDate(importSelectedDate);
-            if (invalidCategoryCount > 0) {
-                KTui.alert('Category Required', `Please choose category for ${invalidCategoryCount} row(s) in ${importSelectedDate}. Rows with category Select cannot be saved.`, 'error');
+            const invalidRows = getInvalidRowsForDate(importSelectedDate);
+            const hasInvalidRows = applyInvalidRowsForDate(importSelectedDate, invalidRows);
+            if (hasInvalidRows) {
+                renderPreviewForDate(importSelectedDate);
+                const msgParts = [];
+                if (invalidRows.category.size) msgParts.push(`Category missing: ${invalidRows.category.size}`);
+                if (invalidRows.amount.size) msgParts.push(`Invalid amount: ${invalidRows.amount.size}`);
+                if (invalidRows.remarks.size) msgParts.push(`Remark - Amount missing: ${invalidRows.remarks.size}`);
+                KTui.alert('Validation Error', `${importSelectedDate} -> ${msgParts.join(', ')}`, 'error');
                 return;
             }
 
@@ -1190,9 +1459,16 @@
 
             try {
                 await postCashewData(payload);
+                clearImportFieldErrors(importSelectedDate);
+                failedImportDates.delete(importSelectedDate);
+                savedImportDates.add(importSelectedDate);
+                refreshOverviewStatsAndDateList();
+                renderPreviewForDate(importSelectedDate);
                 loader.classList.add('hidden');
                 KTui.alert('Saved', `Saved ${payload.expenses.length} row(s) for ${importSelectedDate}.`, 'success');
             } catch (error) {
+                failedImportDates.add(importSelectedDate);
+                refreshOverviewStatsAndDateList();
                 loader.classList.add('hidden');
                 KTui.alert('Save Error', error.message || 'Could not save selected date.', 'error');
             }
@@ -1206,12 +1482,29 @@
             }
 
             const invalidDates = dateLabels
-                .map(date => ({ date, count: getInvalidCategoryCountForDate(date) }))
-                .filter(item => item.count > 0);
+                .map(date => {
+                    const invalidRows = getInvalidRowsForDate(date);
+                    const hasIssues = applyInvalidRowsForDate(date, invalidRows);
+                    return {
+                        date,
+                        invalidRows,
+                        count: invalidRows.category.size + invalidRows.amount.size + invalidRows.remarks.size,
+                        hasIssues
+                    };
+                })
+                .filter(item => item.hasIssues);
 
             if (invalidDates.length) {
-                const detail = invalidDates.map(item => `${item.date}: ${item.count}`).join(', ');
-                KTui.alert('Category Required', `Cannot save all dates. Please set category (not Select) for these date rows -> ${detail}`, 'error');
+                const firstInvalidDate = invalidDates[0].date;
+                renderPreviewForDate(firstInvalidDate);
+                const detail = invalidDates.map(item => {
+                    const p = [];
+                    if (item.invalidRows.category.size) p.push(`Cat ${item.invalidRows.category.size}`);
+                    if (item.invalidRows.amount.size) p.push(`Amt ${item.invalidRows.amount.size}`);
+                    if (item.invalidRows.remarks.size) p.push(`Remark ${item.invalidRows.remarks.size}`);
+                    return `${item.date}: ${p.join('/')}`;
+                }).join(', ');
+                KTui.alert('Validation Error', `Cannot save all dates. Fix highlighted fields -> ${detail}`, 'error');
                 return;
             }
 
@@ -1223,22 +1516,33 @@
 
             let savedDates = 0;
             let savedRows = 0;
+            let inProgressDate = '';
 
             try {
                 for (let i = 0; i < dateLabels.length; i++) {
                     const dateLabel = dateLabels[i];
+                    inProgressDate = dateLabel;
                     const payload = buildCashewPayloadForDate(dateLabel);
                     if (!payload.expenses.length) continue;
 
                     loaderText.textContent = `Saving ${dateLabel} (${i + 1}/${dateLabels.length})...`;
                     await postCashewData(payload);
+                    clearImportFieldErrors(dateLabel);
+                    failedImportDates.delete(dateLabel);
+                    savedImportDates.add(dateLabel);
                     savedDates += 1;
                     savedRows += payload.expenses.length;
                 }
 
+                refreshOverviewStatsAndDateList();
+                if (importSelectedDate && importedEntriesByDate[importSelectedDate]) {
+                    renderPreviewForDate(importSelectedDate);
+                }
                 loader.classList.add('hidden');
                 KTui.alert('Saved', `Saved ${savedRows} row(s) across ${savedDates} date(s).`, 'success');
             } catch (error) {
+                if (inProgressDate) failedImportDates.add(inProgressDate);
+                refreshOverviewStatsAndDateList();
                 loader.classList.add('hidden');
                 KTui.alert('Save Error', error.message || 'Could not finish saving all dates.', 'error');
             }
@@ -1274,6 +1578,9 @@
                     }
 
                     // Reset tag colors for new file
+                    savedImportDates.clear();
+                    failedImportDates.clear();
+                    clearImportFieldErrors();
                     Object.keys(tagColorMap).forEach(k => delete tagColorMap[k]);
                     tagColorIndex = 0;
 
