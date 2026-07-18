@@ -187,11 +187,11 @@
                             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
                                 <i class="fa-solid fa-indian-rupee-sign text-sm"></i>
                             </div>
-                            <input type="number" id="rentAmount" name="rentAmount" inputmode="numeric" placeholder="0.00" class="w-full bg-black/40 border border-white/10 rounded-2xl pl-10 pr-4 py-3.5 text-sm font-mono font-bold text-white outline-none focus:border-indigo-500 focus:bg-black/60 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-gray-700">
+                            <input type="number" id="rentAmount" name="rentAmount" inputmode="numeric" placeholder="0.00" value="5500" class="w-full bg-black/40 border border-white/10 rounded-2xl pl-10 pr-4 py-3.5 text-sm font-mono font-bold text-white outline-none focus:border-indigo-500 focus:bg-black/60 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-gray-700">
                         </div>
                     </div>
                     <div class="space-y-1.5">
-                        <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1" data-translate-key="paidAmount">Paid Amount</label>
+                        <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1" data-translate-key="paidAmount">Rent Paid Amount</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
                                 <i class="fa-solid fa-indian-rupee-sign text-sm"></i>
@@ -211,7 +211,7 @@
                 </div>
 
                 <!-- Utilities & Total Row -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                     <div class="space-y-1.5">
                         <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1" data-translate-key="powerBill">Power Bill</label>
                         <div class="relative">
@@ -231,6 +231,15 @@
                         </div>
                     </div>
                     <div class="space-y-1.5">
+                        <label class="text-[10px] uppercase tracking-wider text-amber-400 font-bold ml-1" data-translate-key="adjustAmount">Adjust Amount</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-amber-400">
+                                <i class="fa-solid fa-sliders text-sm"></i>
+                            </div>
+                            <input type="number" id="adjustAmount" name="adjustAmount" inputmode="numeric" oninput="calculateTotal()" placeholder="0.00" class="w-full bg-amber-500/10 border border-amber-500/30 rounded-2xl pl-10 pr-4 py-3.5 text-sm font-mono font-bold text-amber-300 outline-none focus:border-amber-400 focus:bg-amber-500/20 focus:ring-1 focus:ring-amber-400 transition-all placeholder-gray-700">
+                        </div>
+                    </div>
+                    <div class="space-y-1.5">
                         <label class="text-[10px] uppercase tracking-wider text-emerald-500 font-bold ml-1" data-translate-key="totalPaid">Total Paid</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-emerald-500">
@@ -238,6 +247,7 @@
                             </div>
                             <input type="text" id="totalPaid" name="totalPaid" placeholder="0.00" readonly class="w-full bg-emerald-500/10 border border-emerald-500/30 rounded-2xl pl-10 pr-4 py-3.5 text-sm font-mono font-bold text-emerald-400 outline-none transition-all">
                         </div>
+                        <p class="text-[10px] text-emerald-300/80 ml-1">Rent Paid + Water Bill + Adjust Amount - Balance Amount</p>
                     </div>
                 </div>
 
@@ -278,6 +288,7 @@
                             <th data-translate-key="balance">Balance</th>
                             <th data-translate-key="power">Power</th>
                             <th data-translate-key="water">Water</th>
+                            <th data-translate-key="adjustAmount">Adjust</th>
                             <th data-translate-key="total">Total</th>
                             <th data-translate-key="remarks">Remarks</th>
                         </tr>

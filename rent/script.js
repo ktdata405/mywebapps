@@ -36,8 +36,9 @@ function calculateTotal() {
     const paidAmount = parseFloat(document.getElementById('paidAmount').value) || 0;
     const waterBill = parseFloat(document.getElementById('waterBill').value) || 0;
     const balanceAmount = parseFloat(document.getElementById('balanceAmount').value) || 0;
+    const adjustAmount = parseFloat(document.getElementById('adjustAmount').value) || 0;
 
-    const totalPaid = (paidAmount + waterBill) - balanceAmount;
+    const totalPaid = (paidAmount + waterBill + adjustAmount) - balanceAmount;
     document.getElementById('totalPaid').value = totalPaid.toFixed(2);
 }
 
@@ -86,6 +87,7 @@ function initializeForm() {
         document.getElementById('balanceAmount').value = data.balanceAmount;
         document.getElementById('powerBill').value = data.powerBill;
         document.getElementById('waterBill').value = data.waterBill;
+        document.getElementById('adjustAmount').value = data.adjustAmount || 0;
         document.getElementById('totalPaid').value = data.totalPaid;
         document.getElementById('remarks').value = data.remarks;
         
@@ -135,6 +137,7 @@ form.addEventListener('submit', function(event) {
         balanceAmount: document.getElementById('balanceAmount').value || 0,
         powerBill: document.getElementById('powerBill').value || '0',
         waterBill: document.getElementById('waterBill').value || '0',
+        adjustAmount: document.getElementById('adjustAmount').value || '0',
         totalPaid: document.getElementById('totalPaid').value,
         remarks: document.getElementById('remarks').value || '-',
         action: isEditMode ? 'update' : 'add',
@@ -187,6 +190,7 @@ form.addEventListener('submit', function(event) {
                     <td>${formData.balanceAmount}</td>
                     <td>${formData.powerBill}</td>
                     <td>${formData.waterBill}</td>
+                    <td>${formData.adjustAmount}</td>
                     <td>${formData.totalPaid}</td>
                     <td>${formData.remarks}</td>
                 `;
