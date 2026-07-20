@@ -1095,6 +1095,8 @@
                 return;
             }
 
+            const isScheduledOnly = expenses.length > 0 && expenses.every(exp => String(exp.category || '').toLowerCase().includes('schedule'));
+
             const data = {
                 type: 'cashew',
                 expenses: expenses,
@@ -1103,6 +1105,12 @@
                 action: isEditMode ? 'update' : 'add',
                 originalDate: originalDate
             };
+
+            if (isScheduledOnly) {
+                data.isScheduled = true;
+                data.targetSheetName = 'Scheduled';
+                data.sheetName = 'Scheduled';
+            }
 
             fetch(CONFIG.GOOGLE_SHEET_URL_CASHEW, {
                 method: 'POST',

@@ -231,6 +231,100 @@
             cursor: not-allowed;
             transform: none;
         }
+
+        .scheduled-shell {
+            background: rgba(15, 23, 42, 0.78);
+            border-radius: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            box-shadow: 0 18px 45px rgba(2, 6, 23, 0.45);
+        }
+
+        .scheduled-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 9999px;
+            padding: 6px;
+        }
+
+        .scheduled-tab-btn {
+            border: 0;
+            border-radius: 9999px;
+            padding: 10px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #94a3b8;
+            background: transparent;
+            transition: all 0.2s ease;
+        }
+
+        .scheduled-tab-btn.active {
+            background: rgba(99, 102, 241, 0.24);
+            color: #ffffff;
+            border: 1px solid rgba(99, 102, 241, 0.45);
+            box-shadow: 0 8px 16px rgba(99, 102, 241, 0.25);
+        }
+
+        .scheduled-search {
+            width: 100%;
+            border-radius: 9999px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(15, 23, 42, 0.65);
+            color: #f8fafc;
+            padding: 12px 14px 12px 38px;
+            font-size: 14px;
+            font-weight: 600;
+            outline: none;
+        }
+
+        .scheduled-search::placeholder {
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .scheduled-search:focus {
+            border-color: rgba(99, 102, 241, 0.8);
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+        }
+
+        .scheduled-month-card {
+            background: rgba(2, 6, 23, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1.5rem;
+            padding: 1rem;
+        }
+
+        .scheduled-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 2px;
+        }
+
+        .scheduled-item + .scheduled-item {
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .scheduled-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 640px) {
+            .scheduled-shell {
+                border-radius: 1.5rem;
+                padding: 0.75rem;
+            }
+        }
     </style>
 </head>
 
@@ -368,9 +462,10 @@
                     <div class="flex p-1 bg-white/5 rounded-2xl border border-white/5 w-full sm:w-auto">
                         <button onclick="switchView('transactions')" id="tab-transactions" class="flex-1 sm:flex-none px-6 py-2 rounded-xl text-sm font-bold transition-all text-gray-400 tab-active">Transactions</button>
                         <button onclick="switchView('insights')" id="tab-insights" class="flex-1 sm:flex-none px-6 py-2 rounded-xl text-sm font-bold transition-all text-gray-400">Insights</button>
+                        <button onclick="switchView('scheduled')" id="tab-scheduled" class="flex-1 sm:flex-none px-6 py-2 rounded-xl text-sm font-bold transition-all text-gray-400">Scheduled</button>
                     </div>
 
-                    <div class="relative w-full sm:w-72">
+                    <div id="global-search-wrap" class="relative w-full sm:w-72">
                         <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
                         <input type="text" id="search-input" placeholder="Search description..." class="w-full bg-white/5 border border-white/10 rounded-2xl py-2.5 pl-11 pr-4 text-sm font-medium outline-none focus:border-indigo-500 transition-all text-white placeholder-gray-600" onkeyup="filterData()">
                     </div>
@@ -402,6 +497,37 @@
                     </div>
                 </div>
 
+                <!-- Scheduled Transactions View (Hidden by default) -->
+                <div id="view-scheduled" class="hidden space-y-4">
+                    <div class="scheduled-shell glass space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-base font-bold text-white">Scheduled Transactions</h3>
+                            <button onclick="openScheduledTransactionModal()" class="text-xs font-bold px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-all">
+                                <i class="fa-solid fa-plus mr-1"></i>Add
+                            </button>
+                        </div>
+
+                        <div class="scheduled-tabs">
+                            <button type="button" id="scheduled-tab-upcoming" class="scheduled-tab-btn active" onclick="setScheduledStatus('upcoming')">Upcoming</button>
+                            <button type="button" id="scheduled-tab-completed" class="scheduled-tab-btn" onclick="setScheduledStatus('completed')">Completed</button>
+                        </div>
+
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+                            <input type="text" id="scheduled-search-input" placeholder="Search scheduled transactions" class="scheduled-search" oninput="handleScheduledSearch()">
+                        </div>
+
+                        <div class="flex items-center justify-between px-1">
+                            <span id="scheduled-entry-count" class="text-[11px] font-bold text-gray-400 uppercase tracking-wide">0 entries</span>
+                            <span id="scheduled-total-label" class="text-sm font-black text-indigo-300 font-mono">Rs. 0</span>
+                        </div>
+
+                        <div id="scheduled-report-body" class="space-y-3">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
         </div>
@@ -415,8 +541,8 @@
                 <div class="absolute inset-0 border-4 border-indigo-500 rounded-full border-t-transparent animate-spin"></div>
             </div>
             <div class="text-center">
-                <h3 class="text-white font-bold text-lg">Analyzing Data</h3>
-                <p class="text-gray-400 text-xs mt-1 uppercase tracking-widest">Please wait a moment</p>
+                <h3 id="loader-title" class="text-white font-bold text-lg">Analyzing Data</h3>
+                <p id="loader-text" class="text-gray-400 text-xs mt-1 uppercase tracking-widest">Please wait a moment</p>
             </div>
         </div>
     </div>
@@ -559,28 +685,94 @@
         </div>
     </div>
 
+    <div id="scheduled-transaction-modal" class="hidden fixed inset-0 z-[85] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+        <div class="glass rounded-[2rem] w-full max-w-md border border-white/10 overflow-hidden">
+            <div class="p-5 border-b border-white/5 flex items-center justify-between">
+                <h3 class="text-base font-bold text-white flex items-center gap-2"><i class="fa-solid fa-calendar-plus text-violet-400"></i>Add Scheduled Transaction</h3>
+                <button onclick="closeScheduledTransactionModal()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div class="space-y-1.5">
+                    <label for="scheduled-date" class="text-[10px] text-gray-400 font-bold ml-1 uppercase">Date</label>
+                    <input id="scheduled-date" type="date" class="w-full bg-slate-900/50 border border-white/10 rounded-xl py-2.5 px-3 text-sm font-semibold outline-none focus:border-indigo-500 transition-all text-white">
+                </div>
+                <div class="space-y-1.5">
+                    <label for="scheduled-category" class="text-[10px] text-gray-400 font-bold ml-1 uppercase">Category</label>
+                    <select id="scheduled-category" class="w-full bg-slate-900/50 border border-white/10 rounded-xl py-2.5 px-3 text-sm font-semibold outline-none focus:border-indigo-500 transition-all text-white"></select>
+                </div>
+                <div class="space-y-1.5">
+                    <label for="scheduled-description" class="text-[10px] text-gray-400 font-bold ml-1 uppercase">Description</label>
+                    <input id="scheduled-description" type="text" placeholder="Rent, SIP, EMI..." class="w-full bg-slate-900/50 border border-white/10 rounded-xl py-2.5 px-3 text-sm font-semibold outline-none focus:border-indigo-500 transition-all text-white placeholder-gray-600">
+                </div>
+                <div class="space-y-1.5">
+                    <label for="scheduled-repeat" class="text-[10px] text-gray-400 font-bold ml-1 uppercase">Repeat</label>
+                    <select id="scheduled-repeat" class="w-full bg-slate-900/50 border border-white/10 rounded-xl py-2.5 px-3 text-sm font-semibold outline-none focus:border-indigo-500 transition-all text-white">
+                        <option value="none">Does not repeat</option>
+                        <option value="monthly">Repeats monthly</option>
+                        <option value="yearly">Repeats yearly</option>
+                        <option value="weekly">Repeats weekly</option>
+                    </select>
+                </div>
+                <div class="space-y-1.5">
+                    <label for="scheduled-amount" class="text-[10px] text-gray-400 font-bold ml-1 uppercase">Amount</label>
+                    <input id="scheduled-amount" type="number" min="0" step="0.01" placeholder="0.00" class="w-full bg-slate-900/50 border border-white/10 rounded-xl py-2.5 px-3 text-sm font-semibold outline-none focus:border-indigo-500 transition-all text-white placeholder-gray-600">
+                </div>
+            </div>
+            <div class="p-5 border-t border-white/5 flex justify-end gap-3">
+                <button onclick="closeScheduledTransactionModal()" class="px-6 py-2.5 rounded-xl text-sm font-bold text-gray-400 hover:text-white transition-all">Cancel</button>
+                <button onclick="saveScheduledTransaction()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-indigo-600/20">Save</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Mobile FAB -->
-    <a href="cashew.html" class="mobile-fab md:hidden">
+    <a href="cashew.html" class="mobile-fab md:hidden" onclick="return handleMobileFabClick(event)">
         <i class="fa-solid fa-plus text-xl"></i>
     </a>
 
     <script src="../localization.js"></script>
     <script>
+        // Register service worker here too so report-first launches get cache updates.
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js', { scope: './' })
+                    .catch(e => console.log('SW failed:', e));
+            });
+        }
+
         let allData = [];
+        let scheduledData = [];
+        let scheduledStatus = 'upcoming';
+        let scheduledSearchTerm = '';
         let monthlyBalances = {};
         let currentView = 'transactions';
         let currentFilteredData = [];
-        const DEFAULT_EXPORT_CATEGORIES = ['Home', 'My Personal', 'My Family', 'For Latha', 'Baby', 'Credit Card', 'Mutual Funds/Investments', 'Lap EMI'];
+        const CASHEW_CATEGORY_OPTIONS = ['Home', 'My Personal', 'My Family', 'For Latha', 'Baby', 'Credit Card', 'Mutual Funds/Investments', 'Lap EMI'];
+        const SCHEDULED_SHEET_NAME = 'Scheduled';
+        const DEFAULT_EXPORT_CATEGORIES = ['Home', 'My Personal', 'My Family', 'For Latha', 'Baby', 'Credit Card', 'Mutual Funds/Investments', 'Lap EMI', 'Scheduled Transaction'];
 
         function switchView(view) {
             currentView = view;
             document.getElementById('view-insights').classList.toggle('hidden', view !== 'insights');
             document.getElementById('view-transactions').classList.toggle('hidden', view !== 'transactions');
+            document.getElementById('view-scheduled').classList.toggle('hidden', view !== 'scheduled');
 
             document.getElementById('tab-insights').classList.toggle('tab-active', view === 'insights');
             document.getElementById('tab-transactions').classList.toggle('tab-active', view === 'transactions');
+            document.getElementById('tab-scheduled').classList.toggle('tab-active', view === 'scheduled');
+            document.getElementById('global-search-wrap').classList.toggle('hidden', view === 'scheduled');
 
             if (view === 'transactions') filterData();
+            if (view === 'scheduled') fetchScheduledTransactions();
+        }
+
+        function handleMobileFabClick(event) {
+            if (currentView === 'scheduled') {
+                event.preventDefault();
+                openScheduledTransactionModal();
+                return false;
+            }
+            return true;
         }
 
         function handleMonthChange() {
@@ -608,9 +800,25 @@
 
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             document.getElementById('month-select').value = months[new Date().getMonth()];
+            populateScheduledCategoryOptions();
 
             handleMonthChange();
             fetchReport();
+        }
+
+        function populateScheduledCategoryOptions() {
+            const select = document.getElementById('scheduled-category');
+            if (!select) return;
+            select.innerHTML = '';
+            CASHEW_CATEGORY_OPTIONS.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                select.appendChild(option);
+            });
+            if (!select.value && CASHEW_CATEGORY_OPTIONS.length) {
+                select.value = CASHEW_CATEGORY_OPTIONS[0];
+            }
         }
 
         function getCategoryColor(category) {
@@ -621,6 +829,7 @@
             if(cat.includes('baby')) return { main: '#f43f5e', bg: 'rgba(244, 63, 94, 0.1)', icon: 'fa-baby' };
             if(cat.includes('credit')) return { main: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)', icon: 'fa-credit-card' };
             if(cat.includes('emi')) return { main: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)', icon: 'fa-file-invoice-dollar' };
+            if(cat.includes('schedule')) return { main: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)', icon: 'fa-calendar-check' };
             if(cat.includes('mutual') || cat.includes('invest')) return { main: '#06b6d4', bg: 'rgba(6, 182, 212, 0.1)', icon: 'fa-chart-line' };
             if(cat.includes('latha')) return { main: '#ec4899', bg: 'rgba(236, 72, 153, 0.1)', icon: 'fa-heart' };
             return { main: '#94a3b8', bg: 'rgba(148, 163, 184, 0.1)', icon: 'fa-tag' };
@@ -651,6 +860,369 @@
                     console.error(e);
                     loader.classList.add('hidden');
                     KTui.alert('Error', 'Error loading data', 'error');
+                });
+        }
+
+        function fetchScheduledTransactions() {
+            const loader = document.getElementById('loader');
+            loader.classList.remove('hidden');
+
+            const url = `${CONFIG.GOOGLE_SHEET_URL_CASHEW}?sheetName=${encodeURIComponent(SCHEDULED_SHEET_NAME)}&t=${Date.now()}`;
+            fetch(url)
+                .then(r => r.json())
+                .then(res => {
+                    scheduledData = (res.data || []).map(item => ({
+                        ...item,
+                        amount: Number(item.amount) || 0,
+                        _parsedDate: parseRecordDate(item.date),
+                        _meta: (() => {
+                            const parsed = parseScheduledMeta(item.description);
+                            return {
+                                repeat: String(item.repeat || parsed.repeat || 'none').toLowerCase(),
+                                completedOn: parsed.completedOn
+                            };
+                        })(),
+                        _cleanDescription: getCleanScheduledDescription(item.description)
+                    }));
+                    renderScheduledTransactions();
+                    loader.classList.add('hidden');
+                })
+                .catch(err => {
+                    console.error(err);
+                    loader.classList.add('hidden');
+                    KTui.alert('Error', 'Unable to load scheduled transactions', 'error');
+                });
+        }
+
+        function parseScheduledMeta(description) {
+            const raw = String(description || '');
+            const parts = raw.split('||').map(p => p.trim()).filter(Boolean);
+            const meta = { repeat: 'none', completedOn: '' };
+
+            parts.forEach(part => {
+                const pair = part.match(/^([a-zA-Z]+)\s*:\s*(.+)$/);
+                if (!pair) return;
+                const key = pair[1].toLowerCase();
+                const value = pair[2].trim().toLowerCase();
+                if (key === 'repeat') meta.repeat = value;
+                if (key === 'completedon') meta.completedOn = pair[2].trim();
+            });
+
+            return meta;
+        }
+
+        function getCleanScheduledDescription(description) {
+            return String(description || '')
+                .split('||')[0]
+                .trim();
+        }
+
+        function getRepeatLabel(repeatValue) {
+            const value = String(repeatValue || 'none').toLowerCase();
+            if (value === 'monthly') return 'Repeats monthly';
+            if (value === 'yearly') return 'Repeats yearly';
+            if (value === 'weekly') return 'Repeats weekly';
+            return 'Does not repeat';
+        }
+
+        function setScheduledStatus(status) {
+            scheduledStatus = status;
+            document.getElementById('scheduled-tab-upcoming').classList.toggle('active', status === 'upcoming');
+            document.getElementById('scheduled-tab-completed').classList.toggle('active', status === 'completed');
+            renderScheduledTransactions();
+        }
+
+        function handleScheduledSearch() {
+            scheduledSearchTerm = String(document.getElementById('scheduled-search-input').value || '').toLowerCase().trim();
+            renderScheduledTransactions();
+        }
+
+        function getScheduledVisibleData() {
+            const today = new Date();
+            const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+            return scheduledData
+                .filter(item => {
+                    if (!item._parsedDate) return false;
+                    const repeat = String(item._meta.repeat || 'none').toLowerCase();
+                    const hasCompletedOn = !!String(item._meta.completedOn || '').trim();
+                    let isCompleted = false;
+                    if (repeat === 'none') {
+                        isCompleted = hasCompletedOn || item._parsedDate < todayOnly;
+                    } else {
+                        // For repeating entries: show as completed until next due date arrives.
+                        isCompleted = hasCompletedOn && item._parsedDate > todayOnly;
+                    }
+                    const statusOk = scheduledStatus === 'completed' ? isCompleted : !isCompleted;
+                    const text = `${item.category || ''} ${item._cleanDescription || ''}`.toLowerCase();
+                    const searchOk = !scheduledSearchTerm || text.includes(scheduledSearchTerm);
+                    return statusOk && searchOk;
+                })
+                .sort((a, b) => a._parsedDate - b._parsedDate);
+        }
+
+        function renderScheduledTransactions() {
+            const data = getScheduledVisibleData();
+            const body = document.getElementById('scheduled-report-body');
+            const countBadge = document.getElementById('scheduled-entry-count');
+            const totalLabel = document.getElementById('scheduled-total-label');
+            body.innerHTML = '';
+            countBadge.textContent = `${data.length} entr${data.length === 1 ? 'y' : 'ies'}`;
+            const total = data.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+            totalLabel.textContent = `Rs. ${total.toLocaleString('en-IN')}`;
+
+            if(!data.length) {
+                body.innerHTML = '<div class="py-12 text-center text-gray-500 text-xs uppercase tracking-widest">No scheduled transactions</div>';
+                return;
+            }
+
+            const grouped = data.reduce((acc, item) => {
+                const d = item._parsedDate;
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(item);
+                return acc;
+            }, {});
+
+            Object.keys(grouped).sort().forEach(monthKey => {
+                const monthItems = grouped[monthKey];
+                const sampleDate = monthItems[0]._parsedDate;
+                const monthLabel = sampleDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                const monthTotal = monthItems.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+
+                const section = document.createElement('div');
+                section.className = 'scheduled-month-card';
+
+                const heading = document.createElement('div');
+                heading.className = 'flex items-center justify-between mb-2';
+                heading.innerHTML = `
+                    <h4 class="text-sm font-extrabold text-white">${monthLabel}</h4>
+                    <span class="text-sm font-black text-indigo-300 font-mono">Rs. ${monthTotal.toLocaleString('en-IN')}</span>
+                `;
+                section.appendChild(heading);
+
+                monthItems.forEach(item => {
+                    const color = getCategoryColor(item.category || 'Scheduled Transaction');
+                    const row = document.createElement('div');
+                    row.className = 'scheduled-item';
+                    const addActionHtml = scheduledStatus === 'upcoming'
+                        ? '<button class="add-to-cashew-btn mt-1 text-[11px] font-bold text-emerald-300 hover:text-emerald-200 transition-all">Add to Cashew</button>'
+                        : '';
+                    row.innerHTML = `
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="scheduled-icon" style="background:${color.bg};color:${color.main}">
+                                <i class="fa-solid ${color.icon}"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-sm font-bold text-white truncate">${item._cleanDescription || item.category || 'Scheduled Transaction'}</p>
+                                <p class="text-xs text-gray-400 truncate">${getRepeatLabel(item._meta.repeat)}</p>
+                            </div>
+                        </div>
+                        <div class="text-right flex-shrink-0">
+                            <p class="text-sm font-black text-white font-mono">Rs. ${(Number(item.amount) || 0).toLocaleString('en-IN')}</p>
+                            <p class="text-[11px] text-gray-400">${formatDateWithDay(item.date)}</p>
+                            ${addActionHtml}
+                        </div>
+                    `;
+                    const addBtn = row.querySelector('.add-to-cashew-btn');
+                    if (addBtn) {
+                        addBtn.addEventListener('click', () => addScheduledToCashew(item));
+                    }
+                    section.appendChild(row);
+                });
+
+                body.appendChild(section);
+            });
+        }
+
+        function openScheduledTransactionModal() {
+            const now = new Date();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            document.getElementById('scheduled-date').value = `${now.getFullYear()}-${month}-${day}`;
+            document.getElementById('scheduled-category').value = CASHEW_CATEGORY_OPTIONS[0] || '';
+            document.getElementById('scheduled-description').value = '';
+            document.getElementById('scheduled-repeat').value = 'none';
+            document.getElementById('scheduled-amount').value = '';
+            document.getElementById('scheduled-transaction-modal').classList.remove('hidden');
+        }
+
+        function closeScheduledTransactionModal() {
+            document.getElementById('scheduled-transaction-modal').classList.add('hidden');
+        }
+
+        function isoToCashewDate(isoDate) {
+            const dateObj = new Date(`${isoDate}T00:00:00`);
+            if(isNaN(dateObj.getTime())) return '';
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            return `${String(dateObj.getDate()).padStart(2, '0')}/${months[dateObj.getMonth()]}/${dateObj.getFullYear()}`;
+        }
+
+        function showLoader(title, text) {
+            const loader = document.getElementById('loader');
+            const loaderTitle = document.getElementById('loader-title');
+            const loaderText = document.getElementById('loader-text');
+            if (loaderTitle) loaderTitle.textContent = title || 'Analyzing Data';
+            if (loaderText) loaderText.textContent = text || 'Please wait a moment';
+            loader.classList.remove('hidden');
+        }
+
+        function hideLoader() {
+            const loader = document.getElementById('loader');
+            const loaderTitle = document.getElementById('loader-title');
+            const loaderText = document.getElementById('loader-text');
+            loader.classList.add('hidden');
+            if (loaderTitle) loaderTitle.textContent = 'Analyzing Data';
+            if (loaderText) loaderText.textContent = 'Please wait a moment';
+        }
+
+        function dateToCashewDate(dateObj) {
+            if (!(dateObj instanceof Date) || isNaN(dateObj.getTime())) return '';
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            return `${String(dateObj.getDate()).padStart(2, '0')}/${months[dateObj.getMonth()]}/${dateObj.getFullYear()}`;
+        }
+
+        function advanceScheduledDate(baseDate, repeat) {
+            const next = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate());
+            const mode = String(repeat || 'none').toLowerCase();
+            if (mode === 'weekly') next.setDate(next.getDate() + 7);
+            if (mode === 'monthly') next.setMonth(next.getMonth() + 1);
+            if (mode === 'yearly') next.setFullYear(next.getFullYear() + 1);
+            return next;
+        }
+
+        function buildScheduledDescription(description, completedOn) {
+            const clean = String(description || '').split('||')[0].trim();
+            const completed = String(completedOn || '').trim();
+            return completed ? `${clean} || completedOn:${completed}` : clean;
+        }
+
+        function addScheduledToCashew(item) {
+            const repeat = String(item?._meta?.repeat || 'none').toLowerCase();
+            const today = new Date();
+            const todayCashewDate = dateToCashewDate(today);
+            if (!todayCashewDate) {
+                KTui.alert('Error', 'Invalid current date', 'error');
+                return;
+            }
+
+            const cashewPayload = {
+                type: 'cashew',
+                action: 'add',
+                expenses: [{
+                    date: todayCashewDate,
+                    category: item.category,
+                    description: item._cleanDescription || item.description || item.category,
+                    amount: Number(item.amount) || 0
+                }]
+            };
+
+            const nextDueDate = repeat === 'none' || !item._parsedDate
+                ? item._parsedDate
+                : advanceScheduledDate(item._parsedDate, repeat);
+
+            const scheduledUpdatePayload = {
+                type: 'cashew',
+                isScheduled: true,
+                action: 'update',
+                targetSheetName: SCHEDULED_SHEET_NAME,
+                sheetName: SCHEDULED_SHEET_NAME,
+                originalSheetName: SCHEDULED_SHEET_NAME,
+                originalDate: item.date,
+                originalEntry: {
+                    category: item.category,
+                    description: item._cleanDescription || item.description || '',
+                    amount: Number(item.amount) || 0
+                },
+                expenses: [{
+                    date: dateToCashewDate(nextDueDate) || item.date,
+                    category: item.category,
+                    description: buildScheduledDescription(item._cleanDescription || item.description || item.category, todayCashewDate),
+                    amount: Number(item.amount) || 0,
+                    repeat
+                }]
+            };
+
+            showLoader('Saving Data', 'Adding to Cashew...');
+
+            fetch(CONFIG.GOOGLE_SHEET_URL_CASHEW, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(cashewPayload)
+            })
+                .then(() => fetch(CONFIG.GOOGLE_SHEET_URL_CASHEW, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(scheduledUpdatePayload)
+                }))
+                .then(() => {
+                    KTui.alert('Success', 'Added to Cashew', 'success');
+                    setTimeout(fetchScheduledTransactions, 500);
+                })
+                .catch(err => {
+                    console.error(err);
+                    hideLoader();
+                    KTui.alert('Error', 'Could not add to Cashew', 'error');
+                });
+        }
+
+        function saveScheduledTransaction() {
+            const rawDate = document.getElementById('scheduled-date').value;
+            const category = (document.getElementById('scheduled-category').value || '').trim() || 'Scheduled Transaction';
+            const description = (document.getElementById('scheduled-description').value || '').trim();
+            const repeat = String(document.getElementById('scheduled-repeat').value || 'none').toLowerCase();
+            const amount = Number(document.getElementById('scheduled-amount').value);
+
+            if(!rawDate) {
+                KTui.alert('Validation', 'Please choose a date', 'info');
+                return;
+            }
+            if(!(amount > 0)) {
+                KTui.alert('Validation', 'Please enter a valid amount', 'info');
+                return;
+            }
+
+            const cashewDate = isoToCashewDate(rawDate);
+            if(!cashewDate) {
+                KTui.alert('Validation', 'Invalid date selected', 'info');
+                return;
+            }
+
+            const normalizedDescription = description || category;
+
+            const payload = {
+                type: 'cashew',
+                isScheduled: true,
+                action: 'add',
+                targetSheetName: SCHEDULED_SHEET_NAME,
+                sheetName: SCHEDULED_SHEET_NAME,
+                expenses: [{
+                    date: cashewDate,
+                    category,
+                    description: normalizedDescription,
+                    amount,
+                    repeat
+                }]
+            };
+
+            showLoader('Saving Data', 'Saving scheduled transaction...');
+            fetch(CONFIG.GOOGLE_SHEET_URL_CASHEW, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            })
+                .then(() => {
+                    closeScheduledTransactionModal();
+                    KTui.alert('Success', 'Scheduled transaction saved', 'success');
+                    setTimeout(fetchScheduledTransactions, 500);
+                })
+                .catch(err => {
+                    console.error(err);
+                    hideLoader();
+                    KTui.alert('Error', 'Could not save scheduled transaction', 'error');
                 });
         }
 
@@ -712,7 +1284,10 @@
         function populateCategoryFilter(data) {
             const filter = document.getElementById('category-filter');
             filter.innerHTML = '<option value="">All Categories</option>';
-            const cats = [...new Set(data.map(r => r.category))].sort();
+            const cats = [...new Set(data.map(r => r.category))].filter(Boolean).sort();
+            if (!cats.includes('Scheduled Transaction')) {
+                cats.push('Scheduled Transaction');
+            }
             cats.forEach(c => {
                 const o = document.createElement('option');
                 o.value = c; o.textContent = c;
@@ -739,6 +1314,16 @@
             if(!isNaN(parsed.getTime())) return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
 
             const str = String(value).trim();
+            const ddMmmYyyy = str.match(/^(\d{1,2})\/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\/(\d{4})$/i);
+            if(ddMmmYyyy) {
+                const d = Number(ddMmmYyyy[1]);
+                const months = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11 };
+                const m = months[ddMmmYyyy[2].toLowerCase()];
+                const y = Number(ddMmmYyyy[3]);
+                const fallbackMmm = new Date(y, m, d);
+                if(!isNaN(fallbackMmm.getTime())) return fallbackMmm;
+            }
+
             const ddmmyyyy = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
             if(ddmmyyyy) {
                 const d = Number(ddmmyyyy[1]);
@@ -829,10 +1414,17 @@
         }
 
         function formatDate(iso) {
-            const d = new Date(iso);
-            if(isNaN(d.getTime())) return iso;
+            const d = parseRecordDate(iso);
+            if(!d || isNaN(d.getTime())) return iso;
             const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
             return `${d.getDate().toString().padStart(2,'0')}/${months[d.getMonth()]}/${d.getFullYear()}`;
+        }
+
+        function formatDateWithDay(value) {
+            const d = parseRecordDate(value);
+            if(!d || isNaN(d.getTime())) return String(value || '');
+            const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
+            return `${formatDate(toDateKey(d))} (${dayName})`;
         }
 
         function renderTransactions(data) {
@@ -917,7 +1509,11 @@
                 .map(r => String(r.category || '').trim())
                 .filter(Boolean)
             )].sort();
-            const categoriesToShow = dataCategories.length ? dataCategories : DEFAULT_EXPORT_CATEGORIES;
+            const categoriesToShow = dataCategories.length ? dataCategories : [...DEFAULT_EXPORT_CATEGORIES];
+            if (!categoriesToShow.includes('Scheduled Transaction')) {
+                categoriesToShow.push('Scheduled Transaction');
+                categoriesToShow.sort();
+            }
             const categoryChipValues = ['All', ...categoriesToShow];
             renderExportCategoryChips(categoryChipValues, 'All');
             setExportSort('desc');

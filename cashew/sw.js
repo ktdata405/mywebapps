@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cashew-app-v2';
+const CACHE_NAME = 'cashew-app-v3';
 const STATIC_ASSETS = [
   './cashew.html',
   './cashew.html?from=standalone',
@@ -30,6 +30,8 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+  const accept = event.request.headers.get('accept') || '';
+  const isHtmlRequest = event.request.mode === 'navigate' || accept.includes('text/html');
 
   // For Google Script API calls, try network first
   if (url.hostname === 'script.google.com') {
@@ -39,6 +41,19 @@ self.addEventListener('fetch', (event) => {
           const clonedResponse = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, clonedResponse));
           return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // HTML should be network-first so inline JS updates (like scheduled sheet routing) are not stale.
+  if (isHtmlRequest) {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse.clone()));
+          return networkResponse;
         })
         .catch(() => caches.match(event.request))
     );

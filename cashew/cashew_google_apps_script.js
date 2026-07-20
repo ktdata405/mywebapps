@@ -3,6 +3,61 @@
 // Publish > Deploy as web app > Execute as: Me > Who has access: Anyone.
 // IMPORTANT: After updating this code, you must create a NEW deployment (Manage Deployments > New Version) for changes to take effect.
 
+var SCHEDULED_SHEET_NAME = 'Scheduled';
+
+function ensureSheetWithHeaders(doc, sheetName, includeRepeatColumn) {
+  var sheet = doc.getSheetByName(sheetName);
+  if (!sheet) {
+    sheet = doc.insertSheet(sheetName);
+  }
+
+  if (sheet.getLastRow() === 0) {
+    var headers = includeRepeatColumn
+      ? ['Date', 'Category', 'Description', 'Amount', 'Repeat']
+      : ['Date', 'Category', 'Description', 'Amount'];
+    sheet.appendRow(headers);
+    sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#f3f4f6');
+  } else if (includeRepeatColumn) {
+    var repeatHeader = String(sheet.getRange(1, 5).getValue() || '').trim();
+    if (!repeatHeader) {
+      sheet.getRange(1, 5).setValue('Repeat');
+      sheet.getRange(1, 1, 1, 5).setFontWeight('bold').setBackground('#f3f4f6');
+    }
+  }
+
+  return sheet;
+}
+
+function normalizeSheetName(sheetName) {
+  var normalized = String(sheetName || '').trim();
+  if (!normalized) return '';
+  var key = normalized.toLowerCase();
+  if (key === 'scheduled' || key === 'scheduled transactions') {
+    return SCHEDULED_SHEET_NAME;
+  }
+  return normalized;
+}
+
+function isScheduledPayload(data, expenses) {
+  if (data && data.isScheduled === true) return true;
+  if (!expenses || !expenses.length) return false;
+
+  for (var i = 0; i < expenses.length; i++) {
+    var row = expenses[i] || {};
+    var category = String(row.category || '').toLowerCase();
+    var description = String(row.description || '').toLowerCase();
+    if (category.indexOf('schedule') !== -1 || description.indexOf('repeat:') !== -1) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function stripScheduledMeta(description) {
+  return String(description || '').split('||')[0].trim();
+}
+
 function doPost(e) {
   var lock = LockService.getScriptLock();
   lock.tryLock(10000);
@@ -17,11 +72,24 @@ function doPost(e) {
     if (data.type === 'cashew') {
       var expenses = data.expenses; // Array of expense objects
       
+      var requestedSheetName = normalizeSheetName(data.targetSheetName || data.sheetName);
+      var looksLikeMonthSheet = /^[A-Z][a-z]{2} \d{4}$/.test(requestedSheetName);
+      if (isScheduledPayload(data, expenses) && (!requestedSheetName || looksLikeMonthSheet)) {
+        requestedSheetName = SCHEDULED_SHEET_NAME;
+      }
+
       // Handle Update: Delete old entries first
       if (data.action === 'update' && data.originalDate) {
-         var originalParts = data.originalDate.split('/');
-         if (originalParts.length === 3) {
-             var originalSheetName = originalParts[1] + ' ' + originalParts[2];
+         var originalSheetName = String(data.originalSheetName || '').trim();
+         if (!originalSheetName) {
+             var originalParts = data.originalDate.split('/');
+             if (originalParts.length === 3) {
+                 originalSheetName = originalParts[1] + ' ' + originalParts[2];
+             }
+         }
+
+         if (originalSheetName) {
+              originalSheetName = normalizeSheetName(originalSheetName);
              var originalSheet = doc.getSheetByName(originalSheetName);
              
              if (originalSheet) {
@@ -29,42 +97,74 @@ function doPost(e) {
                  var values = range.getValues();
                  var rowsToDelete = [];
                  var currentDate = '';
-                 
-                 // Identify rows to delete
-                 for (var r = 1; r < values.length; r++) { // Skip header
-                     var rowDate = values[r][0];
-                     
-                     // If rowDate is present (not empty), it marks the start of a new entry/block
-                     if (rowDate && String(rowDate).trim() !== "") {
-                         var dateObj = null;
-                         
-                         if (rowDate instanceof Date) {
-                             dateObj = rowDate;
-                         } else {
-                             var strVal = String(rowDate).trim();
-                             // Check for direct string match first to avoid parsing issues
-                             if (strVal === data.originalDate) {
-                                 currentDate = strVal;
-                                 dateObj = null; // Already handled
-                             } else {
-                                 // Try parsing
-                                 var parsed = new Date(strVal);
-                                 if (!isNaN(parsed.getTime())) {
-                                     dateObj = parsed;
-                                 } else {
-                                     currentDate = strVal; // Use as is
-                                 }
-                             }
-                         }
-                         
-                         if (dateObj) {
-                             currentDate = Utilities.formatDate(dateObj, timezone, "dd/MMM/yyyy");
-                         }
-                     }
-                     
-                     // Check if the current row belongs to the date we want to delete
-                     if (currentDate === data.originalDate) {
-                         rowsToDelete.push(r + 1); // Store 1-based row index
+                  var isScheduledUpdate = normalizeSheetName(originalSheetName) === SCHEDULED_SHEET_NAME;
+                  var originalEntry = data.originalEntry || null;
+
+                  if (isScheduledUpdate && originalEntry) {
+                      var matchCategory = String(originalEntry.category || '').trim();
+                      var matchDescription = stripScheduledMeta(originalEntry.description);
+                      var matchAmount = Number(originalEntry.amount || 0);
+
+                      for (var sr = 1; sr < values.length; sr++) {
+                          var sRow = values[sr];
+                          if (!sRow[1] && !sRow[2] && !sRow[3]) continue;
+
+                          var sDate = sRow[0];
+                          if (sDate) {
+                              if (sDate instanceof Date) {
+                                  currentDate = Utilities.formatDate(sDate, timezone, "dd/MMM/yyyy");
+                              } else {
+                                  currentDate = String(sDate).trim();
+                              }
+                          }
+
+                          var sCategory = String(sRow[1] || '').trim();
+                          var sDescription = stripScheduledMeta(sRow[2]);
+                          var sAmount = Number(parseFloat(sRow[3]) || 0);
+                          if (currentDate === data.originalDate && sCategory === matchCategory && sDescription === matchDescription && sAmount === matchAmount) {
+                              rowsToDelete.push(sr + 1);
+                              break;
+                          }
+                      }
+                  }
+
+                  if (rowsToDelete.length === 0) {
+                      // Fallback legacy update behavior (group-by-date delete) for non-scheduled sheets.
+                      for (var r = 1; r < values.length; r++) { // Skip header
+                          var rowDate = values[r][0];
+
+                          // If rowDate is present (not empty), it marks the start of a new entry/block
+                          if (rowDate && String(rowDate).trim() !== "") {
+                              var dateObj = null;
+
+                              if (rowDate instanceof Date) {
+                                  dateObj = rowDate;
+                              } else {
+                                  var strVal = String(rowDate).trim();
+                                  // Check for direct string match first to avoid parsing issues
+                                  if (strVal === data.originalDate) {
+                                      currentDate = strVal;
+                                      dateObj = null; // Already handled
+                                  } else {
+                                      // Try parsing
+                                      var parsed = new Date(strVal);
+                                      if (!isNaN(parsed.getTime())) {
+                                          dateObj = parsed;
+                                      } else {
+                                          currentDate = strVal; // Use as is
+                                      }
+                                  }
+                              }
+
+                              if (dateObj) {
+                                  currentDate = Utilities.formatDate(dateObj, timezone, "dd/MMM/yyyy");
+                              }
+                          }
+
+                          // Check if the current row belongs to the date we want to delete
+                          if (currentDate === data.originalDate) {
+                              rowsToDelete.push(r + 1); // Store 1-based row index
+                          }
                      }
                  }
                  
@@ -84,21 +184,19 @@ function doPost(e) {
       var rows = [];
       var lastDate = '';
 
-      // Determine Sheet Name from the first expense date (e.g., "08/Jan/2026" -> "Jan 2026")
-      var sheetName = 'Cashew'; // Default fallback
-      if (expenses.length > 0 && expenses[0].date) {
+      // Allow explicit target sheet (used for Scheduled tab data).
+      // Fallback to historical month-year sheet behavior for regular entries.
+
+      var sheetName = requestedSheetName || 'Cashew';
+      if (!requestedSheetName && expenses.length > 0 && expenses[0].date) {
         var parts = expenses[0].date.split('/');
         if (parts.length === 3) {
           sheetName = parts[1] + ' ' + parts[2];
         }
       }
 
-      var sheet = doc.getSheetByName(sheetName);
-      if (!sheet) {
-        sheet = doc.insertSheet(sheetName);
-        sheet.appendRow(['Date', 'Category', 'Description', 'Amount']);
-        sheet.getRange(1, 1, 1, 4).setFontWeight('bold').setBackground('#f3f4f6');
-      }
+      var isScheduledSheet = normalizeSheetName(sheetName) === SCHEDULED_SHEET_NAME;
+      var sheet = ensureSheetWithHeaders(doc, sheetName, isScheduledSheet);
 
       // Prepare rows for bulk insertion
       for (var i = 0; i < expenses.length; i++) {
@@ -111,12 +209,22 @@ function doPost(e) {
           lastDate = displayDate;
         }
 
-        rows.push([
-          displayDate,         // Column A: Date
-          expense.category,    // Column B: Category
-          expense.description, // Column C: Description
-          expense.amount       // Column D: Amount
-        ]);
+        if (isScheduledSheet) {
+          rows.push([
+            displayDate,         // Column A: Date
+            expense.category,    // Column B: Category
+            expense.description, // Column C: Description
+            expense.amount,      // Column D: Amount
+            String(expense.repeat || 'none').toLowerCase() // Column E: Repeat
+          ]);
+        } else {
+          rows.push([
+            displayDate,         // Column A: Date
+            expense.category,    // Column B: Category
+            expense.description, // Column C: Description
+            expense.amount       // Column D: Amount
+          ]);
+        }
       }
 
       // Append all rows at once if there is data
@@ -129,7 +237,9 @@ function doPost(e) {
           startRow += 2;
         }
 
-        sheet.getRange(startRow, 1, rows.length, 4).setValues(rows);
+        sheet.getRange(startRow, 1, rows.length, isScheduledSheet ? 5 : 4).setValues(rows);
+        // Keep amount column numeric; some sheets carry date formatting from prior edits.
+        sheet.getRange(startRow, 4, rows.length, 1).setNumberFormat('#,##0.00');
       }
 
       return ContentService.createTextOutput(JSON.stringify({ 'result': 'success', 'count': rows.length }))
@@ -228,7 +338,7 @@ function doGet(e) {
         })).setMimeType(ContentService.MimeType.JSON);
     }
 
-    var sheetName = e.parameter.sheetName;
+    var sheetName = normalizeSheetName(e.parameter.sheetName);
 
     if (!sheetName) {
       return ContentService.createTextOutput(JSON.stringify({ 'result': 'error', 'message': 'Sheet name is required' }))
@@ -236,6 +346,10 @@ function doGet(e) {
     }
 
     var sheet = doc.getSheetByName(sheetName);
+    if (!sheet && (sheetName === SCHEDULED_SHEET_NAME)) {
+      // Auto-create dedicated Scheduled sheet on first use.
+      sheet = ensureSheetWithHeaders(doc, SCHEDULED_SHEET_NAME, true);
+    }
     if (!sheet) {
       return ContentService.createTextOutput(JSON.stringify({ data: [], availableBalance: 0 })) // Return empty structure if sheet not found
         .setMimeType(ContentService.MimeType.JSON);
@@ -303,7 +417,8 @@ function doGet(e) {
         date: date,
         category: row[1],
         description: row[2],
-        amount: amount
+        amount: amount,
+        repeat: String(row[4] || '').trim().toLowerCase() || 'none'
       });
     }
 
