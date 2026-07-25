@@ -373,9 +373,13 @@
                 <button onclick="clearAll()" class="mobile-icon-btn w-12 h-12 rounded-2xl bg-white/5 hover:bg-red-500/10 border border-white/5 text-gray-400 hover:text-red-400 flex items-center justify-center transition-all active:scale-95" title="Clear All">
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
-                <button onclick="saveData()" id="save-btn" class="mobile-flex-btn h-12 px-8 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2.5 transition-all active:scale-95 hover:shadow-indigo-600/40">
+                <button onclick="saveData('draft')" id="save-draft-btn" class="mobile-flex-btn h-12 px-8 rounded-2xl bg-gray-600/50 hover:bg-gray-500/70 text-white font-bold shadow-lg shadow-gray-600/25 flex items-center justify-center gap-2.5 transition-all active:scale-95 hover:shadow-gray-600/40">
+                    <i class="fa-solid fa-file-pen"></i>
+                    <span data-translate-key="saveDraft">Draft</span>
+                </button>
+                <button onclick="saveData('completed')" id="save-completed-btn" class="mobile-flex-btn h-12 px-8 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2.5 transition-all active:scale-95 hover:shadow-indigo-600/40">
                     <i class="fa-solid fa-check"></i>
-                    <span data-translate-key="save">Save</span>
+                    <span data-translate-key="saveCompleted">Save</span>
                 </button>
             </div>
         </div>
@@ -660,6 +664,8 @@
                             oninput="parseAndCalculate(this)"></textarea>
                     </div>
                 </div>
+                <!-- Hidden input for status -->
+                <input type="hidden" class="status-input" value="completed">
             </div>
         </div>
     </template>
@@ -744,17 +750,22 @@
             const text = document.getElementById('date-save-status-text');
             if (!badge) return;
 
-            const saveBtn = document.getElementById('save-btn');
-            const applySaveButtonStatusStyle = (state) => {
-                if (!saveBtn) return;
+            const saveDraftBtn = document.getElementById('save-draft-btn');
+            const saveCompletedBtn = document.getElementById('save-completed-btn');
 
-                const base = 'h-12 px-8 rounded-2xl text-white font-bold flex items-center gap-2.5 transition-all active:scale-95';
+            const applySaveButtonStatusStyle = (state) => {
+                const baseDraft = 'mobile-flex-btn h-12 px-8 rounded-2xl text-white font-bold shadow-lg flex items-center justify-center gap-2.5 transition-all active:scale-95';
+                const baseCompleted = 'mobile-flex-btn h-12 px-8 rounded-2xl text-white font-bold shadow-lg flex items-center justify-center gap-2.5 transition-all active:scale-95';
+
                 if (state === 'loading') {
-                    saveBtn.className = `${base} bg-gray-600/80 hover:bg-gray-500/90 border border-gray-400/30`;
+                    if (saveDraftBtn) saveDraftBtn.className = `${baseDraft} bg-gray-600/50 hover:bg-gray-500/70 shadow-gray-600/25 hover:shadow-gray-600/40`;
+                    if (saveCompletedBtn) saveCompletedBtn.className = `${baseCompleted} bg-gray-600/50 hover:bg-gray-500/70 shadow-gray-600/25 hover:shadow-gray-600/40`;
                 } else if (state === 'saved') {
-                    saveBtn.className = `${base} bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/45`;
-                } else {
-                    saveBtn.className = `${base} bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-lg shadow-red-600/30 hover:shadow-red-600/45`;
+                    if (saveDraftBtn) saveDraftBtn.className = `${baseDraft} bg-gray-600/50 hover:bg-gray-500/70 shadow-gray-600/25 hover:shadow-gray-600/40`;
+                    if (saveCompletedBtn) saveCompletedBtn.className = `${baseCompleted} bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-600/30 hover:shadow-emerald-600/45`;
+                } else { // no-data
+                    if (saveDraftBtn) saveDraftBtn.className = `${baseDraft} bg-gray-600/50 hover:bg-gray-500/70 shadow-gray-600/25 hover:shadow-gray-600/40`;
+                    if (saveCompletedBtn) saveCompletedBtn.className = `${baseCompleted} bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-indigo-600/25 hover:shadow-indigo-600/40`;
                 }
             };
 
@@ -814,7 +825,7 @@
                         isEditMode = true;
                         originalDate = formattedDate;
                         expensesForDate.forEach(item => {
-                            addRow(item.category, item.description, item.amount);
+                            addRow(item.category, item.description, item.amount, item.status);
                         });
                         updateDateSaveStatus(true);
                     } else {
@@ -875,7 +886,7 @@
                     container.innerHTML = '';
 
                     data.forEach(item => {
-                        addRow(item.category, item.description, item.amount);
+                        addRow(item.category, item.description, item.amount, item.status);
                     });
                     calculateTotal();
                     updateDateSaveStatus(true);
@@ -918,7 +929,7 @@
             }
         }
 
-        function addRow(category, description = '', amount = '') {
+        function addRow(category, description = '', amount = '', status = 'completed') {
             const container = document.getElementById('expenses-container');
             const template = document.getElementById('expense-row-template');
             const clone = template.content.cloneNode(true);
@@ -946,6 +957,7 @@
             if (amount !== '') {
                 clone.querySelector('.amount-input').value = amount;
             }
+            clone.querySelector('.status-input').value = status;
 
             container.appendChild(clone);
         }
@@ -964,6 +976,7 @@
                 row.querySelector('.description-input').value = '';
                 row.querySelector('.amount-input').value = '';
                 row.querySelector('.category-select').selectedIndex = 0;
+                row.querySelector('.status-input').value = 'completed'; // Reset status
                 calculateTotal();
             }
         }
@@ -1052,14 +1065,17 @@
             }
         }
 
-        function saveData() {
+        function saveData(status = 'completed') {
             const loader = document.getElementById('loader');
             const loaderText = document.getElementById('loader-text');
-            const saveBtn = document.getElementById('save-btn');
+            const saveDraftBtn = document.getElementById('save-draft-btn');
+            const saveCompletedBtn = document.getElementById('save-completed-btn');
+            const normalizedStatus = String(status || 'completed').toLowerCase() === 'draft' ? 'draft' : 'completed';
 
             loaderText.textContent = (typeof translations !== 'undefined' && translations['savingData']) || 'Saving Data';
             loader.classList.remove('hidden');
-            saveBtn.disabled = true;
+            if (saveDraftBtn) saveDraftBtn.disabled = true;
+            if (saveCompletedBtn) saveCompletedBtn.disabled = true;
 
             const dateInput = document.getElementById('date-input');
             const rows = document.querySelectorAll('.expense-row');
@@ -1069,13 +1085,15 @@
                 const category = row.querySelector('.category-select').value;
                 const description = row.querySelector('.description-input').value;
                 const amount = parseFloat(row.querySelector('.amount-input').value);
+                const rowStatus = row.querySelector('.status-input').value;
 
                 if (category !== 'Select' && !isNaN(amount) && amount > 0) {
                     expenses.push({
                         date: formatDateToDDMMMYYYY(dateInput.value),
                         category: category,
                         description: description,
-                        amount: amount
+                        amount: amount,
+                        status: rowStatus // Include status in the expense object
                     });
                     grandTotal += amount;
                 }
@@ -1084,16 +1102,25 @@
             if (expenses.length === 0) {
                 showPopup('No Expenses', 'Please add at least one valid expense.', 'error');
                 loader.classList.add('hidden');
-                saveBtn.disabled = false;
+                if (saveDraftBtn) saveDraftBtn.disabled = false;
+                if (saveCompletedBtn) saveCompletedBtn.disabled = false;
                 return;
             }
 
             if (isEditMode && !originalDate) {
                 showPopup('Error', 'Original date missing for update. Please go back to report and try again.', 'error');
                 loader.classList.add('hidden');
-                saveBtn.disabled = false;
+                if (saveDraftBtn) saveDraftBtn.disabled = false;
+                if (saveCompletedBtn) saveCompletedBtn.disabled = false;
                 return;
             }
+
+            // Keep all rows aligned with the clicked save action (Draft/Completed).
+            rows.forEach(row => {
+                const statusInput = row.querySelector('.status-input');
+                if (statusInput) statusInput.value = normalizedStatus;
+            });
+            expenses.forEach(exp => exp.status = normalizedStatus);
 
             const isScheduledOnly = expenses.length > 0 && expenses.every(exp => String(exp.category || '').toLowerCase().includes('schedule'));
 
@@ -1119,18 +1146,23 @@
             })
             .then(response => {
                 loader.classList.add('hidden');
-                saveBtn.disabled = false;
+                if (saveDraftBtn) saveDraftBtn.disabled = false;
+                if (saveCompletedBtn) saveCompletedBtn.disabled = false;
                 initDateAccordion(dateInput.value); // Refresh calendar
                 updateDateSaveStatus(true); // Mark as saved
 
                 window.pendingClear = true;
-                const msg = isEditMode ? 'Expenses updated successfully!' : 'Expenses saved successfully!';
+                const statusLabel = normalizedStatus === 'draft' ? 'Draft' : 'Completed';
+                const msg = isEditMode
+                    ? `Expenses updated successfully! Status: ${statusLabel}.`
+                    : `Expenses saved successfully! Status: ${statusLabel}.`;
                 showPopup('Success', msg, 'success');
             })
             .catch(error => {
                 console.error('Network error:', error);
                 loader.classList.add('hidden');
-                saveBtn.disabled = false;
+                if (saveDraftBtn) saveDraftBtn.disabled = false;
+                if (saveCompletedBtn) saveCompletedBtn.disabled = false;
                 updateDateSaveStatus(false);
                 showPopup('Error', 'Error sending data: ' + error.message, 'error');
             });
@@ -1251,7 +1283,7 @@
             }
             if (value === null || value === undefined || String(value).trim() === '') {
                 console.warn('parseImportedAmount: Skipping null, undefined, or empty value:', value);
-                return NaN; // Explicitly handle null, undefined, and empty strings
+                return NaN; // Explicitly handle null, undefined, or empty strings
             }
 
             let rawString = String(value).trim();
@@ -1360,7 +1392,8 @@
                         tag,
                         remarks: safeRemark,
                         description,
-                        amount
+                        amount,
+                        status: 'completed' // Default status for imported entries
                     });
                 });
             });
@@ -1611,7 +1644,7 @@
 
             // Add imported entries to the main form
             entriesToImport.forEach(entry => {
-                addRow(entry.category, entry.description, entry.amount);
+                addRow(entry.category, entry.description, entry.amount, entry.status);
             });
 
             calculateTotal();

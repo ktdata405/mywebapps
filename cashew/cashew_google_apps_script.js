@@ -4,6 +4,49 @@
 // IMPORTANT: After updating this code, you must create a NEW deployment (Manage Deployments > New Version) for changes to take effect.
 
 var SCHEDULED_SHEET_NAME = 'Scheduled';
+var STATUS_COLUMN_INDEX_REGULAR = 6; // Column F (E is reserved for available balance in monthly sheets)
+var STATUS_COLUMN_INDEX_SCHEDULED = 6; // Column F
+
+function findHeaderColumnIndex(sheet, headerName) {
+  var target = String(headerName || '').trim().toLowerCase();
+  if (!target) return 0;
+  var lastCol = Math.max(sheet.getLastColumn(), STATUS_COLUMN_INDEX_SCHEDULED);
+  var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  for (var i = 0; i < headers.length; i++) {
+    if (String(headers[i] || '').trim().toLowerCase() === target) {
+      return i + 1;
+    }
+  }
+  return 0;
+}
+
+function ensureHeaderColumn(sheet, preferredColIndex, headerName) {
+  var existingIndex = findHeaderColumnIndex(sheet, headerName);
+  if (existingIndex > 0) return existingIndex;
+
+  var colIndex = preferredColIndex || sheet.getLastColumn() + 1;
+  sheet.getRange(1, colIndex).setValue(headerName);
+  sheet.getRange(1, colIndex).setFontWeight('bold').setBackground('#f3f4f6');
+  return colIndex;
+}
+
+function getSheetColumnMap(sheet, isScheduledSheet) {
+  var statusCol = ensureHeaderColumn(
+    sheet,
+    isScheduledSheet ? STATUS_COLUMN_INDEX_SCHEDULED : STATUS_COLUMN_INDEX_REGULAR,
+    'Status'
+  );
+
+  var repeatCol = 0;
+  if (isScheduledSheet) {
+    repeatCol = ensureHeaderColumn(sheet, 5, 'Repeat');
+  }
+
+  return {
+    statusCol: statusCol,
+    repeatCol: repeatCol
+  };
+}
 
 function ensureSheetWithHeaders(doc, sheetName, includeRepeatColumn) {
   var sheet = doc.getSheetByName(sheetName);
@@ -12,17 +55,27 @@ function ensureSheetWithHeaders(doc, sheetName, includeRepeatColumn) {
   }
 
   if (sheet.getLastRow() === 0) {
-    var headers = includeRepeatColumn
-      ? ['Date', 'Category', 'Description', 'Amount', 'Repeat']
-      : ['Date', 'Category', 'Description', 'Amount'];
-    sheet.appendRow(headers);
-    sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#f3f4f6');
-  } else if (includeRepeatColumn) {
-    var repeatHeader = String(sheet.getRange(1, 5).getValue() || '').trim();
-    if (!repeatHeader) {
-      sheet.getRange(1, 5).setValue('Repeat');
-      sheet.getRange(1, 1, 1, 5).setFontWeight('bold').setBackground('#f3f4f6');
+    if (includeRepeatColumn) {
+      var scheduledHeaders = ['Date', 'Category', 'Description', 'Amount', 'Repeat', 'Status'];
+      sheet.getRange(1, 1, 1, scheduledHeaders.length).setValues([scheduledHeaders]);
+      sheet.getRange(1, 1, 1, scheduledHeaders.length).setFontWeight('bold').setBackground('#f3f4f6');
+    } else {
+      var regularHeaders = ['Date', 'Category', 'Description', 'Amount'];
+      sheet.getRange(1, 1, 1, regularHeaders.length).setValues([regularHeaders]);
+      sheet.getRange(1, 6).setValue('Status');
+      sheet.getRange(1, 1, 1, 4).setFontWeight('bold').setBackground('#f3f4f6');
+      sheet.getRange(1, 6).setFontWeight('bold').setBackground('#f3f4f6');
     }
+  } else if (includeRepeatColumn) {
+    ensureHeaderColumn(sheet, 5, 'Repeat');
+    ensureHeaderColumn(sheet, STATUS_COLUMN_INDEX_SCHEDULED, 'Status');
+    sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), STATUS_COLUMN_INDEX_SCHEDULED)).setFontWeight('bold').setBackground('#f3f4f6');
+  } else {
+    ensureHeaderColumn(sheet, STATUS_COLUMN_INDEX_REGULAR, 'Status');
+    if (!String(sheet.getRange(1, 1).getValue() || '').trim()) sheet.getRange(1, 1).setValue('Date');
+    if (!String(sheet.getRange(1, 2).getValue() || '').trim()) sheet.getRange(1, 2).setValue('Category');
+    if (!String(sheet.getRange(1, 3).getValue() || '').trim()) sheet.getRange(1, 3).setValue('Description');
+    if (!String(sheet.getRange(1, 4).getValue() || '').trim()) sheet.getRange(1, 4).setValue('Amount');
   }
 
   return sheet;
@@ -197,6 +250,7 @@ function doPost(e) {
 
       var isScheduledSheet = normalizeSheetName(sheetName) === SCHEDULED_SHEET_NAME;
       var sheet = ensureSheetWithHeaders(doc, sheetName, isScheduledSheet);
+      var columnMap = getSheetColumnMap(sheet, isScheduledSheet);
 
       // Prepare rows for bulk insertion
       for (var i = 0; i < expenses.length; i++) {
@@ -215,14 +269,16 @@ function doPost(e) {
             expense.category,    // Column B: Category
             expense.description, // Column C: Description
             expense.amount,      // Column D: Amount
-            String(expense.repeat || 'none').toLowerCase() // Column E: Repeat
+            String(expense.repeat || 'none').toLowerCase(), // Column E: Repeat
+            String(expense.status || 'completed').toLowerCase() // Column F: Status
           ]);
         } else {
           rows.push([
             displayDate,         // Column A: Date
             expense.category,    // Column B: Category
             expense.description, // Column C: Description
-            expense.amount       // Column D: Amount
+            expense.amount,      // Column D: Amount
+            String(expense.status || 'completed').toLowerCase() // Column F: Status
           ]);
         }
       }
@@ -237,7 +293,22 @@ function doPost(e) {
           startRow += 2;
         }
 
-        sheet.getRange(startRow, 1, rows.length, isScheduledSheet ? 5 : 4).setValues(rows);
+        var baseValues = rows.map(function (r) {
+          return [r[0], r[1], r[2], r[3]];
+        });
+        var statusValues = rows.map(function (r) {
+          return [isScheduledSheet ? r[5] : r[4]];
+        });
+
+        sheet.getRange(startRow, 1, rows.length, 4).setValues(baseValues);
+        sheet.getRange(startRow, columnMap.statusCol, rows.length, 1).setValues(statusValues);
+
+        if (isScheduledSheet) {
+          var repeatValues = rows.map(function (r) {
+            return [r[4]];
+          });
+          sheet.getRange(startRow, columnMap.repeatCol, rows.length, 1).setValues(repeatValues);
+        }
         // Keep amount column numeric; some sheets carry date formatting from prior edits.
         sheet.getRange(startRow, 4, rows.length, 1).setNumberFormat('#,##0.00');
       }
@@ -277,6 +348,7 @@ function doGet(e) {
         for (var s = 0; s < sheets.length; s++) {
             var sheet = sheets[s];
             var sheetName = sheet.getName();
+            var monthlyColumnMap = getSheetColumnMap(sheet, false);
             
             // Skip sheets that don't look like month/year sheets (e.g., "Jan 2024")
             // Simple regex check: 3 letters space 4 digits
@@ -326,7 +398,8 @@ function doGet(e) {
                     date: date,
                     category: row[1],
                     description: row[2],
-                    amount: amount
+                    amount: amount,
+                    status: String(row[monthlyColumnMap.statusCol - 1] || '').trim().toLowerCase() || 'completed'
                 });
             }
         }
@@ -354,6 +427,9 @@ function doGet(e) {
       return ContentService.createTextOutput(JSON.stringify({ data: [], availableBalance: 0 })) // Return empty structure if sheet not found
         .setMimeType(ContentService.MimeType.JSON);
     }
+
+    var isScheduledSheet = normalizeSheetName(sheetName) === SCHEDULED_SHEET_NAME;
+    var readColumnMap = getSheetColumnMap(sheet, isScheduledSheet);
 
     if (e.parameter.datesOnly === 'true') {
         var data = sheet.getDataRange().getValues();
@@ -418,7 +494,8 @@ function doGet(e) {
         category: row[1],
         description: row[2],
         amount: amount,
-        repeat: String(row[4] || '').trim().toLowerCase() || 'none'
+        repeat: String(row[isScheduledSheet ? (readColumnMap.repeatCol - 1) : 4] || '').trim().toLowerCase() || 'none',
+        status: String(row[readColumnMap.statusCol - 1] || '').trim().toLowerCase() || 'completed'
       });
     }
 

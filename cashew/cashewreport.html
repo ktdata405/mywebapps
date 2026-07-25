@@ -1113,7 +1113,8 @@
                     date: todayCashewDate,
                     category: item.category,
                     description: item._cleanDescription || item.description || item.category,
-                    amount: Number(item.amount) || 0
+                    amount: Number(item.amount) || 0,
+                    status: 'completed' // Scheduled items added to Cashew are always completed
                 }]
             };
 
@@ -1423,8 +1424,8 @@
         function formatDateWithDay(value) {
             const d = parseRecordDate(value);
             if(!d || isNaN(d.getTime())) return String(value || '');
-            const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
-            return `${formatDate(toDateKey(d))} (${dayName})`;
+            const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+            return `${formatDate(toDateKey(d))}(${dayName})`;
         }
 
         function renderTransactions(data) {
@@ -1453,12 +1454,17 @@
             Object.entries(grouped).sort((a,b) => new Date(b[0]) - new Date(a[0])).forEach(([date, group], idx) => {
                 const dateBlock = document.createElement('div');
                 dateBlock.className = "space-y-3";
+                const draftCount = group.items.filter(item => String(item.status || '').toLowerCase() === 'draft').length;
+                const draftHeaderBadge = draftCount > 0
+                    ? `<span class="px-2.5 py-0.5 rounded-full bg-rose-700 text-white text-[9px] font-extrabold uppercase border border-rose-400/70 shadow-sm shadow-rose-900/60">Draft${draftCount > 1 ? ` (${draftCount})` : ''}</span>`
+                    : '';
 
                 const header = document.createElement('div');
                 header.className = "flex justify-between items-center px-4 py-1.5";
                 header.innerHTML = `
                     <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                        <i class="fa-solid fa-calendar-day text-indigo-400/50"></i> ${date}
+                        <i class="fa-solid fa-calendar-day text-indigo-400/50"></i> ${formatDateWithDay(date)}
+                        ${draftHeaderBadge}
                     </span>
                     <span class="text-[10px] font-bold text-indigo-400 font-mono bg-indigo-500/10 px-2 py-0.5 rounded-lg border border-indigo-500/20">Rs. ${group.total.toLocaleString('en-IN')}</span>
                 `;
@@ -1476,7 +1482,9 @@
                                 <i class="fa-solid ${color.icon}"></i>
                             </div>
                             <div class="min-w-0">
-                                <h4 class="text-xs font-bold text-white group-hover/item:text-indigo-400 transition-colors">${item.category}</h4>
+                                <h4 class="text-xs font-bold text-white group-hover/item:text-indigo-400 transition-colors">${item.category}
+                                    ${item.status === 'draft' ? '<span class="ml-2 px-2.5 py-0.5 rounded-full bg-rose-700 text-white text-[9px] font-extrabold uppercase border border-rose-400/70 shadow-sm shadow-rose-900/60">Draft</span>' : ''}
+                                </h4>
                                 <p class="text-[10px] text-gray-500 truncate mt-0.5 group-hover/item:text-gray-400">${item.description || 'No description'}</p>
                             </div>
                         </div>
