@@ -1,200 +1,213 @@
 /**
  * Google Apps Script for Milk Bill Tracker
+ * VERSION: 3.0 — Clean rewrite with Stage column support
+ *
+ * TEST the deployment is live by opening this URL in your browser:
+ *   https://<YOUR_DEPLOYMENT_URL>/exec?action=test
+ * You should see: {"ok":true,"version":"3.0","time":"..."}
  */
 
-function doGet(e) {
-  const sheetName = e.parameter.sheetName;
-  const datesOnly = e.parameter.datesOnly === 'true';
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(sheetName);
-  
-  if (!sheet) {
-    return ContentService.createTextOutput(JSON.stringify({ 
-      data: [], 
-      dates: [],
-      message: 'Sheet not found' 
-    })).setMimeType(ContentService.MimeType.JSON);
-  }
-  
-  const data = sheet.getDataRange().getValues();
-  const headers = data.shift(); // Remove headers
-  
-  if (datesOnly) {
-    const dates = data.map(row => {
-      const dateVal = row[0];
-      if (dateVal instanceof Date) {
-        return Utilities.formatDate(dateVal, ss.getSpreadsheetTimeZone(), "dd/MMM/yyyy");
+// ─────────────────────────────────────────────
+// HELPER: Find or create a header column by name (case-insensitive)
+// Returns 1-based column index. Creates & flushes column if not found.
+// ─────────────────────────────────────────────
+function getOrCreateCol(sheet, headerName) {
+  const lastCol = sheet.getLastColumn();
+  if (lastCol > 0) {
+    const headerRow = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+    for (let i = 0; i < headerRow.length; i++) {
+      if (String(headerRow[i]).trim().toLowerCase() === headerName.toLowerCase()) {
+        return i + 1;
       }
-      return String(dateVal);
-    });
-    return ContentService.createTextOutput(JSON.stringify({ dates: dates }))
+    }
+  }
+  // Not found — create it
+  const newCol = lastCol + 1;
+  sheet.getRange(1, newCol).setValue(headerName).setFontWeight("bold").setBackground("#f3f4f6");
+  SpreadsheetApp.flush();
+  return newCol;
+}
+
+function fmtDate(ss, date) {
+  return Utilities.formatDate(date, ss.getSpreadsheetTimeZone(), "dd/MMM/yyyy");
+}
+
+function parseSheetDate(dateStr) {
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const parts = String(dateStr).split('/');
+  if (parts.length === 3) {
+    return new Date(parseInt(parts[2]), months.indexOf(parts[1]), parseInt(parts[0]));
+  }
+  return new Date(dateStr);
+}
+
+function jsonOk(data) {
+  return ContentService.createTextOutput(JSON.stringify(Object.assign({ success: true }, data)))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+function jsonErr(msg) {
+  return ContentService.createTextOutput(JSON.stringify({ success: false, error: msg }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ─────────────────────────────────────────────
+// GET — returns sheet rows as JSON objects keyed by lowercase header
+// Also supports ?action=test to verify deployment
+// ─────────────────────────────────────────────
+function doGet(e) {
+  if (e.parameter.action === 'test') {
+    return ContentService.createTextOutput(
+      JSON.stringify({ ok: true, version: '3.0', time: new Date().toISOString() })
+    ).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(e.parameter.sheetName);
+  if (!sheet) {
+    return ContentService.createTextOutput(JSON.stringify({ data: [], message: 'Sheet not found' }))
       .setMimeType(ContentService.MimeType.JSON);
   }
-  
-  const formattedData = data.map(row => {
-    let obj = {};
-    headers.forEach((header, i) => {
-      const key = header.toString().toLowerCase().replace(/\s+/g, '');
-      let val = row[i];
-      if (val instanceof Date) {
-        val = Utilities.formatDate(val, ss.getSpreadsheetTimeZone(), "dd/MMM/yyyy");
-      }
-      obj[key] = val;
+
+  const raw     = sheet.getDataRange().getValues();
+  const headers = raw.shift();
+  const data    = raw.map(function(row) {
+    const obj = {};
+    headers.forEach(function(h, i) {
+      const key = String(h).trim().toLowerCase().replace(/\s+/g, '');
+      let val   = row[i];
+      if (val instanceof Date) val = fmtDate(ss, val);
+      obj[key]  = (val !== undefined && val !== null) ? val : '';
     });
     return obj;
   });
-  
-  return ContentService.createTextOutput(JSON.stringify({ data: formattedData }))
+
+  return ContentService.createTextOutput(JSON.stringify({ data: data }))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
+// ─────────────────────────────────────────────
+// POST — routes to correct sub-handler
+// ─────────────────────────────────────────────
 function doPost(e) {
-  const payload = JSON.parse(e.postData.contents);
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-
-  // Handle markPaid action (single row)
-  if (payload.action === 'markPaid') {
-    const sheetName = payload.sheetName;
-    const dateStr = payload.date;
-    let sheet = ss.getSheetByName(sheetName);
-    if (!sheet) return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Sheet not found' })).setMimeType(ContentService.MimeType.JSON);
-    const allData = sheet.getDataRange().getValues();
-    const headers = allData[0];
-    const statusCol = headers.indexOf("Status") + 1;
-    if (statusCol === 0) return ContentService.createTextOutput(JSON.stringify({ success: false })).setMimeType(ContentService.MimeType.JSON);
-    for (let i = 1; i < allData.length; i++) {
-      const rowDate = allData[i][0];
-      let formattedRowDate = rowDate instanceof Date ? Utilities.formatDate(rowDate, ss.getSpreadsheetTimeZone(), "dd/MMM/yyyy") : String(rowDate);
-      if (formattedRowDate === dateStr) {
-        sheet.getRange(i + 1, statusCol).setValue("Paid");
-        return ContentService.createTextOutput(JSON.stringify({ success: true })).setMimeType(ContentService.MimeType.JSON);
-      }
-    }
-    return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Date not found' })).setMimeType(ContentService.MimeType.JSON);
+  try {
+    const payload = JSON.parse(e.postData.contents);
+    const ss      = SpreadsheetApp.getActiveSpreadsheet();
+    if (payload.action === 'markPaid')      return handleMarkPaid(ss, payload);
+    if (payload.action === 'markMonthPaid') return handleMarkMonthPaid(ss, payload);
+    return handleAddMilk(ss, payload);
+  } catch (err) {
+    Logger.log('doPost ERROR: ' + err.toString() + '\n' + err.stack);
+    return jsonErr(err.toString());
   }
+}
 
-  // Handle markMonthPaid action (all rows in sheet)
-  if (payload.action === 'markMonthPaid') {
-    const sheetName = payload.sheetName;
-    let sheet = ss.getSheetByName(sheetName);
-    if (!sheet) return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Sheet not found' })).setMimeType(ContentService.MimeType.JSON);
-    const allData = sheet.getDataRange().getValues();
-    const headers = allData[0];
-    let statusCol = headers.indexOf("Status") + 1;
-    if (statusCol === 0) {
-      // Add Status column if missing
-      const nextCol = sheet.getLastColumn() + 1;
-      sheet.getRange(1, nextCol).setValue("Status").setFontWeight("bold").setBackground("#f3f4f6");
-      statusCol = nextCol;
-    }
-    // Mark all data rows as Paid
-    for (let i = 1; i < allData.length; i++) {
-      sheet.getRange(i + 1, statusCol).setValue("Paid");
-    }
-    return ContentService.createTextOutput(JSON.stringify({ success: true })).setMimeType(ContentService.MimeType.JSON);
-  }
+// ─────────────────────────────────────────────
+// ADD / UPDATE a daily milk entry
+// ─────────────────────────────────────────────
+function handleAddMilk(ss, payload) {
+  const months    = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const date      = parseSheetDate(payload.date);
+  const sheetName = months[date.getMonth()] + ' ' + date.getFullYear();
 
-  // payload.date is expected as DD/MMM/YYYY
-  let dateStr = payload.date; // e.g. "07/May/2026"
-  let date;
-
-  // Parse DD/MMM/YYYY
-  const parts = dateStr.split('/');
-  if (parts.length === 3) {
-    const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    const monthIndex = monthNames.indexOf(parts[1]);
-    date = new Date(parseInt(parts[2]), monthIndex, parseInt(parts[0]));
-  } else {
-    date = new Date(dateStr);
-  }
-
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const sheetName = monthNames[date.getMonth()] + " " + date.getFullYear();
-  
+  // Get or create the month sheet with all standard headers
   let sheet = ss.getSheetByName(sheetName);
   if (!sheet) {
     sheet = ss.insertSheet(sheetName);
-    sheet.appendRow(["Date", "Morning", "Evening", "UnitPrice", "Remarks", "Status"]);
-    sheet.getRange(1, 1, 1, 6).setFontWeight("bold").setBackground("#f3f4f6");
-  } else {
-    // Ensure Remarks and Status columns exist
-    const headerRow = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-    if (headerRow.indexOf("Remarks") === -1) {
-      const nextCol = sheet.getLastColumn() + 1;
-      sheet.getRange(1, nextCol).setValue("Remarks").setFontWeight("bold").setBackground("#f3f4f6");
-    }
-    const headerRow2 = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-    if (headerRow2.indexOf("Status") === -1) {
-      const nextCol2 = sheet.getLastColumn() + 1;
-      sheet.getRange(1, nextCol2).setValue("Status").setFontWeight("bold").setBackground("#f3f4f6");
-    }
+    sheet.appendRow(["Date","Morning","Evening","UnitPrice","Remarks","Status","Stage"]);
+    sheet.getRange(1, 1, 1, 7).setFontWeight("bold").setBackground("#f3f4f6");
+    SpreadsheetApp.flush();
   }
-  
-  const allData = sheet.getDataRange().getValues();
-  const headers = allData[0];
-  const remarksCol = headers.indexOf("Remarks") + 1;
-  const statusCol = headers.indexOf("Status") + 1;
 
-  let existingRowIndex = -1;
-  const formattedInputDate = Utilities.formatDate(date, ss.getSpreadsheetTimeZone(), "dd/MMM/yyyy");
+  // Ensure every required column exists (auto-creates if missing + flushes)
+  const remarksCol = getOrCreateCol(sheet, "Remarks");
+  const statusCol  = getOrCreateCol(sheet, "Status");   // Paid / Unpaid column
+  const stageCol   = getOrCreateCol(sheet, "Stage");    // Draft / Completed column
 
+  Logger.log('handleAddMilk → sheetName=' + sheetName + ' stageCol=' + stageCol + ' payload.stage=' + payload.stage);
+
+  // Normalize the stage value sent from the browser
+  const stageVal = (String(payload.stage || 'completed').trim().toLowerCase() === 'draft') ? 'draft' : 'completed';
+
+  // Find existing row for this date
+  const formattedDate = fmtDate(ss, date);
+  const allData       = sheet.getDataRange().getValues();
+  let existingRow     = -1;
   for (let i = 1; i < allData.length; i++) {
-    const rowDate = allData[i][0];
-    let formattedRowDate;
-    if (rowDate instanceof Date) {
-      formattedRowDate = Utilities.formatDate(rowDate, ss.getSpreadsheetTimeZone(), "dd/MMM/yyyy");
-    } else {
-      formattedRowDate = String(rowDate);
-    }
-    if (formattedRowDate === formattedInputDate) {
-      existingRowIndex = i + 1;
+    const cellVal    = allData[i][0];
+    const cellDateStr = (cellVal instanceof Date) ? fmtDate(ss, cellVal) : String(cellVal).trim();
+    if (cellDateStr === formattedDate) {
+      existingRow = i + 1;
       break;
     }
   }
-  
-  if (existingRowIndex !== -1) {
-    // Update existing row
-    sheet.getRange(existingRowIndex, 2).setValue(payload.morning);
-    sheet.getRange(existingRowIndex, 3).setValue(payload.evening);
-    sheet.getRange(existingRowIndex, 4).setValue(payload.unitPrice);
-    if (remarksCol > 0) sheet.getRange(existingRowIndex, remarksCol).setValue(payload.remarks || "");
-    // Only update status if explicitly provided (don't overwrite paid status on edit)
-    if (payload.status !== undefined && statusCol > 0) {
-      sheet.getRange(existingRowIndex, statusCol).setValue(payload.status);
+
+  if (existingRow > 0) {
+    // ── UPDATE existing row ──
+    sheet.getRange(existingRow, 1).setValue(formattedDate);
+    sheet.getRange(existingRow, 2).setValue(Number(payload.morning)   || 0);
+    sheet.getRange(existingRow, 3).setValue(Number(payload.evening)   || 0);
+    sheet.getRange(existingRow, 4).setValue(Number(payload.unitPrice) || 80);
+    sheet.getRange(existingRow, remarksCol).setValue(payload.remarks || "");
+    sheet.getRange(existingRow, stageCol).setValue(stageVal);
+
+    // Keep Paid rows as Paid. If blank/unknown, set to Unpaid.
+    const currentStatus = String(sheet.getRange(existingRow, statusCol).getValue() || '').trim().toLowerCase();
+    if (currentStatus !== 'paid') {
+      sheet.getRange(existingRow, statusCol).setValue("Unpaid");
     }
   } else {
-    // Add new row
-    const newRow = [formattedInputDate, payload.morning, payload.evening, payload.unitPrice, payload.remarks || "", payload.status || "Unpaid"];
-    sheet.appendRow(newRow);
+    // ── INSERT new row ──
+    const newRow = sheet.getLastRow() + 1;
+    sheet.getRange(newRow, 1).setValue(formattedDate);
+    sheet.getRange(newRow, 2).setValue(Number(payload.morning)   || 0);
+    sheet.getRange(newRow, 3).setValue(Number(payload.evening)   || 0);
+    sheet.getRange(newRow, 4).setValue(Number(payload.unitPrice) || 80);
+    sheet.getRange(newRow, remarksCol).setValue(payload.remarks || "");
+    sheet.getRange(newRow, stageCol).setValue(stageVal);
+    sheet.getRange(newRow, statusCol).setValue("Unpaid");
   }
-  
-  return ContentService.createTextOutput(JSON.stringify({ success: true }))
-    .setMimeType(ContentService.MimeType.JSON);
-}
 
-function markAsPaid(e) {
-  // Called via POST with action: 'markPaid'
-  const payload = JSON.parse(e.postData.contents);
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheetName = payload.sheetName;
-  const dateStr = payload.date;
-
-  let sheet = ss.getSheetByName(sheetName);
-  if (!sheet) return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Sheet not found' })).setMimeType(ContentService.MimeType.JSON);
-
-  const allData = sheet.getDataRange().getValues();
-  const headers = allData[0];
-  const statusCol = headers.indexOf("Status") + 1;
-  if (statusCol === 0) return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'No status column' })).setMimeType(ContentService.MimeType.JSON);
-
-  for (let i = 1; i < allData.length; i++) {
-    const rowDate = allData[i][0];
-    let formattedRowDate = rowDate instanceof Date ? Utilities.formatDate(rowDate, ss.getSpreadsheetTimeZone(), "dd/MMM/yyyy") : String(rowDate);
-    if (formattedRowDate === dateStr) {
-      sheet.getRange(i + 1, statusCol).setValue("Paid");
-      return ContentService.createTextOutput(JSON.stringify({ success: true })).setMimeType(ContentService.MimeType.JSON);
+  // Backfill this month's blanks so Status column is consistently populated
+  const finalLastRow = sheet.getLastRow();
+  for (let r = 2; r <= finalLastRow; r++) {
+    const s = String(sheet.getRange(r, statusCol).getValue() || '').trim();
+    if (!s) {
+      sheet.getRange(r, statusCol).setValue("Unpaid");
     }
   }
-  return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Date not found' })).setMimeType(ContentService.MimeType.JSON);
+
+  return jsonOk({ date: formattedDate, stage: stageVal, stageCol: stageCol });
 }
 
+// ─────────────────────────────────────────────
+// MARK one date as PAID
+// ─────────────────────────────────────────────
+function handleMarkPaid(ss, payload) {
+  const sheet = ss.getSheetByName(payload.sheetName);
+  if (!sheet) return jsonErr('Sheet not found: ' + payload.sheetName);
+  const statusCol = getOrCreateCol(sheet, "Status");
+  const allData   = sheet.getDataRange().getValues();
+  for (let i = 1; i < allData.length; i++) {
+    const cellVal    = allData[i][0];
+    const cellDateStr = (cellVal instanceof Date) ? fmtDate(ss, cellVal) : String(cellVal).trim();
+    if (cellDateStr === payload.date) {
+      sheet.getRange(i + 1, statusCol).setValue("Paid");
+      return jsonOk({ markedDate: payload.date });
+    }
+  }
+  return jsonErr('Date not found: ' + payload.date);
+}
+
+// ─────────────────────────────────────────────
+// MARK entire month as PAID
+// ─────────────────────────────────────────────
+function handleMarkMonthPaid(ss, payload) {
+  const sheet = ss.getSheetByName(payload.sheetName);
+  if (!sheet) return jsonErr('Sheet not found: ' + payload.sheetName);
+  const statusCol = getOrCreateCol(sheet, "Status");
+  const allData   = sheet.getDataRange().getValues();
+  for (let i = 1; i < allData.length; i++) {
+    sheet.getRange(i + 1, statusCol).setValue("Paid");
+  }
+  return jsonOk({ markedSheet: payload.sheetName, rows: allData.length - 1 });
+}

@@ -114,6 +114,12 @@
             border-color: rgba(16, 185, 129, 0.2);
         }
 
+        .date-cell.has-draft label {
+            background: rgba(251, 146, 60, 0.18);
+            color: #fb923c;
+            border-color: rgba(251, 146, 60, 0.28);
+        }
+
         .date-cell input:checked + label {
             background: #6366f1 !important;
             color: white !important;
@@ -199,7 +205,10 @@
                         </div>
                         <div class="pb-4 flex items-center gap-4 text-[9px] font-bold text-gray-500 uppercase tracking-widest justify-center">
                             <div class="flex items-center gap-1.5">
-                                <span class="w-3 h-3 rounded bg-emerald-500/20 border border-emerald-500/40"></span> Data
+                                <span class="w-3 h-3 rounded bg-emerald-500/20 border border-emerald-500/40"></span> Done
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-3 h-3 rounded bg-orange-500/20 border border-orange-500/30"></span> Draft
                             </div>
                             <div class="flex items-center gap-1.5">
                                 <span class="w-3 h-3 rounded bg-white/5 border border-white/10"></span> Empty
@@ -277,7 +286,11 @@
             <button onclick="clearInputs()" class="w-12 h-12 rounded-2xl bg-white/5 hover:bg-red-500/10 border border-white/5 text-gray-400 hover:text-red-400 flex items-center justify-center transition-all active:scale-95">
                 <i class="fa-solid fa-trash-can"></i>
             </button>
-            <button onclick="saveMilkData()" id="save-btn" class="h-12 px-8 rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-bold shadow-lg flex items-center gap-2.5 transition-all active:scale-95">
+            <button onclick="saveMilkData('draft')" id="save-draft-btn" class="h-12 px-8 rounded-2xl bg-gray-600/70 hover:bg-gray-500/80 text-white font-bold shadow-lg flex items-center gap-2.5 transition-all active:scale-95">
+                <i class="fa-solid fa-file-pen"></i>
+                <span>Draft</span>
+            </button>
+            <button onclick="saveMilkData('completed')" id="save-btn" class="h-12 px-8 rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-bold shadow-lg flex items-center gap-2.5 transition-all active:scale-95">
                 <i class="fa-solid fa-check"></i>
                 <span data-translate-key="save">Save</span>
             </button>
@@ -307,7 +320,8 @@
         const UNIT_PRICE = 80;
         const DEFAULT_MORNING = 1.5;
         const DEFAULT_EVENING = 0.5;
-        const MILK_API_URL = 'https://script.google.com/macros/s/AKfycbw9HPgLQojIqypEKeaCpwdZtdXmM7gqANY8LFWLWUAe5CNexRLTyrrX6JLFmiZC03B4CQ/exec';
+        //const MILK_API_URL = 'https://script.google.com/macros/s/AKfycbw9HPgLQojIqypEKeaCpwdZtdXmM7gqANY8LFWLWUAe5CNexRLTyrrX6JLFmiZC03B4CQ/exec';
+        const MILK_API_URL = CONFIG.GOOGLE_SHEET_URL_MILK;
         let isDailyCostManual = false;
 
         function getDisplayedDailyCost() {
@@ -391,23 +405,29 @@
             }
         }
 
-        function updateDateSaveStatus(hasSavedData, loading = false) {
+        function updateDateSaveStatus(hasSavedData, loading = false, stage = null) {
             const badge = document.getElementById('date-save-status');
             const dot = document.getElementById('date-save-status-dot');
             const text = document.getElementById('date-save-status-text');
             if (!badge) return;
 
             const saveBtn = document.getElementById('save-btn');
+            const saveDraftBtn = document.getElementById('save-draft-btn');
             const applySaveButtonStatusStyle = (state) => {
-                if (!saveBtn) return;
-
-                const base = 'h-12 px-8 rounded-2xl text-white font-bold flex items-center gap-2.5 transition-all active:scale-95';
+                const baseCompleted = 'h-12 px-8 rounded-2xl text-white font-bold flex items-center gap-2.5 transition-all active:scale-95';
+                const baseDraft = 'h-12 px-8 rounded-2xl text-white font-bold flex items-center gap-2.5 transition-all active:scale-95';
                 if (state === 'loading') {
-                    saveBtn.className = `${base} bg-gray-600/80 hover:bg-gray-500/90 border border-gray-400/30`;
+                    if (saveBtn) saveBtn.className = `${baseCompleted} bg-gray-600/80 hover:bg-gray-500/90 border border-gray-400/30`;
+                    if (saveDraftBtn) saveDraftBtn.className = `${baseDraft} bg-gray-600/80 hover:bg-gray-500/90 border border-gray-400/30`;
                 } else if (state === 'saved') {
-                    saveBtn.className = `${base} bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/45`;
+                    if (saveBtn) saveBtn.className = `${baseCompleted} bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/45`;
+                    if (saveDraftBtn) saveDraftBtn.className = `${baseDraft} bg-gray-600/70 hover:bg-gray-500/80 shadow-lg shadow-gray-600/30`;
+                } else if (state === 'draft') {
+                    if (saveBtn) saveBtn.className = `${baseCompleted} bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 shadow-lg shadow-orange-600/30`;
+                    if (saveDraftBtn) saveDraftBtn.className = `${baseDraft} bg-orange-700/70 hover:bg-orange-600/80 shadow-lg shadow-orange-700/30`;
                 } else {
-                    saveBtn.className = `${base} bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-lg shadow-red-600/30 hover:shadow-red-600/45`;
+                    if (saveBtn) saveBtn.className = `${baseCompleted} bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-lg shadow-red-600/30 hover:shadow-red-600/45`;
+                    if (saveDraftBtn) saveDraftBtn.className = `${baseDraft} bg-gray-600/70 hover:bg-gray-500/80 shadow-lg shadow-gray-600/30`;
                 }
             };
 
@@ -416,10 +436,15 @@
                 dot.className = 'w-2 h-2 rounded-full bg-gray-400 inline-block';
                 text.textContent = 'Checking...';
                 applySaveButtonStatusStyle('loading');
+            } else if (hasSavedData && stage === 'draft') {
+                badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all duration-300 bg-orange-500/20 text-orange-400 border border-orange-500/40';
+                dot.className = 'w-2 h-2 rounded-full bg-orange-400 inline-block';
+                text.textContent = 'Draft';
+                applySaveButtonStatusStyle('draft');
             } else if (hasSavedData) {
                 badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all duration-300 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40';
                 dot.className = 'w-2 h-2 rounded-full bg-emerald-400 inline-block';
-                text.textContent = 'Saved';
+                text.textContent = 'Done';
                 applySaveButtonStatusStyle('saved');
             } else {
                 badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all duration-300 bg-red-500/20 text-red-400 border border-red-500/40';
@@ -515,11 +540,12 @@
             KTui.alert(title, msg, type === 'success' ? 'success' : 'error');
         }
 
-        function saveMilkData() {
+        function saveMilkData(status) {
             const dateInputVal = document.getElementById('date-input').value;
             const morning = parseFloat(document.getElementById('morning-input').value) || 0;
             const evening = parseFloat(document.getElementById('evening-input').value) || 0;
             const remarks = document.getElementById('remarks-input').value;
+            const normalizedStage = String(status || 'completed').toLowerCase() === 'draft' ? 'draft' : 'completed';
             const dailyCost = isDailyCostManual
                 ? (parseFloat(document.getElementById('daily-cost-input').value) || 0)
                 : (morning + evening) * UNIT_PRICE;
@@ -533,7 +559,11 @@
             const date = formatToDDMMMYYYY(dateInputVal);
 
             const loader = document.getElementById('loader');
+            const saveBtn = document.getElementById('save-btn');
+            const saveDraftBtn = document.getElementById('save-draft-btn');
             loader.classList.remove('hidden');
+            if (saveBtn) saveBtn.disabled = true;
+            if (saveDraftBtn) saveDraftBtn.disabled = true;
 
             const payload = {
                 type: 'milk',
@@ -543,7 +573,8 @@
                 evening: evening,
                 unitPrice: UNIT_PRICE,
                 dailyCost: dailyCost,
-                remarks: remarks
+                remarks: remarks,
+                stage: normalizedStage
             };
 
             fetch(MILK_API_URL, {
@@ -553,8 +584,10 @@
             })
             .then(() => {
                 loader.classList.add('hidden');
-                showPopup('Success', 'Data saved successfully!', 'success');
-                updateDateSaveStatus(true); // Mark as saved
+                if (saveBtn) saveBtn.disabled = false;
+                if (saveDraftBtn) saveDraftBtn.disabled = false;
+                showPopup('Success', `Data saved successfully! Stage: ${normalizedStage === 'draft' ? 'Draft' : 'Completed'}`, 'success');
+                updateDateSaveStatus(true, false, normalizedStage); // Show correct stage in badge
                 clearInputs();
                 // Refresh calendar
                 initDateAccordion(dateInputVal);
@@ -567,6 +600,8 @@
             })
             .catch(error => {
                 loader.classList.add('hidden');
+                if (saveBtn) saveBtn.disabled = false;
+                if (saveDraftBtn) saveDraftBtn.disabled = false;
                 console.error('Error:', error);
                 showPopup('Error', 'Error saving data', 'error');
             });
@@ -600,6 +635,7 @@
             updateDateSaveStatus(false, true); // Show loading state
 
             let existingDates = [];
+            let dateStageMap = {}; // date string → 'draft' | 'completed'
             let selectedRow = null;
             try {
                 const response = await fetch(`${MILK_API_URL}?sheetName=${encodeURIComponent(sheetName)}&t=${Date.now()}`);
@@ -607,6 +643,10 @@
                 const rows = Array.isArray(result.data) ? result.data : [];
                 if (rows.length) {
                     existingDates = rows.map(row => normalizeSheetDate(row.date)).filter(Boolean);
+                    rows.forEach(row => {
+                        const d = normalizeSheetDate(row.date);
+                        if (d) dateStageMap[d] = String(row.stage || 'completed').toLowerCase();
+                    });
                 }
 
                 const dayStr = String(dateObj.getDate()).padStart(2, '0');
@@ -619,16 +659,18 @@
 
             setInputsForSelectedDate(selectedRow);
 
-            // Check if selected date has data
+            // Check if selected date has data and what stage it is
             const dayStr = String(dateObj.getDate()).padStart(2, '0');
             const monthName = months[monthIndex];
             const fullDateStr = `${dayStr}/${monthName}/${year}`;
-            updateDateSaveStatus(existingDates.includes(fullDateStr));
+            const hasData = existingDates.includes(fullDateStr);
+            const currentStage = hasData ? (dateStageMap[fullDateStr] || 'completed') : null;
+            updateDateSaveStatus(hasData, false, currentStage);
 
-            renderDateRadios(year, monthIndex, existingDates, dateObj.getDate());
+            renderDateRadios(year, monthIndex, existingDates, dateObj.getDate(), dateStageMap);
         }
 
-        function renderDateRadios(year, monthIndex, existingDates, selectedDay) {
+        function renderDateRadios(year, monthIndex, existingDates, selectedDay, dateStageMap = {}) {
             const firstDay = new Date(year, monthIndex, 1).getDay();
             const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
             const container = document.getElementById('date-radio-grid');
@@ -657,9 +699,11 @@
                 const dayStr = String(i).padStart(2, '0');
                 const fullDateStr = `${dayStr}/${monthName}/${year}`;
                 const hasData = existingDates.includes(fullDateStr);
+                const stage = dateStageMap[fullDateStr] || '';
+                const isDraft = hasData && stage === 'draft';
 
                 const wrapper = document.createElement('div');
-                wrapper.className = `date-cell ${hasData ? 'has-data' : ''}`;
+                wrapper.className = `date-cell ${isDraft ? 'has-draft' : (hasData ? 'has-data' : '')}`;
 
                 const input = document.createElement('input');
                 input.type = 'radio';

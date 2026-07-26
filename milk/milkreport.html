@@ -619,6 +619,38 @@
         .badge-unpaid:hover { background: rgba(239,68,68,0.22); }
         .remarks-cell { max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #94a3b8; font-size: 11px; }
 
+        /* ── Stage Badges ── */
+        .stage-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            white-space: nowrap;
+            line-height: 1.5;
+            width: max-content;
+        }
+        .stage-badge i { font-size: 8px; flex-shrink: 0; }
+        .stage-badge-draft {
+            background: rgba(239,68,68,0.16);
+            border: 1px solid rgba(239,68,68,0.42);
+            color: #fca5a5;
+        }
+        .stage-badge-done {
+            background: rgba(16,185,129,0.14);
+            border: 1px solid rgba(16,185,129,0.36);
+            color: #6ee7b7;
+        }
+        .stage-badge-empty {
+            background: rgba(100,116,139,0.12);
+            border: 1px solid rgba(100,116,139,0.24);
+            color: #64748b;
+        }
+
         /* ── Monthly Bill Status Card ── */
         .bill-status-card {
             position: relative; overflow: hidden;
@@ -1077,6 +1109,7 @@
                         <th class="py-3 px-3 text-center" style="color:#6ee7b7;">⚡ Total</th>
                         <th class="py-3 px-3 text-center" style="color:#fbbf24;">₹ Cost</th>
                         <th class="py-3 px-3 text-center">Remarks</th>
+                        <th class="py-3 px-3 text-center" style="color:#a78bfa;">Stage</th>
                         <th class="py-3 px-3 text-center">Edit</th>
                     </tr>
                     </thead>
@@ -1096,11 +1129,11 @@
 <div id="confirm-overlay" class="confirm-overlay">
     <div class="confirm-box">
         <div class="confirm-icon">💳</div>
-        <div class="confirm-title">Mark as Paid?</div>
+        <div class="confirm-title" id="confirm-title">Mark as Paid?</div>
         <div id="confirm-month-badge" class="confirm-month-badge"></div>
-        <div class="confirm-msg">This will mark the entire month's milk bill as paid. This action will be saved to the sheet.</div>
+        <div class="confirm-msg" id="confirm-msg">This will mark the entire month's milk bill as paid. This action will be saved to the sheet.</div>
         <div class="confirm-btns">
-            <button class="confirm-cancel" onclick="closeConfirm()">Cancel</button>
+            <button id="confirm-cancel-btn" class="confirm-cancel" onclick="closeConfirm()">Cancel</button>
             <button class="confirm-proceed" id="confirm-proceed-btn" onclick="proceedMarkPaid()">
                 <i class="fa-solid fa-check-circle"></i> Yes, Mark Paid
             </button>
@@ -1127,6 +1160,40 @@
 <script>
     let filterVisible = true;
     let _reportRows = []; // stores sorted rows for index-based edit access
+    let _draftDatesForMonth = []; // used for mark-paid validation
+    let _pendingConfirmMode = 'markPaid'; // markPaid | settleDrafts
+    const MILK_API_URL = 'https://script.google.com/macros/s/AKfycbw9HPgLQojIqypEKeaCpwdZtdXmM7gqANY8LFWLWUAe5CNexRLTyrrX6JLFmiZC03B4CQ/exec';
+
+    function resetConfirmDialogText() {
+        const titleEl = document.getElementById('confirm-title');
+        const msgEl = document.getElementById('confirm-msg');
+        const cancelBtn = document.getElementById('confirm-cancel-btn');
+        const proceedBtn = document.getElementById('confirm-proceed-btn');
+        if (titleEl) titleEl.textContent = 'Mark as Paid?';
+        if (msgEl) msgEl.textContent = "This will mark the entire month's milk bill as paid. This action will be saved to the sheet.";
+        if (cancelBtn) cancelBtn.textContent = 'Cancel';
+        if (proceedBtn) proceedBtn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Yes, Mark Paid';
+        _pendingConfirmMode = 'markPaid';
+    }
+
+    function openConfirmDialog(config) {
+        const titleEl = document.getElementById('confirm-title');
+        const badgeEl = document.getElementById('confirm-month-badge');
+        const msgEl = document.getElementById('confirm-msg');
+        const cancelBtn = document.getElementById('confirm-cancel-btn');
+        const proceedBtn = document.getElementById('confirm-proceed-btn');
+
+        if (titleEl && config.title) titleEl.textContent = config.title;
+        if (badgeEl && config.badge) badgeEl.textContent = config.badge;
+        if (msgEl) {
+            if (config.messageHtml) msgEl.innerHTML = config.messageHtml;
+            else if (config.message) msgEl.textContent = config.message;
+        }
+        if (cancelBtn && config.cancelText) cancelBtn.textContent = config.cancelText;
+        if (proceedBtn && config.proceedHtml) proceedBtn.innerHTML = config.proceedHtml;
+        _pendingConfirmMode = config.mode || 'markPaid';
+        document.getElementById('confirm-overlay').classList.add('active');
+    }
 
     function toggleFilter() {
         filterVisible = !filterVisible;
@@ -1230,7 +1297,7 @@
         fetchIcon.classList.add('rotate-180');
 
         const sheetName = `${month} ${year}`;
-        fetch(`https://script.google.com/macros/s/AKfycbw9HPgLQojIqypEKeaCpwdZtdXmM7gqANY8LFWLWUAe5CNexRLTyrrX6JLFmiZC03B4CQ/exec?sheetName=${encodeURIComponent(sheetName)}&t=${Date.now()}`)
+        fetch(`${MILK_API_URL}?sheetName=${encodeURIComponent(sheetName)}&t=${Date.now()}`)
             .then(r => r.json())
             .then(res => {
                 renderReport(res.data || []);
@@ -1289,9 +1356,10 @@
                     <i class="fa-solid fa-box-open text-4xl" style="color:rgba(154,168,255,0.4);"></i>
                     <p class="text-xs uppercase tracking-widest font-bold" style="color:#aab6df;">No records found</p>
                 </div>`;
-            body.innerHTML = `<tr><td colspan="7" class="py-12 text-center uppercase tracking-widest text-xs font-bold" style="color:#aab6df;">No records found</td></tr>`;
+            body.innerHTML = `<tr><td colspan="8" class="py-12 text-center uppercase tracking-widest text-xs font-bold" style="color:#aab6df;">No records found</td></tr>`;
             resetSummary();
             setMonthlyBadge(false);
+            _draftDatesForMonth = [];
             return;
         }
 
@@ -1303,6 +1371,23 @@
         // Monthly paid = ALL rows have status === 'Paid'
         const allPaid = sorted.every(r => r.status && r.status.toString().toLowerCase() === 'paid');
         setMonthlyBadge(allPaid);
+
+        _draftDatesForMonth = [...new Set(
+            sorted
+                .filter(r => String(r.stage || '').toLowerCase() === 'draft')
+                .map(r => formatDate(r.date))
+        )];
+
+        function getStageBadge(stage) {
+            const s = String(stage || '').toLowerCase();
+            if (s === 'draft') {
+                return `<span class="stage-badge stage-badge-draft"><i class="fa-solid fa-file-pen"></i>Draft</span>`;
+            }
+            if (s === 'completed') {
+                return `<span class="stage-badge stage-badge-done"><i class="fa-solid fa-check"></i>Done</span>`;
+            }
+            return `<span class="stage-badge stage-badge-empty">—</span>`;
+        }
 
         sorted.forEach((row, index) => {
             const morning   = parseFloat(row.morning)   || 0;
@@ -1318,17 +1403,23 @@
             totalEveningAmount += (evening * unitPrice);
 
             const dateDisplay = formatDate(row.date);
+            const stageBadge = getStageBadge(row.stage);
 
             // ── DESKTOP TABLE ROW ──
             const tr = document.createElement('tr');
             tr.className = "border-b border-white/5";
             tr.innerHTML = `
-                <td class="py-3.5 px-3 td-date">${dateDisplay}</td>
+                <td class="py-3.5 px-3 td-date">
+                    <div class="flex items-center gap-2">
+                        <span>${dateDisplay}</span>
+                    </div>
+                </td>
                 <td class="py-3.5 px-3 td-morning">${morning.toFixed(1)} L</td>
                 <td class="py-3.5 px-3 td-evening">${evening.toFixed(1)} L</td>
                 <td class="py-3.5 px-3 td-total">${dailyTotal.toFixed(1)} L</td>
                 <td class="py-3.5 px-3 td-cost">₹${dailyCost.toFixed(2)}</td>
                 <td class="py-3.5 px-3"><span class="remarks-cell" title="${remarks.replace(/"/g,'&quot;')}">${remarks || '—'}</span></td>
+                <td class="py-3.5 px-3 text-center">${stageBadge}</td>
                 <td class="py-3.5 px-3">
                     <button onclick="editEntry(${index})" class="row-edit-btn">
                         <i class="fa-solid fa-pen-to-square text-xs"></i>
@@ -1343,9 +1434,10 @@
             card.innerHTML = `
                 <div style="padding:14px 13px 12px;">
                     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-                        <div style="display:flex; align-items:center; gap:6px;">
+                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                             <div style="width:7px; height:7px; border-radius:50%; background:currentColor; opacity:0.6;" class="date-label"></div>
                             <span class="date-label" style="font-size:12px; font-weight:800; font-family:monospace; letter-spacing:0.05em;">${dateDisplay}</span>
+                            ${stageBadge}
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="cost-badge" style="font-size:12px; padding:3px 9px;">₹${dailyCost.toFixed(2)}</span>
@@ -1405,12 +1497,33 @@
         const month = document.getElementById('month-select').value;
         const year  = document.getElementById('year-select').value;
         _pendingPaidElement = element;
-        document.getElementById('confirm-month-badge').textContent = `${month} ${year}`;
-        document.getElementById('confirm-overlay').classList.add('active');
+
+        if (_draftDatesForMonth.length > 0) {
+            const preview = _draftDatesForMonth.map(d => `<li>${d}</li>`).join('');
+            openConfirmDialog({
+                mode: 'settleDrafts',
+                title: 'Draft days found',
+                badge: `${month} ${year}`,
+                messageHtml: `Please complete the draft milk days listed below, or choose <b>Settle Draft Days</b> to continue payment marking.<br><br><ul style="text-align:left;max-height:110px;overflow:auto;padding-left:18px;">${preview}</ul>`,
+                cancelText: 'Review Draft Days',
+                proceedHtml: '<i class="fa-solid fa-file-circle-check"></i> Settle Draft Days'
+            });
+            return;
+        }
+
+        openConfirmDialog({
+            mode: 'markPaid',
+            title: 'Mark as Paid?',
+            badge: `${month} ${year}`,
+            message: "This will mark the entire month's milk bill as paid. This action will be saved to the sheet.",
+            cancelText: 'Cancel',
+            proceedHtml: '<i class="fa-solid fa-check-circle"></i> Yes, Mark Paid'
+        });
     }
 
     function closeConfirm() {
         document.getElementById('confirm-overlay').classList.remove('active');
+        resetConfirmDialogText();
         _pendingPaidElement = null;
     }
 
@@ -1419,6 +1532,8 @@
         const year  = document.getElementById('year-select').value;
         const sheetName = `${month} ${year}`;
         const element = _pendingPaidElement;
+        const confirmMode = _pendingConfirmMode;
+        const draftSnapshot = [..._draftDatesForMonth];
 
         closeConfirm();
 
@@ -1434,13 +1549,16 @@
             status: 'Paid'
         };
 
-        fetch("https://script.google.com/macros/s/AKfycbwzBexzxdakb4awxFr8opppqQUKwmGJoB-_5FTD9Uzaz0LWGSpANhHlSAulLiyAe_SMxA/exec", {
+        fetch(MILK_API_URL, {
             method: 'POST',
             body: JSON.stringify(payload),
             mode: 'no-cors'
         })
         .then(() => {
             setMonthlyBadge(true);
+            if (confirmMode === 'settleDrafts' && draftSnapshot.length) {
+                KTui.alert('Draft Days Settled', `Marked month as paid with draft dates: ${draftSnapshot.join(', ')}`, 'success');
+            }
         })
         .catch(() => {
             if (element) {
@@ -1485,6 +1603,3 @@
 </body>
 
 </html>
-
-
-

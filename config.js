@@ -4,7 +4,7 @@ const CONFIG = {
     GOOGLE_SHEET_PREFIX : 'https://script.google.com/macros/s/',
     GOOGLE_SHEET_POSTFIX : '/exec',
 
-    GOOGLE_SHEET_URL_DENOMINATIONS: 'https://script.google.com/macros/s/AKfycbyPA-Tg-g8MhrdMZPNIKFfNvU691amfVEd751V-PwVh7FmZm_HmPBiVhLSr8d25R1qUlg/exec',
+    GOOGLE_SHEET_URL_DENOMINATIONS: 'https://script.google.com/macros/s/AKfycbx_7V119E05ERc-2Is0GSagYc45E8KPxnNwKuCq0DgElJNa7pi7QucBaeKfPfW2ACJPZQ/exec',
     //QA Link
     //GOOGLE_SHEET_URL_CASH_COUNTER: 'https://script.google.com/macros/s/AKfycbxViPXKVueaCVxBsjNk2ndAFDWlWBipghlzUC_-u5ZlI2F_zrG6xL27eyIGjRF6NuoOPA/exec',
 
@@ -26,7 +26,7 @@ const CONFIG = {
     GOOGLE_SHEET_URL_LOAN: 'https://script.google.com/macros/s/AKfycbwnRs1td_3N8I1LVjHfXRAgcKWCDW8mbrBHJ4hADlHmihWDOco_7kDiO_qxKbNK1pfx/exec',
 
     //Prod Link
-    GOOGLE_SHEET_URL_MILK: 'https://script.google.com/macros/s/AKfycbziPFlV_L7fA99c-vrT027tHnc_a-mu_paFhTZWFbZYvN6g0GBmdP7uisivPXNY86bt8g/exec',
+    GOOGLE_SHEET_URL_MILK: 'https://script.google.com/macros/s/AKfycbwEts7e6vNCHzm6APoswzDa8X6eGDB3eEwO6NpW0mDJ40DsVKAzERrp0S6zarywGN2h/exec',
 
     //Prod Link
     GOOGLE_SHEET_URL_DEBTS: 'https://script.google.com/macros/s/AKfycbzXF14LayWcUqHi8IHAaPby3klVgLwg1joi18lX6RybVIFLEYFlqkT7HZwKofecLrUxEQ/exec',
