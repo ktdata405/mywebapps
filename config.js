@@ -4,7 +4,7 @@ const CONFIG = {
     GOOGLE_SHEET_PREFIX : 'https://script.google.com/macros/s/',
     GOOGLE_SHEET_POSTFIX : '/exec',
 
-    GOOGLE_SHEET_URL_DENOMINATIONS: 'https://script.google.com/macros/s/AKfycbx_7V119E05ERc-2Is0GSagYc45E8KPxnNwKuCq0DgElJNa7pi7QucBaeKfPfW2ACJPZQ/exec',
+    GOOGLE_SHEET_URL_DENOMINATIONS: 'https://script.google.com/macros/s/AKfycbyV_NL_DUPwKoEBBuBMFwHcUcP0IwXftTkYwCh720pVUW81J97qaxAoEOvuyV7KjFkSCA/exec',
     //QA Link
     //GOOGLE_SHEET_URL_CASH_COUNTER: 'https://script.google.com/macros/s/AKfycbxViPXKVueaCVxBsjNk2ndAFDWlWBipghlzUC_-u5ZlI2F_zrG6xL27eyIGjRF6NuoOPA/exec',
 
