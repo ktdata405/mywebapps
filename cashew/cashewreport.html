@@ -233,19 +233,102 @@
         }
 
         .scheduled-shell {
-            background: rgba(15, 23, 42, 0.78);
+            background:
+                radial-gradient(circle at top right, rgba(99,102,241,0.22), transparent 46%),
+                radial-gradient(circle at bottom left, rgba(16,185,129,0.12), transparent 44%),
+                rgba(15, 23, 42, 0.84);
             border-radius: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.11);
             padding: 1rem;
             box-shadow: 0 18px 45px rgba(2, 6, 23, 0.45);
+        }
+
+        .scheduled-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 4px 2px;
+        }
+
+        .scheduled-header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 9999px;
+            background: rgba(99,102,241,0.16);
+            border: 1px solid rgba(99,102,241,0.35);
+            padding: 8px 12px;
+            color: #c4b5fd;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+
+        .scheduled-add-btn {
+            border: 1px solid rgba(16,185,129,0.45);
+            background: linear-gradient(135deg, rgba(16,185,129,0.28), rgba(99,102,241,0.25));
+            color: #ecfeff;
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 800;
+            transition: all .2s ease;
+        }
+
+        .scheduled-add-btn:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.08);
+        }
+
+        .scheduled-save-selected-btn {
+            border: 1px solid rgba(14,165,233,0.45);
+            background: linear-gradient(135deg, rgba(14,165,233,0.24), rgba(59,130,246,0.2));
+            color: #dbeafe;
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 800;
+            transition: all .2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .scheduled-save-selected-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: none;
+            filter: none;
+        }
+
+        .scheduled-save-selected-btn:not(:disabled):hover {
+            transform: translateY(-1px);
+            filter: brightness(1.08);
+        }
+
+        .scheduled-select-count {
+            min-width: 20px;
+            height: 20px;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+            font-size: 10px;
+            font-weight: 900;
+            color: #e0f2fe;
+            border: 1px solid rgba(125,211,252,0.42);
+            background: rgba(14,165,233,0.28);
         }
 
         .scheduled-tabs {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 6px;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(2, 6, 23, 0.65);
+            border: 1px solid rgba(148, 163, 184, 0.2);
             border-radius: 9999px;
             padding: 6px;
         }
@@ -262,7 +345,7 @@
         }
 
         .scheduled-tab-btn.active {
-            background: rgba(99, 102, 241, 0.24);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.34), rgba(168,85,247,0.3));
             color: #ffffff;
             border: 1px solid rgba(99, 102, 241, 0.45);
             box-shadow: 0 8px 16px rgba(99, 102, 241, 0.25);
@@ -272,7 +355,7 @@
             width: 100%;
             border-radius: 9999px;
             border: 1px solid rgba(255, 255, 255, 0.12);
-            background: rgba(15, 23, 42, 0.65);
+            background: rgba(2, 6, 23, 0.72);
             color: #f8fafc;
             padding: 12px 14px 12px 38px;
             font-size: 14px;
@@ -286,27 +369,76 @@
         }
 
         .scheduled-search:focus {
-            border-color: rgba(99, 102, 241, 0.8);
-            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+            border-color: rgba(99, 102, 241, 0.9);
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.25);
+        }
+
+        .scheduled-meta-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 8px 4px;
+        }
+
+        .scheduled-pill {
+            border-radius: 9999px;
+            border: 1px solid rgba(148,163,184,0.3);
+            background: rgba(2,6,23,0.55);
+            color: #cbd5e1;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            padding: 7px 11px;
+        }
+
+        .scheduled-total-pill {
+            border-radius: 9999px;
+            border: 1px solid rgba(16,185,129,0.38);
+            background: rgba(6,78,59,0.28);
+            color: #6ee7b7;
+            font-size: 13px;
+            font-weight: 900;
+            padding: 7px 12px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
         }
 
         .scheduled-month-card {
-            background: rgba(2, 6, 23, 0.45);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(2, 6, 23, 0.62);
+            border: 1px solid rgba(148, 163, 184, 0.18);
             border-radius: 1.5rem;
             padding: 1rem;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
         }
 
         .scheduled-item {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: space-between;
             gap: 12px;
-            padding: 10px 2px;
+            padding: 12px;
+            border-radius: 14px;
+            transition: all .18s ease;
+            border: 1px solid transparent;
+        }
+
+        .scheduled-select-checkbox {
+            margin-top: 0;
+            width: 16px;
+            height: 16px;
+            accent-color: #38bdf8;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .scheduled-item:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.06);
         }
 
         .scheduled-item + .scheduled-item {
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            margin-top: 8px;
         }
 
         .scheduled-icon {
@@ -317,6 +449,36 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .scheduled-add-icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            border: 1px solid;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .2s ease;
+        }
+
+        .scheduled-add-icon-btn:hover {
+            transform: translateY(-1px) scale(1.03);
+            filter: brightness(1.08);
+        }
+
+        .scheduled-empty-card {
+            border-radius: 1rem;
+            border: 1px dashed rgba(148,163,184,0.3);
+            background: rgba(2,6,23,0.4);
+            padding: 30px 14px;
+            text-align: center;
+            color: #64748b;
+            font-size: 12px;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            font-weight: 700;
         }
 
         @media (max-width: 640px) {
@@ -500,11 +662,21 @@
                 <!-- Scheduled Transactions View (Hidden by default) -->
                 <div id="view-scheduled" class="hidden space-y-4">
                     <div class="scheduled-shell glass space-y-4">
-                        <div class="flex items-center justify-between">
-                            <h3 class="text-base font-bold text-white">Scheduled Transactions</h3>
-                            <button onclick="openScheduledTransactionModal()" class="text-xs font-bold px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-all">
-                                <i class="fa-solid fa-plus mr-1"></i>Add
-                            </button>
+                        <div class="scheduled-header">
+                            <div class="scheduled-header-badge">
+                                <i class="fa-solid fa-calendar-check"></i>
+                                Scheduled Transactions
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button id="save-selected-scheduled-btn" onclick="saveSelectedScheduledTransactions()" class="scheduled-save-selected-btn" disabled>
+                                    <i class="fa-solid fa-check-double"></i>
+                                    Save Selected
+                                    <span id="scheduled-selected-count" class="scheduled-select-count">0</span>
+                                </button>
+                                <button onclick="openScheduledTransactionModal()" class="scheduled-add-btn">
+                                    <i class="fa-solid fa-plus mr-1"></i>Add
+                                </button>
+                            </div>
                         </div>
 
                         <div class="scheduled-tabs">
@@ -517,9 +689,9 @@
                             <input type="text" id="scheduled-search-input" placeholder="Search scheduled transactions" class="scheduled-search" oninput="handleScheduledSearch()">
                         </div>
 
-                        <div class="flex items-center justify-between px-1">
-                            <span id="scheduled-entry-count" class="text-[11px] font-bold text-gray-400 uppercase tracking-wide">0 entries</span>
-                            <span id="scheduled-total-label" class="text-sm font-black text-indigo-300 font-mono">Rs. 0</span>
+                        <div class="scheduled-meta-strip">
+                            <span id="scheduled-entry-count" class="scheduled-pill">0 entries</span>
+                            <span id="scheduled-total-label" class="scheduled-total-pill">Rs. 0</span>
                         </div>
 
                         <div id="scheduled-report-body" class="space-y-3">
@@ -672,6 +844,29 @@
         </div>
     </div>
 
+    <!-- ── CATEGORY TRANSACTIONS POPUP ── -->
+    <div id="category-txn-modal" class="hidden fixed inset-0 z-[90] flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-md p-0 sm:p-4" onclick="if(event.target===this)closeCategoryTxnModal()">
+        <div class="glass w-full sm:max-w-lg rounded-t-[2rem] sm:rounded-[2rem] border border-white/10 overflow-hidden flex flex-col" style="max-height:90vh">
+            <!-- Header -->
+            <div id="cat-txn-header" class="flex-shrink-0 px-5 py-4 border-b border-white/8 flex items-center justify-between" style="background:rgba(99,102,241,0.07)">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div id="cat-txn-icon" class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"></div>
+                    <div class="min-w-0">
+                        <h3 id="cat-txn-title" class="text-base font-bold text-white leading-tight truncate"></h3>
+                        <p id="cat-txn-subtitle" class="text-[11px] text-gray-400 font-semibold"></p>
+                    </div>
+                </div>
+                <button onclick="closeCategoryTxnModal()" class="w-9 h-9 rounded-xl flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 transition-all flex-shrink-0">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <!-- Summary strip -->
+            <div id="cat-txn-summary" class="flex-shrink-0 flex items-center justify-between gap-3 px-5 py-3 border-b border-white/5" style="background:rgba(0,0,0,0.25)"></div>
+            <!-- Transaction list -->
+            <div id="cat-txn-list" class="flex-1 overflow-y-auto px-4 py-3 space-y-1"></div>
+        </div>
+    </div>
+
     <div id="missed-dates-modal" class="hidden fixed inset-0 z-[85] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
         <div class="glass rounded-[2rem] w-full max-w-md border border-white/10 overflow-hidden">
             <div class="p-5 border-b border-white/5 flex items-center justify-between">
@@ -744,12 +939,21 @@
         let scheduledData = [];
         let scheduledStatus = 'upcoming';
         let scheduledSearchTerm = '';
+        const selectedScheduledKeys = new Set();
         let monthlyBalances = {};
         let currentView = 'transactions';
         let currentFilteredData = [];
         const CASHEW_CATEGORY_OPTIONS = ['Home', 'My Personal', 'My Family', 'For Latha', 'Baby', 'Credit Card', 'Mutual Funds/Investments', 'Lap EMI'];
         const SCHEDULED_SHEET_NAME = 'Scheduled';
         const DEFAULT_EXPORT_CATEGORIES = ['Home', 'My Personal', 'My Family', 'For Latha', 'Baby', 'Credit Card', 'Mutual Funds/Investments', 'Lap EMI', 'Scheduled Transaction'];
+        const SCHEDULED_ROW_PALETTE = [
+            { bg:'rgba(37, 99, 235, 0.14)', border:'rgba(96,165,250,0.3)', text:'#dbeafe', amount:'#93c5fd' },
+            { bg:'rgba(124, 58, 237, 0.14)', border:'rgba(167,139,250,0.3)', text:'#ede9fe', amount:'#c4b5fd' },
+            { bg:'rgba(219, 39, 119, 0.12)', border:'rgba(244,114,182,0.28)', text:'#fce7f3', amount:'#f9a8d4' },
+            { bg:'rgba(245, 158, 11, 0.12)', border:'rgba(251,191,36,0.28)', text:'#fef3c7', amount:'#fcd34d' },
+            { bg:'rgba(132, 204, 22, 0.12)', border:'rgba(163,230,53,0.28)', text:'#ecfccb', amount:'#bef264' },
+            { bg:'rgba(20, 184, 166, 0.12)', border:'rgba(45,212,191,0.28)', text:'#ccfbf1', amount:'#99f6e4' }
+        ];
 
         function switchView(view) {
             currentView = view;
@@ -764,6 +968,24 @@
 
             if (view === 'transactions') filterData();
             if (view === 'scheduled') fetchScheduledTransactions();
+        }
+
+        function buildScheduledSelectionKey(item) {
+            const date = String(item?.date || '').trim();
+            const category = String(item?.category || '').trim();
+            const desc = String(item?._cleanDescription || item?.description || '').trim();
+            const amount = Number(item?.amount) || 0;
+            const repeat = String(item?._meta?.repeat || item?.repeat || 'none').toLowerCase();
+            return `${date}||${category}||${desc}||${amount.toFixed(2)}||${repeat}`;
+        }
+
+        function updateScheduledSelectedUi() {
+            const countEl = document.getElementById('scheduled-selected-count');
+            const saveBtn = document.getElementById('save-selected-scheduled-btn');
+            if (!countEl || !saveBtn) return;
+            const selectedCount = selectedScheduledKeys.size;
+            countEl.textContent = String(selectedCount);
+            saveBtn.disabled = !(scheduledStatus === 'upcoming' && selectedCount > 0);
         }
 
         function handleMobileFabClick(event) {
@@ -884,6 +1106,16 @@
                         })(),
                         _cleanDescription: getCleanScheduledDescription(item.description)
                     }));
+
+                    scheduledData.forEach(item => {
+                        item._selectionKey = buildScheduledSelectionKey(item);
+                    });
+
+                    const validKeys = new Set(scheduledData.map(item => item._selectionKey));
+                    Array.from(selectedScheduledKeys).forEach(key => {
+                        if (!validKeys.has(key)) selectedScheduledKeys.delete(key);
+                    });
+
                     renderScheduledTransactions();
                     loader.classList.add('hidden');
                 })
@@ -927,6 +1159,7 @@
 
         function setScheduledStatus(status) {
             scheduledStatus = status;
+            selectedScheduledKeys.clear();
             document.getElementById('scheduled-tab-upcoming').classList.toggle('active', status === 'upcoming');
             document.getElementById('scheduled-tab-completed').classList.toggle('active', status === 'completed');
             renderScheduledTransactions();
@@ -971,8 +1204,14 @@
             const total = data.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
             totalLabel.textContent = `Rs. ${total.toLocaleString('en-IN')}`;
 
+            const visibleKeys = new Set(data.map(item => item._selectionKey || buildScheduledSelectionKey(item)));
+            Array.from(selectedScheduledKeys).forEach(key => {
+                if (!visibleKeys.has(key)) selectedScheduledKeys.delete(key);
+            });
+            updateScheduledSelectedUi();
+
             if(!data.length) {
-                body.innerHTML = '<div class="py-12 text-center text-gray-500 text-xs uppercase tracking-widest">No scheduled transactions</div>';
+                body.innerHTML = '<div class="scheduled-empty-card"><i class="fa-regular fa-calendar-xmark mr-2"></i>No scheduled transactions</div>';
                 return;
             }
 
@@ -984,29 +1223,39 @@
                 return acc;
             }, {});
 
-            Object.keys(grouped).sort().forEach(monthKey => {
+            Object.keys(grouped).sort().forEach((monthKey, monthIdx) => {
                 const monthItems = grouped[monthKey];
                 const sampleDate = monthItems[0]._parsedDate;
                 const monthLabel = sampleDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
                 const monthTotal = monthItems.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+                const monthTone = SCHEDULED_ROW_PALETTE[monthIdx % SCHEDULED_ROW_PALETTE.length];
 
                 const section = document.createElement('div');
                 section.className = 'scheduled-month-card';
+                section.style.borderColor = monthTone.border;
 
                 const heading = document.createElement('div');
                 heading.className = 'flex items-center justify-between mb-2';
                 heading.innerHTML = `
-                    <h4 class="text-sm font-extrabold text-white">${monthLabel}</h4>
-                    <span class="text-sm font-black text-indigo-300 font-mono">Rs. ${monthTotal.toLocaleString('en-IN')}</span>
+                    <h4 class="text-sm font-extrabold" style="color:${monthTone.text}">${monthLabel}</h4>
+                    <span class="text-sm font-black font-mono" style="color:${monthTone.amount}">Rs. ${monthTotal.toLocaleString('en-IN')}</span>
                 `;
                 section.appendChild(heading);
 
-                monthItems.forEach(item => {
+                monthItems.forEach((item, rowIdx) => {
                     const color = getCategoryColor(item.category || 'Scheduled Transaction');
+                    const tone = SCHEDULED_ROW_PALETTE[(monthIdx + rowIdx) % SCHEDULED_ROW_PALETTE.length];
+                    const rowKey = item._selectionKey || buildScheduledSelectionKey(item);
+                    const showSelect = scheduledStatus === 'upcoming';
+                    const selectHtml = showSelect
+                        ? `<input type="checkbox" class="scheduled-select-checkbox scheduled-row-check" data-row-key="${rowKey.replace(/"/g, '&quot;')}" ${selectedScheduledKeys.has(rowKey) ? 'checked' : ''} aria-label="Select scheduled transaction">`
+                        : '';
                     const row = document.createElement('div');
                     row.className = 'scheduled-item';
+                    row.style.background = tone.bg;
+                    row.style.borderColor = tone.border;
                     const addActionHtml = scheduledStatus === 'upcoming'
-                        ? '<button class="add-to-cashew-btn mt-1 text-[11px] font-bold text-emerald-300 hover:text-emerald-200 transition-all">Add to Cashew</button>'
+                        ? `<button class="add-to-cashew-btn scheduled-add-icon-btn" style="color:${tone.amount};background:${tone.bg};border-color:${tone.border}" title="Add to Cashew" aria-label="Add to Cashew"><i class="fa-solid fa-plus"></i></button>`
                         : '';
                     row.innerHTML = `
                         <div class="flex items-center gap-3 min-w-0">
@@ -1014,13 +1263,16 @@
                                 <i class="fa-solid ${color.icon}"></i>
                             </div>
                             <div class="min-w-0">
-                                <p class="text-sm font-bold text-white truncate">${item._cleanDescription || item.category || 'Scheduled Transaction'}</p>
-                                <p class="text-xs text-gray-400 truncate">${getRepeatLabel(item._meta.repeat)}</p>
+                                <p class="text-sm font-bold truncate" style="color:${tone.text}">${item._cleanDescription || item.category || 'Scheduled Transaction'}</p>
+                                <p class="text-xs font-semibold truncate" style="color:${tone.amount};opacity:0.85">${getRepeatLabel(item._meta.repeat)}</p>
                             </div>
                         </div>
-                        <div class="text-right flex-shrink-0">
-                            <p class="text-sm font-black text-white font-mono">Rs. ${(Number(item.amount) || 0).toLocaleString('en-IN')}</p>
-                            <p class="text-[11px] text-gray-400">${formatDateWithDay(item.date)}</p>
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                            ${selectHtml}
+                            <div class="text-right">
+                                <p class="text-sm font-black font-mono" style="color:${tone.amount}">Rs. ${(Number(item.amount) || 0).toLocaleString('en-IN')}</p>
+                                <p class="text-[11px] font-semibold" style="color:${tone.text};opacity:0.8">${formatDateWithDay(item.date)}</p>
+                            </div>
                             ${addActionHtml}
                         </div>
                     `;
@@ -1028,6 +1280,16 @@
                     if (addBtn) {
                         addBtn.addEventListener('click', () => addScheduledToCashew(item));
                     }
+
+                    const rowCheck = row.querySelector('.scheduled-row-check');
+                    if (rowCheck) {
+                        rowCheck.addEventListener('change', (event) => {
+                            if (event.target.checked) selectedScheduledKeys.add(rowKey);
+                            else selectedScheduledKeys.delete(rowKey);
+                            updateScheduledSelectedUi();
+                        });
+                    }
+
                     section.appendChild(row);
                 });
 
@@ -1097,13 +1359,12 @@
             return completed ? `${clean} || completedOn:${completed}` : clean;
         }
 
-        function addScheduledToCashew(item) {
+        function saveScheduledItemToCashew(item) {
             const repeat = String(item?._meta?.repeat || 'none').toLowerCase();
             const today = new Date();
             const todayCashewDate = dateToCashewDate(today);
             if (!todayCashewDate) {
-                KTui.alert('Error', 'Invalid current date', 'error');
-                return;
+                return Promise.reject(new Error('Invalid current date'));
             }
 
             const cashewPayload = {
@@ -1144,9 +1405,7 @@
                 }]
             };
 
-            showLoader('Saving Data', 'Adding to Cashew...');
-
-            fetch(CONFIG.GOOGLE_SHEET_URL_CASHEW, {
+            return fetch(CONFIG.GOOGLE_SHEET_URL_CASHEW, {
                 method: 'POST',
                 mode: 'no-cors',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -1157,9 +1416,16 @@
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(scheduledUpdatePayload)
-                }))
+                }));
+        }
+
+        function addScheduledToCashew(item) {
+            showLoader('Saving Data', 'Adding to Cashew...');
+            saveScheduledItemToCashew(item)
                 .then(() => {
                     KTui.alert('Success', 'Added to Cashew', 'success');
+                    selectedScheduledKeys.delete(item._selectionKey || buildScheduledSelectionKey(item));
+                    updateScheduledSelectedUi();
                     setTimeout(fetchScheduledTransactions, 500);
                 })
                 .catch(err => {
@@ -1167,6 +1433,51 @@
                     hideLoader();
                     KTui.alert('Error', 'Could not add to Cashew', 'error');
                 });
+        }
+
+        async function saveSelectedScheduledTransactions() {
+            if (scheduledStatus !== 'upcoming') {
+                KTui.alert('Info', 'Switch to Upcoming tab to save selected scheduled transactions.', 'info');
+                return;
+            }
+
+            const selectedItems = getScheduledVisibleData().filter(item =>
+                selectedScheduledKeys.has(item._selectionKey || buildScheduledSelectionKey(item))
+            );
+
+            if (!selectedItems.length) {
+                KTui.alert('Info', 'Select one or more scheduled transactions first.', 'info');
+                return;
+            }
+
+            showLoader('Saving Data', `Saving ${selectedItems.length} selected transaction(s)...`);
+
+            let successCount = 0;
+            for (let i = 0; i < selectedItems.length; i++) {
+                const item = selectedItems[i];
+                const loaderText = document.getElementById('loader-text');
+                if (loaderText) {
+                    loaderText.textContent = `Saving ${i + 1}/${selectedItems.length}...`;
+                }
+                try {
+                    await saveScheduledItemToCashew(item);
+                    selectedScheduledKeys.delete(item._selectionKey || buildScheduledSelectionKey(item));
+                    successCount += 1;
+                } catch (err) {
+                    console.error('Scheduled bulk save failed:', err);
+                }
+            }
+
+            updateScheduledSelectedUi();
+
+            if (!successCount) {
+                hideLoader();
+                KTui.alert('Error', 'Could not save selected scheduled transactions.', 'error');
+                return;
+            }
+
+            KTui.alert('Success', `Saved ${successCount} selected transaction(s) to sheet.`, 'success');
+            setTimeout(fetchScheduledTransactions, 500);
         }
 
         function saveScheduledTransaction() {
@@ -1255,7 +1566,8 @@
                 const percent = (amount / grandTotal * 100).toFixed(1);
 
                 const card = document.createElement('div');
-                card.className = "glass p-5 rounded-[2rem] bento-card border border-white/5";
+                card.className = "glass p-5 rounded-[2rem] bento-card border border-white/5 cursor-pointer";
+                card.title = `View transactions for ${cat}`;
                 card.innerHTML = `
                     <div class="flex justify-between items-start mb-4">
                         <div class="flex items-center gap-3">
@@ -1269,17 +1581,133 @@
                         </div>
                         <div class="text-right">
                             <p class="text-lg font-black text-white font-mono">Rs. ${amount.toLocaleString('en-IN')}</p>
+                            <p class="text-[10px] text-gray-600 font-semibold mt-0.5">tap to view</p>
                         </div>
                     </div>
                     <div class="progress-bar">
                         <div class="progress-fill" style="width:0;background:${color.main}"></div>
                     </div>
                 `;
+                card.addEventListener('click', () => showCategoryTxnModal(cat));
                 container.appendChild(card);
                 setTimeout(() => {
                     card.querySelector('.progress-fill').style.width = percent + '%';
                 }, 100);
             });
+        }
+
+        // Multi-colour palette for category popup transaction rows
+        const CAT_TXN_PALETTE = [
+            { text:'#7dd3fc', amt:'#38bdf8', bg:'rgba(7,89,133,0.18)',   iconBg:'rgba(14,165,233,0.18)',  iconColor:'#38bdf8'  },  // sky
+            { text:'#c4b5fd', amt:'#a78bfa', bg:'rgba(76,29,149,0.18)',  iconBg:'rgba(139,92,246,0.18)',  iconColor:'#a78bfa'  },  // violet
+            { text:'#f9a8d4', amt:'#f472b6', bg:'rgba(131,24,67,0.18)',  iconBg:'rgba(236,72,153,0.18)',  iconColor:'#f472b6'  },  // pink
+            { text:'#5eead4', amt:'#2dd4bf', bg:'rgba(13,148,136,0.15)', iconBg:'rgba(20,184,166,0.18)',  iconColor:'#2dd4bf'  },  // teal
+            { text:'#fde68a', amt:'#fbbf24', bg:'rgba(120,53,15,0.18)',  iconBg:'rgba(245,158,11,0.18)',  iconColor:'#fbbf24'  },  // amber
+            { text:'#bef264', amt:'#a3e635', bg:'rgba(54,83,20,0.18)',   iconBg:'rgba(132,204,22,0.18)',  iconColor:'#a3e635'  },  // lime
+            { text:'#fca5a5', amt:'#f87171', bg:'rgba(127,29,29,0.18)',  iconBg:'rgba(239,68,68,0.18)',   iconColor:'#f87171'  },  // rose
+            { text:'#fed7aa', amt:'#fb923c', bg:'rgba(124,45,18,0.18)',  iconBg:'rgba(249,115,22,0.18)',  iconColor:'#fb923c'  },  // orange
+        ];
+
+        function showCategoryTxnModal(category) {
+            const color = getCategoryColor(category);
+            const txns = (allData || []).filter(r => r.category === category);
+
+            // Header icon & title
+            const iconEl = document.getElementById('cat-txn-icon');
+            iconEl.style.background = color.bg;
+            iconEl.style.color = color.main;
+            iconEl.innerHTML = `<i class="fa-solid ${color.icon}"></i>`;
+
+            document.getElementById('cat-txn-title').textContent = category;
+            document.getElementById('cat-txn-subtitle').textContent =
+                `${txns.length} transaction${txns.length !== 1 ? 's' : ''} this month`;
+
+            // Summary strip
+            const total = txns.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
+            document.getElementById('cat-txn-summary').innerHTML = `
+                <div class="flex items-center gap-2 text-xs">
+                    <i class="fa-solid fa-list-ul text-gray-500 text-[10px]"></i>
+                    <span class="text-white font-bold">${txns.length}</span>
+                    <span class="text-gray-500">entries</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <i class="fa-solid fa-indian-rupee-sign text-emerald-500 text-[10px]"></i>
+                    <span class="font-black font-mono text-emerald-300 text-base">Rs. ${total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                </div>`;
+
+            // Group by date
+            const byDate = {};
+            txns.forEach(r => {
+                const d = r.date || 'Unknown';
+                if (!byDate[d]) byDate[d] = [];
+                byDate[d].push(r);
+            });
+
+            const sortedDates = Object.keys(byDate).sort((a, b) => new Date(a) - new Date(b));
+            const listEl = document.getElementById('cat-txn-list');
+            listEl.innerHTML = '';
+
+            if (!sortedDates.length) {
+                listEl.innerHTML = `<div class="flex flex-col items-center justify-center py-12 text-gray-600 gap-2">
+                    <i class="fa-solid fa-inbox text-3xl opacity-20"></i>
+                    <span class="text-sm">No transactions found.</span>
+                </div>`;
+            } else {
+                let globalTxIdx = 0;   // continuous index across all date groups for colour cycling
+                sortedDates.forEach((dateStr, dIdx) => {
+                    const rows = byDate[dateStr];
+                    const dayTotal = rows.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
+
+                    // Date header — pick palette colour for the header accent
+                    const hdrC = CAT_TXN_PALETTE[dIdx % CAT_TXN_PALETTE.length];
+                    const dateHeader = document.createElement('div');
+                    dateHeader.className = 'flex items-center justify-between px-3 py-2 rounded-xl mb-1.5';
+                    dateHeader.style.cssText = `margin-top:${dIdx === 0 ? '0' : '12px'};background:${hdrC.bg};border:1px solid ${hdrC.iconBg}`;
+                    dateHeader.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <i class="fa-regular fa-calendar text-[11px]" style="color:${hdrC.amt}"></i>
+                            <span class="text-[12px] font-bold" style="color:${hdrC.text}">${dateStr}</span>
+                        </div>
+                        <span class="text-[11px] font-mono font-bold" style="color:${hdrC.amt}">Rs. ${dayTotal.toLocaleString('en-IN')}</span>`;
+                    listEl.appendChild(dateHeader);
+
+                    // Transaction rows — each gets its own vivid colour
+                    rows.forEach(r => {
+                        const amt = parseFloat(r.amount) || 0;
+                        const c = CAT_TXN_PALETTE[globalTxIdx % CAT_TXN_PALETTE.length];
+                        globalTxIdx++;
+
+                        const row = document.createElement('div');
+                        row.className = 'flex items-start justify-between gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all';
+                        row.style.cssText = `background:${c.bg};border:1px solid ${c.iconBg}`;
+                        row.innerHTML = `
+                            <div class="flex items-start gap-2.5 min-w-0">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                                     style="background:${c.iconBg};color:${c.iconColor}">
+                                    <i class="fa-solid ${color.icon} text-[11px]"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-[13px] font-bold leading-snug break-words" style="color:${c.text}">${r.description || '—'}</p>
+                                    ${r.status ? `<p class="text-[10px] font-semibold mt-0.5" style="color:${c.amt};opacity:0.7">${r.status}</p>` : ''}
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-end flex-shrink-0 mt-0.5 gap-0.5">
+                                <span class="font-black font-mono text-[14px] whitespace-nowrap" style="color:${c.amt}">Rs. ${amt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            </div>`;
+                        listEl.appendChild(row);
+                    });
+                });
+            }
+
+            // Show modal
+            const modal = document.getElementById('category-txn-modal');
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCategoryTxnModal() {
+            document.getElementById('category-txn-modal').classList.add('hidden');
+            document.body.style.overflow = '';
         }
 
         function populateCategoryFilter(data) {
@@ -1766,6 +2194,11 @@
                 fetchReport();
                 setTimeout(() => ptr.classList.remove('active'), 1000);
             }
+        });
+
+        // Close category popup on Escape
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeCategoryTxnModal();
         });
 
         init();

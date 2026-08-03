@@ -35,15 +35,19 @@
 
     <style>
         :root {
-            --bg-dark: #0b0f19;
-            --card-bg: #151a25;
+            --bg-dark: #080c14;
+            --card-bg: #111827;
             --primary: #6366f1;
             --accent: #ec4899;
+            --border: rgba(255,255,255,0.07);
+            --surface: rgba(255,255,255,0.04);
         }
+
+        * { box-sizing: border-box; }
 
         body {
             background-color: var(--bg-dark);
-            color: #f8fafc;
+            color: #f1f5f9;
             font-family: 'Plus Jakarta Sans', sans-serif;
             -webkit-tap-highlight-color: transparent;
             padding-top: env(safe-area-inset-top);
@@ -51,382 +55,553 @@
         }
 
         html { scroll-behavior: smooth; }
-
-        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #1e2940; border-radius: 99px; }
 
-        .glass-panel {
-            background: rgba(21, 26, 37, 0.6);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+        /* Glass */
+        .glass {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
         }
 
         /* Drop zone */
         .drop-zone {
-            border: 2px dashed rgba(99,102,241,0.35);
-            transition: all 0.25s ease;
+            border: 2px dashed rgba(99,102,241,0.3);
+            transition: all 0.2s ease;
+            background: rgba(99,102,241,0.03);
         }
-        .drop-zone.drag-over {
+        .drop-zone:hover, .drop-zone.drag-over {
             border-color: #6366f1;
             background: rgba(99,102,241,0.08);
+            transform: scale(1.005);
         }
 
-        /* Tag badge colors */
-        .tag-indigo  { background: rgba(99,102,241,0.2);  color: #a5b4fc; }
-        .tag-emerald { background: rgba(16,185,129,0.2);  color: #6ee7b7; }
-        .tag-pink    { background: rgba(236,72,153,0.2);  color: #f9a8d4; }
-        .tag-amber   { background: rgba(245,158,11,0.2);  color: #fcd34d; }
-        .tag-sky     { background: rgba(14,165,233,0.2);  color: #7dd3fc; }
-        .tag-purple  { background: rgba(168,85,247,0.2);  color: #d8b4fe; }
-        .tag-rose    { background: rgba(244,63,94,0.2);   color: #fda4af; }
-        .tag-teal    { background: rgba(20,184,166,0.2);  color: #5eead4; }
-        .tag-default { background: rgba(255,255,255,0.08);color: #94a3b8; }
+        /* Tag badge */
+        .tag-indigo  { background: rgba(99,102,241,0.18);  color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); }
+        .tag-emerald { background: rgba(16,185,129,0.18);  color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+        .tag-pink    { background: rgba(236,72,153,0.18);  color: #f9a8d4; border: 1px solid rgba(236,72,153,0.3); }
+        .tag-amber   { background: rgba(245,158,11,0.18);  color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+        .tag-sky     { background: rgba(14,165,233,0.18);  color: #7dd3fc; border: 1px solid rgba(14,165,233,0.3); }
+        .tag-purple  { background: rgba(168,85,247,0.18);  color: #d8b4fe; border: 1px solid rgba(168,85,247,0.3); }
+        .tag-rose    { background: rgba(244,63,94,0.18);   color: #fda4af; border: 1px solid rgba(244,63,94,0.3); }
+        .tag-teal    { background: rgba(20,184,166,0.18);  color: #5eead4; border: 1px solid rgba(20,184,166,0.3); }
+        .tag-default { background: rgba(255,255,255,0.06); color: #94a3b8; border: 1px solid rgba(255,255,255,0.12); }
 
-        /* Stat card hover */
-        .stat-card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
-        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+        /* Date sidebar item */
+        .import-date-item {
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+        }
+        .import-date-item:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
 
-        /* Date item active */
-        .import-date-item { transition: all 0.15s ease; }
-        .import-date-item:hover { background: rgba(255,255,255,0.05); }
-        .import-date-item.active { background: rgba(99,102,241,0.18); border-color: rgba(99,102,241,0.4) !important; }
-        .import-date-item.active .date-label { color: #a5b4fc; }
-        .import-date-item.failed { border-color: rgba(248,113,113,0.35) !important; }
+        /* Sunday — red highlight */
+        .import-date-item.sunday {
+            background: rgba(239,68,68,0.1);
+            border-color: rgba(239,68,68,0.35) !important;
+        }
+        .import-date-item.sunday .date-label { color: #fca5a5; }
+        .import-date-item.sunday:hover { background: rgba(239,68,68,0.16); }
 
+        /* Saved — green highlight */
+        .import-date-item.saved {
+            background: rgba(16,185,129,0.1);
+            border-color: rgba(16,185,129,0.35) !important;
+        }
+        .import-date-item.saved .date-label { color: #6ee7b7; }
+        .import-date-item.saved:hover { background: rgba(16,185,129,0.16); }
+
+        /* Active (selected) — always indigo, overrides other states */
+        .import-date-item.active {
+            background: rgba(99,102,241,0.18) !important;
+            border-color: rgba(99,102,241,0.5) !important;
+            box-shadow: 0 0 0 1px rgba(99,102,241,0.25);
+        }
+        .import-date-item.active .date-label { color: #c7d2fe !important; }
+
+        /* Failed — rose highlight */
+        .import-date-item.failed {
+            background: rgba(248,113,113,0.08) !important;
+            border-color: rgba(248,113,113,0.4) !important;
+        }
+
+        .import-date-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .import-date-check {
+            margin-top: 10px;
+            width: 14px;
+            height: 14px;
+            accent-color: #6366f1;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        /* Action buttons */
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 34px;
+            padding: 0 13px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid;
+            transition: all 0.18s ease;
+            white-space: nowrap;
+        }
+        .action-btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
+        .action-btn:active { transform: translateY(0); filter: brightness(0.95); }
+
+        .btn-new-file { color: #94a3b8; border-color: rgba(148,163,184,0.25); background: rgba(15,23,42,0.6); }
+        .btn-new-file:hover { color: #e2e8f0; border-color: rgba(148,163,184,0.5); }
+
+        .btn-club { color: #fde68a; border-color: rgba(245,158,11,0.35); background: rgba(245,158,11,0.08); }
+        .btn-remove { color: #fca5a5; border-color: rgba(248,113,113,0.35); background: rgba(248,113,113,0.08); }
+        .btn-add { color: #7dd3fc; border-color: rgba(14,165,233,0.35); background: rgba(14,165,233,0.08); }
+        .btn-save-date { color: #c4b5fd; border-color: rgba(139,92,246,0.4); background: rgba(139,92,246,0.1); }
+        .btn-save-all { color: #6ee7b7; border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.1); }
+
+        /* Field errors */
         .field-error {
-            border-color: rgba(248,113,113,0.9) !important;
-            box-shadow: 0 0 0 1px rgba(248,113,113,0.3) !important;
-            background: rgba(127,29,29,0.2) !important;
+            border-color: rgba(248,113,113,0.8) !important;
+            box-shadow: 0 0 0 2px rgba(248,113,113,0.15) !important;
+            background: rgba(127,29,29,0.25) !important;
         }
-
         .field-error-text {
             margin-top: 3px;
             font-size: 10px;
-            line-height: 1.2;
             color: #fda4af;
             font-weight: 600;
         }
 
-        /* Table row alternating colors */
-        #import-preview-body tr { transition: background 0.12s ease; }
-        #import-preview-body tr:hover { background: rgba(255,255,255,0.07) !important; }
+        /* Transaction row */
+        .tx-row {
+            transition: background 0.12s ease;
+        }
+        .tx-row:hover { filter: brightness(1.06); }
 
-        /* Stronger, cleaner divider colors between table items */
-        #import-preview-body td { border-bottom: 1px solid rgba(148,163,184,0.2); }
-        #import-preview-body tr:nth-child(odd) td { border-bottom-color: rgba(99,102,241,0.35); }
-        #import-preview-body tr:nth-child(even) td { border-bottom-color: rgba(16,185,129,0.3); }
-
-        /* Format controls removed: default import format is always used */
-
-        /* Cashew filters toolbar refresh */
-        .cashew-filters-shell {
-            background: linear-gradient(145deg, rgba(17,24,39,0.84), rgba(15,23,42,0.9));
-            border: 1px solid rgba(148,163,184,0.2);
-            box-shadow: 0 18px 38px rgba(2, 6, 23, 0.35);
-        }
-        .cashew-filter-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 5px 10px;
-            border-radius: 999px;
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: #c4b5fd;
-            border: 1px solid rgba(129,140,248,0.35);
-            background: rgba(99,102,241,0.16);
-        }
-        .cashew-filter-group {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            padding: 9px;
-            border-radius: 14px;
-            border: 1px solid rgba(148,163,184,0.14);
-            background: rgba(2,6,23,0.36);
-        }
-        .cashew-chip-btn {
-            height: 30px;
-            padding: 0 11px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 700;
-            border: 1px solid rgba(148,163,184,0.22);
-            color: #cbd5e1;
-            background: rgba(15,23,42,0.65);
-            transition: all 0.2s ease;
-        }
-        .cashew-chip-btn:hover { border-color: rgba(129,140,248,0.55); color: #eef2ff; }
-        .cashew-input-wrap {
-            position: relative;
-            min-width: 150px;
-            flex: 1;
-        }
-        .cashew-input-wrap i {
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #64748b;
-            font-size: 11px;
-            pointer-events: none;
-        }
-        .cashew-toolbar-input {
-            width: 100%;
-            height: 30px;
-            border-radius: 10px;
-            border: 1px solid rgba(148,163,184,0.25);
-            background: rgba(2,6,23,0.55);
-            color: #f8fafc;
-            font-size: 12px;
-            outline: none;
-            padding: 0 10px 0 30px;
-        }
-        .cashew-toolbar-input:focus {
-            border-color: rgba(99,102,241,0.8);
-            box-shadow: 0 0 0 2px rgba(99,102,241,0.2);
-        }
-
-        /* Ensure every editable field has a visible border in import preview */
+        /* Import preview table form fields — base border */
         #preview-section input:not([type="file"]),
         #preview-section select,
         #preview-section textarea {
-            border-width: 1px !important;
-            border-style: solid !important;
-            border-color: rgba(148, 163, 184, 0.45) !important;
+            border-width: 1px;
+            border-style: solid;
+            border-color: rgba(148,163,184,0.2);
+            outline: none;
+        }
+        #preview-section input:not([type="file"]):focus,
+        #preview-section select:focus {
+            border-color: rgba(99,102,241,0.7);
+            box-shadow: 0 0 0 2px rgba(99,102,241,0.15);
         }
 
-        #preview-section input:not([type="file"]):focus,
-        #preview-section select:focus,
-        #preview-section textarea:focus {
-            border-color: rgba(99, 102, 241, 0.75) !important;
-            box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.25);
+        /* ── Highlighted input fields ─────────────────────────────────────
+           Use #preview-section prefix to beat the base rule above.
+        ─────────────────────────────────────────────────────────────────── */
+
+        /* Amount — green */
+        #preview-section input.import-amount-field {
+            color: #86efac;
+            font-weight: 800;
+            background: rgba(6, 78, 59, 0.25);
+            border-color: rgba(16,185,129,0.5);
         }
+        #preview-section input.import-amount-field:focus {
+            border-color: rgba(16,185,129,0.9);
+            box-shadow: 0 0 0 2px rgba(16,185,129,0.22);
+        }
+        #preview-section input.import-amount-field::placeholder { color: rgba(134,239,172,0.45); }
+
+        /* Remark — amber/yellow */
+        #preview-section input.import-remark-field {
+            color: #fde68a;
+            font-weight: 700;
+            background: rgba(120, 53, 15, 0.25);
+            border-color: rgba(250,204,21,0.45);
+        }
+        #preview-section input.import-remark-field:focus {
+            border-color: rgba(250,204,21,0.9);
+            box-shadow: 0 0 0 2px rgba(250,204,21,0.2);
+        }
+        #preview-section input.import-remark-field::placeholder { color: rgba(253,224,71,0.5); }
+
+        /* Transaction Details — sky blue */
+        #preview-section input.import-tx-field {
+            color: #7dd3fc;
+            font-weight: 600;
+            background: rgba(7, 89, 133, 0.2);
+            border-color: rgba(14,165,233,0.45);
+        }
+        #preview-section input.import-tx-field:focus {
+            border-color: rgba(14,165,233,0.9);
+            box-shadow: 0 0 0 2px rgba(14,165,233,0.2);
+        }
+        #preview-section input.import-tx-field::placeholder { color: rgba(125,211,252,0.45); }
+
+        /* Table */
+        #import-preview-body tr { border-bottom: 1px solid rgba(255,255,255,0.04); }
+        #import-preview-body tr:hover td { filter: brightness(1.08); }
+
+        /* Column hints */
+        .col-hint {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 10px;
+        }
+
+        /* Toolbar divider */
+        .toolbar-divider {
+            width: 1px;
+            height: 22px;
+            background: rgba(255,255,255,0.1);
+            flex-shrink: 0;
+        }
+
+        /* Date bar */
+        .date-bar {
+            background: linear-gradient(90deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05));
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+
+        /* Pulse dot */
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .pulse-dot { animation: pulse-dot 2s infinite; }
     </style>
 </head>
 
 <body class="min-h-screen relative overflow-x-hidden">
 
-    <!-- Background Gradients -->
+    <!-- Background blobs -->
     <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
-        <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[100px]"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-pink-600/20 rounded-full blur-[100px]"></div>
+        <div class="absolute top-[-15%] left-[-5%] w-[600px] h-[600px] rounded-full blur-[120px]" style="background:radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)"></div>
+        <div class="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full blur-[100px]" style="background:radial-gradient(circle, rgba(236,72,153,0.1) 0%, transparent 70%)"></div>
+        <div class="absolute top-[40%] right-[20%] w-[300px] h-[300px] rounded-full blur-[80px]" style="background:radial-gradient(circle, rgba(20,184,166,0.07) 0%, transparent 70%)"></div>
     </div>
 
     <!-- ── HEADER ── -->
-    <header class="sticky top-0 z-30 glass-panel border-b border-white/5 px-6 py-4 mb-6 backdrop-blur-xl bg-[#0b0f19]/80">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
+    <header class="sticky top-0 z-30 glass border-b border-white/5 px-4 py-3.5 mb-6">
+        <div class="max-w-7xl mx-auto flex justify-between items-center gap-4">
             <!-- Brand -->
-            <div class="flex items-center gap-4">
-                <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 ring-4 ring-white/5">
-                    <i class="fa-solid fa-wallet text-white text-lg"></i>
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-indigo-500/20"
+                     style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">
+                    <i class="fa-solid fa-wallet text-white text-base"></i>
                 </div>
-                <div>
-                    <h1 class="text-xl font-bold tracking-tight text-white leading-tight">Cashew</h1>
-                    <p class="text-xs text-gray-400 font-medium">Import Excel</p>
+                <div class="min-w-0">
+                    <h1 class="text-base font-bold text-white leading-tight">Cashew</h1>
+                    <p class="text-[11px] text-indigo-300/80 font-semibold">Import Excel</p>
                 </div>
             </div>
-            <!-- Nav icons — same as cashew.html -->
-            <div class="flex gap-3">
-                <button id="install-btn" onclick="installApp()" class="hidden w-10 h-10 rounded-full bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 flex items-center justify-center transition-all text-indigo-400 hover:text-indigo-300 hover:scale-105 active:scale-95" title="Install App">
-                    <i class="fa-solid fa-download"></i>
+            <!-- Nav -->
+            <div class="flex items-center gap-2">
+                <button id="install-btn" onclick="installApp()"
+                    class="hidden w-9 h-9 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/35 flex items-center justify-center transition-all text-indigo-400 hover:text-indigo-300 hover:scale-105 active:scale-95" title="Install App">
+                    <i class="fa-solid fa-download text-sm"></i>
                 </button>
-                <!-- Active: import icon (highlighted) -->
-                <button class="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 cursor-default" title="Import Excel (current)">
-                    <i class="fa-solid fa-file-import"></i>
-                </button>
-                <a href="cashewreport.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Report">
-                    <i class="fa-solid fa-chart-pie"></i>
+                <!-- Current page indicator -->
+                <div class="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/35 flex items-center justify-center text-emerald-400 cursor-default" title="Import (current)">
+                    <i class="fa-solid fa-file-import text-sm"></i>
+                </div>
+                <a href="cashewreport.html"
+                    class="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 border border-white/8 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Report">
+                    <i class="fa-solid fa-chart-pie text-sm"></i>
                 </a>
-                <a href="cashew.html" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Cashew">
-                    <i class="fa-solid fa-wallet"></i>
+                <a href="cashew.html"
+                    class="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 border border-white/8 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Cashew">
+                    <i class="fa-solid fa-wallet text-sm"></i>
                 </a>
-                <a href="../index.html" class="home-btn w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Home">
-                    <i class="fa-solid fa-house"></i>
+                <a href="../index.html"
+                    class="home-btn w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 border border-white/8 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Home">
+                    <i class="fa-solid fa-house text-sm"></i>
                 </a>
-                <a href="javascript:void(0)" onclick="window.open(CONFIG.SHEET_URL_CASHEW, '_blank')" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Google Sheet">
-                    <i class="fa-solid fa-file-excel"></i>
+                <a href="javascript:void(0)" onclick="window.open(CONFIG.SHEET_URL_CASHEW, '_blank')"
+                    class="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 border border-white/8 flex items-center justify-center transition-all text-gray-400 hover:text-white hover:scale-105 active:scale-95" title="Google Sheet">
+                    <i class="fa-solid fa-file-excel text-sm"></i>
                 </a>
             </div>
         </div>
     </header>
 
     <!-- ── MAIN ── -->
-    <main class="max-w-7xl mx-auto px-4 pb-10">
+    <main class="max-w-7xl mx-auto px-4 pb-12">
 
-        <!-- ── UPLOAD ZONE (shown when no file imported yet) ── -->
+        <!-- ── UPLOAD SECTION ── -->
         <div id="upload-section">
-            <div class="max-w-xl mx-auto">
-                <!-- Page title -->
-                <div class="text-center mb-8">
-                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
-                         style="background:linear-gradient(135deg,#10b981,#6366f1)">
-                        <i class="fa-solid fa-file-import text-white text-2xl"></i>
+            <div class="max-w-2xl mx-auto">
+
+                <!-- Hero -->
+                <div class="text-center mb-10">
+                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl mb-5 shadow-2xl shadow-indigo-500/20"
+                         style="background:linear-gradient(135deg,#10b981 0%,#6366f1 60%,#8b5cf6 100%)">
+                        <i class="fa-solid fa-file-import text-white text-3xl"></i>
                     </div>
-                    <h2 class="text-2xl font-bold text-white">Import Excel</h2>
-                    <p class="text-gray-400 text-sm mt-1">Upload your bank statement or expense sheet (.xlsx, .xls, .csv)</p>
+                    <h2 class="text-3xl font-bold text-white mb-2">Import Transactions</h2>
+                    <p class="text-gray-400 text-sm max-w-sm mx-auto leading-relaxed">
+                        Upload your bank statement or expense file. We'll parse and group it by date for easy editing.
+                    </p>
                 </div>
 
                 <!-- Drop zone -->
-                <div id="drop-zone" class="drop-zone rounded-3xl p-10 text-center cursor-pointer mb-6"
+                <div id="drop-zone"
+                     class="drop-zone rounded-3xl p-12 text-center cursor-pointer mb-6 relative overflow-hidden"
                      onclick="document.getElementById('excel-file-input').click()"
                      ondragover="handleDragOver(event)"
                      ondragleave="handleDragLeave(event)"
                      ondrop="handleDrop(event)">
-                    <div class="flex flex-col items-center gap-3 pointer-events-none">
-                        <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
+                    <!-- Corner accents -->
+                    <div class="absolute top-3 left-3 w-5 h-5 border-t-2 border-l-2 border-indigo-500/40 rounded-tl-lg pointer-events-none"></div>
+                    <div class="absolute top-3 right-3 w-5 h-5 border-t-2 border-r-2 border-indigo-500/40 rounded-tr-lg pointer-events-none"></div>
+                    <div class="absolute bottom-3 left-3 w-5 h-5 border-b-2 border-l-2 border-indigo-500/40 rounded-bl-lg pointer-events-none"></div>
+                    <div class="absolute bottom-3 right-3 w-5 h-5 border-b-2 border-r-2 border-indigo-500/40 rounded-br-lg pointer-events-none"></div>
+
+                    <div class="flex flex-col items-center gap-4 pointer-events-none">
+                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20"
+                             style="background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(139,92,246,0.15));border:1px solid rgba(99,102,241,0.25)">
                             <i class="fa-solid fa-cloud-arrow-up text-indigo-400 text-2xl"></i>
                         </div>
-                        <p class="text-white font-semibold text-lg">Click or drag & drop file here</p>
-                        <p class="text-gray-500 text-sm">Supports .xlsx · .xls · .csv</p>
-                        <div class="flex gap-2 mt-1">
-                            <span class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-gray-400">.xlsx</span>
-                            <span class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-gray-400">.xls</span>
-                            <span class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-gray-400">.csv</span>
+                        <div>
+                            <p class="text-white font-bold text-lg mb-1">Click or drag & drop your file</p>
+                            <p class="text-gray-500 text-sm">Supports bank statements and expense spreadsheets</p>
+                        </div>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="px-3 py-1 rounded-lg text-xs font-bold text-indigo-300" style="background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.25)">.xlsx</span>
+                            <span class="px-3 py-1 rounded-lg text-xs font-bold text-purple-300" style="background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.25)">.xls</span>
+                            <span class="px-3 py-1 rounded-lg text-xs font-bold text-teal-300" style="background:rgba(20,184,166,0.12);border:1px solid rgba(20,184,166,0.25)">.csv</span>
                         </div>
                     </div>
                 </div>
                 <input type="file" id="excel-file-input" accept=".xlsx,.xls,.csv" class="hidden" />
 
-                <!-- Column mapping hint -->
-                <div class="glass-panel rounded-2xl p-4">
-                    <p class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Expected Columns</p>
-                    <div class="grid grid-cols-2 gap-2 text-xs">
-                        <div class="flex items-center gap-2"><i class="fa-solid fa-calendar-day text-indigo-400 w-4"></i><span class="text-gray-300"><span class="text-white font-semibold">Date</span> — Transaction date</span></div>
-                        <div class="flex items-center gap-2"><i class="fa-solid fa-indian-rupee-sign text-emerald-400 w-4"></i><span class="text-gray-300"><span class="text-white font-semibold">Amount</span> — Debit amount</span></div>
-                        <div class="flex items-center gap-2"><i class="fa-solid fa-align-left text-pink-400 w-4"></i><span class="text-gray-300"><span class="text-white font-semibold">Remarks</span> — Description/Narration</span></div>
-                        <div class="flex items-center gap-2"><i class="fa-solid fa-tag text-amber-400 w-4"></i><span class="text-gray-300"><span class="text-white font-semibold">Tags</span> — Self/Self Transfer skipped</span></div>
+                <!-- Expected columns card -->
+                <div class="glass rounded-2xl p-5">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-6 h-6 rounded-lg bg-amber-500/15 border border-amber-500/25 flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-table-columns text-amber-400 text-[10px]"></i>
+                        </div>
+                        <p class="text-xs font-bold uppercase tracking-widest text-gray-400">Expected Columns</p>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div class="col-hint">
+                            <i class="fa-solid fa-calendar-day text-indigo-400 text-sm w-4 text-center flex-shrink-0"></i>
+                            <div>
+                                <span class="text-white font-bold text-xs">Date</span>
+                                <span class="text-gray-500 text-xs ml-1">— Transaction date</span>
+                            </div>
+                        </div>
+                        <div class="col-hint">
+                            <i class="fa-solid fa-indian-rupee-sign text-emerald-400 text-sm w-4 text-center flex-shrink-0"></i>
+                            <div>
+                                <span class="text-white font-bold text-xs">Amount</span>
+                                <span class="text-gray-500 text-xs ml-1">— Debit amount</span>
+                            </div>
+                        </div>
+                        <div class="col-hint">
+                            <i class="fa-solid fa-align-left text-pink-400 text-sm w-4 text-center flex-shrink-0"></i>
+                            <div>
+                                <span class="text-white font-bold text-xs">Remarks</span>
+                                <span class="text-gray-500 text-xs ml-1">— Description / Narration</span>
+                            </div>
+                        </div>
+                        <div class="col-hint">
+                            <i class="fa-solid fa-tag text-amber-400 text-sm w-4 text-center flex-shrink-0"></i>
+                            <div>
+                                <span class="text-white font-bold text-xs">Tags</span>
+                                <span class="text-gray-500 text-xs ml-1">— Self / Self Transfer skipped</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- ── IMPORT PREVIEW (shown after file parsed) ── -->
+            </div>
+        </div><!-- /upload-section -->
+
+        <!-- ── PREVIEW SECTION ── -->
         <div id="preview-section" class="hidden">
 
-            <!-- Stats row removed as requested -->
-
             <!-- ── TOOLBAR ── -->
-            <div class="cashew-filters-shell rounded-2xl p-4 mb-4">
+            <div class="glass rounded-2xl px-4 py-3 mb-4">
+                <div class="flex flex-wrap items-center justify-between gap-3">
 
-                <div class="flex items-center justify-between gap-3 mb-3 flex-wrap">
-                    <div class="flex items-center gap-2 min-w-0">
-                        <span class="cashew-filter-badge"><i class="fa-solid fa-sliders"></i>Cashew Filters</span>
-                        <span id="toolbar-filename" class="text-xs text-gray-300 font-semibold truncate max-w-[220px]">—</span>
+                    <!-- Left: file info + new file -->
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                             style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3)">
+                            <i class="fa-solid fa-file-excel text-indigo-400 text-xs"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Loaded File</p>
+                            <p id="toolbar-filename" class="text-sm font-bold text-white truncate max-w-[200px] leading-tight">—</p>
+                        </div>
+                        <div class="toolbar-divider"></div>
+                        <button onclick="resetImport()" class="action-btn btn-new-file">
+                            <i class="fa-solid fa-rotate-right text-[11px]"></i> New File
+                        </button>
                     </div>
-                    <button onclick="resetImport()" title="Import new file"
-                        class="cashew-chip-btn flex items-center gap-1.5 text-gray-300 hover:text-emerald-300">
-                        <i class="fa-solid fa-rotate-right text-xs"></i> New file
-                    </button>
+
+                    <!-- Right: action buttons -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <div class="toolbar-divider hidden sm:block"></div>
+                        <button id="club-same-category-btn" onclick="clubSameCategoryForDate(importSelectedDate, true)"
+                            class="action-btn btn-club">
+                            <i class="fa-solid fa-layer-group text-[11px]"></i>
+                            <span class="hidden sm:inline">Club Category</span>
+                            <span class="sm:hidden">Club</span>
+                        </button>
+                        <button id="remove-incoming-btn" onclick="removeIncomingTransactions()"
+                            class="action-btn btn-remove" title="Remove incoming/received and CTT transactions">
+                            <i class="fa-solid fa-filter text-[11px]"></i>
+                            <span class="hidden sm:inline">Remove Incoming</span>
+                            <span class="sm:hidden">Filter</span>
+                        </button>
+                        <button id="add-import-record-btn" onclick="addManualImportRow()"
+                            class="action-btn btn-add">
+                            <i class="fa-solid fa-plus text-[11px]"></i> Add Row
+                        </button>
+                        <div class="toolbar-divider hidden sm:block"></div>
+                        <button id="save-selected-date-btn" onclick="saveSelectedDateImport()"
+                            class="action-btn btn-save-date">
+                            <i class="fa-solid fa-calendar-check text-[11px]"></i>
+                            <span class="hidden sm:inline">Save Date</span>
+                            <span class="sm:hidden">Save</span>
+                        </button>
+                        <button id="save-checked-dates-btn" onclick="saveCheckedImportedDates()"
+                            class="action-btn btn-save-date" title="Save checked dates only">
+                            <i class="fa-solid fa-square-check text-[11px]"></i>
+                            <span class="hidden sm:inline">Save Checked</span>
+                            <span class="sm:hidden">Checked</span>
+                            <span id="checked-dates-count" class="ml-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold text-indigo-200" style="background:rgba(99,102,241,0.25);border:1px solid rgba(99,102,241,0.35)">0</span>
+                        </button>
+                        <button id="save-all-dates-btn" onclick="saveAllImportedDates()"
+                            class="action-btn btn-save-all">
+                            <i class="fa-solid fa-floppy-disk text-[11px]"></i>
+                            <span class="hidden sm:inline">Save All</span>
+                            <span class="sm:hidden">All</span>
+                        </button>
+                    </div>
                 </div>
-
-                <div class="grid grid-cols-1 xl:grid-cols-3 gap-3">
-
-                    <div class="cashew-filter-group xl:col-span-2">
-                        <!-- Search and amount sort removed -->
-                    </div>
-
-                    <div class="cashew-filter-group justify-start xl:justify-end">
-                        <button id="club-same-category-btn" onclick="clubSameCategoryForDate(importSelectedDate, true)" class="cashew-chip-btn text-amber-300 border-amber-500/35">
-                            <i class="fa-solid fa-layer-group text-xs"></i> Club Same Category
-                        </button>
-                        <button id="remove-incoming-btn" onclick="removeIncomingTransactions()" class="cashew-chip-btn text-rose-300 border-rose-500/35" title="Remove incoming/received and CTT transactions">
-                            <i class="fa-solid fa-filter text-xs"></i> Remove Incoming + CTT
-                        </button>
-                        <button id="add-import-record-btn" onclick="addManualImportRow()" class="cashew-chip-btn text-sky-300 border-sky-500/35">
-                            <i class="fa-solid fa-plus text-xs"></i> Add Record
-                        </button>
-                        <button id="save-selected-date-btn" onclick="saveSelectedDateImport()" class="cashew-chip-btn text-indigo-300 border-indigo-500/35">
-                            <i class="fa-solid fa-calendar-check text-xs"></i> Save Selected Date
-                        </button>
-                        <button id="save-all-dates-btn" onclick="saveAllImportedDates()" class="cashew-chip-btn text-emerald-300 border-emerald-500/35">
-                            <i class="fa-solid fa-floppy-disk text-xs"></i> Save All Dates
-                        </button>
-                    </div>
-                </div>
-
             </div>
 
             <!-- ── BODY: date sidebar + table ── -->
-            <div class="flex flex-col md:flex-row gap-4 min-h-0 md:h-[calc(100vh-380px)] md:min-h-[340px]">
+            <div class="flex flex-col md:flex-row gap-4 min-h-0 md:h-[calc(100vh-360px)] md:min-h-[400px]">
 
-                <!-- Left: Date list -->
-                <div class="w-full md:w-56 lg:w-64 flex-shrink-0 flex flex-col glass-panel rounded-2xl border border-white/5 overflow-hidden">
-                    <div class="px-3 pt-3 pb-1 flex-shrink-0">
-                        <p class="text-[9px] uppercase tracking-widest text-gray-500 font-bold">By Date</p>
+                <!-- ── DATE SIDEBAR ── -->
+                <div class="w-full md:w-60 lg:w-64 flex-shrink-0 flex flex-col glass rounded-2xl overflow-hidden">
+                    <!-- Sidebar header -->
+                    <div class="flex-shrink-0 px-4 py-3 border-b border-white/5"
+                         style="background:rgba(99,102,241,0.06)">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Dates</span>
+                            <span class="text-[10px] text-indigo-300 font-bold" id="import-grand-rows">—</span>
+                        </div>
                     </div>
-                    <div id="import-date-list" class="flex md:block gap-2 overflow-x-auto md:overflow-y-auto px-2.5 pb-2.5 md:space-y-2"></div>
-                    <!-- Grand total -->
-                    <div class="flex-shrink-0 border-t border-white/10 px-3 py-2.5" style="background:rgba(0,0,0,0.25)">
-                        <div class="text-[9px] uppercase tracking-widest text-gray-500 font-bold">All Dates</div>
-                        <div id="import-grand-total" class="text-base font-bold text-emerald-300 font-mono mt-0.5">₹0.00</div>
-                        <div id="import-grand-rows" class="text-[10px] text-gray-500"></div>
+                    <!-- Date list -->
+                    <div id="import-date-list"
+                         class="flex md:block gap-2 overflow-x-auto md:overflow-y-auto flex-1 p-2 md:space-y-1.5"></div>
+                    <!-- Grand total footer -->
+                    <div class="flex-shrink-0 border-t border-white/8 px-4 py-3"
+                         style="background:rgba(0,0,0,0.3)">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Total</span>
+                            <div id="import-grand-total" class="text-base font-bold font-mono text-emerald-300">₹0.00</div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Right: data table -->
-                <div class="flex-1 flex flex-col glass-panel rounded-2xl border border-white/5 overflow-hidden min-w-0">
+                <!-- ── DATA TABLE ── -->
+                <div class="flex-1 flex flex-col glass rounded-2xl overflow-hidden min-w-0">
 
                     <!-- Date bar -->
-                    <div class="flex-shrink-0 flex items-center justify-between px-5 py-3 border-b border-white/10"
-                         style="background:rgba(99,102,241,0.06)">
-                        <div class="flex items-center gap-2.5">
-                            <i class="fa-regular fa-calendar-day text-indigo-400 text-xs"></i>
-                            <span id="import-selected-date-label" class="text-sm font-bold text-white"></span>
-                        </div>
-                        <div class="flex items-center gap-3 text-xs">
-                            <div class="hidden md:flex items-center gap-1.5">
-                                <span class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Date Category</span>
-                                <select id="import-date-category-select" class="bg-black/40 border border-white/10 rounded-lg px-2 py-1 text-[11px] text-white outline-none focus:border-indigo-500"></select>
-                            </div>
-                            <span class="text-gray-400 flex items-center gap-1">
-                                <i class="fa-solid fa-list-ul text-[10px]"></i>
-                                <span id="import-preview-row-count" class="text-white font-bold">0</span> rows
+                    <div class="date-bar flex-shrink-0 flex flex-wrap items-center justify-between gap-3 px-5 py-3">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <i class="fa-regular fa-calendar text-indigo-400 text-sm flex-shrink-0"></i>
+                            <span id="import-selected-date-label" class="text-sm font-bold text-white truncate"></span>
+                            <!-- Saved badge (shown after save) -->
+                            <span id="import-date-saved-badge" class="hidden items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold text-emerald-300" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35)">
+                                <i class="fa-solid fa-circle-check text-[9px]"></i> Saved
                             </span>
-                            <span class="font-bold font-mono text-emerald-400" id="import-preview-total">₹0.00</span>
+                            <!-- Sunday badge -->
+                            <span id="import-date-sunday-badge" class="hidden items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold text-red-300" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35)">
+                                <i class="fa-solid fa-sun text-[9px]"></i> Sunday
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <div class="hidden md:flex items-center gap-2">
+                                <span class="text-[10px] uppercase tracking-wider text-gray-500 font-bold whitespace-nowrap">Apply Category</span>
+                                <select id="import-date-category-select"
+                                    class="bg-black/50 border border-white/10 rounded-lg px-2.5 py-1.5 text-[11px] text-white outline-none focus:border-indigo-500 cursor-pointer"></select>
+                            </div>
+                            <div class="flex items-center gap-1.5 text-xs">
+                                <i class="fa-solid fa-list-ul text-gray-600 text-[10px]"></i>
+                                <span id="import-preview-row-count" class="text-white font-bold">0</span>
+                                <span class="text-gray-500">rows</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <i class="fa-solid fa-indian-rupee-sign text-emerald-500 text-[10px]"></i>
+                                <span class="font-bold font-mono text-emerald-400 text-sm" id="import-preview-total">₹0.00</span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Table -->
+                    <!-- Desktop table -->
                     <div class="hidden md:block flex-1 overflow-y-auto">
-                        <table class="w-full text-sm">
-                            <thead class="sticky top-0 z-10" style="background:rgba(0,0,0,0.5)">
+                        <table class="w-full text-sm border-collapse">
+                            <thead class="sticky top-0 z-10" style="background:rgba(5,10,20,0.85);backdrop-filter:blur(12px)">
                                 <tr>
-                                    <th class="px-3 py-3 text-center text-[10px] uppercase tracking-wider text-gray-500 font-bold">Transaction</th>
-                                    <th class="px-3 py-3 text-center text-[10px] uppercase tracking-wider text-gray-500 font-bold">Action</th>
+                                    <th class="px-4 py-3 text-left text-[10px] uppercase tracking-widest text-gray-500 font-bold border-b border-white/5">
+                                        Transaction Details
+                                    </th>
+                                    <th class="px-3 py-3 text-center text-[10px] uppercase tracking-widest text-gray-500 font-bold border-b border-white/5 w-28">
+                                        Actions
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody id="import-preview-body"></tbody>
                         </table>
                     </div>
+
+                    <!-- Mobile list -->
                     <div id="import-mobile-list" class="md:hidden flex-1 overflow-y-auto p-3 space-y-3"></div>
-                    <div id="import-empty-msg" class="hidden flex-col items-center justify-center py-10 text-gray-500 gap-3">
-                        <i class="fa-solid fa-magnifying-glass text-3xl opacity-30"></i>
-                        <span class="text-sm">No entries match your search.</span>
+
+                    <!-- Empty / No-data states -->
+                    <div id="import-empty-msg" class="hidden flex-col items-center justify-center py-16 text-gray-600 gap-3">
+                        <i class="fa-solid fa-magnifying-glass text-4xl opacity-20"></i>
+                        <span class="text-sm font-medium">No entries match your search.</span>
                     </div>
-                    <div id="import-no-data-msg" class="hidden flex-col items-center justify-center py-10 text-gray-500 gap-3">
-                        <i class="fa-solid fa-inbox text-3xl opacity-30"></i>
-                        <span class="text-sm">No data for this date.</span>
+                    <div id="import-no-data-msg" class="hidden flex-col items-center justify-center py-16 text-gray-600 gap-3">
+                        <i class="fa-solid fa-inbox text-4xl opacity-20"></i>
+                        <span class="text-sm font-medium">No data for this date.</span>
                     </div>
                 </div>
+
             </div>
-        </div>
+        </div><!-- /preview-section -->
 
     </main>
 
-    <!-- Hidden file input (also used by upload zone) -->
+    <!-- Hidden file input -->
     <input type="file" id="excel-upload-input" accept=".xlsx,.xls,.csv" class="hidden" />
 
     <!-- Loader -->
-    <div id="loader" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-        <div class="flex flex-col items-center gap-4">
-            <div class="animate-spin"><i class="fa-solid fa-circle-notch text-5xl text-emerald-400"></i></div>
-            <p id="loader-text" class="text-white font-medium tracking-wide text-lg">Processing…</p>
+    <div id="loader" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(5,10,20,0.75);backdrop-filter:blur(8px)">
+        <div class="glass rounded-3xl px-10 py-8 flex flex-col items-center gap-4 shadow-2xl">
+            <div class="animate-spin text-5xl text-emerald-400">
+                <i class="fa-solid fa-circle-notch"></i>
+            </div>
+            <p id="loader-text" class="text-white font-semibold tracking-wide text-base">Processing…</p>
         </div>
     </div>
 
@@ -459,11 +634,24 @@
         let importDataFormatPattern = '{tag}-Amount({amount})';
         const savedImportDates = new Set();
         const failedImportDates = new Set();
+        const checkedImportDates = new Set();
         const importFieldErrorsByDate = {};
         const tagColorMap = {};
         const TAG_CLASSES = ['tag-indigo','tag-emerald','tag-pink','tag-amber','tag-sky','tag-purple','tag-rose','tag-teal'];
         let tagColorIndex = 0;
         const INCOMING_TEXT_TOKENS = ['received', 'credit', 'cr', 'incoming', 'refund', 'reversal', 'deposit'];
+
+        // Per-row colour palette for Transaction Details input fields
+        const TX_FIELD_PALETTE = [
+            { color:'#7dd3fc', bg:'rgba(7,89,133,0.22)',   border:'rgba(14,165,233,0.5)'  },  // sky
+            { color:'#c4b5fd', bg:'rgba(76,29,149,0.22)',  border:'rgba(139,92,246,0.5)'  },  // violet
+            { color:'#f9a8d4', bg:'rgba(131,24,67,0.22)',  border:'rgba(236,72,153,0.5)'  },  // pink
+            { color:'#5eead4', bg:'rgba(13,148,136,0.2)',  border:'rgba(20,184,166,0.5)'  },  // teal
+            { color:'#fed7aa', bg:'rgba(124,45,18,0.22)',  border:'rgba(249,115,22,0.5)'  },  // orange
+            { color:'#bef264', bg:'rgba(54,83,20,0.22)',   border:'rgba(132,204,22,0.5)'  },  // lime
+            { color:'#fca5a5', bg:'rgba(127,29,29,0.22)',  border:'rgba(239,68,68,0.5)'   },  // rose
+            { color:'#fde68a', bg:'rgba(120,53,15,0.22)',  border:'rgba(250,204,21,0.5)'  },  // amber
+        ];
         const CASHEW_CATEGORIES = [
             'Home',
             'My Personal',
@@ -595,14 +783,15 @@
         function resetImport() {
             importedEntriesByDate = null;
             importSelectedDate = null;
+            checkedImportDates.clear();
             Object.keys(tagColorMap).forEach(k => delete tagColorMap[k]);
             tagColorIndex = 0;
             document.getElementById('upload-section').classList.remove('hidden');
             document.getElementById('preview-section').classList.add('hidden');
             document.getElementById('excel-file-input').value = '';
             document.getElementById('excel-upload-input').value = '';
+            updateCheckedDatesCount();
         }
-
 
         // ── Helpers ──
         function normalizeExcelHeader(v) {
@@ -697,7 +886,6 @@
                 return { amount: Math.abs(creditValue), isIncoming: true };
             }
 
-            // Fallback: scan numeric-looking columns when headers are unexpected.
             const keys = Object.keys(row || {});
             for (const key of keys) {
                 const nk = normalizeExcelHeader(key);
@@ -762,14 +950,12 @@
                 const totalEl = document.getElementById('import-preview-total');
                 if (totalEl) totalEl.textContent = '₹0.00';
                 const noDataMsg = document.getElementById('import-no-data-msg');
-                if (noDataMsg) {
-                    noDataMsg.classList.remove('hidden');
-                    noDataMsg.style.display = 'flex';
-                }
+                if (noDataMsg) { noDataMsg.classList.remove('hidden'); noDataMsg.style.display = 'flex'; }
             }
 
             KTui.alert('Rows Removed', `Removed ${removedCount} incoming/received or CTT transaction(s).`, 'success');
         }
+
         function fmtAmt(n) {
             return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.00$/,'');
         }
@@ -853,6 +1039,7 @@
         function refreshOverviewStatsAndDateList() {
             const groupedEntries = importedEntriesByDate || {};
             const dateLabels = sortDateLabels(Object.keys(groupedEntries).filter(date => (groupedEntries[date] || []).length > 0));
+            syncCheckedDatesWithAvailable(dateLabels);
             const grandTotal = dateLabels.reduce((sum, date) => {
                 return sum + groupedEntries[date].reduce((inner, row) => inner + (parseFloat(row.amount) || 0), 0);
             }, 0);
@@ -864,7 +1051,21 @@
             if (sideGrandRowsEl) sideGrandRowsEl.textContent = `${dateLabels.length} dates`;
 
             renderDateList(groupedEntries, dateLabels);
+            updateCheckedDatesCount();
             return dateLabels;
+        }
+
+        function syncCheckedDatesWithAvailable(validDates) {
+            const valid = new Set(validDates || []);
+            Array.from(checkedImportDates).forEach(dateLabel => {
+                if (!valid.has(dateLabel)) checkedImportDates.delete(dateLabel);
+            });
+        }
+
+        function updateCheckedDatesCount() {
+            const countEl = document.getElementById('checked-dates-count');
+            if (!countEl) return;
+            countEl.textContent = String(checkedImportDates.size);
         }
 
         function bindRowEditors(dateLabel) {
@@ -961,10 +1162,7 @@
                             const totalEl = document.getElementById('import-preview-total');
                             if (totalEl) totalEl.textContent = '₹0.00';
                             const noDataMsg = document.getElementById('import-no-data-msg');
-                            if (noDataMsg) {
-                                noDataMsg.classList.remove('hidden');
-                                noDataMsg.style.display = 'flex';
-                            }
+                            if (noDataMsg) { noDataMsg.classList.remove('hidden'); noDataMsg.style.display = 'flex'; }
                         }
                     });
                 });
@@ -1096,32 +1294,62 @@
                 const rows = groupedEntries[dateLabel];
                 const rowTotal = rows.reduce((s,r) => s + (parseFloat(r.amount)||0), 0);
                 const parsedDate = parseDDMMMYYYYLabel(dateLabel);
+                const dayNames = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+                const dayName = parsedDate ? dayNames[parsedDate.getDay()] : '';
                 const isSunday = parsedDate && parsedDate.getDay() === 0;
                 const isSaved = savedImportDates.has(dateLabel);
                 const isFailed = failedImportDates.has(dateLabel);
-                const statusDot = isFailed
-                    ? '<i class="fa-solid fa-circle-exclamation text-[10px] text-rose-400 mr-1" title="Save failed"></i>'
+
+                const statusIcon = isFailed
+                    ? `<i class="fa-solid fa-circle-exclamation text-[9px] text-rose-400" title="Save failed"></i>`
                     : (isSaved
-                    ? '<i class="fa-solid fa-circle text-[8px] text-emerald-400 mr-1" title="Saved"></i>'
-                    : (isSunday ? '<i class="fa-solid fa-circle text-[8px] text-red-400 mr-1" title="Sunday"></i>' : ''));
-                const dateColorClass = isFailed
-                    ? 'text-rose-300'
-                    : (isSaved && !isSunday ? 'text-emerald-300' : (isSunday ? 'text-red-300' : 'text-gray-200'));
-                const amountColorClass = isFailed
-                    ? 'text-rose-300'
-                    : (isSaved ? 'text-emerald-300' : (isSunday ? 'text-red-300' : 'text-emerald-400'));
+                    ? `<i class="fa-solid fa-circle-check text-[9px] text-emerald-400" title="Saved"></i>`
+                    : (isSunday ? `<i class="fa-solid fa-circle text-[8px] text-red-400 pulse-dot" title="Sunday"></i>` : ''));
+
+                const dateColor = isFailed ? 'text-rose-300' : (isSaved ? 'text-emerald-300' : (isSunday ? 'text-red-300' : 'text-slate-200'));
+                const amtColor = isFailed ? 'text-rose-300' : (isSaved ? 'text-emerald-300' : (isSunday ? 'text-red-300' : 'text-emerald-400'));
+
+                const row = document.createElement('div');
+                row.className = 'import-date-row md:w-full min-w-[165px] flex-shrink-0';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'import-date-check';
+                checkbox.checked = checkedImportDates.has(dateLabel);
+                checkbox.setAttribute('aria-label', `Select ${dateLabel}`);
+                checkbox.addEventListener('click', (event) => event.stopPropagation());
+                checkbox.addEventListener('change', (event) => {
+                    if (event.target.checked) checkedImportDates.add(dateLabel);
+                    else checkedImportDates.delete(dateLabel);
+                    updateCheckedDatesCount();
+                });
+
                 const btn = document.createElement('button');
                 btn.type = 'button';
-                btn.className = 'import-date-item md:w-full min-w-[165px] flex-shrink-0 text-left px-3 py-2.5 rounded-xl border border-transparent';
+                btn.className = 'import-date-item w-full text-left px-3 py-2.5 rounded-xl';
                 if (isFailed) btn.classList.add('failed');
+                else if (isSaved) btn.classList.add('saved');
+                else if (isSunday) btn.classList.add('sunday');
                 btn.dataset.date = dateLabel;
                 btn.innerHTML = `
-                    <div class="flex items-center justify-between gap-2">
-                        <div class="date-label text-[11px] font-bold leading-snug break-words pr-2 ${dateColorClass}">${statusDot}${formatImportDateDisplay(dateLabel)}</div>
-                        <span class="text-[11px] font-mono whitespace-nowrap flex-shrink-0 ${amountColorClass}">₹${rowTotal.toFixed(0)}</span>
+                    <div class="flex items-start justify-between gap-1.5">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-1.5 mb-0.5">
+                                ${statusIcon}
+                                <span class="date-label text-[11px] font-bold ${dateColor} leading-tight">${dateLabel}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-[10px] font-bold text-gray-600">${dayName}</span>
+                                <span class="text-[10px] text-gray-600">·</span>
+                                <span class="text-[10px] text-gray-500">${rows.length} row${rows.length !== 1 ? 's' : ''}</span>
+                            </div>
+                        </div>
+                        <span class="text-[12px] font-mono font-bold flex-shrink-0 mt-0.5 ${amtColor}">₹${rowTotal.toFixed(0)}</span>
                     </div>`;
                 btn.onclick = () => renderPreviewForDate(dateLabel);
-                listEl.appendChild(btn);
+                row.appendChild(checkbox);
+                row.appendChild(btn);
+                listEl.appendChild(row);
             });
         }
 
@@ -1133,21 +1361,27 @@
 
             let entries = [...((importedEntriesByDate && importedEntriesByDate[dateLabel]) || [])];
 
-            // Highlight active date
             document.querySelectorAll('.import-date-item').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.date === dateLabel);
             });
 
-            // Update header
             const labelEl = document.getElementById('import-selected-date-label');
             if (labelEl) labelEl.textContent = formatImportDateDisplay(dateLabel);
+
+            // Update date bar badges
+            const savedBadge = document.getElementById('import-date-saved-badge');
+            const sundayBadge = document.getElementById('import-date-sunday-badge');
+            const parsedForBadge = parseDDMMMYYYYLabel(dateLabel);
+            const isDateSunday = parsedForBadge && parsedForBadge.getDay() === 0;
+            const isDateSaved = savedImportDates.has(dateLabel);
+            if (savedBadge) { savedBadge.classList.toggle('hidden', !isDateSaved); savedBadge.style.display = isDateSaved ? 'inline-flex' : ''; }
+            if (sundayBadge) { sundayBadge.classList.toggle('hidden', !isDateSunday); sundayBadge.style.display = isDateSunday ? 'inline-flex' : ''; }
 
             const previewBody = document.getElementById('import-preview-body');
             const mobileList = document.getElementById('import-mobile-list');
             const emptyMsg = document.getElementById('import-empty-msg');
             const noDataMsg = document.getElementById('import-no-data-msg');
 
-            // No data at all for this date
             if (!entries.length) {
                 previewBody.innerHTML = '';
                 if (mobileList) mobileList.innerHTML = '';
@@ -1159,11 +1393,10 @@
                 return;
             }
             noDataMsg.classList.add('hidden');
-
             emptyMsg.classList.add('hidden');
-
             previewBody.innerHTML = '';
             if (mobileList) mobileList.innerHTML = '';
+
             let total = 0;
             entries.forEach((entry, idx) => {
                 const amt = parseFloat(entry.amount) || 0;
@@ -1176,102 +1409,132 @@
                 const hasRemarkError = !!(dateErrors && dateErrors.remarks && dateErrors.remarks.has(entry.entryId));
                 const specialTagNote = getSpecialTagNote(entry.tag);
                 const isOdd = idx % 2 === 0;
-                const rowBg = isOdd ? 'rgba(99,102,241,0.15)' : 'rgba(16,185,129,0.12)';
+                const rowBg = isOdd ? 'rgba(99,102,241,0.06)' : 'rgba(15,23,42,0.4)';
+                const txC = TX_FIELD_PALETTE[idx % TX_FIELD_PALETTE.length];
+                const txStyle = `color:${txC.color};background:${txC.bg};border-color:${txC.border}`;
+
                 const tr = document.createElement('tr');
+                tr.className = 'tx-row';
                 tr.style.background = rowBg;
                 tr.innerHTML = `
-                    <td class="px-2 py-2" style="background:${rowBg}">
-                        <div class="grid grid-cols-3 gap-1.5">
+                    <td class="px-4 py-3">
+                        <div class="grid grid-cols-3 gap-2.5 mb-2.5">
+                            <!-- Category -->
                             <div>
-                                <div class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-0.5">Category</div>
-                                <select class="import-row-category w-full bg-black/40 border border-white/10 rounded-lg px-2 py-1 text-[11px] text-white outline-none focus:border-indigo-500${hasCategoryError ? ' field-error' : ''}" data-entry-id="${entry.entryId}">
+                                <label class="block text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1.5">Category</label>
+                                <select class="import-row-category w-full bg-black/40 rounded-lg px-2.5 py-1.5 text-[12px] text-white cursor-pointer transition-all${hasCategoryError ? ' field-error' : ''}" data-entry-id="${entry.entryId}">
                                     ${renderCategoryOptionsHtml(entry.category || '')}
                                 </select>
-                                ${hasCategoryError ? '<div class="field-error-text">Category is required</div>' : ''}
+                                ${hasCategoryError ? '<p class="field-error-text">Category is required</p>' : ''}
                             </div>
+                            <!-- Transaction Details -->
                             <div>
-                                <div class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-0.5">Transaction Details</div>
-                                <input type="text" class="import-row-tx-details w-full bg-black/30 border border-white/10 rounded-lg px-2 py-1 text-[11px] text-gray-200 outline-none focus:border-indigo-500" data-entry-id="${entry.entryId}" value="${String(entry.manualEntry || '').replace(/"/g, '&quot;')}" placeholder="Transaction details" />
+                                <label class="block text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1.5">Transaction Details</label>
+                                <input type="text"
+                                    class="import-row-tx-details import-tx-field w-full rounded-lg px-2.5 py-1.5 text-[12px] font-semibold transition-all"
+                                    style="${txStyle}"
+                                    data-entry-id="${entry.entryId}"
+                                    value="${String(entry.manualEntry || '').replace(/"/g, '&quot;')}"
+                                    placeholder="Details…" />
                             </div>
+                            <!-- Amount -->
                             <div>
-                                <div class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-0.5">Amount</div>
-                                <input type="number" step="0.01" min="0" class="import-row-amount w-full bg-black/30 border border-white/10 rounded-lg px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-300 outline-none focus:border-emerald-500${hasAmountError ? ' field-error' : ''}" data-entry-id="${entry.entryId}" value="${amt.toFixed(2)}" />
-                                ${hasAmountError ? '<div class="field-error-text">Amount should be greater than 0</div>' : ''}
+                                <label class="block text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1.5">Amount (₹)</label>
+                                <input type="number" step="0.01" min="0"
+                                    class="import-row-amount import-amount-field w-full rounded-lg px-2.5 py-1.5 font-mono text-[13px] transition-all${hasAmountError ? ' field-error' : ''}"
+                                    data-entry-id="${entry.entryId}"
+                                    value="${amt.toFixed(2)}" />
+                                ${hasAmountError ? '<p class="field-error-text">Amount must be > 0</p>' : ''}
                             </div>
                         </div>
-                        <div class="mt-1">
-                            <div class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-0.5">Remark - Amount</div>
-                            <input type="text" class="import-row-remarks w-full bg-black/30 border border-white/10 rounded-lg px-2 py-1 text-[11px] text-gray-300 outline-none focus:border-indigo-500${hasRemarkError ? ' field-error' : ''}" data-entry-id="${entry.entryId}" value="${(entry.remarks || '').replace(/"/g, '&quot;')}" placeholder="Remark - Amount" />
-                            ${hasRemarkError ? '<div class="field-error-text">Remark - Amount is required</div>' : ''}
+                        <!-- Remark -->
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1.5">Remark — Amount</label>
+                            <input type="text"
+                                class="import-row-remarks import-remark-field w-full rounded-lg px-2.5 py-1.5 text-[12px] transition-all${hasRemarkError ? ' field-error' : ''}"
+                                data-entry-id="${entry.entryId}"
+                                value="${(entry.remarks || '').replace(/"/g, '&quot;')}"
+                                placeholder="e.g. Groceries-850" />
+                            ${hasRemarkError ? '<p class="field-error-text">Remark is required</p>' : ''}
                         </div>
-                        ${specialTagNote ? `<div class="mt-1 text-[10px] text-amber-300">Tag: ${specialTagNote.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>` : ''}
+                        ${specialTagNote ? `<div class="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-bold text-amber-300" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25)"><i class="fa-solid fa-tag text-[9px]"></i>${specialTagNote.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>` : ''}
                     </td>
-                    <td class="px-3 py-2.5 text-center" style="background:${rowBg}">
-                        <div class="flex items-center justify-center gap-1.5">
-                            <button type="button" class="import-row-duplicate-giving w-7 h-7 rounded-lg border border-amber-500/35 text-amber-300 hover:bg-amber-500/15 transition-all" data-entry-id="${entry.entryId}" title="Duplicate transaction">
-                                <i class="fa-solid fa-copy text-[10px]"></i>
+                    <td class="px-3 py-3 align-middle" style="background:${rowBg}">
+                        <div class="flex flex-col items-center gap-1.5">
+                            <button type="button" class="import-row-duplicate-giving w-8 h-8 rounded-lg border border-amber-500/30 text-amber-300 hover:bg-amber-500/15 transition-all flex items-center justify-center" data-entry-id="${entry.entryId}" title="Duplicate">
+                                <i class="fa-solid fa-copy text-[11px]"></i>
                             </button>
-                            <button type="button" class="import-row-split w-7 h-7 rounded-lg border border-sky-500/35 text-sky-300 hover:bg-sky-500/15 transition-all" data-entry-id="${entry.entryId}" title="Split transaction">
-                                <i class="fa-solid fa-code-branch text-[10px]"></i>
+                            <button type="button" class="import-row-split w-8 h-8 rounded-lg border border-sky-500/30 text-sky-300 hover:bg-sky-500/15 transition-all flex items-center justify-center" data-entry-id="${entry.entryId}" title="Split">
+                                <i class="fa-solid fa-code-branch text-[11px]"></i>
                             </button>
-                            <button type="button" class="import-row-delete w-7 h-7 rounded-lg border border-red-500/30 text-red-300 hover:bg-red-500/15 transition-all" data-entry-id="${entry.entryId}" title="Delete row">
-                                <i class="fa-solid fa-trash text-[10px]"></i>
+                            <button type="button" class="import-row-delete w-8 h-8 rounded-lg border border-red-500/25 text-red-400 hover:bg-red-500/15 transition-all flex items-center justify-center" data-entry-id="${entry.entryId}" title="Delete">
+                                <i class="fa-solid fa-trash text-[11px]"></i>
                             </button>
                         </div>
                     </td>`;
                 previewBody.appendChild(tr);
 
+                // Mobile card
                 if (mobileList) {
                     const card = document.createElement('div');
-                    card.className = 'rounded-xl border border-white/10 p-2.5 space-y-1.5';
+                    card.className = 'rounded-2xl border border-white/8 p-3.5 space-y-2.5';
                     card.style.background = rowBg;
                     card.innerHTML = `
-                        <div class="flex items-center justify-between gap-2 mb-1">
-                            <span class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Transaction</span>
-                            <div class="flex items-center gap-1.5">
-                                <button type="button" class="import-row-duplicate-giving w-7 h-7 rounded-lg border border-amber-500/35 text-amber-300 hover:bg-amber-500/15 transition-all" data-entry-id="${entry.entryId}" title="Duplicate transaction">
-                                    <i class="fa-solid fa-copy text-[10px]"></i>
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Transaction #${idx+1}</span>
+                            <div class="flex items-center gap-2">
+                                <button type="button" class="import-row-duplicate-giving w-8 h-8 rounded-lg border border-amber-500/30 text-amber-300 hover:bg-amber-500/15 transition-all flex items-center justify-center" data-entry-id="${entry.entryId}" title="Duplicate">
+                                    <i class="fa-solid fa-copy text-[11px]"></i>
                                 </button>
-                                <button type="button" class="import-row-split w-7 h-7 rounded-lg border border-sky-500/35 text-sky-300 hover:bg-sky-500/15 transition-all" data-entry-id="${entry.entryId}" title="Split transaction">
-                                    <i class="fa-solid fa-code-branch text-[10px]"></i>
+                                <button type="button" class="import-row-split w-8 h-8 rounded-lg border border-sky-500/30 text-sky-300 hover:bg-sky-500/15 transition-all flex items-center justify-center" data-entry-id="${entry.entryId}" title="Split">
+                                    <i class="fa-solid fa-code-branch text-[11px]"></i>
                                 </button>
-                                <button type="button" class="import-row-delete w-7 h-7 rounded-lg border border-red-500/30 text-red-300 hover:bg-red-500/15 transition-all" data-entry-id="${entry.entryId}" title="Delete row">
-                                    <i class="fa-solid fa-trash text-[10px]"></i>
+                                <button type="button" class="import-row-delete w-8 h-8 rounded-lg border border-red-500/25 text-red-400 hover:bg-red-500/15 transition-all flex items-center justify-center" data-entry-id="${entry.entryId}" title="Delete">
+                                    <i class="fa-solid fa-trash text-[11px]"></i>
                                 </button>
                             </div>
                         </div>
-                        <div class="grid grid-cols-3 gap-1.5">
+                        <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <span class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Category</span>
-                                <select class="import-row-category w-full mt-1 bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-white outline-none focus:border-indigo-500${hasCategoryError ? ' field-error' : ''}" data-entry-id="${entry.entryId}">
+                                <label class="block text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1">Category</label>
+                                <select class="import-row-category w-full bg-black/40 rounded-lg px-2.5 py-1.5 text-[12px] text-white cursor-pointer${hasCategoryError ? ' field-error' : ''}" data-entry-id="${entry.entryId}">
                                     ${renderCategoryOptionsHtml(entry.category || '')}
                                 </select>
-                                ${hasCategoryError ? '<div class="field-error-text">Category is required</div>' : ''}
+                                ${hasCategoryError ? '<p class="field-error-text">Required</p>' : ''}
                             </div>
                             <div>
-                                <span class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Transaction Details</span>
-                                <input type="text" class="import-row-tx-details w-full mt-1 bg-black/30 border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-gray-200 outline-none focus:border-indigo-500" data-entry-id="${entry.entryId}" value="${String(entry.manualEntry || '').replace(/"/g, '&quot;')}" placeholder="Transaction details" />
-                            </div>
-                            <div>
-                                <span class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Amount - Value</span>
-                                <input type="number" step="0.01" min="0" class="import-row-amount w-full mt-1 bg-black/30 border border-white/10 rounded-lg px-2 py-1 font-mono text-[11px] font-bold text-emerald-300 outline-none focus:border-emerald-500${hasAmountError ? ' field-error' : ''}" data-entry-id="${entry.entryId}" value="${amt.toFixed(2)}" />
-                                ${hasAmountError ? '<div class="field-error-text">Amount should be greater than 0</div>' : ''}
+                                <label class="block text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1">Amount (₹)</label>
+                                <input type="number" step="0.01" min="0"
+                                    class="import-row-amount import-amount-field w-full rounded-lg px-2.5 py-1.5 font-mono text-[13px]${hasAmountError ? ' field-error' : ''}"
+                                    data-entry-id="${entry.entryId}" value="${amt.toFixed(2)}" />
+                                ${hasAmountError ? '<p class="field-error-text">Must be > 0</p>' : ''}
                             </div>
                         </div>
                         <div>
-                            <span class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Remark - Amount</span>
-                            <input type="text" class="import-row-remarks w-full mt-1 bg-black/30 border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-gray-300 outline-none focus:border-indigo-500${hasRemarkError ? ' field-error' : ''}" data-entry-id="${entry.entryId}" value="${(entry.remarks || '').replace(/"/g, '&quot;')}" placeholder="Remark - Amount" />
-                            ${hasRemarkError ? '<div class="field-error-text">Remark - Amount is required</div>' : ''}
+                            <label class="block text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1">Transaction Details</label>
+                            <input type="text"
+                                class="import-row-tx-details import-tx-field w-full rounded-lg px-2.5 py-1.5 text-[12px] font-semibold"
+                                style="${txStyle}"
+                                data-entry-id="${entry.entryId}"
+                                value="${String(entry.manualEntry || '').replace(/"/g, '&quot;')}"
+                                placeholder="Details…" />
                         </div>
-                        ${specialTagNote ? `<div class="mt-1 text-[10px] text-amber-300">Tag: ${specialTagNote.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>` : ''}
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1">Remark — Amount</label>
+                            <input type="text"
+                                class="import-row-remarks import-remark-field w-full rounded-lg px-2.5 py-1.5 text-[12px]${hasRemarkError ? ' field-error' : ''}"
+                                data-entry-id="${entry.entryId}"
+                                value="${(entry.remarks || '').replace(/"/g, '&quot;')}"
+                                placeholder="e.g. Groceries-850" />
+                            ${hasRemarkError ? '<p class="field-error-text">Required</p>' : ''}
+                        </div>
+                        ${specialTagNote ? `<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-bold text-amber-300" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25)"><i class="fa-solid fa-tag text-[9px]"></i>${specialTagNote.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>` : ''}
                     `;
                     mobileList.appendChild(card);
                 }
             });
 
-            // Persist row-level edits only for that row.
             bindRowEditors(dateLabel);
-
             document.getElementById('import-preview-row-count').textContent = String(entries.length);
             document.getElementById('import-preview-total').textContent = `₹${total.toFixed(2)}`;
         }
@@ -1287,16 +1550,13 @@
             document.getElementById('import-grand-total').textContent = `₹${grandTotal.toFixed(2)}`;
             document.getElementById('import-grand-rows').textContent = `${sortedDates.length} dates`;
             document.getElementById('toolbar-filename').textContent = filename || 'file';
+            updateCheckedDatesCount();
 
             renderDateList(groupedEntries, sortedDates);
 
-            // Search and amount sort controls removed from toolbar.
-
-            // Show
             document.getElementById('upload-section').classList.add('hidden');
             document.getElementById('preview-section').classList.remove('hidden');
 
-            // Render first date
             renderPreviewForDate(sortedDates[0] || '');
         }
 
@@ -1315,19 +1575,12 @@
                     amount: parseFloat(entry.amount)
                 }));
 
-            // Merge rows that share the same category into one row per category.
             const categoryMap = new Map();
             validRows.forEach(row => {
                 const key = row.category.toLowerCase();
                 if (!categoryMap.has(key)) {
-                    categoryMap.set(key, {
-                        date: row.date,
-                        category: row.category,
-                        amount: 0,
-                        descriptions: []
-                    });
+                    categoryMap.set(key, { date: row.date, category: row.category, amount: 0, descriptions: [] });
                 }
-
                 const bucket = categoryMap.get(key);
                 bucket.amount += row.amount;
                 if (row.description) bucket.descriptions.push(row.description);
@@ -1382,11 +1635,7 @@
 
         function getInvalidRowsForDate(dateLabel) {
             const rowsForDate = (importedEntriesByDate && importedEntriesByDate[dateLabel]) || [];
-            const invalid = {
-                category: new Set(),
-                amount: new Set(),
-                remarks: new Set()
-            };
+            const invalid = { category: new Set(), amount: new Set(), remarks: new Set() };
 
             rowsForDate.forEach(entry => {
                 const amount = parseFloat(entry.amount);
@@ -1421,20 +1670,19 @@
                 const msgParts = [];
                 if (invalidRows.category.size) msgParts.push(`Category missing: ${invalidRows.category.size}`);
                 if (invalidRows.amount.size) msgParts.push(`Invalid amount: ${invalidRows.amount.size}`);
-                if (invalidRows.remarks.size) msgParts.push(`Remark - Amount missing: ${invalidRows.remarks.size}`);
-                KTui.alert('Validation Error', `${importSelectedDate} -> ${msgParts.join(', ')}`, 'error');
+                if (invalidRows.remarks.size) msgParts.push(`Remark missing: ${invalidRows.remarks.size}`);
+                KTui.alert('Validation Error', `${importSelectedDate} → ${msgParts.join(', ')}`, 'error');
                 return;
             }
 
             const payload = buildCashewPayloadForDate(importSelectedDate);
             if (!payload.expenses.length) {
-                KTui.alert('No Data', `No valid rows found for ${importSelectedDate}. Select a category and amount for at least one row.`, 'error');
+                KTui.alert('No Data', `No valid rows for ${importSelectedDate}. Set a category and amount.`, 'error');
                 return;
             }
 
             const loader = document.getElementById('loader');
-            const loaderText = document.getElementById('loader-text');
-            loaderText.textContent = `Saving ${importSelectedDate}...`;
+            document.getElementById('loader-text').textContent = `Saving ${importSelectedDate}...`;
             loader.classList.remove('hidden');
 
             try {
@@ -1457,7 +1705,7 @@
         async function saveAllImportedDates() {
             const dateLabels = sortDateLabels(Object.keys(importedEntriesByDate || {}));
             if (!dateLabels.length) {
-                KTui.alert('No Data', 'Import a file first, then use Save All Dates.', 'error');
+                KTui.alert('No Data', 'Import a file first, then use Save All.', 'error');
                 return;
             }
 
@@ -1465,12 +1713,7 @@
                 .map(date => {
                     const invalidRows = getInvalidRowsForDate(date);
                     const hasIssues = applyInvalidRowsForDate(date, invalidRows);
-                    return {
-                        date,
-                        invalidRows,
-                        count: invalidRows.category.size + invalidRows.amount.size + invalidRows.remarks.size,
-                        hasIssues
-                    };
+                    return { date, invalidRows, count: invalidRows.category.size + invalidRows.amount.size + invalidRows.remarks.size, hasIssues };
                 })
                 .filter(item => item.hasIssues);
 
@@ -1484,19 +1727,17 @@
                     if (item.invalidRows.remarks.size) p.push(`Remark ${item.invalidRows.remarks.size}`);
                     return `${item.date}: ${p.join('/')}`;
                 }).join(', ');
-                KTui.alert('Validation Error', `Cannot save all dates. Fix highlighted fields -> ${detail}`, 'error');
+                KTui.alert('Validation Error', `Fix highlighted fields → ${detail}`, 'error');
                 return;
             }
 
-            KTui.alert('Save Started', `Saving imported data for ${dateLabels.length} date(s)...`, 'success');
+            KTui.alert('Save Started', `Saving ${dateLabels.length} date(s)…`, 'success');
 
             const loader = document.getElementById('loader');
             const loaderText = document.getElementById('loader-text');
             loader.classList.remove('hidden');
 
-            let savedDates = 0;
-            let savedRows = 0;
-            let inProgressDate = '';
+            let savedDates = 0, savedRows = 0, inProgressDate = '';
 
             try {
                 for (let i = 0; i < dateLabels.length; i++) {
@@ -1525,6 +1766,81 @@
                 refreshOverviewStatsAndDateList();
                 loader.classList.add('hidden');
                 KTui.alert('Save Error', error.message || 'Could not finish saving all dates.', 'error');
+            }
+        }
+
+        async function saveCheckedImportedDates() {
+            const dateLabels = sortDateLabels(Object.keys(importedEntriesByDate || {}));
+            if (!dateLabels.length) {
+                KTui.alert('No Data', 'Import a file first, then save checked dates.', 'error');
+                return;
+            }
+
+            const checkedDates = dateLabels.filter(date => checkedImportDates.has(date));
+            if (!checkedDates.length) {
+                KTui.alert('No Dates Selected', 'Check one or more dates in the left panel to save.', 'error');
+                return;
+            }
+
+            const invalidDates = checkedDates
+                .map(date => {
+                    const invalidRows = getInvalidRowsForDate(date);
+                    const hasIssues = applyInvalidRowsForDate(date, invalidRows);
+                    return { date, invalidRows, hasIssues };
+                })
+                .filter(item => item.hasIssues);
+
+            if (invalidDates.length) {
+                const firstInvalidDate = invalidDates[0].date;
+                renderPreviewForDate(firstInvalidDate);
+                const detail = invalidDates.map(item => {
+                    const p = [];
+                    if (item.invalidRows.category.size) p.push(`Cat ${item.invalidRows.category.size}`);
+                    if (item.invalidRows.amount.size) p.push(`Amt ${item.invalidRows.amount.size}`);
+                    if (item.invalidRows.remarks.size) p.push(`Remark ${item.invalidRows.remarks.size}`);
+                    return `${item.date}: ${p.join('/')}`;
+                }).join(', ');
+                KTui.alert('Validation Error', `Cannot save checked dates. Fix fields -> ${detail}`, 'error');
+                return;
+            }
+
+            KTui.alert('Save Started', `Saving ${checkedDates.length} checked date(s)...`, 'success');
+
+            const loader = document.getElementById('loader');
+            const loaderText = document.getElementById('loader-text');
+            loader.classList.remove('hidden');
+
+            let savedDates = 0;
+            let savedRows = 0;
+            let inProgressDate = '';
+
+            try {
+                for (let i = 0; i < checkedDates.length; i++) {
+                    const dateLabel = checkedDates[i];
+                    inProgressDate = dateLabel;
+                    const payload = buildCashewPayloadForDate(dateLabel);
+                    if (!payload.expenses.length) continue;
+
+                    loaderText.textContent = `Saving ${dateLabel} (${i + 1}/${checkedDates.length})...`;
+                    await postCashewData(payload);
+                    clearImportFieldErrors(dateLabel);
+                    failedImportDates.delete(dateLabel);
+                    savedImportDates.add(dateLabel);
+                    savedDates += 1;
+                    savedRows += payload.expenses.length;
+                }
+
+                refreshOverviewStatsAndDateList();
+                if (importSelectedDate && importedEntriesByDate[importSelectedDate]) {
+                    renderPreviewForDate(importSelectedDate);
+                }
+                loader.classList.add('hidden');
+                KTui.alert('Saved', `Saved ${savedRows} row(s) across ${savedDates} checked date(s).`, 'success');
+            } catch (error) {
+                if (inProgressDate) failedImportDates.add(inProgressDate);
+                refreshOverviewStatsAndDateList();
+                loader.classList.add('hidden');
+                KTui.alert('Save Error', error.message || 'Could not finish saving checked dates.', 'error');
             }
         }
 
@@ -1557,9 +1873,9 @@
                         return;
                     }
 
-                    // Reset tag colors for new file
                     savedImportDates.clear();
                     failedImportDates.clear();
+                    checkedImportDates.clear();
                     clearImportFieldErrors();
                     Object.keys(tagColorMap).forEach(k => delete tagColorMap[k]);
                     tagColorIndex = 0;
