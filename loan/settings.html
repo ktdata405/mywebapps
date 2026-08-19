@@ -108,8 +108,9 @@
             border: 1px solid var(--glass-border);
         }
     </style>
+    <link rel="stylesheet" href="../modern-ui.css">
 </head>
-<body class="min-h-screen pb-20 relative overflow-x-hidden flex flex-col items-center justify-center">
+<body class="min-h-screen pb-20 relative overflow-x-hidden flex flex-col items-center justify-center kt-modern-ui">
 
     <main class="max-w-3xl w-full px-4">
         <!-- Header Block -->
@@ -296,5 +297,7 @@
             });
         }
     </script>
+    <div id="loader" role="status" aria-live="polite" aria-label="Loading page" aria-busy="true"><div class="spinner"></div></div>
+    <script src="../phase2-ui.js"></script>
 </body>
 </html>

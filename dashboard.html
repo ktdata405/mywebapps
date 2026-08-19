@@ -13,7 +13,7 @@
         }
     </script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="KT Dashboard">
@@ -650,13 +650,15 @@
 
         @keyframes spin { to { transform:rotate(360deg); } }
     </style>
+    <link rel="stylesheet" href="./modern-ui.css">
 </head>
-<body>
+<body class="kt-modern-ui">
+    <a class="skip-link" href="#main-content">Skip to main content</a>
 
-    <canvas id="bg-canvas"></canvas>
-    <div class="bg-blob bg-blob-1"></div>
-    <div class="bg-blob bg-blob-2"></div>
-    <div class="bg-blob bg-blob-3"></div>
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+    <div class="bg-blob bg-blob-1" aria-hidden="true"></div>
+    <div class="bg-blob bg-blob-2" aria-hidden="true"></div>
+    <div class="bg-blob bg-blob-3" aria-hidden="true"></div>
 
     <header>
         <div class="brand-text">
@@ -667,7 +669,7 @@
         </a>
     </header>
 
-    <main class="infographic-wrapper" id="cards-container">
+    <main class="infographic-wrapper" id="main-content" tabindex="-1">
         <div class="infographic-container center-wheel-layout" id="center-wheel-layout">
             <div class="inf-column inf-left-column" id="inf-left"></div>
 
@@ -712,9 +714,10 @@
         <p data-translate-key="copyright_thammineni">&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
     </footer>
 
-    <div id="loader"><div class="spinner"></div></div>
+    <div id="loader" role="status" aria-live="polite" aria-label="Loading page" aria-busy="true"><div class="spinner"></div></div>
 
     <script src="localization.js"></script>
+    <script src="./phase2-ui.js"></script>
     <script>
         function applyTheme(isDarkMode) {
             if (typeof window.applyAppTheme === 'function') {
@@ -839,15 +842,8 @@
             }
             animateTempLines();
 
-            document.querySelectorAll('.inf-node, .side-node-row, .temp-icon-node, .nav-link').forEach(link => {
-                link.addEventListener('click', e => {
-                    const href = link.getAttribute('href');
-                    if (!href || href === '#' || link.target === '_blank') return;
-                    e.preventDefault();
-                    loader.classList.add('visible');
-                    setTimeout(() => { window.location.href = href; }, 320);
-                });
-            });
+
+            if (window.__ktReduceMotion) return;
 
             const canvas = document.getElementById('bg-canvas');
             const ctx = canvas.getContext('2d');

@@ -318,12 +318,14 @@
             font-size: 24px;
         }
     </style>
+    <link rel="stylesheet" href="./modern-ui.css">
 </head>
-<body>
+<body class="kt-modern-ui">
+<a class="skip-link" href="#main-content">Skip to main content</a>
 
 <div class="dashboard-container">
     <!-- Sidebar Navigation -->
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="Primary">
         <ul class="nav-list">
             <li class="nav-item active">
                 <i class="fa-solid fa-table-cells-large"></i> Dashboard
@@ -353,10 +355,10 @@
         <div class="sidebar-illustration">
             <i class="fa-solid fa-people-holding-zone"></i>
         </div>
-    </div>
+    </nav>
 
     <!-- Main Content -->
-    <div class="main-content">
+    <main class="main-content" id="main-content" tabindex="-1">
         <!-- Header Logo -->
         <div class="header">
             <div class="logo">
@@ -482,8 +484,11 @@
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 </div>
 
+<div id="loader" role="status" aria-live="polite" aria-label="Loading page" aria-busy="true"><div class="spinner"></div></div>
+
+<script src="./phase2-ui.js"></script>
 </body>
 </html>

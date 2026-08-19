@@ -225,8 +225,9 @@
             .sticky-hdr { position:sticky; top:0; z-index:30; }
         }
     </style>
+    <link rel="stylesheet" href="../modern-ui.css">
 </head>
-<body class="pb-24 md:pb-8" style="padding-bottom:calc(5.5rem + env(safe-area-inset-bottom))">
+<body class="pb-24 md:pb-8 kt-modern-ui" style="padding-bottom:calc(5.5rem + env(safe-area-inset-bottom))">
 <div class="bg-noise"></div>
 <div class="bg-grid"></div>
 <div id="ptr" class="ptr-indicator"><i class="fa-solid fa-arrows-rotate animate-spin"></i><span>Refreshing…</span></div>
@@ -684,6 +685,7 @@ document.addEventListener('touchend', function(){ var p=document.getElementById(
 
 init();
 </script>
+    <script src="../phase2-ui.js"></script>
 </body>
 </html>
 

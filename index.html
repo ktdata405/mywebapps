@@ -13,7 +13,7 @@
         }
     </script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="KT Apps">
@@ -1107,13 +1107,15 @@
             footer { padding: 1.5rem; font-size: 0.72rem; }
         }
     </style>
+    <link rel="stylesheet" href="./modern-ui.css">
 </head>
-<body>
+<body class="kt-modern-ui">
+    <a class="skip-link" href="#main-content">Skip to main content</a>
 
-    <canvas id="bg-canvas"></canvas>
-    <div class="bg-blob bg-blob-1"></div>
-    <div class="bg-blob bg-blob-2"></div>
-    <div class="bg-blob bg-blob-3"></div>
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+    <div class="bg-blob bg-blob-1" aria-hidden="true"></div>
+    <div class="bg-blob bg-blob-2" aria-hidden="true"></div>
+    <div class="bg-blob bg-blob-3" aria-hidden="true"></div>
 
     <!-- ── Auth Screen ── -->
     <div id="auth-container">
@@ -1134,7 +1136,7 @@
             <div class="pin-dot" id="dot-2"></div>
             <div class="pin-dot" id="dot-3"></div>
         </div>
-        <div class="pin-error-msg" id="pin-error-msg"></div>
+        <div class="pin-error-msg" id="pin-error-msg" aria-live="assertive"></div>
 
         <input type="password" id="pin-input" inputmode="numeric"
                pattern="[0-9]*" maxlength="4" autocomplete="off" aria-label="PIN">
@@ -1165,7 +1167,7 @@
             </div>
         </header>
 
-        <main class="infographic-wrapper" id="cards-container">
+        <main class="infographic-wrapper" id="main-content" tabindex="-1">
             <div class="infographic-container center-wheel-layout" id="center-wheel-layout">
                 <!-- Left column: nodes 1-5 -->
                 <div class="inf-column inf-left-column" id="inf-left"></div>
@@ -1212,10 +1214,11 @@
         </footer>
     </div>
 
-    <div id="loader"><div class="spinner"></div></div>
+    <div id="loader" role="status" aria-live="polite" aria-label="Loading page" aria-busy="true"><div class="spinner"></div></div>
 
     <script src="./auth.js"></script>
     <script src="./localization.js"></script>
+    <script src="./phase2-ui.js"></script>
     <script>
         // ── Service Worker ──
         if ('serviceWorker' in navigator) {
@@ -1359,7 +1362,6 @@
             });
 
             // The rest of your existing DOMContentLoaded logic
-            const loader = document.getElementById('loader');
 
             // ── Build infographic nodes ──
             const appData = [
@@ -1456,21 +1458,11 @@
             }
             animateTempLines();
 
-            // ── Navigate with loader ──
-            const nodes = document.querySelectorAll('.inf-node, .side-node-row, .temp-icon-node');
-            nodes.forEach(node => {
-                node.addEventListener('click', e => {
-                    const href = node.getAttribute('href');
-                    if (href && href !== '#') {
-                        e.preventDefault();
-                        loader.classList.add('visible');
-                        setTimeout(() => { window.location.href = href; }, 350);
-                    }
-                });
-            });
 
 
             // ── Canvas particles ──
+            if (window.__ktReduceMotion) return;
+
             const canvas = document.getElementById('bg-canvas');
             const ctx = canvas.getContext('2d');
             let W, H, particles = [];

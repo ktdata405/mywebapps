@@ -122,8 +122,9 @@
         .formula-label { color: #94a3b8; }
         .formula-val { color: #fb923c; font-family: monospace; }
     </style>
+    <link rel="stylesheet" href="../modern-ui.css">
 </head>
-<body>
+<body class="kt-modern-ui">
     <div class="bg-animation">
         <div class="orb orb-1"></div>
         <div class="orb orb-2"></div>
@@ -259,5 +260,7 @@
             calculateLAMF();
         });
     </script>
+    <div id="loader" role="status" aria-live="polite" aria-label="Loading page" aria-busy="true"><div class="spinner"></div></div>
+    <script src="../phase2-ui.js"></script>
 </body>
 </html>

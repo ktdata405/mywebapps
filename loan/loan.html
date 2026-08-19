@@ -133,8 +133,9 @@
             display: flex;
             justify-content: center;
             align-items: center; gap: 10px; } .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(108, 99, 255, 0.4); } .btn-submit:active { transform: translateY(0); } #message { margin-top: 1.5rem; padding: 1rem; border-radius: 10px; text-align: center; font-weight: 500; display: none; } #message.success { display: block; background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); } #message.error { display: block; background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid rgba(231, 76, 60, 0.3); } /* Amount Text Styling */ #amountText { font-size: 0.8rem; color: var(--accent-color); margin-top: 0.5rem; font-style: italic; min-height: 1.2em; } </style>
+    <link rel="stylesheet" href="../modern-ui.css">
 </head>
-<body class="min-h-screen pb-20 relative overflow-x-hidden flex flex-col items-center justify-center">
+<body class="min-h-screen pb-20 relative overflow-x-hidden flex flex-col items-center justify-center kt-modern-ui">
 
     <main class="max-w-3xl w-full px-4">
         <!-- Header Block -->
@@ -366,5 +367,7 @@
             }
         });
     </script>
+    <div id="loader" role="status" aria-live="polite" aria-label="Loading page" aria-busy="true"><div class="spinner"></div></div>
+    <script src="../phase2-ui.js"></script>
 </body>
 </html>

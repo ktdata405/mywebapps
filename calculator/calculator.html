@@ -143,8 +143,9 @@
             .container { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
+    <link rel="stylesheet" href="../modern-ui.css">
 </head>
-<body>
+<body class="kt-modern-ui">
     <canvas id="bg-canvas"></canvas>
 
     <header>
@@ -189,7 +190,7 @@
         <p data-translate-key="copyright_thammineni">&copy; 2024 <b>Thammineni Technologies</b>. All rights reserved.</p>
     </footer>
 
-    <div id="loader"><div class="spinner"></div></div>
+    <div id="loader" role="status" aria-live="polite" aria-label="Loading page" aria-busy="true"><div class="spinner"></div></div>
 
     <script src="../localization.js"></script>
     <script>
@@ -213,14 +214,6 @@
                 }
             };
 
-            const loader = document.getElementById('loader');
-            document.querySelectorAll('.card').forEach(card => {
-                card.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    loader.classList.add('visible');
-                    setTimeout(() => { window.location.href = card.href; }, 400);
-                });
-            });
 
             const canvas = document.getElementById('bg-canvas'), ctx = canvas.getContext('2d');
             let width, height, particles = [];
@@ -261,5 +254,6 @@
             if (loader) loader.classList.remove('visible');
         });
     </script>
+    <script src="../phase2-ui.js"></script>
 </body>
 </html>

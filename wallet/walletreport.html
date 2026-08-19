@@ -41,8 +41,9 @@
             overflow-x: auto;
         }
     </style>
+    <link rel="stylesheet" href="../modern-ui.css">
 </head>
-<body class="min-h-screen pb-24">
+<body class="min-h-screen pb-24 kt-modern-ui">
     <div class="fixed inset-0 z-[-1] pointer-events-none overflow-hidden">
         <div class="absolute -top-44 -left-24 w-[500px] h-[500px] rounded-full bg-indigo-600/20 blur-[110px]"></div>
         <div class="absolute -bottom-44 -right-24 w-[500px] h-[500px] rounded-full bg-cyan-500/20 blur-[110px]"></div>
@@ -735,6 +736,8 @@
                 .replaceAll("'", '&#39;');
         }
     </script>
+    <div id="loader" role="status" aria-live="polite" aria-label="Loading page" aria-busy="true"><div class="spinner"></div></div>
+    <script src="../phase2-ui.js"></script>
 </body>
 </html>
 
