@@ -36,6 +36,10 @@
             background: rgba(15, 23, 42, 0.65);
             border: 1px solid rgba(148, 163, 184, 0.24);
         }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
     </style>
 </head>
 <body class="min-h-screen pb-24">
@@ -67,36 +71,77 @@
     </header>
 
     <main class="max-w-6xl mx-auto px-4 space-y-4">
-        <section class="glass rounded-3xl p-4 grid md:grid-cols-4 gap-3">
+        <section class="glass rounded-3xl p-4 grid md:grid-cols-6 gap-3">
             <label for="owner-filter" class="sr-only">Filter by owner</label>
             <select id="owner-filter" class="rounded-xl px-3 py-2.5 text-sm text-white">
                 <option value="">All Owners</option>
-                <option>Kalyan</option>
-                <option>Latha</option>
-                <option>Anshika</option>
-                <option>Amma</option>
-                <option>Dad</option>
-                <option>Chinnu</option>
-                <option>Arshika</option>
-                <option>Kartheek</option>
-                <option>Srikanth</option>
-                <option>Common Family</option>
             </select>
             <label for="type-filter" class="sr-only">Filter by type</label>
             <select id="type-filter" class="rounded-xl px-3 py-2.5 text-sm text-white">
                 <option value="">All Types</option>
-                <option value="credential">Text Credential</option>
+                <option value="credential">Bank Credential</option>
                 <option value="id_card">ID Card</option>
-                <option value="card">Card + CVV</option>
+                <option value="card">Card</option>
+            </select>
+            <label for="status-filter" class="sr-only">Filter by status</label>
+            <select id="status-filter" class="rounded-xl px-3 py-2.5 text-sm text-white">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="blocked">Blocked</option>
+                <option value="expired">Expired</option>
+                <option value="unknown">Unknown</option>
+            </select>
+            <label for="sort-filter" class="sr-only">Sort entries</label>
+            <select id="sort-filter" class="rounded-xl px-3 py-2.5 text-sm text-white">
+                <option value="savedAt_desc">Newest First</option>
+                <option value="savedAt_asc">Oldest First</option>
+                <option value="owner_asc">Owner A-Z</option>
+                <option value="owner_desc">Owner Z-A</option>
+                <option value="type_asc">Type A-Z</option>
             </select>
             <label for="search-input" class="sr-only">Search entries</label>
-            <input id="search-input" type="text" placeholder="Search label, owner, type..." class="rounded-xl px-3 py-2.5 text-sm text-white md:col-span-2">
+            <input id="search-input" type="text" placeholder="Search owner, bank, ID, card..." class="rounded-xl px-3 py-2.5 text-sm text-white md:col-span-2">
+            <button id="refresh-btn" type="button" class="rounded-xl px-3 py-2.5 text-sm font-semibold border border-cyan-400/50 text-cyan-100 hover:bg-cyan-500/20 transition-colors">
+                <i class="fa-solid fa-rotate mr-1"></i>Refresh
+            </button>
         </section>
 
-        <section class="grid grid-cols-2 md:grid-cols-4 gap-3" id="stats"></section>
+        <section class="grid grid-cols-2 md:grid-cols-5 gap-3" id="stats"></section>
 
         <section class="glass rounded-3xl p-4">
-            <div id="list" class="space-y-3"></div>
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div class="inline-flex items-center rounded-xl border border-slate-700/50 overflow-hidden">
+                    <button id="view-cards" type="button" class="px-3 py-2 text-xs font-semibold bg-slate-800/80 text-white">Cards</button>
+                    <button id="view-table" type="button" class="px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800/50">Table</button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="toggle-mask" type="button" class="rounded-xl px-3 py-2 text-xs font-semibold border border-slate-600/50 text-slate-200 hover:bg-slate-800/60 transition-colors">
+                        <i class="fa-solid fa-eye-slash mr-1"></i>Mask Sensitive: ON
+                    </button>
+                    <span id="result-count" class="text-xs text-slate-400"></span>
+                </div>
+            </div>
+
+            <div id="cards-view" class="space-y-3"></div>
+
+            <div id="table-view" class="table-wrap hidden">
+                <table class="min-w-full text-sm border-separate border-spacing-0">
+                    <thead>
+                        <tr>
+                            <th class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-700/60 py-2 pr-4">Owner</th>
+                            <th class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-700/60 py-2 pr-4">Type</th>
+                            <th class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-700/60 py-2 pr-4">Title</th>
+                            <th class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-700/60 py-2 pr-4">Primary</th>
+                            <th class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-700/60 py-2 pr-4">Secondary</th>
+                            <th class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-700/60 py-2 pr-4">Status</th>
+                            <th class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-700/60 py-2 pr-4">Saved</th>
+                            <th class="text-right text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-700/60 py-2">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body"></tbody>
+                </table>
+            </div>
         </section>
     </main>
 
@@ -105,11 +150,27 @@
             ? String(CONFIG.GOOGLE_SHEET_URL_WALLET).trim()
             : '';
 
+        const OWNER_FALLBACK = [
+            'Kalyan', 'Latha', 'Anshika', 'Amma', 'Dad',
+            'Chinnu', 'Arshika', 'Kartheek', 'Srikanth', 'Common Family'
+        ];
+
         let allRows = [];
+        let currentRows = [];
+        let maskSensitive = true;
+        let currentView = 'cards';
 
         document.getElementById('owner-filter').addEventListener('change', render);
         document.getElementById('type-filter').addEventListener('change', render);
+        document.getElementById('status-filter').addEventListener('change', render);
+        document.getElementById('sort-filter').addEventListener('change', render);
         document.getElementById('search-input').addEventListener('input', render);
+        document.getElementById('refresh-btn').addEventListener('click', init);
+        document.getElementById('view-cards').addEventListener('click', () => setView('cards'));
+        document.getElementById('view-table').addEventListener('click', () => setView('table'));
+        document.getElementById('toggle-mask').addEventListener('click', toggleMask);
+        document.getElementById('cards-view').addEventListener('click', onActionClick);
+        document.getElementById('table-body').addEventListener('click', onActionClick);
 
         init();
 
@@ -119,6 +180,7 @@
                 return;
             }
             allRows = await fetchWalletEntries();
+            populateOwnerFilter(allRows);
             render();
         }
 
@@ -150,35 +212,74 @@
                 id: item.id || item.rowId || '',
                 owner: String(item.owner || ''),
                 type: String(item.type || ''),
-                title: String(item.title || item.cardLabel || item.idType || ''),
+                title: String(item.title || item.credBankName || item.cardLabel || item.idType || ''),
                 textValue: String(item.textValue || ''),
                 idType: String(item.idType || ''),
                 idNumber: String(item.idNumber || ''),
                 idName: String(item.idName || ''),
+                validFrom: String(item.validFrom || ''),
+                validTo: String(item.validTo || ''),
                 cardLabel: String(item.cardLabel || ''),
                 cardNumber: String(item.cardNumber || ''),
                 cardExpiry: String(item.cardExpiry || ''),
                 cardCvv: String(item.cardCvv || ''),
                 cardHolder: String(item.cardHolder || ''),
+                credBankName: String(item.credBankName || ''),
+                credUsername: String(item.credUsername || ''),
+                credLoginPassword: String(item.credLoginPassword || ''),
+                credTPassOrPin: String(item.credTPassOrPin || ''),
+                credChannel: String(item.credChannel || ''),
+                credCardPin: String(item.credCardPin || ''),
+                credStatus: String(item.credStatus || ''),
                 savedAt: String(item.savedAt || item.timestamp || '')
             };
+        }
+
+        function populateOwnerFilter(rows) {
+            const select = document.getElementById('owner-filter');
+            const selected = select.value;
+            const set = new Set(OWNER_FALLBACK);
+            rows.forEach((row) => {
+                if (row.owner) set.add(row.owner);
+            });
+
+            const owners = Array.from(set).sort((a, b) => a.localeCompare(b));
+            select.innerHTML = '<option value="">All Owners</option>' + owners.map((owner) => {
+                const safe = escapeHtml(owner);
+                return `<option value="${safe}">${safe}</option>`;
+            }).join('');
+
+            if (selected && owners.includes(selected)) {
+                select.value = selected;
+            }
         }
 
         function render() {
             const ownerFilter = document.getElementById('owner-filter').value.trim().toLowerCase();
             const typeFilter = document.getElementById('type-filter').value.trim().toLowerCase();
+            const statusFilter = document.getElementById('status-filter').value.trim().toLowerCase();
+            const sortFilter = document.getElementById('sort-filter').value.trim().toLowerCase();
             const search = document.getElementById('search-input').value.trim().toLowerCase();
 
             const rows = allRows.filter((row) => {
-                const blob = [row.owner, row.type, row.title, row.textValue, row.idType, row.idNumber, row.cardLabel, row.cardNumber].join(' ').toLowerCase();
+                const blob = [
+                    row.owner, row.type, row.title, row.textValue, row.idType, row.idNumber,
+                    row.idName, row.validFrom, row.validTo, row.cardLabel, row.cardNumber,
+                    row.cardHolder, row.cardExpiry, row.credBankName, row.credUsername,
+                    row.credChannel, row.credStatus
+                ].join(' ').toLowerCase();
                 if (ownerFilter && row.owner.toLowerCase() !== ownerFilter) return false;
                 if (typeFilter && row.type.toLowerCase() !== typeFilter) return false;
+                if (statusFilter && computeStatus(row).toLowerCase() !== statusFilter) return false;
                 if (search && !blob.includes(search)) return false;
                 return true;
             });
 
-            renderStats(rows);
-            renderRows(rows);
+            currentRows = sortRows(rows, sortFilter);
+            renderStats(currentRows);
+            renderRows(currentRows);
+            updateResultCount(currentRows.length);
+            applyViewState();
         }
 
         function renderStats(rows) {
@@ -186,62 +287,205 @@
             const credentials = rows.filter((row) => row.type === 'credential').length;
             const ids = rows.filter((row) => row.type === 'id_card').length;
             const cards = rows.filter((row) => row.type === 'card').length;
+            const expiringSoon = rows.filter((row) => isExpiringSoon(row)).length;
             document.getElementById('stats').innerHTML = [
                 statCard('Total', String(rows.length), 'fa-database'),
                 statCard('Owners', String(owners.size), 'fa-folder-tree'),
                 statCard('Credentials', String(credentials), 'fa-key'),
-                statCard('ID/Cards', String(ids + cards), 'fa-id-card')
+                statCard('ID/Cards', String(ids + cards), 'fa-id-card'),
+                statCard('Expiring Soon', String(expiringSoon), 'fa-clock')
             ].join('');
         }
 
         function renderRows(rows) {
-            const list = document.getElementById('list');
+            const cardsView = document.getElementById('cards-view');
+            const tableBody = document.getElementById('table-body');
             if (!rows.length) {
-                list.innerHTML = '<p class="text-sm text-slate-400">No wallet entries found.</p>';
+                cardsView.innerHTML = '<p class="text-sm text-slate-400">No wallet entries found.</p>';
+                tableBody.innerHTML = '<tr><td colspan="8" class="text-sm text-slate-400 py-4">No wallet entries found.</td></tr>';
                 return;
             }
 
-            list.innerHTML = rows.map((row) => {
-                if (row.type === 'credential') {
-                    return rowCard(row, row.title || 'Credential', row.textValue, 'fa-key', 'credential');
-                }
-                if (row.type === 'id_card') {
-                    const body = [row.idType, row.idNumber, row.idName].filter(Boolean).join(' | ');
-                    return rowCard(row, row.idType || 'ID Card', body, 'fa-id-card', 'id_card');
-                }
-                const body = [row.cardNumber, row.cardExpiry ? `EXP ${row.cardExpiry}` : '', row.cardCvv ? `CVV ${row.cardCvv}` : '', row.cardHolder].filter(Boolean).join(' | ');
-                return rowCard(row, row.cardLabel || 'Card', body, 'fa-credit-card', 'card');
-            }).join('');
-
-            document.querySelectorAll('[data-delete-id]').forEach((btn) => {
-                btn.addEventListener('click', async () => {
-                    await deleteWalletEntry(btn.dataset.deleteId);
-                });
-            });
+            cardsView.innerHTML = rows.map((row) => rowCard(row)).join('');
+            tableBody.innerHTML = rows.map((row) => rowTableRow(row)).join('');
         }
 
-        function rowCard(row, title, body, icon, type) {
-            const time = row.savedAt ? new Date(row.savedAt).toLocaleString() : '-';
-            const safeTitle = escapeHtml(title || '-');
-            const safeBody = escapeHtml(body || '-');
+        function rowCard(row) {
+            if (row.type === 'credential') return credentialCard(row);
+            if (row.type === 'id_card') return idCard(row);
+            if (row.type === 'card') return paymentCard(row);
+            return genericCard(row);
+        }
+
+        function cardHeader(row, icon, accentClass) {
             const safeOwner = escapeHtml(row.owner || '-');
-            const safeType = escapeHtml(type);
-            const safeTime = escapeHtml(time);
+            const safeType = escapeHtml(getTypeLabel(row.type));
+            const safeStatus = escapeHtml(computeStatus(row));
+            const safeTitle = escapeHtml(getTitle(row));
+            const safeTime = escapeHtml(formatDateTime(row.savedAt));
+            const safeId = escapeHtml(String(row.id));
+
             return `
-                <article class="rounded-2xl border border-slate-700/50 p-3 bg-slate-900/40">
-                    <div class="flex items-start justify-between gap-3">
-                        <div>
-                            <p class="text-[11px] text-cyan-300 uppercase tracking-widest">${safeOwner} | ${safeType}</p>
-                            <h3 class="text-sm font-semibold text-white mt-1"><i class="fa-solid ${icon} mr-1"></i>${safeTitle}</h3>
-                            <p class="text-xs text-slate-300 mt-1 break-all whitespace-pre-wrap">${safeBody}</p>
-                            <p class="text-[11px] text-slate-500 mt-2">${safeTime}</p>
-                        </div>
-                        <button data-delete-id="${escapeHtml(String(row.id))}" class="w-8 h-8 rounded-full border border-rose-400/40 text-rose-200 hover:bg-rose-500/20 transition-colors" aria-label="Delete">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <p class="text-[11px] ${accentClass} uppercase tracking-widest">${safeOwner} | ${safeType} | ${safeStatus}</p>
+                        <h3 class="text-sm font-semibold text-white mt-1"><i class="fa-solid ${icon} mr-1"></i>${safeTitle}</h3>
+                        <p class="text-[11px] text-slate-500 mt-1">${safeTime}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button data-copy-id="${safeId}" class="w-8 h-8 rounded-full border border-cyan-400/40 text-cyan-100 hover:bg-cyan-500/20 transition-colors" aria-label="Copy">
+                            <i class="fa-solid fa-copy text-xs"></i>
+                        </button>
+                        <button data-delete-id="${safeId}" class="w-8 h-8 rounded-full border border-rose-400/40 text-rose-200 hover:bg-rose-500/20 transition-colors" aria-label="Delete">
                             <i class="fa-solid fa-trash text-xs"></i>
                         </button>
                     </div>
+                </div>
+            `;
+        }
+
+        function detailLine(label, value, muted) {
+            const safeLabel = escapeHtml(label || '-');
+            const safeValue = escapeHtml(value || '-');
+            const valueClass = muted ? 'text-slate-400' : 'text-slate-200';
+            return `
+                <div class="grid grid-cols-[120px_1fr] gap-2 text-xs">
+                    <p class="text-slate-500">${safeLabel}</p>
+                    <p class="${valueClass} break-all whitespace-pre-wrap">${safeValue}</p>
+                </div>
+            `;
+        }
+
+        function credentialCard(row) {
+            return `
+                <article class="rounded-2xl border border-cyan-700/40 p-3 bg-slate-900/40 space-y-3">
+                    ${cardHeader(row, 'fa-key', 'text-cyan-300')}
+                    <div class="space-y-1.5">
+                        ${detailLine('Username', row.credUsername || '-', false)}
+                        ${detailLine('Login Password', maskValue(row.credLoginPassword, maskSensitive), false)}
+                        ${detailLine('T-PIN / T-Password', maskValue(row.credTPassOrPin, maskSensitive), false)}
+                        ${detailLine('Channel', row.credChannel || '-', true)}
+                        ${detailLine('Card PIN', maskValue(row.credCardPin, maskSensitive), false)}
+                    </div>
                 </article>
             `;
+        }
+
+        function idCard(row) {
+            const validity = [
+                row.validFrom ? `From ${formatDate(row.validFrom)}` : '',
+                row.validTo ? `To ${formatDate(row.validTo)}` : ''
+            ].filter(Boolean).join(' | ') || '-';
+
+            return `
+                <article class="rounded-2xl border border-indigo-700/40 p-3 bg-slate-900/40 space-y-3">
+                    ${cardHeader(row, 'fa-id-card', 'text-indigo-300')}
+                    <div class="space-y-1.5">
+                        ${detailLine('ID Number', row.idNumber || '-', false)}
+                        ${detailLine('Name on ID', row.idName || '-', false)}
+                        ${detailLine('Validity', validity, true)}
+                    </div>
+                </article>
+            `;
+        }
+
+        function paymentCard(row) {
+            return `
+                <article class="rounded-2xl border border-emerald-700/40 p-3 bg-slate-900/40 space-y-3">
+                    ${cardHeader(row, 'fa-credit-card', 'text-emerald-300')}
+                    <div class="space-y-1.5">
+                        ${detailLine('Card Number', maskCardNumber(row.cardNumber, maskSensitive), false)}
+                        ${detailLine('CVV', maskValue(row.cardCvv, maskSensitive), false)}
+                        ${detailLine('Expiry', row.cardExpiry || '-', true)}
+                        ${detailLine('Card Holder', row.cardHolder || '-', true)}
+                    </div>
+                </article>
+            `;
+        }
+
+        function genericCard(row) {
+            return `
+                <article class="rounded-2xl border border-slate-700/50 p-3 bg-slate-900/40 space-y-3">
+                    ${cardHeader(row, 'fa-shield', 'text-slate-300')}
+                    <div class="space-y-1.5">
+                        ${detailLine('Primary', getPrimaryDetail(row, maskSensitive), false)}
+                        ${detailLine('Secondary', getSecondaryDetail(row, maskSensitive), true)}
+                    </div>
+                </article>
+            `;
+        }
+
+        function rowTableRow(row) {
+            const safeOwner = escapeHtml(row.owner || '-');
+            const safeType = escapeHtml(getTypeLabel(row.type));
+            const safeTitle = escapeHtml(getTitle(row));
+            const safePrimary = escapeHtml(getPrimaryDetail(row, maskSensitive));
+            const safeSecondary = escapeHtml(getSecondaryDetail(row, maskSensitive));
+            const safeStatus = escapeHtml(computeStatus(row));
+            const safeSaved = escapeHtml(formatDateTime(row.savedAt));
+            const safeId = escapeHtml(String(row.id));
+            return `
+                <tr class="border-b border-slate-800/60">
+                    <td class="py-2 pr-4 text-slate-200">${safeOwner}</td>
+                    <td class="py-2 pr-4 text-slate-300">${safeType}</td>
+                    <td class="py-2 pr-4 text-white">${safeTitle}</td>
+                    <td class="py-2 pr-4 text-slate-200 break-all">${safePrimary}</td>
+                    <td class="py-2 pr-4 text-slate-400 break-all">${safeSecondary}</td>
+                    <td class="py-2 pr-4 text-slate-300">${safeStatus}</td>
+                    <td class="py-2 pr-4 text-slate-500">${safeSaved}</td>
+                    <td class="py-2 text-right">
+                        <button data-copy-id="${safeId}" class="w-7 h-7 rounded-full border border-cyan-400/40 text-cyan-100 hover:bg-cyan-500/20 transition-colors mr-2" aria-label="Copy"><i class="fa-solid fa-copy text-xs"></i></button>
+                        <button data-delete-id="${safeId}" class="w-7 h-7 rounded-full border border-rose-400/40 text-rose-200 hover:bg-rose-500/20 transition-colors" aria-label="Delete"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        function onActionClick(event) {
+            const copyBtn = event.target.closest('[data-copy-id]');
+            if (copyBtn) {
+                copyEntry(copyBtn.dataset.copyId);
+                return;
+            }
+            const deleteBtn = event.target.closest('[data-delete-id]');
+            if (deleteBtn) {
+                deleteWalletEntry(deleteBtn.dataset.deleteId);
+            }
+        }
+
+        async function copyEntry(id) {
+            const row = allRows.find((item) => String(item.id) === String(id));
+            if (!row) {
+                notify('Record not found', 'error');
+                return;
+            }
+
+            const lines = [
+                `Owner: ${row.owner || '-'}`,
+                `Type: ${getTypeLabel(row.type)}`,
+                `Title: ${getTitle(row)}`,
+                `Primary: ${getPrimaryDetail(row, false)}`,
+                `Secondary: ${getSecondaryDetail(row, false)}`,
+                `Status: ${computeStatus(row)}`,
+                `Saved At: ${formatDateTime(row.savedAt)}`
+            ];
+            const text = lines.join('\n');
+
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(text);
+                } else {
+                    const area = document.createElement('textarea');
+                    area.value = text;
+                    document.body.appendChild(area);
+                    area.select();
+                    document.execCommand('copy');
+                    area.remove();
+                }
+                notify('Entry copied', 'success');
+            } catch (error) {
+                notify('Copy failed: ' + error.message, 'error');
+            }
         }
 
         async function deleteWalletEntry(id) {
@@ -273,6 +517,185 @@
             } catch (error) {
                 notify('Delete failed: ' + error.message, 'error');
             }
+        }
+
+        function setView(view) {
+            currentView = view === 'table' ? 'table' : 'cards';
+            applyViewState();
+        }
+
+        function applyViewState() {
+            const cardsView = document.getElementById('cards-view');
+            const tableView = document.getElementById('table-view');
+            const cardsBtn = document.getElementById('view-cards');
+            const tableBtn = document.getElementById('view-table');
+
+            const isCards = currentView === 'cards';
+            cardsView.classList.toggle('hidden', !isCards);
+            tableView.classList.toggle('hidden', isCards);
+
+            cardsBtn.classList.toggle('bg-slate-800/80', isCards);
+            cardsBtn.classList.toggle('text-white', isCards);
+            cardsBtn.classList.toggle('text-slate-300', !isCards);
+
+            tableBtn.classList.toggle('bg-slate-800/80', !isCards);
+            tableBtn.classList.toggle('text-white', !isCards);
+            tableBtn.classList.toggle('text-slate-300', isCards);
+        }
+
+        function toggleMask() {
+            maskSensitive = !maskSensitive;
+            const btn = document.getElementById('toggle-mask');
+            btn.innerHTML = maskSensitive
+                ? '<i class="fa-solid fa-eye-slash mr-1"></i>Mask Sensitive: ON'
+                : '<i class="fa-solid fa-eye mr-1"></i>Mask Sensitive: OFF';
+            renderRows(currentRows);
+        }
+
+        function updateResultCount(count) {
+            document.getElementById('result-count').textContent = `${count} record${count === 1 ? '' : 's'}`;
+        }
+
+        function sortRows(rows, sortFilter) {
+            const sorted = [...rows];
+            if (sortFilter === 'savedat_asc') {
+                sorted.sort((a, b) => String(a.savedAt || '').localeCompare(String(b.savedAt || '')));
+            } else if (sortFilter === 'owner_asc') {
+                sorted.sort((a, b) => String(a.owner || '').localeCompare(String(b.owner || '')));
+            } else if (sortFilter === 'owner_desc') {
+                sorted.sort((a, b) => String(b.owner || '').localeCompare(String(a.owner || '')));
+            } else if (sortFilter === 'type_asc') {
+                sorted.sort((a, b) => String(a.type || '').localeCompare(String(b.type || '')));
+            } else {
+                sorted.sort((a, b) => String(b.savedAt || '').localeCompare(String(a.savedAt || '')));
+            }
+            return sorted;
+        }
+
+        function getTypeLabel(type) {
+            if (type === 'credential') return 'Bank Credential';
+            if (type === 'id_card') return 'ID Card';
+            if (type === 'card') return 'Card';
+            return type || 'Unknown';
+        }
+
+
+        function getTitle(row) {
+            if (row.type === 'credential') return row.credBankName || row.title || 'Credential';
+            if (row.type === 'id_card') return row.idType || 'ID Card';
+            if (row.type === 'card') return row.cardLabel || 'Card';
+            return row.title || 'Wallet Entry';
+        }
+
+        function getPrimaryDetail(row, mask) {
+            if (row.type === 'credential') {
+                const username = row.credUsername ? `User: ${row.credUsername}` : '';
+                const pass = row.credLoginPassword ? `Login: ${maskValue(row.credLoginPassword, mask)}` : '';
+                const tpin = row.credTPassOrPin ? `TPIN: ${maskValue(row.credTPassOrPin, mask)}` : '';
+                return [username, pass, tpin].filter(Boolean).join(' | ') || '-';
+            }
+            if (row.type === 'id_card') {
+                return [row.idNumber, row.idName].filter(Boolean).join(' | ') || '-';
+            }
+            const num = row.cardNumber ? maskCardNumber(row.cardNumber, mask) : '';
+            const cvv = row.cardCvv ? `CVV ${maskValue(row.cardCvv, mask)}` : '';
+            return [num, cvv].filter(Boolean).join(' | ') || '-';
+        }
+
+        function getSecondaryDetail(row, mask) {
+            if (row.type === 'credential') {
+                const channel = row.credChannel ? `Channel: ${row.credChannel}` : '';
+                const cardPin = row.credCardPin ? `Card PIN: ${maskValue(row.credCardPin, mask)}` : '';
+                return [channel, cardPin].filter(Boolean).join(' | ') || '-';
+            }
+            if (row.type === 'id_card') {
+                const from = row.validFrom ? `From ${formatDate(row.validFrom)}` : '';
+                const to = row.validTo ? `To ${formatDate(row.validTo)}` : '';
+                return [from, to].filter(Boolean).join(' | ') || '-';
+            }
+            return [row.cardExpiry ? `EXP ${row.cardExpiry}` : '', row.cardHolder || ''].filter(Boolean).join(' | ') || '-';
+        }
+
+        function computeStatus(row) {
+            if (row.type === 'credential') {
+                return row.credStatus ? row.credStatus : 'Unknown';
+            }
+            if (row.type === 'id_card') {
+                if (!row.validTo) return 'Unknown';
+                return isExpired(row.validTo) ? 'Expired' : 'Active';
+            }
+            if (row.type === 'card') {
+                if (!row.cardExpiry) return 'Unknown';
+                return isExpired(parseCardExpiry(row.cardExpiry)) ? 'Expired' : 'Active';
+            }
+            return 'Unknown';
+        }
+
+        function isExpiringSoon(row) {
+            let dateText = '';
+            if (row.type === 'id_card') dateText = row.validTo;
+            if (row.type === 'card') dateText = parseCardExpiry(row.cardExpiry);
+            if (!dateText) return false;
+            if (isExpired(dateText)) return false;
+
+            const target = new Date(dateText);
+            if (Number.isNaN(target.getTime())) return false;
+            const now = new Date();
+            const msDiff = target.getTime() - now.getTime();
+            const dayDiff = Math.ceil(msDiff / (1000 * 60 * 60 * 24));
+            return dayDiff >= 0 && dayDiff <= 30;
+        }
+
+        function isExpired(dateText) {
+            const date = new Date(dateText);
+            if (Number.isNaN(date.getTime())) return false;
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            date.setHours(0, 0, 0, 0);
+            return date < now;
+        }
+
+        function parseCardExpiry(expiry) {
+            if (!expiry) return '';
+            const trimmed = String(expiry).trim();
+            const match = trimmed.match(/^(\d{1,2})\s*[\/-]\s*(\d{2}|\d{4})$/);
+            if (!match) return '';
+
+            const month = Number(match[1]);
+            if (month < 1 || month > 12) return '';
+            const yearPart = match[2];
+            const year = yearPart.length === 2 ? 2000 + Number(yearPart) : Number(yearPart);
+            const lastDay = new Date(year, month, 0);
+            return lastDay.toISOString().slice(0, 10);
+        }
+
+        function maskCardNumber(value, mask) {
+            if (!value) return '-';
+            const compact = String(value).replace(/\s+/g, '');
+            if (!mask) return compact;
+            if (compact.length <= 4) return '*'.repeat(compact.length);
+            return `${'*'.repeat(compact.length - 4)}${compact.slice(-4)}`;
+        }
+
+        function maskValue(value, mask) {
+            const text = String(value || '');
+            if (!mask) return text;
+            if (!text) return '-';
+            return '*'.repeat(Math.max(6, text.length));
+        }
+
+        function formatDateTime(value) {
+            if (!value) return '-';
+            const dt = new Date(value);
+            if (Number.isNaN(dt.getTime())) return String(value);
+            return dt.toLocaleString();
+        }
+
+        function formatDate(value) {
+            if (!value) return '-';
+            const dt = new Date(value);
+            if (Number.isNaN(dt.getTime())) return String(value);
+            return dt.toLocaleDateString();
         }
 
         function statCard(label, value, icon) {
