@@ -43,6 +43,89 @@
     }
 }
 
+@layer app {
+    body.kt-modern-ui {
+        --ui-gap: clamp(0.75rem, 0.55rem + 0.9vw, 1.25rem);
+        --ui-surface-1: color-mix(in oklab, var(--card-bg) 90%, transparent);
+        --ui-surface-2: color-mix(in oklab, var(--card-bg) 72%, transparent);
+        --ui-glow: color-mix(in oklab, var(--modern-accent-2) 28%, transparent);
+        --ui-border-strong: color-mix(in oklab, var(--text-primary) 24%, transparent);
+    }
+
+    body.kt-modern-ui main {
+        display: grid;
+        gap: var(--ui-gap);
+    }
+
+    body.kt-modern-ui :is(header, footer, .glass, .glass-panel, .glass-card, .bento-card, .settings-section, .card-box, .action-card, .stat-card, .inf-node, .side-node-row, .temp-icon-node) {
+        position: relative;
+        isolation: isolate;
+        border: 1px solid var(--ui-border-strong) !important;
+        background: linear-gradient(160deg, var(--ui-surface-1), var(--ui-surface-2)) !important;
+        box-shadow: 0 20px 45px rgba(2, 6, 23, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        overflow: clip;
+    }
+
+    body.kt-modern-ui :is(.glass, .glass-panel, .glass-card, .bento-card, .settings-section, .card-box, .action-card, .stat-card, .inf-node, .side-node-row, .temp-icon-node)::before {
+        content: '';
+        position: absolute;
+        inset: -40% auto auto -20%;
+        width: 120%;
+        height: 60%;
+        background: linear-gradient(100deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
+        transform: rotate(-6deg);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    body.kt-modern-ui :is(.glass, .glass-panel, .glass-card, .bento-card, .settings-section, .card-box, .action-card, .stat-card, .inf-node, .side-node-row, .temp-icon-node) > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    body.kt-modern-ui :is(.inf-node:hover, .side-node-row:hover, .temp-icon-node:hover, .action-card:hover, .stat-card:hover, .card-box:hover, .settings-section:hover, .glass:hover, .glass-panel:hover, .glass-card:hover, .bento-card:hover) {
+        border-color: var(--card-hover-border) !important;
+        box-shadow: 0 18px 38px rgba(2, 6, 23, 0.28), 0 0 0 1px var(--ui-glow);
+        transform: translateY(-3px) scale(1.012);
+    }
+
+    body.kt-modern-ui :is(.nav-btn, .nav-link) {
+        background: linear-gradient(145deg, color-mix(in oklab, var(--modern-accent-1) 36%, transparent), color-mix(in oklab, var(--modern-accent-2) 42%, transparent)) !important;
+        border: 1px solid color-mix(in oklab, var(--modern-accent-2) 38%, var(--card-border)) !important;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 12px 20px rgba(2, 132, 199, 0.24);
+    }
+
+    body.kt-modern-ui :is(.nav-btn, .nav-link):hover {
+        transform: translateY(-1px) scale(1.03);
+    }
+
+    body.kt-modern-ui :is(.brand-text h1, h1, h2, h3) {
+        text-wrap: balance;
+    }
+
+    body.kt-modern-ui :is(.setting-item, .card-box, .action-card, .stat-card, .inf-node, .side-node-row, .temp-icon-node) {
+        border-radius: clamp(14px, 1.2vw, 20px) !important;
+    }
+
+    body.kt-modern-ui :is(.inf-center-circle, .side-main-wheel, .temp-wheel-content) {
+        border: 1px solid color-mix(in oklab, var(--modern-accent-2) 26%, var(--card-border)) !important;
+        background: radial-gradient(circle at 18% 12%, color-mix(in oklab, var(--modern-accent-2) 18%, transparent), transparent 62%), linear-gradient(160deg, var(--ui-surface-1), var(--ui-surface-2)) !important;
+    }
+
+    body.kt-modern-ui.kt-preset-minimal {
+        --ui-glow: rgba(148, 163, 184, 0.2);
+    }
+
+    body.kt-modern-ui.kt-preset-corporate {
+        --ui-glow: rgba(14, 116, 144, 0.26);
+    }
+
+    body.kt-modern-ui.kt-reduced-motion :is(.glass, .glass-panel, .glass-card, .bento-card, .settings-section, .card-box, .action-card, .stat-card, .inf-node, .side-node-row, .temp-icon-node) {
+        transform: none !important;
+        box-shadow: var(--modern-shadow-soft) !important;
+    }
+}
+
 @layer tokens {
     body.kt-modern-ui {
         --card-bg: color-mix(in oklab, var(--surface) 74%, transparent);
@@ -356,6 +439,118 @@
 
     body.kt-modern-ui.kt-reduced-motion #bg-canvas {
         opacity: 0.16 !important;
+    }
+}
+
+@layer app {
+    @view-transition {
+        navigation: auto;
+    }
+
+    :root {
+        --modern-radius-2xl: 30px;
+        --modern-text-tight: -0.02em;
+    }
+
+    body.kt-modern-ui {
+        line-height: 1.45;
+        letter-spacing: 0.01em;
+        text-rendering: geometricPrecision;
+        -webkit-font-smoothing: antialiased;
+        background:
+            radial-gradient(1000px 460px at -8% -10%, color-mix(in oklab, var(--modern-accent-1) 44%, transparent), transparent 62%),
+            radial-gradient(900px 420px at 108% -6%, color-mix(in oklab, var(--modern-accent-2) 36%, transparent), transparent 58%),
+            radial-gradient(720px 380px at 52% 118%, color-mix(in oklab, var(--modern-accent-3) 22%, transparent), transparent 68%),
+            linear-gradient(140deg, var(--modern-bg-1), var(--modern-bg-2) 48%, var(--modern-bg-3));
+    }
+
+    body.kt-modern-ui::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background-image: linear-gradient(rgba(255, 255, 255, 0.024) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.024) 1px, transparent 1px);
+        background-size: 28px 28px;
+        mask-image: radial-gradient(circle at center, black 36%, transparent 85%);
+    }
+
+    body.kt-modern-ui :is(main, header, footer) {
+        position: relative;
+        z-index: 1;
+    }
+
+    body.kt-modern-ui :is(.brand-text h1, h1, h2) {
+        letter-spacing: var(--modern-text-tight);
+    }
+
+    body.kt-modern-ui h1 {
+        font-size: clamp(1.45rem, 1.1rem + 1.2vw, 2rem);
+    }
+
+    body.kt-modern-ui h2 {
+        font-size: clamp(1.2rem, 1rem + 0.8vw, 1.6rem);
+    }
+
+    body.kt-modern-ui :is(header, footer, .settings-section, .inf-center-circle, .side-main-wheel, .temp-wheel-content, .auth-logo-inner, .dashboard-container, .card-box, .stat-card, .action-card, .glass, .glass-panel, .glass-card, .bento-card) {
+        border: 1px solid color-mix(in oklab, var(--text-primary) 18%, transparent) !important;
+        background: linear-gradient(155deg, color-mix(in oklab, var(--card-bg) 84%, transparent), color-mix(in oklab, var(--card-bg) 65%, transparent)) !important;
+        box-shadow: 0 12px 32px rgba(2, 6, 23, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(22px) saturate(170%) !important;
+        -webkit-backdrop-filter: blur(22px) saturate(170%) !important;
+    }
+
+    body.kt-modern-ui header {
+        border-radius: 0 0 var(--modern-radius-2xl) var(--modern-radius-2xl);
+    }
+
+    body.kt-modern-ui main {
+        border-radius: var(--modern-radius-2xl) !important;
+        box-shadow: 0 18px 44px rgba(15, 23, 42, 0.22);
+    }
+
+    body.kt-modern-ui .nav-btn,
+    body.kt-modern-ui .nav-link {
+        background: linear-gradient(130deg, color-mix(in oklab, var(--modern-accent-1) 30%, transparent), color-mix(in oklab, var(--modern-accent-2) 30%, transparent)) !important;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 10px 20px rgba(6, 182, 212, 0.2);
+    }
+
+    body.kt-modern-ui .nav-btn:hover,
+    body.kt-modern-ui .nav-link:hover {
+        transform: translateY(-1px);
+        filter: saturate(1.1);
+    }
+
+    body.kt-modern-ui :is(.inf-node, .side-node-row, .temp-icon-node, .action-card, .stat-card, .card-box, .notice-card, .settings-section) {
+        border-radius: 18px !important;
+        background: linear-gradient(160deg, color-mix(in oklab, var(--modern-accent-1) 14%, var(--card-bg)), color-mix(in oklab, var(--modern-accent-2) 9%, var(--card-bg))) !important;
+    }
+
+    body.kt-modern-ui :is(.inf-node:hover, .side-node-row:hover, .temp-icon-node:hover, .action-card:hover, .stat-card:hover, .card-box:hover, .settings-section:hover) {
+        transform: translateY(-2px) scale(1.012);
+        box-shadow: 0 14px 28px color-mix(in oklab, var(--modern-accent-2) 24%, transparent);
+    }
+
+    body.kt-modern-ui.kt-preset-minimal {
+        --modern-accent-1: #334155;
+        --modern-accent-2: #64748b;
+        --modern-accent-3: #94a3b8;
+    }
+
+    body.kt-modern-ui.kt-preset-corporate {
+        --modern-accent-1: #0f4c81;
+        --modern-accent-2: #0369a1;
+        --modern-accent-3: #0e7490;
+    }
+
+    body.kt-modern-ui.kt-preset-neon {
+        --modern-accent-1: #8b5cf6;
+        --modern-accent-2: #22d3ee;
+        --modern-accent-3: #34d399;
+    }
+
+    body.kt-modern-ui.kt-reduced-motion::after {
+        display: none;
     }
 }
 
