@@ -117,6 +117,15 @@
         const loader = document.getElementById('loader');
         if (!loader) return;
 
+        const hasClassicSpinner = !!loader.querySelector('.spinner');
+        if (hasClassicSpinner) {
+            loader.classList.add('kt-loader-overlay');
+        }
+
+        // Avoid binding page-transition overlay behavior to non-overlay loaders
+        // (e.g. skeleton grids that also use id="loader").
+        if (!hasClassicSpinner) return;
+
         if (!document.body.dataset.ktTransitionBound) {
             document.body.dataset.ktTransitionBound = 'true';
             document.addEventListener('click', function (event) {
