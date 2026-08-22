@@ -270,6 +270,21 @@
 
                 <!-- Remarks Input -->
                 <div class="glass-panel rounded-3xl p-6 border border-white/10">
+                    <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1 mb-3 block">Adjustments (Optional)</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="advance-paid-input" class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1 mb-2 block">Advance Given (INR)</label>
+                            <input type="number" step="0.01" min="0" id="advance-paid-input" placeholder="0.00" class="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-3.5 text-white font-mono text-lg font-bold outline-none focus:border-indigo-500 transition-all" />
+                        </div>
+                        <div>
+                            <label for="amount-taken-input" class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1 mb-2 block">Amount Taken (INR)</label>
+                            <input type="number" step="0.01" min="0" id="amount-taken-input" placeholder="0.00" class="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-3.5 text-white font-mono text-lg font-bold outline-none focus:border-indigo-500 transition-all" />
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-gray-400 mt-3">Advance reduces month-end payable. Amount taken adds to month-end payable.</p>
+                </div>
+
+                <div class="glass-panel rounded-3xl p-6 border border-white/10">
                     <label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold ml-1 mb-2 block">Remarks / Address</label>
                     <div class="relative">
                         <div class="absolute top-4 left-4 pointer-events-none text-indigo-400">
@@ -322,7 +337,6 @@
         const UNIT_PRICE = 80;
         const DEFAULT_MORNING = 1.5;
         const DEFAULT_EVENING = 0.5;
-        //const MILK_API_URL = 'https://script.google.com/macros/s/AKfycbw9HPgLQojIqypEKeaCpwdZtdXmM7gqANY8LFWLWUAe5CNexRLTyrrX6JLFmiZC03B4CQ/exec';
         const MILK_API_URL = CONFIG.GOOGLE_SHEET_URL_MILK;
         let isDailyCostManual = false;
 
@@ -359,6 +373,36 @@
             setDailyCost(Number.isFinite(manualCost) ? manualCost : 0);
         }
 
+        function getAutoDailyCost() {
+            const morning = parseFloat(document.getElementById('morning-input').value) || 0;
+            const evening = parseFloat(document.getElementById('evening-input').value) || 0;
+            return (morning + evening) * UNIT_PRICE;
+        }
+
+        function applyStoredDailyCost(rowData) {
+            const stored = parseFloat((rowData && (rowData.dailycost ?? rowData.dailyCost)) || '');
+            const hasStoredValue = Number.isFinite(stored) && stored >= 0;
+            const autoCost = getAutoDailyCost();
+            const isCustom = hasStoredValue && Math.abs(stored - autoCost) > 0.009;
+
+            if (isCustom) {
+                if (!isDailyCostManual) {
+                    toggleDailyCostEdit();
+                }
+                document.getElementById('daily-cost-input').value = stored.toFixed(2);
+                handleDailyCostInput();
+                return;
+            }
+
+            if (isDailyCostManual) {
+                toggleDailyCostEdit();
+            }
+            calculateDaily();
+            if (hasStoredValue) {
+                setDailyCost(stored);
+            }
+        }
+
         function normalizeSheetDate(dateStr) {
             if (!dateStr) return '';
             const normalized = String(dateStr).trim();
@@ -377,6 +421,8 @@
             const morningInput = document.getElementById('morning-input');
             const eveningInput = document.getElementById('evening-input');
             const remarksInput = document.getElementById('remarks-input');
+            const advancePaidInput = document.getElementById('advance-paid-input');
+            const amountTakenInput = document.getElementById('amount-taken-input');
 
             if (rowData) {
                 const morning = parseFloat(rowData.morning);
@@ -384,16 +430,17 @@
                 morningInput.value = Number.isFinite(morning) ? morning : DEFAULT_MORNING;
                 eveningInput.value = Number.isFinite(evening) ? evening : DEFAULT_EVENING;
                 remarksInput.value = rowData.remarks || '';
+                advancePaidInput.value = parseFloat(rowData.advancepaid) || 0;
+                amountTakenInput.value = parseFloat(rowData.amounttaken) || 0;
             } else {
                 morningInput.value = DEFAULT_MORNING;
                 eveningInput.value = DEFAULT_EVENING;
                 remarksInput.value = '';
+                advancePaidInput.value = '';
+                amountTakenInput.value = '';
             }
 
-            if (isDailyCostManual) {
-                toggleDailyCostEdit();
-            }
-            calculateDaily();
+            applyStoredDailyCost(rowData || null);
         }
 
         function changeDate(offset) {
@@ -505,9 +552,14 @@
                 document.getElementById('morning-input').value = data.morning;
                 document.getElementById('evening-input').value = data.evening;
                 document.getElementById('remarks-input').value = data.remarks || '';
+                document.getElementById('advance-paid-input').value = parseFloat(data.advancepaid) || 0;
+                document.getElementById('amount-taken-input').value = parseFloat(data.amounttaken) || 0;
+                applyStoredDailyCost(data);
             }
 
-            calculateDaily();
+            if (!editData) {
+                calculateDaily();
+            }
             initDateAccordion(dateInput.value);
 
             dateInput.addEventListener('change', () => {
@@ -531,6 +583,8 @@
             document.getElementById('morning-input').value = String(DEFAULT_MORNING);
             document.getElementById('evening-input').value = String(DEFAULT_EVENING);
             document.getElementById('remarks-input').value = '';
+            document.getElementById('advance-paid-input').value = '';
+            document.getElementById('amount-taken-input').value = '';
 
             if (isDailyCostManual) {
                 toggleDailyCostEdit();
@@ -547,6 +601,8 @@
             const morning = parseFloat(document.getElementById('morning-input').value) || 0;
             const evening = parseFloat(document.getElementById('evening-input').value) || 0;
             const remarks = document.getElementById('remarks-input').value;
+            const advancePaid = parseFloat(document.getElementById('advance-paid-input').value) || 0;
+            const amountTaken = parseFloat(document.getElementById('amount-taken-input').value) || 0;
             const normalizedStage = String(status || 'completed').toLowerCase() === 'draft' ? 'draft' : 'completed';
             const dailyCost = isDailyCostManual
                 ? (parseFloat(document.getElementById('daily-cost-input').value) || 0)
@@ -576,15 +632,20 @@
                 unitPrice: UNIT_PRICE,
                 dailyCost: dailyCost,
                 remarks: remarks,
+                advancePaid: advancePaid,
+                amountTaken: amountTaken,
                 stage: normalizedStage
             };
 
             fetch(MILK_API_URL, {
                 method: 'POST',
-                body: JSON.stringify(payload),
-                mode: 'no-cors'
+                body: JSON.stringify(payload)
             })
-            .then(() => {
+            .then(r => r.json())
+            .then(res => {
+                if (!res || res.success !== true) {
+                    throw new Error((res && res.error) || 'Save rejected by server');
+                }
                 loader.classList.add('hidden');
                 if (saveBtn) saveBtn.disabled = false;
                 if (saveDraftBtn) saveDraftBtn.disabled = false;
@@ -605,7 +666,7 @@
                 if (saveBtn) saveBtn.disabled = false;
                 if (saveDraftBtn) saveDraftBtn.disabled = false;
                 console.error('Error:', error);
-                showPopup('Error', 'Error saving data', 'error');
+                showPopup('Error', 'Error saving data. Please check API deployment and try again.', 'error');
             });
         }
 

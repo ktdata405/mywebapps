@@ -811,6 +811,23 @@
         .confirm-proceed:hover { box-shadow: 0 6px 20px rgba(139,92,246,0.55); transform: translateY(-1px); }
         .confirm-proceed:active { transform: scale(0.96); }
 
+        .payment-input {
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(186,199,255,0.24);
+            background: rgba(15,23,42,0.62);
+            color: #e2e8f0;
+            font-size: 13px;
+            font-weight: 600;
+            outline: none;
+        }
+        .payment-input:focus {
+            border-color: rgba(139,92,246,0.62);
+            box-shadow: 0 0 0 3px rgba(139,92,246,0.16);
+        }
+
         .mobile-fab {
             position: fixed;
             right: max(14px, env(safe-area-inset-right, 0px));
@@ -1020,6 +1037,11 @@
                 <div class="summary-card p-3" style="background:linear-gradient(135deg,rgba(16,185,129,0.20),rgba(6,182,212,0.12)); border:1px solid rgba(16,185,129,0.35);">
                     <p class="summary-kicker" style="color:#34d399;">Total Amount</p>
                     <p data-summary-key="total-cost" class="summary-value font-mono" style="color:#34d399;">₹0.00</p>
+                    <div class="summary-sub" style="margin-top:8px; display:flex; flex-direction:column; gap:4px;">
+                        <span style="display:flex; justify-content:space-between;"><span style="color:#cbd5e1;">Advance Paid</span><span data-summary-key="advance-paid" class="font-mono" style="color:#93c5fd;">₹0.00</span></span>
+                        <span style="display:flex; justify-content:space-between;"><span style="color:#cbd5e1;">Amount Taken</span><span data-summary-key="amount-taken" class="font-mono" style="color:#fca5a5;">₹0.00</span></span>
+                        <span style="display:flex; justify-content:space-between;"><span style="color:#bbf7d0; font-weight:800;">Net Payable</span><span data-summary-key="net-payable" class="font-mono" style="color:#4ade80; font-weight:800;">₹0.00</span></span>
+                    </div>
                     <div id="bill-action-wrap-card" class="summary-total-action" style="margin-top:8px;">
                         <span class="payment-status-label">Payment Status</span>
                         <button class="mark-paid-btn status-btn-unpaid" onclick="markMonthAsPaid(this)">
@@ -1063,6 +1085,18 @@
                         <div class="summary-total-line">
                             <span class="line-label line-label-amt">Total Amount</span>
                             <span data-summary-key="total-cost" class="line-value line-value-amt font-mono">₹0.00</span>
+                        </div>
+                        <div class="summary-total-line">
+                            <span class="line-label" style="color:#93c5fd;">Advance Paid</span>
+                            <span data-summary-key="advance-paid" class="line-value font-mono" style="color:#93c5fd;">₹0.00</span>
+                        </div>
+                        <div class="summary-total-line">
+                            <span class="line-label" style="color:#fca5a5;">Amount Taken</span>
+                            <span data-summary-key="amount-taken" class="line-value font-mono" style="color:#fca5a5;">₹0.00</span>
+                        </div>
+                        <div class="summary-total-line">
+                            <span class="line-label" style="color:#4ade80; font-weight:900;">Net Payable</span>
+                            <span data-summary-key="net-payable" class="line-value font-mono" style="color:#4ade80;">₹0.00</span>
                         </div>
                         <div id="bill-action-wrap-list" class="summary-total-action">
                             <span class="payment-status-label">Payment Status</span>
@@ -1134,6 +1168,23 @@
         <div class="confirm-title" id="confirm-title">Mark as Paid?</div>
         <div id="confirm-month-badge" class="confirm-month-badge"></div>
         <div class="confirm-msg" id="confirm-msg">This will mark the entire month's milk bill as paid. This action will be saved to the sheet.</div>
+        <div id="payment-breakdown" style="display:none; text-align:left; margin:-10px 0 14px; padding:10px 12px; border-radius:12px; background:rgba(15,23,42,0.48); border:1px solid rgba(148,163,184,0.22);">
+            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;"><span style="color:#cbd5e1;">Total Bill</span><strong id="breakdown-total" style="color:#34d399;">₹0.00</strong></div>
+            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;"><span style="color:#cbd5e1;">Advance Paid</span><strong id="breakdown-advance" style="color:#93c5fd;">₹0.00</strong></div>
+            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;"><span style="color:#cbd5e1;">Amount Taken</span><strong id="breakdown-taken" style="color:#fca5a5;">₹0.00</strong></div>
+            <div style="display:flex; justify-content:space-between; font-size:13px;"><span style="color:#bbf7d0; font-weight:800;">Net Payable</span><strong id="breakdown-net" style="color:#4ade80;">₹0.00</strong></div>
+        </div>
+        <div id="payment-options-wrap" style="display:none; text-align:left; margin-bottom:16px;">
+            <p style="font-size:11px; font-weight:800; color:#cbd5e1; margin-bottom:7px;">Payment Amount</p>
+            <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:#e2e8f0; margin-bottom:6px;">
+                <input type="radio" name="payment-mode" value="full" checked onchange="onPaymentModeChange()"> Full Net Payable
+            </label>
+            <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:#e2e8f0; margin-bottom:6px;">
+                <input type="radio" name="payment-mode" value="custom" onchange="onPaymentModeChange()"> Custom Amount
+            </label>
+            <input id="custom-payment-amount" class="payment-input" type="number" step="0.01" min="0" placeholder="Enter custom amount" style="display:none;">
+            <textarea id="payment-remarks" class="payment-input" rows="2" placeholder="Payment remarks (required for custom amount)"></textarea>
+        </div>
         <div class="confirm-btns">
             <button id="confirm-cancel-btn" class="confirm-cancel" onclick="closeConfirm()">Cancel</button>
             <button class="confirm-proceed" id="confirm-proceed-btn" onclick="proceedMarkPaid()">
@@ -1164,7 +1215,20 @@
     let _reportRows = []; // stores sorted rows for index-based edit access
     let _draftDatesForMonth = []; // used for mark-paid validation
     let _pendingConfirmMode = 'markPaid'; // markPaid | settleDrafts
-    const MILK_API_URL = 'https://script.google.com/macros/s/AKfycbw9HPgLQojIqypEKeaCpwdZtdXmM7gqANY8LFWLWUAe5CNexRLTyrrX6JLFmiZC03B4CQ/exec';
+    let _monthlySettlement = { totalCost: 0, advancePaid: 0, amountTaken: 0, netPayable: 0 };
+    const MILK_API_URL = CONFIG.GOOGLE_SHEET_URL_MILK;
+
+    function formatCurrency(amount) {
+        return `₹${Number(amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    function onPaymentModeChange() {
+        const modeEl = document.querySelector('input[name="payment-mode"]:checked');
+        const customInput = document.getElementById('custom-payment-amount');
+        if (!customInput) return;
+        customInput.style.display = modeEl && modeEl.value === 'custom' ? 'block' : 'none';
+        if (modeEl && modeEl.value === 'full') customInput.value = '';
+    }
 
     function resetConfirmDialogText() {
         const titleEl = document.getElementById('confirm-title');
@@ -1175,6 +1239,17 @@
         if (msgEl) msgEl.textContent = "This will mark the entire month's milk bill as paid. This action will be saved to the sheet.";
         if (cancelBtn) cancelBtn.textContent = 'Cancel';
         if (proceedBtn) proceedBtn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Yes, Mark Paid';
+        const breakdownWrap = document.getElementById('payment-breakdown');
+        const optionsWrap = document.getElementById('payment-options-wrap');
+        const remarksInput = document.getElementById('payment-remarks');
+        const customAmountInput = document.getElementById('custom-payment-amount');
+        const fullMode = document.querySelector('input[name="payment-mode"][value="full"]');
+        if (breakdownWrap) breakdownWrap.style.display = 'none';
+        if (optionsWrap) optionsWrap.style.display = 'none';
+        if (remarksInput) remarksInput.value = '';
+        if (customAmountInput) customAmountInput.value = '';
+        if (fullMode) fullMode.checked = true;
+        onPaymentModeChange();
         _pendingConfirmMode = 'markPaid';
     }
 
@@ -1340,6 +1415,24 @@
         });
     }
 
+    function updateSettlementPreview(totalCost, advancePaid, amountTaken) {
+        const netPayable = totalCost - advancePaid + amountTaken;
+        _monthlySettlement = { totalCost, advancePaid, amountTaken, netPayable };
+
+        setSummaryMetric('advance-paid', formatCurrency(advancePaid));
+        setSummaryMetric('amount-taken', formatCurrency(amountTaken));
+        setSummaryMetric('net-payable', formatCurrency(netPayable));
+
+        const totalEl = document.getElementById('breakdown-total');
+        const advanceEl = document.getElementById('breakdown-advance');
+        const takenEl = document.getElementById('breakdown-taken');
+        const netEl = document.getElementById('breakdown-net');
+        if (totalEl) totalEl.textContent = formatCurrency(totalCost);
+        if (advanceEl) advanceEl.textContent = formatCurrency(advancePaid);
+        if (takenEl) takenEl.textContent = formatCurrency(amountTaken);
+        if (netEl) netEl.textContent = formatCurrency(netPayable);
+    }
+
     function renderReport(data) {
         const body        = document.getElementById('report-body');
         const mobileCards = document.getElementById('mobile-cards');
@@ -1350,6 +1443,8 @@
 
         let totalMorningLiters = 0, totalEveningLiters = 0;
         let totalMorningAmount = 0, totalEveningAmount = 0;
+        let totalBillCost = 0;
+        let totalAdvancePaid = 0, totalAmountTaken = 0;
 
         if (!data.length) {
             countBadge.textContent = '0 days';
@@ -1361,6 +1456,7 @@
             body.innerHTML = `<tr><td colspan="8" class="py-12 text-center uppercase tracking-widest text-xs font-bold" style="color:#aab6df;">No records found</td></tr>`;
             resetSummary();
             setMonthlyBadge(false);
+            updateSettlementPreview(0, 0, 0);
             _draftDatesForMonth = [];
             return;
         }
@@ -1396,13 +1492,19 @@
             const evening   = parseFloat(row.evening)   || 0;
             const unitPrice = parseFloat(row.unitprice) || parseFloat(row.unitPrice) || 80;
             const dailyTotal = morning + evening;
-            const dailyCost  = dailyTotal * unitPrice;
+            const dailyCostFromSheet = parseFloat(row.dailycost);
+            const dailyCost  = Number.isFinite(dailyCostFromSheet) ? dailyCostFromSheet : (dailyTotal * unitPrice);
+            const advancePaid = parseFloat(row.advancepaid) || 0;
+            const amountTaken = parseFloat(row.amounttaken) || 0;
             const remarks = row.remarks || '';
 
             totalMorningLiters += morning;
             totalEveningLiters += evening;
             totalMorningAmount += (morning * unitPrice);
             totalEveningAmount += (evening * unitPrice);
+            totalBillCost += dailyCost;
+            totalAdvancePaid += advancePaid;
+            totalAmountTaken += amountTaken;
 
             const dateDisplay = formatDate(row.date);
             const stageBadge = getStageBadge(row.stage);
@@ -1470,7 +1572,7 @@
             mobileCards.appendChild(card);
         });
 
-        updateSummary(totalMorningLiters, totalMorningAmount, totalEveningLiters, totalEveningAmount);
+        updateSummary(totalMorningLiters, totalMorningAmount, totalEveningLiters, totalEveningAmount, totalBillCost, totalAdvancePaid, totalAmountTaken);
     }
 
     function resetSummary() {
@@ -1480,17 +1582,21 @@
         setSummaryMetric('evening-amount', '₹0.00');
         setSummaryMetric('total-liters', '0.0 L');
         setSummaryMetric('total-cost', '₹0.00');
+        setSummaryMetric('advance-paid', '₹0.00');
+        setSummaryMetric('amount-taken', '₹0.00');
+        setSummaryMetric('net-payable', '₹0.00');
     }
 
-    function updateSummary(mL, mA, eL, eA) {
-        const tL = mL + eL, tA = mA + eA;
+    function updateSummary(mL, mA, eL, eA, totalCost, advancePaid, amountTaken) {
+        const tL = mL + eL;
         const fmt = n => n.toLocaleString('en-IN', { minimumFractionDigits: 2 });
         setSummaryMetric('morning-liters', `${mL.toFixed(1)} L`);
         setSummaryMetric('morning-amount', `₹${fmt(mA)}`);
         setSummaryMetric('evening-liters', `${eL.toFixed(1)} L`);
         setSummaryMetric('evening-amount', `₹${fmt(eA)}`);
         setSummaryMetric('total-liters', `${tL.toFixed(1)} L`);
-        setSummaryMetric('total-cost', `₹${fmt(tA)}`);
+        setSummaryMetric('total-cost', `₹${fmt(totalCost)}`);
+        updateSettlementPreview(totalCost, advancePaid, amountTaken);
     }
 
     let _pendingPaidElement = null;
@@ -1499,6 +1605,11 @@
         const month = document.getElementById('month-select').value;
         const year  = document.getElementById('year-select').value;
         _pendingPaidElement = element;
+        const breakdownWrap = document.getElementById('payment-breakdown');
+        const optionsWrap = document.getElementById('payment-options-wrap');
+        if (breakdownWrap) breakdownWrap.style.display = 'block';
+        if (optionsWrap) optionsWrap.style.display = 'block';
+        onPaymentModeChange();
 
         if (_draftDatesForMonth.length > 0) {
             const preview = _draftDatesForMonth.map(d => `<li>${d}</li>`).join('');
@@ -1536,6 +1647,22 @@
         const element = _pendingPaidElement;
         const confirmMode = _pendingConfirmMode;
         const draftSnapshot = [..._draftDatesForMonth];
+        const modeEl = document.querySelector('input[name="payment-mode"]:checked');
+        const paymentMode = modeEl ? modeEl.value : 'full';
+        const customAmount = parseFloat(document.getElementById('custom-payment-amount').value);
+        const remarks = (document.getElementById('payment-remarks').value || '').trim();
+        const paymentAmount = paymentMode === 'custom' ? customAmount : _monthlySettlement.netPayable;
+
+        if (paymentMode === 'custom') {
+            if (!Number.isFinite(customAmount) || customAmount < 0) {
+                KTui.alert('Invalid Amount', 'Please enter a valid custom amount.', 'error');
+                return;
+            }
+            if (!remarks) {
+                KTui.alert('Remarks Required', 'Please add remarks for custom payment amount.', 'error');
+                return;
+            }
+        }
 
         closeConfirm();
 
@@ -1548,25 +1675,38 @@
             type: 'milk',
             action: 'markMonthPaid',
             sheetName: sheetName,
-            status: 'Paid'
+            status: 'Paid',
+            paymentMode: paymentMode,
+            paymentAmount: paymentAmount,
+            paymentRemarks: remarks,
+            totalCost: _monthlySettlement.totalCost,
+            advancePaid: _monthlySettlement.advancePaid,
+            amountTaken: _monthlySettlement.amountTaken,
+            netPayable: _monthlySettlement.netPayable
         };
 
         fetch(MILK_API_URL, {
             method: 'POST',
-            body: JSON.stringify(payload),
-            mode: 'no-cors'
+            body: JSON.stringify(payload)
         })
-        .then(() => {
+        .then(r => r.json())
+        .then(res => {
+            if (!res || res.success !== true) {
+                throw new Error((res && res.error) || 'Unknown payment save error');
+            }
             setMonthlyBadge(true);
             if (confirmMode === 'settleDrafts' && draftSnapshot.length) {
                 KTui.alert('Draft Days Settled', `Marked month as paid with draft dates: ${draftSnapshot.join(', ')}`, 'success');
+            } else {
+                KTui.alert('Payment Saved', `Marked as paid for ${formatCurrency(paymentAmount)} (${paymentMode === 'custom' ? 'Custom' : 'Full'}).`, 'success');
             }
         })
-        .catch(() => {
+        .catch((err) => {
             if (element) {
                 element.disabled = false;
-                element.innerHTML = '<i class="fa-solid fa-check-circle"></i><span>Mark Paid</span>';
+                element.innerHTML = '<i class="fa-solid fa-check-circle"></i><span>Un-Paid</span>';
             }
+            console.error('Payment save failed:', err);
             KTui.alert('Error', 'Failed to update status. Please try again.', 'error');
         });
     }

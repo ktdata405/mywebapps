@@ -26,7 +26,7 @@ const CONFIG = {
     GOOGLE_SHEET_URL_LOAN: 'https://script.google.com/macros/s/AKfycbwnRs1td_3N8I1LVjHfXRAgcKWCDW8mbrBHJ4hADlHmihWDOco_7kDiO_qxKbNK1pfx/exec',
 
     //Prod Link
-    GOOGLE_SHEET_URL_MILK: 'https://script.google.com/macros/s/AKfycbwEts7e6vNCHzm6APoswzDa8X6eGDB3eEwO6NpW0mDJ40DsVKAzERrp0S6zarywGN2h/exec',
+    GOOGLE_SHEET_URL_MILK: 'https://script.google.com/macros/s/AKfycbyhME_LqpcsIFfOAaME1eP4vhLe6sj3eVKgdpPR27d8UpA5tXfVJDRXUVtYuSeCl_42aA/exec',
 
     //Prod Link
     GOOGLE_SHEET_URL_DEBTS: 'https://script.google.com/macros/s/AKfycbzXF14LayWcUqHi8IHAaPby3klVgLwg1joi18lX6RybVIFLEYFlqkT7HZwKofecLrUxEQ/exec',
